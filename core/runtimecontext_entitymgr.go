@@ -82,9 +82,14 @@ func (runtimeCtx *RuntimeContextBehavior) RemoveEntity(id uint64) {
 	}
 
 	entity := Cache2IFace[Entity](e.Element.Value.Cache)
-	if entity.getInitialing() {
+	if entity.getInitialing() || entity.getShutting() {
 		return
 	}
+
+	entity.setShutting(true)
+	defer entity.setShutting(false)
+
+	runtimeCtx.ecTree.RemoveChild(id)
 
 	delete(runtimeCtx.entityMap, id)
 	e.Element.Escape()

@@ -17,6 +17,7 @@ type RuntimeContext interface {
 	GetServiceCtx() ServiceContext
 	setFrame(frame Frame)
 	GetFrame() Frame
+	GetECTree() IECTree
 }
 
 func RuntimeContextGetOptions(runtimeCtx RuntimeContext) RuntimeContextOptions {
@@ -63,6 +64,7 @@ type RuntimeContextBehavior struct {
 	entityMap                           map[uint64]_RuntimeCtxEntityInfo
 	entityList                          container.List[FaceAny]
 	frame                               Frame
+	ecTree                              ECTree
 	callee                              _Callee
 	eventEntityMgrAddEntity             Event
 	eventEntityMgrRemoveEntity          Event
@@ -115,6 +117,8 @@ func (runtimeCtx *RuntimeContextBehavior) init(servCtx ServiceContext, opts *Run
 	runtimeCtx.eventEntityMgrRemoveEntity.Init(false, nil, EventRecursion_Discard, runtimeCtx.opts.HookCache, runtimeCtx.opts.Inheritor.IFace)
 	runtimeCtx.eventEntityMgrEntityAddComponents.Init(false, nil, EventRecursion_Discard, runtimeCtx.opts.HookCache, runtimeCtx.opts.Inheritor.IFace)
 	runtimeCtx.eventEntityMgrEntityRemoveComponent.Init(false, nil, EventRecursion_Discard, runtimeCtx.opts.HookCache, runtimeCtx.opts.Inheritor.IFace)
+
+	runtimeCtx.ecTree.init(runtimeCtx.opts.Inheritor.IFace, true)
 }
 
 func (runtimeCtx *RuntimeContextBehavior) getOptions() *RuntimeContextOptions {
@@ -131,4 +135,8 @@ func (runtimeCtx *RuntimeContextBehavior) setFrame(frame Frame) {
 
 func (runtimeCtx *RuntimeContextBehavior) GetFrame() Frame {
 	return runtimeCtx.frame
+}
+
+func (runtimeCtx *RuntimeContextBehavior) GetECTree() IECTree {
+	return &runtimeCtx.ecTree
 }

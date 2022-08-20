@@ -13,8 +13,12 @@ type Entity interface {
 	GetID() uint64
 	setRuntimeCtx(runtimeCtx RuntimeContext)
 	GetRuntimeCtx() RuntimeContext
+	setParent(parent Entity)
+	GetParent() (Entity, bool)
 	setInitialing(v bool)
 	getInitialing() bool
+	setShutting(v bool)
+	getShutting() bool
 	DestroySelf()
 	eventEntityDestroySelf() IEvent
 }
@@ -58,10 +62,11 @@ type EntityBehavior struct {
 	id                          uint64
 	opts                        EntityOptions
 	runtimeCtx                  RuntimeContext
+	parent                      Entity
 	componentList               container.List[FaceAny]
 	componentMap                map[string]*container.Element[FaceAny]
 	componentByIDMap            map[uint64]*container.Element[FaceAny]
-	initialing                  bool
+	initialing, shutting        bool
 	_eventEntityDestroySelf     Event
 	eventCompMgrAddComponents   Event
 	eventCompMgrRemoveComponent Event
@@ -144,12 +149,28 @@ func (entity *EntityBehavior) GetRuntimeCtx() RuntimeContext {
 	return entity.runtimeCtx
 }
 
+func (entity *EntityBehavior) setParent(parent Entity) {
+	entity.parent = parent
+}
+
+func (entity *EntityBehavior) GetParent() (Entity, bool) {
+	return entity.parent, entity.parent != nil
+}
+
 func (entity *EntityBehavior) setInitialing(v bool) {
 	entity.initialing = v
 }
 
 func (entity *EntityBehavior) getInitialing() bool {
 	return entity.initialing
+}
+
+func (entity *EntityBehavior) setShutting(v bool) {
+	entity.shutting = v
+}
+
+func (entity *EntityBehavior) getShutting() bool {
+	return entity.shutting
 }
 
 func (entity *EntityBehavior) DestroySelf() {
