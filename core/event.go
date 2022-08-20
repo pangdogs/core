@@ -1,6 +1,6 @@
 package core
 
-import "github.com/pangdogs/core/container"
+import "github.com/pangdogs/galaxy/core/container"
 
 type IEvent interface {
 	Emit(fun func(delegate IFaceCache) bool)

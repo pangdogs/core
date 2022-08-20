@@ -2,7 +2,7 @@ package core
 
 import (
 	"fmt"
-	"github.com/pangdogs/core/container"
+	"github.com/pangdogs/galaxy/core/container"
 )
 
 func (runtimeCtx *RuntimeContextBehavior) GetEntity(id uint64) (Entity, bool) {

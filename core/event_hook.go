@@ -1,7 +1,7 @@
 package core
 
 import (
-	"github.com/pangdogs/core/container"
+	"github.com/pangdogs/galaxy/core/container"
 )
 
 func BindEvent[T any](event IEvent, delegate T) Hook {

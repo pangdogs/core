@@ -1,6 +1,6 @@
 package core
 
-import "github.com/pangdogs/core/container"
+import "github.com/pangdogs/galaxy/core/container"
 
 type RuntimeContext interface {
 	container.GC

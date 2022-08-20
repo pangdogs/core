@@ -2,7 +2,7 @@ package core
 
 import (
 	"errors"
-	"github.com/pangdogs/core/container"
+	"github.com/pangdogs/galaxy/core/container"
 )
 
 func (entity *EntityBehavior) GetComponent(name string) Component {

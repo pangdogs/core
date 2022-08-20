@@ -92,7 +92,7 @@ package %s
 
 		if *corePackage != "" {
 			fmt.Fprintf(emitImportCode, `
-	%s "github.com/pangdogs/core"`, *corePackage)
+	%s "github.com/pangdogs/galaxy/core"`, *corePackage)
 		}
 
 		for _, imp := range fast.Imports {
@@ -101,7 +101,7 @@ package %s
 
 			impStr := string(declFileData[begin.Offset:end.Offset])
 
-			if *corePackage != "" && strings.Contains(impStr, "github.com/pangdogs/core") {
+			if *corePackage != "" && strings.Contains(impStr, "github.com/pangdogs/galaxy/core") {
 				continue
 			}
 
@@ -328,16 +328,16 @@ package %s
 
 		if *corePackage != "" {
 			fmt.Fprintf(assistImportCode, `
-	%s "github.com/pangdogs/core"`, *corePackage)
+	%s "github.com/pangdogs/galaxy/core"`, *corePackage)
 		} else {
 			if emitGenAbsDir != assistGenAbsDir || *emitGOPackage != *assistGOPackage {
 				fmt.Fprintf(assistImportCode, `
-	core "github.com/pangdogs/core"`)
+	core "github.com/pangdogs/galaxy/core"`)
 			}
 		}
 
 		fmt.Fprintf(assistImportCode, `
-	"github.com/pangdogs/core/container"`)
+	"github.com/pangdogs/galaxy/core/container"`)
 
 		fmt.Fprintf(assistImportCode, "\n)\n")
 

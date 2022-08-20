@@ -2,7 +2,7 @@ package core
 
 import (
 	"errors"
-	"github.com/pangdogs/core/container"
+	"github.com/pangdogs/galaxy/core/container"
 )
 
 type IECTree interface {
