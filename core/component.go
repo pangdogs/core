@@ -13,6 +13,7 @@ type Component interface {
 	GetID() uint64
 	GetName() string
 	GetEntity() Entity
+	GetRuntimeCtx() RuntimeContext
 	getInheritor() Component
 	setPrimary(v bool)
 	getPrimary() bool
@@ -106,6 +107,10 @@ func (comp *ComponentBehavior) getReflectValue() reflect.Value {
 	comp.reflectValue = reflect.ValueOf(comp.inheritor)
 
 	return comp.reflectValue
+}
+
+func (comp *ComponentBehavior) GetRuntimeCtx() RuntimeContext {
+	return comp.entity.GetRuntimeCtx()
 }
 
 func (comp *ComponentBehavior) DestroySelf() {
