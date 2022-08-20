@@ -89,6 +89,8 @@ func (runtimeCtx *RuntimeContextBehavior) RemoveEntity(id uint64) {
 	entity.setShutting(true)
 	defer entity.setShutting(false)
 
+	emitEventEntityMgrNotifyECTreeRemoveEntity[RuntimeContext](&runtimeCtx._eventEntityMgrNotifyECTreeRemoveEntity, runtimeCtx.opts.Inheritor.IFace, entity)
+
 	runtimeCtx.ecTree.RemoveChild(id)
 
 	delete(runtimeCtx.entityMap, id)
@@ -119,6 +121,10 @@ func (runtimeCtx *RuntimeContextBehavior) EventEntityMgrEntityAddComponents() IE
 
 func (runtimeCtx *RuntimeContextBehavior) EventEntityMgrEntityRemoveComponent() IEvent {
 	return &runtimeCtx.eventEntityMgrEntityRemoveComponent
+}
+
+func (runtimeCtx *RuntimeContextBehavior) eventEntityMgrNotifyECTreeRemoveEntity() IEvent {
+	return &runtimeCtx._eventEntityMgrNotifyECTreeRemoveEntity
 }
 
 func (runtimeCtx *RuntimeContextBehavior) OnCompMgrAddComponents(entity Entity, components []Component) {

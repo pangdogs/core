@@ -20,6 +20,7 @@ type _ECNode struct {
 	Parent          Entity
 	ElementInParent *container.Element[FaceAny]
 	Children        *container.List[FaceAny]
+	Removing        bool
 }
 
 type ECTree struct {
@@ -28,10 +29,18 @@ type ECTree struct {
 	ecTree                 map[uint64]_ECNode
 	eventECTreeAddChild    Event
 	eventECTreeRemoveChild Event
+	inited                 bool
+	hook                   Hook
 }
 
 func (ecTree *ECTree) Init(runtimeCtx RuntimeContext) {
 	ecTree.init(runtimeCtx, false)
+}
+
+func (ecTree *ECTree) Shut() {
+	if !ecTree.masterTree {
+		ecTree.hook.Unbind()
+	}
 }
 
 func (ecTree *ECTree) init(runtimeCtx RuntimeContext, masterTree bool) {
@@ -39,11 +48,24 @@ func (ecTree *ECTree) init(runtimeCtx RuntimeContext, masterTree bool) {
 		panic("nil runtimeCtx")
 	}
 
+	if ecTree.inited {
+		panic("repeated init ec-tree invalid")
+	}
+
 	ecTree.runtimeCtx = runtimeCtx
 	ecTree.masterTree = masterTree
 	ecTree.ecTree = map[uint64]_ECNode{}
 	ecTree.eventECTreeAddChild.Init(false, nil, EventRecursion_Discard, RuntimeContextGetOptions(runtimeCtx).HookCache, runtimeCtx)
 	ecTree.eventECTreeRemoveChild.Init(false, nil, EventRecursion_Discard, RuntimeContextGetOptions(runtimeCtx).HookCache, runtimeCtx)
+	ecTree.inited = true
+
+	if !ecTree.masterTree {
+		ecTree.hook = BindEvent[eventEntityMgrNotifyECTreeRemoveEntity[RuntimeContext]](ecTree.runtimeCtx.eventEntityMgrNotifyECTreeRemoveEntity(), ecTree)
+	}
+}
+
+func (ecTree *ECTree) onEntityMgrNotifyECTreeRemoveEntity(entityMgr RuntimeContext, entity Entity) {
+	ecTree.RemoveChild(entity.GetID())
 }
 
 func (ecTree *ECTree) AddChild(parentID uint64, childID uint64) error {
@@ -62,7 +84,7 @@ func (ecTree *ECTree) AddChild(parentID uint64, childID uint64) error {
 	}
 
 	if _, ok = ecTree.ecTree[childID]; ok {
-		return errors.New("child already in ec tree")
+		return errors.New("child already in ec-tree")
 	}
 
 	node, ok := ecTree.ecTree[parentID]
@@ -96,25 +118,28 @@ func (ecTree *ECTree) RemoveChild(childID uint64) {
 		return
 	}
 
+	if node.Removing {
+		return
+	}
+
+	node.Removing = true
+	ecTree.ecTree[childID] = node
+
 	if node.Children != nil {
 		node.Children.ReverseTraversal(func(e *container.Element[FaceAny]) bool {
 			if ecTree.masterTree {
-				ecTree.RemoveChild(Cache2IFace[Entity](e.Value.Cache).GetID())
-			} else {
 				Cache2IFace[Entity](e.Value.Cache).DestroySelf()
+			} else {
+				ecTree.RemoveChild(Cache2IFace[Entity](e.Value.Cache).GetID())
 			}
 			return true
 		})
 	}
 
 	delete(ecTree.ecTree, childID)
-
-	child, ok := ecTree.runtimeCtx.GetEntity(childID)
-	if !ok {
-		return
-	}
-
 	node.ElementInParent.Escape()
+
+	child := Cache2IFace[Entity](node.ElementInParent.Value.Cache)
 
 	if ecTree.masterTree {
 		child.setParent(nil)

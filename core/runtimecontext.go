@@ -59,18 +59,19 @@ type _RuntimeCtxEntityInfo struct {
 type RuntimeContextBehavior struct {
 	_ContextBehavior
 	_RunnableMarkBehavior
-	opts                                RuntimeContextOptions
-	servCtx                             ServiceContext
-	entityMap                           map[uint64]_RuntimeCtxEntityInfo
-	entityList                          container.List[FaceAny]
-	frame                               Frame
-	ecTree                              ECTree
-	callee                              _Callee
-	eventEntityMgrAddEntity             Event
-	eventEntityMgrRemoveEntity          Event
-	eventEntityMgrEntityAddComponents   Event
-	eventEntityMgrEntityRemoveComponent Event
-	gcList                              []container.GC
+	opts                                    RuntimeContextOptions
+	servCtx                                 ServiceContext
+	entityMap                               map[uint64]_RuntimeCtxEntityInfo
+	entityList                              container.List[FaceAny]
+	frame                                   Frame
+	ecTree                                  ECTree
+	callee                                  _Callee
+	eventEntityMgrAddEntity                 Event
+	eventEntityMgrRemoveEntity              Event
+	eventEntityMgrEntityAddComponents       Event
+	eventEntityMgrEntityRemoveComponent     Event
+	_eventEntityMgrNotifyECTreeRemoveEntity Event
+	gcList                                  []container.GC
 }
 
 func (runtimeCtx *RuntimeContextBehavior) GC() {
@@ -117,6 +118,7 @@ func (runtimeCtx *RuntimeContextBehavior) init(servCtx ServiceContext, opts *Run
 	runtimeCtx.eventEntityMgrRemoveEntity.Init(false, nil, EventRecursion_Discard, runtimeCtx.opts.HookCache, runtimeCtx.opts.Inheritor.IFace)
 	runtimeCtx.eventEntityMgrEntityAddComponents.Init(false, nil, EventRecursion_Discard, runtimeCtx.opts.HookCache, runtimeCtx.opts.Inheritor.IFace)
 	runtimeCtx.eventEntityMgrEntityRemoveComponent.Init(false, nil, EventRecursion_Discard, runtimeCtx.opts.HookCache, runtimeCtx.opts.Inheritor.IFace)
+	runtimeCtx._eventEntityMgrNotifyECTreeRemoveEntity.Init(false, nil, EventRecursion_Discard, runtimeCtx.opts.HookCache, runtimeCtx.opts.Inheritor.IFace)
 
 	runtimeCtx.ecTree.init(runtimeCtx.opts.Inheritor.IFace, true)
 }

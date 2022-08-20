@@ -16,3 +16,7 @@ type EventEntityMgrEntityAddComponents[T any] interface {
 type EventEntityMgrEntityRemoveComponent[T any] interface {
 	OnEntityMgrEntityRemoveComponent(entityMgr T, entity Entity, component Component)
 }
+
+type eventEntityMgrNotifyECTreeRemoveEntity[T any] interface {
+	onEntityMgrNotifyECTreeRemoveEntity(entityMgr T, entity Entity)
+}

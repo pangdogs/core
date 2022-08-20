@@ -424,9 +424,9 @@ func (assist *%[1]s) Close() {
 	}
 }
 
-func (assist *%[1]s) Clear() {
+func (assist *%[1]s) Clean() {
 	for i := range assist.eventTab {
-		assist.eventTab[i].Clear()
+		assist.eventTab[i].Clean()
 	}
 }
 %[5]s

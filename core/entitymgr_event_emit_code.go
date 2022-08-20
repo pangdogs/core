@@ -40,3 +40,13 @@ func emitEventEntityMgrEntityRemoveComponent[T any](event IEvent, entityMgr T, e
 		return true
 	})
 }
+
+func emitEventEntityMgrNotifyECTreeRemoveEntity[T any](event IEvent, entityMgr T, entity Entity) {
+	if event == nil {
+		panic("nil event")
+	}
+	event.Emit(func(delegate IFaceCache) bool {
+		Cache2IFace[eventEntityMgrNotifyECTreeRemoveEntity[T]](delegate).onEntityMgrNotifyECTreeRemoveEntity(entityMgr, entity)
+		return true
+	})
+}

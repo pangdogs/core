@@ -24,4 +24,5 @@ type EntityMgrEvents interface {
 	EventEntityMgrRemoveEntity() IEvent
 	EventEntityMgrEntityAddComponents() IEvent
 	EventEntityMgrEntityRemoveComponent() IEvent
+	eventEntityMgrNotifyECTreeRemoveEntity() IEvent
 }

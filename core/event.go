@@ -38,11 +38,16 @@ type Event struct {
 	emitted        int
 	depth          int
 	opened         bool
+	inited         bool
 }
 
 func (event *Event) Init(autoRecover bool, reportError chan error, eventRecursion EventRecursion, hookCache *container.Cache[Hook], gcCollector container.GCCollector) {
 	if gcCollector == nil {
 		panic("nil gcCollector")
+	}
+
+	if event.inited {
+		panic("repeated init event invalid")
 	}
 
 	event.autoRecover = autoRecover
@@ -51,6 +56,25 @@ func (event *Event) Init(autoRecover bool, reportError chan error, eventRecursio
 	event.subscribers.Init(hookCache, gcCollector)
 	event.gcCollector = gcCollector
 	event.opened = true
+	event.inited = true
+}
+
+func (event *Event) Open() {
+	event.subscribers.SetGCCollector(event.gcCollector)
+	event.opened = true
+}
+
+func (event *Event) Close() {
+	event.subscribers.SetGCCollector(nil)
+	event.Clean()
+	event.opened = false
+}
+
+func (event *Event) Clean() {
+	event.subscribers.Traversal(func(e *container.Element[Hook]) bool {
+		e.Value.Unbind()
+		return true
+	})
 }
 
 func (event *Event) GC() {
@@ -157,24 +181,6 @@ func (event *Event) removeDelegate(delegate interface{}) {
 			other.Escape()
 			return false
 		}
-		return true
-	})
-}
-
-func (event *Event) Open() {
-	event.subscribers.SetGCCollector(event.gcCollector)
-	event.opened = true
-}
-
-func (event *Event) Close() {
-	event.subscribers.SetGCCollector(nil)
-	event.Clear()
-	event.opened = false
-}
-
-func (event *Event) Clear() {
-	event.subscribers.Traversal(func(e *container.Element[Hook]) bool {
-		e.Value.Unbind()
 		return true
 	})
 }
