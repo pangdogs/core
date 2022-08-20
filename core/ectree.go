@@ -64,7 +64,7 @@ func (ecTree *ECTree) init(runtimeCtx RuntimeContext, masterTree bool) {
 	}
 }
 
-func (ecTree *ECTree) onEntityMgrNotifyECTreeRemoveEntity(entityMgr RuntimeContext, entity Entity) {
+func (ecTree *ECTree) onEntityMgrNotifyECTreeRemoveEntity(runtimeCtx RuntimeContext, entity Entity) {
 	ecTree.RemoveChild(entity.GetID())
 }
 
