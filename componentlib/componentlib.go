@@ -43,12 +43,12 @@ type _ComponentInfo struct {
 }
 
 type _ComponentLib struct {
-	compInfoMap map[string]_ComponentInfo
+	compInfoMap map[string]*_ComponentInfo
 }
 
 func (lib *_ComponentLib) init() {
 	if lib.compInfoMap == nil {
-		lib.compInfoMap = map[string]_ComponentInfo{}
+		lib.compInfoMap = map[string]*_ComponentInfo{}
 	}
 }
 
@@ -100,7 +100,7 @@ func (lib *_ComponentLib) register(api, descr string, constructType _ComponentCo
 		panic(fmt.Errorf("repeated register comp '%s' invalid", tag))
 	}
 
-	lib.compInfoMap[tag] = _ComponentInfo{
+	lib.compInfoMap[tag] = &_ComponentInfo{
 		ComponentInfo: ComponentInfo{
 			Api:   api,
 			Descr: descr,
