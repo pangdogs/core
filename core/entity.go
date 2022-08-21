@@ -39,6 +39,10 @@ func EntityGetInitialing(e Entity) bool {
 	return e.getInitialing()
 }
 
+func EntityGetShutting(e Entity) bool {
+	return e.getShutting()
+}
+
 func NewEntity(optFuncs ...NewEntityOptionFunc) Entity {
 	opts := &EntityOptions{}
 	NewEntityOption.Default()(opts)
