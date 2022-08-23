@@ -12,6 +12,7 @@ type EntityOptions struct {
 	HookCache                  *container.Cache[Hook]
 	EnableFastGetComponent     bool
 	EnableFastGetComponentByID bool
+	Params                     EntityParams
 }
 
 type NewEntityOptionFunc func(o *EntityOptions)
@@ -25,6 +26,7 @@ func (*NewEntityOptions) Default() NewEntityOptionFunc {
 		o.HookCache = nil
 		o.EnableFastGetComponent = false
 		o.EnableFastGetComponentByID = false
+		o.Params = EntityParams{}
 	}
 }
 
@@ -55,5 +57,18 @@ func (*NewEntityOptions) EnableFastGetComponent(v bool) NewEntityOptionFunc {
 func (*NewEntityOptions) EnableFastGetComponentByID(v bool) NewEntityOptionFunc {
 	return func(o *EntityOptions) {
 		o.EnableFastGetComponentByID = v
+	}
+}
+
+type EntityParams struct {
+	PersistID  string
+	Prototype  string
+	RuntimeCtx RuntimeContext
+	ParentID   uint64
+}
+
+func (*NewEntityOptions) Params(v EntityParams) NewEntityOptionFunc {
+	return func(o *EntityOptions) {
+		o.Params = v
 	}
 }

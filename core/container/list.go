@@ -137,7 +137,7 @@ func (l *List[T]) markGC() {
 	}
 }
 
-// Cap 链表容量
+// Cap 链表容量，包含已标记需要GC的元素
 func (l *List[T]) Cap() int {
 	return l.cap
 }

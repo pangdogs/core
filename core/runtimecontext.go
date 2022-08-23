@@ -62,6 +62,7 @@ type RuntimeContextBehavior struct {
 	opts                                    RuntimeContextOptions
 	servCtx                                 ServiceContext
 	entityMap                               map[uint64]_RuntimeCtxEntityInfo
+	persistentEntityMap                     map[string]Entity
 	entityList                              container.List[FaceAny]
 	frame                                   Frame
 	ecTree                                  ECTree
@@ -113,6 +114,7 @@ func (runtimeCtx *RuntimeContextBehavior) init(servCtx ServiceContext, opts *Run
 
 	runtimeCtx.entityList.Init(runtimeCtx.opts.FaceCache, runtimeCtx.opts.Inheritor.IFace)
 	runtimeCtx.entityMap = map[uint64]_RuntimeCtxEntityInfo{}
+	runtimeCtx.persistentEntityMap = map[string]Entity{}
 
 	runtimeCtx.eventEntityMgrAddEntity.Init(false, nil, EventRecursion_Discard, runtimeCtx.opts.HookCache, runtimeCtx.opts.Inheritor.IFace)
 	runtimeCtx.eventEntityMgrRemoveEntity.Init(false, nil, EventRecursion_Discard, runtimeCtx.opts.HookCache, runtimeCtx.opts.Inheritor.IFace)

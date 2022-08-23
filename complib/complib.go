@@ -1,29 +1,51 @@
-package componentlib
+// Package complib 用于注册开发的组件（Component），提供给实体原型（Entity Prototype）创建实体（Entity）时使用。
+package complib
 
 import (
 	"fmt"
 	"github.com/pangdogs/galaxy/core"
 	"reflect"
+	"sync"
+	"sync/atomic"
 )
 
 var componentLib _ComponentLib
 
+func init() {
+	componentLib.init()
+}
+
+// RegisterPt 注册组件原型（Component Prototype），共有RegisterPt()与RegisterBuilder()两个注册方法，
+//二者选其一使用即可。一般在init()函数中使用。线程安全。
+//
+// 参数[api]：实现的api名称，实体将通过api名称来获取组件，多个组件可以实现同一个api；参数[descr]：组件功能的描述说明；参数[compPt]：组件原型；
 func RegisterPt(api, descr string, compPt interface{}) {
 	componentLib.RegisterPt(api, descr, compPt)
 }
 
+// RegisterBuilder 注册组件构建函数（Component Builder），共有RegisterPt()与RegisterBuilder()两个注册方法，
+//二者选其一使用即可。一般在init()函数中使用。线程安全。
+//
+// 参数[api]：实现的api名称，实体将通过api名称来获取组件，多个组件可以实现同一个api；参数[descr]：组件功能的描述说明；参数[compBuilder]：组件构建函数；
 func RegisterBuilder(api, descr string, compBuilder func() core.Component) {
 	componentLib.RegisterBuilder(api, descr, compBuilder)
 }
 
+// New 创建组件对象，线程安全。
+//
+// 参数[tag]：组件标签，用于查询组件，格式为组件所在包路径+组件名，例如：`github.com/pangdogs/galaxy/comps/helloworld/HelloWorldComp`;
+//
+// 返回[api]：组件实现的实现的api名称；返回[comp]：组件对象；
 func New(tag string) (api string, comp core.Component) {
 	return componentLib.New(tag)
 }
 
+// Range 遍历所有已注册的组件信息，线程安全
 func Range(fun func(info ComponentInfo) bool) {
 	componentLib.Range(fun)
 }
 
+// ComponentInfo 组件信息
 type ComponentInfo struct {
 	Api, Descr, Tag string
 }
@@ -43,7 +65,9 @@ type _ComponentInfo struct {
 }
 
 type _ComponentLib struct {
-	compInfoMap map[string]*_ComponentInfo
+	compInfoMap      map[string]*_ComponentInfo
+	registerDisabled int32
+	registerMutex    sync.Mutex
 }
 
 func (lib *_ComponentLib) init() {
@@ -52,9 +76,8 @@ func (lib *_ComponentLib) init() {
 	}
 }
 
+// RegisterPt ...
 func (lib *_ComponentLib) RegisterPt(api, descr string, compPt interface{}) {
-	lib.init()
-
 	if api == "" {
 		panic("empty api")
 	}
@@ -66,9 +89,8 @@ func (lib *_ComponentLib) RegisterPt(api, descr string, compPt interface{}) {
 	lib.register(api, descr, _ComponentConstructType_Pt, reflect.TypeOf(compPt), nil)
 }
 
+// RegisterBuilder ...
 func (lib *_ComponentLib) RegisterBuilder(api, descr string, compBuilder func() core.Component) {
-	lib.init()
-
 	if api == "" {
 		panic("empty api")
 	}
@@ -81,7 +103,14 @@ func (lib *_ComponentLib) RegisterBuilder(api, descr string, compBuilder func() 
 }
 
 func (lib *_ComponentLib) register(api, descr string, constructType _ComponentConstructType, tfCompPt reflect.Type, compBuilder func() core.Component) {
-	for tfCompPt.Kind() == reflect.Pointer {
+	lib.registerMutex.Lock()
+	defer lib.registerMutex.Unlock()
+
+	if atomic.LoadInt32(&lib.registerDisabled) != 0 {
+		panic("register comp disabled")
+	}
+
+	for tfCompPt.Kind() == reflect.Pointer || tfCompPt.Kind() == reflect.Interface {
 		tfCompPt = tfCompPt.Elem()
 	}
 
@@ -112,8 +141,9 @@ func (lib *_ComponentLib) register(api, descr string, constructType _ComponentCo
 	}
 }
 
+// New ...
 func (lib *_ComponentLib) New(tag string) (api string, comp core.Component) {
-	lib.init()
+	atomic.StoreInt32(&lib.registerDisabled, 1)
 
 	info, ok := lib.compInfoMap[tag]
 	if !ok {
@@ -130,8 +160,9 @@ func (lib *_ComponentLib) New(tag string) (api string, comp core.Component) {
 	}
 }
 
+// Range ...
 func (lib *_ComponentLib) Range(fun func(info ComponentInfo) bool) {
-	lib.init()
+	atomic.StoreInt32(&lib.registerDisabled, 1)
 
 	if fun == nil {
 		return

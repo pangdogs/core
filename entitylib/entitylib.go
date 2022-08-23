@@ -2,9 +2,15 @@ package entitylib
 
 import (
 	"fmt"
-	"github.com/pangdogs/galaxy/componentlib"
+	"github.com/pangdogs/galaxy/complib"
 	"github.com/pangdogs/galaxy/core"
 )
+
+type IEntityLib interface {
+	Register(prototype string, compTags []string)
+	New(prototype string) core.Entity
+	Range(fun func(info EntityInfo) bool)
+}
 
 type EntityInfo struct {
 	Prototype string
@@ -12,12 +18,12 @@ type EntityInfo struct {
 }
 
 type EntityLib struct {
-	entityInfoMap map[string]*EntityInfo
+	entityInfoMap map[string]EntityInfo
 }
 
 func (lib *EntityLib) init() {
 	if lib.entityInfoMap == nil {
-		lib.entityInfoMap = map[string]*EntityInfo{}
+		lib.entityInfoMap = map[string]EntityInfo{}
 	}
 }
 
@@ -33,7 +39,7 @@ func (lib *EntityLib) Register(prototype string, compTags []string) {
 		panic(fmt.Errorf("repeated register entity '%s' invalid", prototype))
 	}
 
-	lib.entityInfoMap[prototype] = &EntityInfo{
+	lib.entityInfoMap[prototype] = EntityInfo{
 		Prototype: prototype,
 		CompTags:  compTags,
 	}
@@ -50,7 +56,7 @@ func (lib *EntityLib) New(prototype string) core.Entity {
 	entity := core.NewEntity()
 
 	for i := range info.CompTags {
-		api, comp := componentlib.New(info.CompTags[i])
+		api, comp := complib.New(info.CompTags[i])
 		entity.AddComponent(api, comp)
 	}
 
@@ -65,7 +71,7 @@ func (lib *EntityLib) Range(fun func(info EntityInfo) bool) {
 	}
 
 	for _, info := range lib.entityInfoMap {
-		if !fun(*info) {
+		if !fun(info) {
 			return
 		}
 	}

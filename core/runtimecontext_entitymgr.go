@@ -18,6 +18,11 @@ func (runtimeCtx *RuntimeContextBehavior) GetEntity(id uint64) (Entity, bool) {
 	return Cache2IFace[Entity](e.Element.Value.Cache), true
 }
 
+func (runtimeCtx *RuntimeContextBehavior) GetEntityByPersistID(persistID string) (Entity, bool) {
+	entity, ok := runtimeCtx.persistentEntityMap[persistID]
+	return entity, ok
+}
+
 func (runtimeCtx *RuntimeContextBehavior) RangeEntities(fun func(entity Entity) bool) {
 	if fun == nil {
 		return
@@ -58,6 +63,12 @@ func (runtimeCtx *RuntimeContextBehavior) AddEntity(entity Entity) {
 		panic(fmt.Errorf("repeated entity '{%d}' in this runtime context", entity.GetID()))
 	}
 
+	if entity.GetPersistID() != "" {
+		if _, ok := runtimeCtx.persistentEntityMap[entity.GetPersistID()]; ok {
+			panic(fmt.Errorf("repeated persistent entity '{%s}' in this runtime context", entity.GetPersistID()))
+		}
+	}
+
 	entityInfo := _RuntimeCtxEntityInfo{}
 
 	entityInfo.Hooks[0] = BindEvent[EventCompMgrAddComponents[Entity]](entity.EventCompMgrAddComponents(), runtimeCtx)
@@ -69,6 +80,10 @@ func (runtimeCtx *RuntimeContextBehavior) AddEntity(entity Entity) {
 	})
 
 	runtimeCtx.entityMap[entity.GetID()] = entityInfo
+
+	if entity.GetPersistID() != "" {
+		runtimeCtx.persistentEntityMap[entity.GetPersistID()] = entity
+	}
 
 	runtimeCtx.CollectGC(entity)
 
@@ -95,6 +110,10 @@ func (runtimeCtx *RuntimeContextBehavior) RemoveEntity(id uint64) {
 
 	delete(runtimeCtx.entityMap, id)
 	e.Element.Escape()
+
+	if entity.GetPersistID() != "" {
+		delete(runtimeCtx.persistentEntityMap, entity.GetPersistID())
+	}
 
 	for i := range e.Hooks {
 		e.Hooks[i].Unbind()

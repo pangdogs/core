@@ -2,6 +2,7 @@ package core
 
 type EntityQuery interface {
 	GetEntity(id uint64) (Entity, bool)
+	GetEntityByPersistID(persistID string) (Entity, bool)
 	RangeEntities(func(entity Entity) bool)
 }
 

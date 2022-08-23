@@ -8,6 +8,7 @@ type ServiceContextOptions struct {
 	StartedCallback,
 	StoppingCallback,
 	StoppedCallback func(serv Service)
+	Params ServiceParams
 }
 
 type NewServiceContextOptionFunc func(o *ServiceContextOptions)
@@ -51,5 +52,16 @@ func (*NewServiceContextOptions) StoppingCallback(v func(serv Service)) NewServi
 func (*NewServiceContextOptions) StoppedCallback(v func(serv Service)) NewServiceContextOptionFunc {
 	return func(o *ServiceContextOptions) {
 		o.StoppedCallback = v
+	}
+}
+
+type ServiceParams struct {
+	PersistID string
+	Prototype string
+}
+
+func (*NewServiceContextOptions) Params(v ServiceParams) NewServiceContextOptionFunc {
+	return func(o *ServiceContextOptions) {
+		o.Params = v
 	}
 }

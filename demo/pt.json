@@ -1,0 +1,24 @@
+{
+  "Gate": {
+    "Entity": {
+      "Daemon": [
+        "github.com/pangdogs/galaxy/comps/helloworld/HelloWorldComp",
+		"",
+		""
+      ]
+    },
+    "Singleton": [
+      "Daemon"
+    ]
+  },
+  "Login": {
+    "Entity": {
+      "Daemon": [
+        "github.com/pangdogs/galaxy/comps/helloworld/HelloWorldComp"
+      ]
+    },
+    "Singleton": [
+      "Daemon"
+    ]
+  }
+}

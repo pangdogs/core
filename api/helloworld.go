@@ -1,3 +1,4 @@
 package api
 
-const HelloWorldComp = "HelloWorldComp"
+// HelloWorld HelloWorld api名称
+const HelloWorld = "HelloWorld"

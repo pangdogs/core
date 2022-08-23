@@ -14,16 +14,12 @@ type Component interface {
 	GetName() string
 	GetEntity() Entity
 	GetRuntimeCtx() RuntimeContext
-	getInheritor() Component
+	GetServiceCtx() ServiceContext
 	setPrimary(v bool)
 	getPrimary() bool
 	getReflectValue() reflect.Value
 	DestroySelf()
 	eventComponentDestroySelf() IEvent
-}
-
-func ComponentGetInheritor(comp Component) Component {
-	return comp.getInheritor()
 }
 
 type ComponentBehavior struct {
@@ -87,10 +83,6 @@ func (comp *ComponentBehavior) GetEntity() Entity {
 	return comp.entity
 }
 
-func (comp *ComponentBehavior) getInheritor() Component {
-	return comp.inheritor
-}
-
 func (comp *ComponentBehavior) setPrimary(v bool) {
 	comp.primary = v
 }
@@ -111,6 +103,10 @@ func (comp *ComponentBehavior) getReflectValue() reflect.Value {
 
 func (comp *ComponentBehavior) GetRuntimeCtx() RuntimeContext {
 	return comp.entity.GetRuntimeCtx()
+}
+
+func (comp *ComponentBehavior) GetServiceCtx() ServiceContext {
+	return comp.entity.GetServiceCtx()
 }
 
 func (comp *ComponentBehavior) DestroySelf() {

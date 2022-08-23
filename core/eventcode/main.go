@@ -1,3 +1,4 @@
+// Package eventcode 用于go:generate生成事件相关代码。
 package main
 
 import (

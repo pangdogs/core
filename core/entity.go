@@ -1,6 +1,8 @@
 package core
 
-import "github.com/pangdogs/galaxy/core/container"
+import (
+	"github.com/pangdogs/galaxy/core/container"
+)
 
 type Entity interface {
 	container.GC
@@ -11,8 +13,11 @@ type Entity interface {
 	getOptions() *EntityOptions
 	setID(id uint64)
 	GetID() uint64
+	GetPersistID() string
+	GetPrototype() string
 	setRuntimeCtx(runtimeCtx RuntimeContext)
 	GetRuntimeCtx() RuntimeContext
+	GetServiceCtx() ServiceContext
 	setParent(parent Entity)
 	GetParent() (Entity, bool)
 	setInitialing(v bool)
@@ -145,12 +150,24 @@ func (entity *EntityBehavior) GetID() uint64 {
 	return entity.id
 }
 
+func (entity *EntityBehavior) GetPersistID() string {
+	return entity.opts.Params.PersistID
+}
+
+func (entity *EntityBehavior) GetPrototype() string {
+	return entity.opts.Params.Prototype
+}
+
 func (entity *EntityBehavior) setRuntimeCtx(runtimeCtx RuntimeContext) {
 	entity.runtimeCtx = runtimeCtx
 }
 
 func (entity *EntityBehavior) GetRuntimeCtx() RuntimeContext {
 	return entity.runtimeCtx
+}
+
+func (entity *EntityBehavior) GetServiceCtx() ServiceContext {
+	return entity.runtimeCtx.GetServiceCtx()
 }
 
 func (entity *EntityBehavior) setParent(parent Entity) {
