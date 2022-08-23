@@ -17,25 +17,30 @@ func init() {
 
 // RegisterPt 注册组件原型（Component Prototype），共有RegisterPt()与RegisterBuilder()两个注册方法，
 //二者选其一使用即可。一般在init()函数中使用。线程安全。
-//
-// 参数[api]：实现的api名称，实体将通过api名称来获取组件，多个组件可以实现同一个api；参数[descr]：组件功能的描述说明；参数[compPt]：组件原型；
+//	参数：
+//		api：组件实现的api名称，实体将通过api名称来获取组件，多个组件可以实现同一个api。
+//		descr：组件功能的描述说明。
+//		compPt：组件原型。
 func RegisterPt(api, descr string, compPt interface{}) {
 	componentLib.RegisterPt(api, descr, compPt)
 }
 
 // RegisterBuilder 注册组件构建函数（Component Builder），共有RegisterPt()与RegisterBuilder()两个注册方法，
 //二者选其一使用即可。一般在init()函数中使用。线程安全。
-//
-// 参数[api]：实现的api名称，实体将通过api名称来获取组件，多个组件可以实现同一个api；参数[descr]：组件功能的描述说明；参数[compBuilder]：组件构建函数；
+//	参数：
+//		api：组件实现的api名称，实体将通过api名称来获取组件，多个组件可以实现同一个api。
+//		descr：组件功能的描述说明。
+//		compBuilder：组件构建函数。
 func RegisterBuilder(api, descr string, compBuilder func() core.Component) {
 	componentLib.RegisterBuilder(api, descr, compBuilder)
 }
 
 // New 创建组件对象，线程安全。
-//
-// 参数[tag]：组件标签，用于查询组件，格式为组件所在包路径+组件名，例如：`github.com/pangdogs/galaxy/comps/helloworld/HelloWorldComp`;
-//
-// 返回[api]：组件实现的实现的api名称；返回[comp]：组件对象；
+//	参数：
+//		tag：组件标签，用于查询组件，格式为组件所在包路径+组件名，例如：`github.com/pangdogs/galaxy/comps/helloworld/HelloWorldComp`。
+//	返回值：
+//		api：组件实现的实现的api名称。
+//		comp：组件对象。
 func New(tag string) (api string, comp core.Component) {
 	return componentLib.New(tag)
 }
