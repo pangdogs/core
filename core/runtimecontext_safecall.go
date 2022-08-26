@@ -4,7 +4,8 @@ import (
 	"fmt"
 )
 
-func (runtimeCtx *RuntimeContextBehavior) SafeCall(segment func() SafeRet) <-chan SafeRet {
+// SafeCall ...
+func (runtimeCtx *_RuntimeContextBehavior) SafeCall(segment func() SafeRet) <-chan SafeRet {
 	if segment == nil {
 		panic("nil segment")
 	}
@@ -29,7 +30,8 @@ func (runtimeCtx *RuntimeContextBehavior) SafeCall(segment func() SafeRet) <-cha
 	return ret
 }
 
-func (runtimeCtx *RuntimeContextBehavior) SafeCallNoRet(segment func()) {
+// SafeCallNoRet ...
+func (runtimeCtx *_RuntimeContextBehavior) SafeCallNoRet(segment func()) {
 	if segment == nil {
 		panic("nil segment")
 	}
@@ -37,6 +39,6 @@ func (runtimeCtx *RuntimeContextBehavior) SafeCallNoRet(segment func()) {
 	runtimeCtx.callee.pushCall(segment)
 }
 
-func (runtimeCtx *RuntimeContextBehavior) setCallee(callee _Callee) {
+func (runtimeCtx *_RuntimeContextBehavior) setCallee(callee _Callee) {
 	runtimeCtx.callee = callee
 }

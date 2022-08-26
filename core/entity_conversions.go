@@ -2,78 +2,57 @@ package core
 
 import "reflect"
 
+// As 从实体提取一些需要的组件API（Component API），复合在一起直接使用，提取失败不会panic，非线程安全，例如：
+//	type A interface {
+//		TestA()
+//	}
+//	...
+//	type B interface {
+//		TestB()
+//	}
+//	...
+//	type Complex struct {
+//		api.A
+//		api.B
+//	}
+//	...
+//	As[Complex](entity).TestA()
+//	As[Complex](entity).TestB()
+// 注意提取后从实体删除或更换组件后，需要重新提取
 func As[T any](entity Entity) (T, bool) {
-	entityFace := Zero[T]()
-	vfEntityFace := reflect.ValueOf(&entityFace).Elem()
+	complexApi := Zero[T]()
+	vfComplexApi := reflect.ValueOf(&complexApi).Elem()
 
-	if vfEntityFace.Kind() != reflect.Struct {
+	if vfComplexApi.Kind() != reflect.Struct {
 		return Zero[T](), false
 	}
 
-	for i := 0; i < vfEntityFace.NumField(); i++ {
-		vfCompFace := vfEntityFace.Field(i)
+	for i := 0; i < vfComplexApi.NumField(); i++ {
+		vfCompApi := vfComplexApi.Field(i)
 
-		if vfCompFace.Kind() != reflect.Interface {
+		if vfCompApi.Kind() != reflect.Interface {
 			return Zero[T](), false
 		}
 
-		tfCompFace := vfCompFace.Type()
-		ok := false
+		tfCompApi := vfCompApi.Type()
+		compApiName := tfCompApi.PkgPath() + "/" + tfCompApi.Name()
 
-		entity.RangeComponents(func(comp Component) bool {
-			vfComp := comp.getReflectValue()
-
-			if vfComp.Type().Implements(tfCompFace) {
-				vfCompFace.Set(vfComp)
-				ok = true
-				return false
-			}
-
-			return true
-		})
-
-		if !ok {
+		comp := entity.GetComponent(compApiName)
+		if comp == nil {
 			return Zero[T](), false
 		}
+
+		vfCompApi.Set(comp.getReflectValue())
 	}
 
-	return entityFace, true
+	return complexApi, true
 }
 
+// Cast 与As功能相同，只是提取失败时会panic，非线程安全
 func Cast[T any](entity Entity) T {
-	entityFace := Zero[T]()
-	vfEntityFace := reflect.ValueOf(&entityFace).Elem()
-
-	if vfEntityFace.Kind() != reflect.Struct {
-		panic("ret not struct")
+	entityFace, ok := As[T](entity)
+	if !ok {
+		panic("cast invalid")
 	}
-
-	for i := 0; i < vfEntityFace.NumField(); i++ {
-		vfCompFace := vfEntityFace.Field(i)
-
-		if vfCompFace.Kind() != reflect.Interface {
-			panic("ret field not interface")
-		}
-
-		tfCompFace := vfCompFace.Type()
-		ok := false
-
-		entity.RangeComponents(func(comp Component) bool {
-			vfComp := comp.getReflectValue()
-
-			if vfComp.Type().Implements(tfCompFace) {
-				vfCompFace.Set(vfComp)
-				ok = true
-				return false
-			}
-
-			return true
-		})
-
-		if !ok {
-			panic("ret field not matching")
-		}
-	}
-
 	return entityFace
 }

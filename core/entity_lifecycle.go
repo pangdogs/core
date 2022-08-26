@@ -1,21 +1,21 @@
 package core
 
-type EntityInit interface {
+type _EntityInit interface {
 	Init()
 }
 
-type EntityInitFin interface {
+type _EntityInitFin interface {
 	InitFin()
 }
 
-type EntityUpdate = eventUpdate
+type _EntityUpdate = eventUpdate
 
-type EntityLateUpdate = eventLateUpdate
+type _EntityLateUpdate = eventLateUpdate
 
-type EntityShut interface {
+type _EntityShut interface {
 	Shut()
 }
 
-type EntityShutFin interface {
+type _EntityShutFin interface {
 	ShutFin()
 }

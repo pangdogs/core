@@ -4,71 +4,82 @@ import (
 	"github.com/pangdogs/galaxy/core/container"
 )
 
-var NewEntityOption = &NewEntityOptions{}
-
+// EntityOptions 创建实体（Entity）的所有选项
 type EntityOptions struct {
-	Inheritor                  Face[Entity]
-	FaceCache                  *container.Cache[FaceAny]
-	HookCache                  *container.Cache[Hook]
-	EnableFastGetComponent     bool
-	EnableFastGetComponentByID bool
-	Params                     EntityParams
+	Inheritor                  Face[Entity]              // 继承者，需要拓展实体自身功能时需要使用
+	FaceCache                  *container.Cache[FaceAny] // FaceCache用于提高性能，通常传入运行时上下文（Runtime Context）选项中的FaceCache
+	HookCache                  *container.Cache[Hook]    // HookCache用于提高性能，通常传入运行时上下文（Runtime Context）选项中的HookCache
+	EnableFastGetComponent     bool                      // 是否开启使用组件（Component）名称快速查询组件功能
+	EnableFastGetComponentByID bool                      // 是否开启使用组件（Component）运行时ID快速查询组件功能
+	PersistID                  string                    // 持久化ID
+	Prototype                  string                    // 实体（Entity）原型
 }
 
-type NewEntityOptionFunc func(o *EntityOptions)
+// EntityOptionSetter 实体（Entity）选项设置器
+var EntityOptionSetter = &_EntityOptionSetter{}
 
-type NewEntityOptions struct{}
+type _EntityOptionSetterFunc func(o *EntityOptions)
 
-func (*NewEntityOptions) Default() NewEntityOptionFunc {
+type _EntityOptionSetter struct{}
+
+// Default 默认值
+func (*_EntityOptionSetter) Default() _EntityOptionSetterFunc {
 	return func(o *EntityOptions) {
 		o.Inheritor = Face[Entity]{}
 		o.FaceCache = nil
 		o.HookCache = nil
 		o.EnableFastGetComponent = false
 		o.EnableFastGetComponentByID = false
-		o.Params = EntityParams{}
+		o.PersistID = ""
+		o.Prototype = ""
 	}
 }
 
-func (*NewEntityOptions) Inheritor(v Face[Entity]) NewEntityOptionFunc {
+// Inheritor 继承者，需要拓展实体自身功能时需要使用
+func (*_EntityOptionSetter) Inheritor(v Face[Entity]) _EntityOptionSetterFunc {
 	return func(o *EntityOptions) {
 		o.Inheritor = v
 	}
 }
 
-func (*NewEntityOptions) FaceCache(v *container.Cache[FaceAny]) NewEntityOptionFunc {
+// FaceCache FaceCache用于提高性能，通常传入运行时上下文（Runtime Context）选项中的FaceCache
+func (*_EntityOptionSetter) FaceCache(v *container.Cache[FaceAny]) _EntityOptionSetterFunc {
 	return func(o *EntityOptions) {
 		o.FaceCache = v
 	}
 }
 
-func (*NewEntityOptions) HookCache(v *container.Cache[Hook]) NewEntityOptionFunc {
+// HookCache HookCache用于提高性能，通常传入运行时上下文（Runtime Context）选项中的HookCache
+func (*_EntityOptionSetter) HookCache(v *container.Cache[Hook]) _EntityOptionSetterFunc {
 	return func(o *EntityOptions) {
 		o.HookCache = v
 	}
 }
 
-func (*NewEntityOptions) EnableFastGetComponent(v bool) NewEntityOptionFunc {
+// EnableFastGetComponent 是否开启使用组件（Component）名称快速查询组件功能
+func (*_EntityOptionSetter) EnableFastGetComponent(v bool) _EntityOptionSetterFunc {
 	return func(o *EntityOptions) {
 		o.EnableFastGetComponent = v
 	}
 }
 
-func (*NewEntityOptions) EnableFastGetComponentByID(v bool) NewEntityOptionFunc {
+// EnableFastGetComponentByID 是否开启使用组件（Component）运行时ID快速查询组件功能
+func (*_EntityOptionSetter) EnableFastGetComponentByID(v bool) _EntityOptionSetterFunc {
 	return func(o *EntityOptions) {
 		o.EnableFastGetComponentByID = v
 	}
 }
 
-type EntityParams struct {
-	PersistID  string
-	Prototype  string
-	RuntimeCtx RuntimeContext
-	ParentID   uint64
+// PersistID 持久化ID
+func (*_EntityOptionSetter) PersistID(v string) _EntityOptionSetterFunc {
+	return func(o *EntityOptions) {
+		o.PersistID = v
+	}
 }
 
-func (*NewEntityOptions) Params(v EntityParams) NewEntityOptionFunc {
+// Prototype 实体（Entity）原型
+func (*_EntityOptionSetter) Prototype(v string) _EntityOptionSetterFunc {
 	return func(o *EntityOptions) {
-		o.Params = v
+		o.Prototype = v
 	}
 }

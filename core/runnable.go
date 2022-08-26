@@ -4,7 +4,7 @@ import (
 	"sync/atomic"
 )
 
-type Runnable interface {
+type _Runnable interface {
 	Run() <-chan struct{}
 	Stop()
 }

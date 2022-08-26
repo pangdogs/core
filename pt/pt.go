@@ -1,4 +1,4 @@
-package ptloader
+package pt
 
 // ServicePts 所有的服务原型（Service Prototype）配置表
 type ServicePts map[string]ServicePt

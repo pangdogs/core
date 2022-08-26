@@ -4,10 +4,12 @@ import (
 	"github.com/pangdogs/galaxy/core/container"
 )
 
+// BindEvent ...
 func BindEvent[T any](event IEvent, delegate T) Hook {
 	return BindEventWithPriority(event, delegate, 0)
 }
 
+// BindEventWithPriority ...
 func BindEventWithPriority[T any](event IEvent, delegate T, priority int32) Hook {
 	if event == nil {
 		panic("nil event")
@@ -15,6 +17,7 @@ func BindEventWithPriority[T any](event IEvent, delegate T, priority int32) Hook
 	return event.newHook(delegate, IFace2Cache(delegate), priority)
 }
 
+// UnbindEvent ...
 func UnbindEvent(event IEvent, delegate interface{}) {
 	if event == nil {
 		panic("nil event")
@@ -22,6 +25,7 @@ func UnbindEvent(event IEvent, delegate interface{}) {
 	event.removeDelegate(delegate)
 }
 
+// Hook ...
 type Hook struct {
 	delegate          interface{}
 	delegateFastIFace IFaceCache
@@ -30,10 +34,12 @@ type Hook struct {
 	received          int
 }
 
+// Bind ...
 func (hook *Hook) Bind(event IEvent) {
 	hook.BindWithPriority(event, 0)
 }
 
+// BindWithPriority ...
 func (hook *Hook) BindWithPriority(event IEvent, priority int32) {
 	if event == nil {
 		panic("nil event")
@@ -46,6 +52,7 @@ func (hook *Hook) BindWithPriority(event IEvent, priority int32) {
 	*hook = event.newHook(hook.delegate, hook.delegateFastIFace, priority)
 }
 
+// Unbind ...
 func (hook *Hook) Unbind() {
 	if hook.element != nil {
 		hook.element.Escape()
@@ -53,10 +60,12 @@ func (hook *Hook) Unbind() {
 	}
 }
 
+// IsBound ...
 func (hook *Hook) IsBound() bool {
 	return hook.element != nil && !hook.element.Escaped()
 }
 
+// Delegate ...
 func (hook *Hook) Delegate() IFaceCache {
 	return hook.delegateFastIFace
 }

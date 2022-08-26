@@ -1,4 +1,4 @@
-// Package complib 用于注册开发的组件（Component），提供给实体原型（Entity Prototype）创建实体（Entity）时使用。
+// Package complib 组件库（Component Library），用于注册已开发的组件（Component），提供给实体原型（Entity Prototype）创建实体（Entity）时使用。
 package complib
 
 import (

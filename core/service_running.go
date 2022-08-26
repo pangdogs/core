@@ -1,6 +1,7 @@
 package core
 
-func (serv *ServiceBehavior) Run() <-chan struct{} {
+// Run ...
+func (serv *_ServiceBehavior) Run() <-chan struct{} {
 	if !serv.ctx.markRunning() {
 		panic("serv already running")
 	}
@@ -12,11 +13,12 @@ func (serv *ServiceBehavior) Run() <-chan struct{} {
 	return shutChan
 }
 
-func (serv *ServiceBehavior) Stop() {
+// Stop ...
+func (serv *_ServiceBehavior) Stop() {
 	serv.ctx.GetCancelFunc()()
 }
 
-func (serv *ServiceBehavior) running(shutChan chan struct{}) {
+func (serv *_ServiceBehavior) running(shutChan chan struct{}) {
 	if parentCtx, ok := serv.ctx.GetParentCtx().(Context); ok {
 		parentCtx.GetWaitGroup().Add(1)
 	}

@@ -1,4 +1,3 @@
-// Package container 实现了一种特殊的链表，可以在遍历时在任意位置添加或删除元素，递归删除元素时仍然能正常工作，但是需要GC支持，主要用于core内部。
 package container
 
 // NewCache 创建链表缓存

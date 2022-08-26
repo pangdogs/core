@@ -1,17 +1,17 @@
 package core
 
-type ComponentAwake interface {
+type _ComponentAwake interface {
 	Awake()
 }
 
-type ComponentStart interface {
+type _ComponentStart interface {
 	Start()
 }
 
-type ComponentUpdate = eventUpdate
+type _ComponentUpdate = eventUpdate
 
-type ComponentLateUpdate = eventLateUpdate
+type _ComponentLateUpdate = eventLateUpdate
 
-type ComponentShut interface {
+type _ComponentShut interface {
 	Shut()
 }

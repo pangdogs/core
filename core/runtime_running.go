@@ -2,7 +2,8 @@ package core
 
 import "time"
 
-func (runtime *RuntimeBehavior) Run() <-chan struct{} {
+// Run ...
+func (runtime *_RuntimeBehavior) Run() <-chan struct{} {
 	if !runtime.ctx.markRunning() {
 		panic("runtime already running")
 	}
@@ -18,11 +19,12 @@ func (runtime *RuntimeBehavior) Run() <-chan struct{} {
 	return shutChan
 }
 
-func (runtime *RuntimeBehavior) Stop() {
+// Stop ...
+func (runtime *_RuntimeBehavior) Stop() {
 	runtime.ctx.GetCancelFunc()()
 }
 
-func (runtime *RuntimeBehavior) running(shutChan chan struct{}) {
+func (runtime *_RuntimeBehavior) running(shutChan chan struct{}) {
 	if parentCtx, ok := runtime.ctx.GetParentCtx().(Context); ok {
 		parentCtx.GetWaitGroup().Add(1)
 	}
@@ -58,7 +60,7 @@ func (runtime *RuntimeBehavior) running(shutChan chan struct{}) {
 	}
 }
 
-func (runtime *RuntimeBehavior) loopStarted() (hooks [4]Hook) {
+func (runtime *_RuntimeBehavior) loopStarted() (hooks [4]Hook) {
 	runtimeCtx := runtime.ctx
 	frame := runtime.opts.Frame
 
@@ -87,7 +89,7 @@ func (runtime *RuntimeBehavior) loopStarted() (hooks [4]Hook) {
 	return
 }
 
-func (runtime *RuntimeBehavior) loopStopped(hooks [4]Hook) {
+func (runtime *_RuntimeBehavior) loopStopped(hooks [4]Hook) {
 	runtimeCtx := runtime.ctx
 	frame := runtime.opts.Frame
 
@@ -113,7 +115,7 @@ func (runtime *RuntimeBehavior) loopStopped(hooks [4]Hook) {
 	}
 }
 
-func (runtime *RuntimeBehavior) loopNoFrame() {
+func (runtime *_RuntimeBehavior) loopNoFrame() {
 	gcTicker := time.NewTicker(runtime.opts.GCInterval)
 	defer gcTicker.Stop()
 
@@ -134,7 +136,7 @@ func (runtime *RuntimeBehavior) loopNoFrame() {
 	}
 }
 
-func (runtime *RuntimeBehavior) loopNoFrameEnd() {
+func (runtime *_RuntimeBehavior) loopNoFrameEnd() {
 	close(runtime.processQueue)
 
 	for {
@@ -151,7 +153,7 @@ func (runtime *RuntimeBehavior) loopNoFrameEnd() {
 	}
 }
 
-func (runtime *RuntimeBehavior) loopWithFrame() {
+func (runtime *_RuntimeBehavior) loopWithFrame() {
 	frame := runtime.opts.Frame
 
 	go func() {
@@ -209,7 +211,7 @@ func (runtime *RuntimeBehavior) loopWithFrame() {
 	}
 }
 
-func (runtime *RuntimeBehavior) loopWithFrameEnd() {
+func (runtime *_RuntimeBehavior) loopWithFrameEnd() {
 	frame := runtime.opts.Frame
 
 	close(runtime.processQueue)
@@ -233,7 +235,7 @@ func (runtime *RuntimeBehavior) loopWithFrameEnd() {
 	frame.setCurFrames(frame.GetCurFrames() + 1)
 }
 
-func (runtime *RuntimeBehavior) frameUpdate() {
+func (runtime *_RuntimeBehavior) frameUpdate() {
 	frame := runtime.opts.Frame
 
 	frame.frameEnd()
@@ -242,7 +244,7 @@ func (runtime *RuntimeBehavior) frameUpdate() {
 	runtime.firstFrameUpdate()
 }
 
-func (runtime *RuntimeBehavior) firstFrameUpdate() {
+func (runtime *_RuntimeBehavior) firstFrameUpdate() {
 	frame := runtime.opts.Frame
 
 	frame.frameBegin()
@@ -254,7 +256,7 @@ func (runtime *RuntimeBehavior) firstFrameUpdate() {
 	emitEventLateUpdate(&runtime.eventLateUpdate)
 }
 
-func (runtime *RuntimeBehavior) loopWithBlinkFrame() {
+func (runtime *_RuntimeBehavior) loopWithBlinkFrame() {
 	frame := runtime.opts.Frame
 	totalFrames := frame.GetTotalFrames()
 
@@ -279,7 +281,7 @@ func (runtime *RuntimeBehavior) loopWithBlinkFrame() {
 	}
 }
 
-func (runtime *RuntimeBehavior) loopWithBlinkFrameEnd() {
+func (runtime *_RuntimeBehavior) loopWithBlinkFrameEnd() {
 	close(runtime.processQueue)
 
 	for {
@@ -296,7 +298,7 @@ func (runtime *RuntimeBehavior) loopWithBlinkFrameEnd() {
 	}
 }
 
-func (runtime *RuntimeBehavior) blinkFrameUpdate() bool {
+func (runtime *_RuntimeBehavior) blinkFrameUpdate() bool {
 	frame := runtime.opts.Frame
 
 	frame.frameBegin()

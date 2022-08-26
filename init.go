@@ -7,5 +7,5 @@ import (
 )
 
 func init() {
-	complib.RegisterPt(api.HelloWorld, "实体创建时，在控制台打印Hello World。", helloworld.HelloWorldComp{})
+	complib.RegisterPt(api.HelloWorld, "实体（Entity）创建时，在控制台打印`Hello World`。", helloworld.HelloWorldComp{})
 }

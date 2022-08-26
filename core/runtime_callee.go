@@ -2,7 +2,7 @@ package core
 
 import "time"
 
-func (runtime *RuntimeBehavior) pushCall(segment func()) {
+func (runtime *_RuntimeBehavior) pushCall(segment func()) {
 	if segment == nil {
 		panic("nil segment")
 	}

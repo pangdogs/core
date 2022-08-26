@@ -7,11 +7,12 @@ import (
 	"sync/atomic"
 )
 
+// ServiceContext ...
 type ServiceContext interface {
 	Context
 	_RunnableMark
-	EntityMgr
-	EntityFactory
+	_EntityMgr
+	_EntityFactory
 	init(ctx context.Context, opts *ServiceContextOptions)
 	getOptions() *ServiceContextOptions
 	genUID() uint64
@@ -19,18 +20,22 @@ type ServiceContext interface {
 	GetPrototype() string
 }
 
+// ServiceContextGetOptions ...
 func ServiceContextGetOptions(servCtx ServiceContext) ServiceContextOptions {
 	return *servCtx.getOptions()
 }
 
+// ServiceContextGetInheritor ...
 func ServiceContextGetInheritor(servCtx ServiceContext) Face[ServiceContext] {
 	return servCtx.getOptions().Inheritor
 }
 
+// ServiceContextGetInheritorIFace ...
 func ServiceContextGetInheritorIFace[T any](servCtx ServiceContext) T {
 	return Cache2IFace[T](servCtx.getOptions().Inheritor.Cache)
 }
 
+// NewServiceContext ...
 func NewServiceContext(ctx context.Context, optFuncs ...NewServiceContextOptionFunc) ServiceContext {
 	opts := &ServiceContextOptions{}
 	NewServiceContextOption.Default()(opts)
@@ -90,10 +95,12 @@ func (servCtx *_ServiceContextBehavior) genUID() uint64 {
 	return atomic.AddUint64(&servCtx.uidGen, 1)
 }
 
+// GetPersistID ...
 func (servCtx *_ServiceContextBehavior) GetPersistID() string {
 	return servCtx.opts.Params.PersistID
 }
 
+// GetPrototype ...
 func (servCtx *_ServiceContextBehavior) GetPrototype() string {
 	return servCtx.opts.Params.Prototype
 }

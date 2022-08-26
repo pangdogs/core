@@ -5,7 +5,36 @@ import (
 	"github.com/pangdogs/galaxy/core/container"
 )
 
-func (runtimeCtx *RuntimeContextBehavior) GetEntity(id uint64) (Entity, bool) {
+type _EntityQuery interface {
+	GetEntity(id uint64) (Entity, bool)
+	GetEntityByPersistID(persistID string) (Entity, bool)
+	RangeEntities(func(entity Entity) bool)
+}
+
+type _EntityReverseQuery interface {
+	ReverseRangeEntities(func(entity Entity) bool)
+}
+
+type _EntityCountQuery interface {
+	GetEntityCount() int
+}
+
+type _EntityMgr interface {
+	_EntityQuery
+	AddEntity(entity Entity)
+	RemoveEntity(id uint64)
+}
+
+type _EntityMgrEvents interface {
+	EventEntityMgrAddEntity() IEvent
+	EventEntityMgrRemoveEntity() IEvent
+	EventEntityMgrEntityAddComponents() IEvent
+	EventEntityMgrEntityRemoveComponent() IEvent
+	eventEntityMgrNotifyECTreeRemoveEntity() IEvent
+}
+
+// GetEntity ...
+func (runtimeCtx *_RuntimeContextBehavior) GetEntity(id uint64) (Entity, bool) {
 	e, ok := runtimeCtx.entityMap[id]
 	if !ok {
 		return nil, false
@@ -18,12 +47,14 @@ func (runtimeCtx *RuntimeContextBehavior) GetEntity(id uint64) (Entity, bool) {
 	return Cache2IFace[Entity](e.Element.Value.Cache), true
 }
 
-func (runtimeCtx *RuntimeContextBehavior) GetEntityByPersistID(persistID string) (Entity, bool) {
+// GetEntityByPersistID ...
+func (runtimeCtx *_RuntimeContextBehavior) GetEntityByPersistID(persistID string) (Entity, bool) {
 	entity, ok := runtimeCtx.persistentEntityMap[persistID]
 	return entity, ok
 }
 
-func (runtimeCtx *RuntimeContextBehavior) RangeEntities(fun func(entity Entity) bool) {
+// RangeEntities ...
+func (runtimeCtx *_RuntimeContextBehavior) RangeEntities(fun func(entity Entity) bool) {
 	if fun == nil {
 		return
 	}
@@ -33,7 +64,8 @@ func (runtimeCtx *RuntimeContextBehavior) RangeEntities(fun func(entity Entity) 
 	})
 }
 
-func (runtimeCtx *RuntimeContextBehavior) ReverseRangeEntities(fun func(entity Entity) bool) {
+// ReverseRangeEntities ...
+func (runtimeCtx *_RuntimeContextBehavior) ReverseRangeEntities(fun func(entity Entity) bool) {
 	if fun == nil {
 		return
 	}
@@ -43,7 +75,8 @@ func (runtimeCtx *RuntimeContextBehavior) ReverseRangeEntities(fun func(entity E
 	})
 }
 
-func (runtimeCtx *RuntimeContextBehavior) AddEntity(entity Entity) {
+// AddEntity ...
+func (runtimeCtx *_RuntimeContextBehavior) AddEntity(entity Entity) {
 	if entity == nil {
 		panic("nil entity")
 	}
@@ -90,7 +123,8 @@ func (runtimeCtx *RuntimeContextBehavior) AddEntity(entity Entity) {
 	emitEventEntityMgrAddEntity[RuntimeContext](&runtimeCtx.eventEntityMgrAddEntity, runtimeCtx.opts.Inheritor.IFace, entity)
 }
 
-func (runtimeCtx *RuntimeContextBehavior) RemoveEntity(id uint64) {
+// RemoveEntity ...
+func (runtimeCtx *_RuntimeContextBehavior) RemoveEntity(id uint64) {
 	e, ok := runtimeCtx.entityMap[id]
 	if !ok {
 		return
@@ -122,37 +156,44 @@ func (runtimeCtx *RuntimeContextBehavior) RemoveEntity(id uint64) {
 	emitEventEntityMgrRemoveEntity[RuntimeContext](&runtimeCtx.eventEntityMgrRemoveEntity, runtimeCtx.opts.Inheritor.IFace, entity)
 }
 
-func (runtimeCtx *RuntimeContextBehavior) GetEntityCount() int {
+// GetEntityCount ...
+func (runtimeCtx *_RuntimeContextBehavior) GetEntityCount() int {
 	return runtimeCtx.entityList.Len()
 }
 
-func (runtimeCtx *RuntimeContextBehavior) EventEntityMgrAddEntity() IEvent {
+// EventEntityMgrAddEntity ...
+func (runtimeCtx *_RuntimeContextBehavior) EventEntityMgrAddEntity() IEvent {
 	return &runtimeCtx.eventEntityMgrAddEntity
 }
 
-func (runtimeCtx *RuntimeContextBehavior) EventEntityMgrRemoveEntity() IEvent {
+// EventEntityMgrRemoveEntity ...
+func (runtimeCtx *_RuntimeContextBehavior) EventEntityMgrRemoveEntity() IEvent {
 	return &runtimeCtx.eventEntityMgrRemoveEntity
 }
 
-func (runtimeCtx *RuntimeContextBehavior) EventEntityMgrEntityAddComponents() IEvent {
+// EventEntityMgrEntityAddComponents ...
+func (runtimeCtx *_RuntimeContextBehavior) EventEntityMgrEntityAddComponents() IEvent {
 	return &runtimeCtx.eventEntityMgrEntityAddComponents
 }
 
-func (runtimeCtx *RuntimeContextBehavior) EventEntityMgrEntityRemoveComponent() IEvent {
+// EventEntityMgrEntityRemoveComponent ...
+func (runtimeCtx *_RuntimeContextBehavior) EventEntityMgrEntityRemoveComponent() IEvent {
 	return &runtimeCtx.eventEntityMgrEntityRemoveComponent
 }
 
-func (runtimeCtx *RuntimeContextBehavior) eventEntityMgrNotifyECTreeRemoveEntity() IEvent {
+func (runtimeCtx *_RuntimeContextBehavior) eventEntityMgrNotifyECTreeRemoveEntity() IEvent {
 	return &runtimeCtx._eventEntityMgrNotifyECTreeRemoveEntity
 }
 
-func (runtimeCtx *RuntimeContextBehavior) OnCompMgrAddComponents(entity Entity, components []Component) {
+// OnCompMgrAddComponents ...
+func (runtimeCtx *_RuntimeContextBehavior) OnCompMgrAddComponents(entity Entity, components []Component) {
 	for i := range components {
 		components[i].setID(runtimeCtx.servCtx.genUID())
 	}
 	emitEventEntityMgrEntityAddComponents(&runtimeCtx.eventEntityMgrEntityAddComponents, runtimeCtx.opts.Inheritor.IFace, entity, components)
 }
 
-func (runtimeCtx *RuntimeContextBehavior) OnCompMgrRemoveComponent(entity Entity, component Component) {
+// OnCompMgrRemoveComponent ...
+func (runtimeCtx *_RuntimeContextBehavior) OnCompMgrRemoveComponent(entity Entity, component Component) {
 	emitEventEntityMgrEntityRemoveComponent(&runtimeCtx.eventEntityMgrEntityRemoveComponent, runtimeCtx.opts.Inheritor.IFace, entity, component)
 }

@@ -5,14 +5,32 @@ import (
 	"github.com/pangdogs/galaxy/core/container"
 )
 
+// IECTree EC树接口
 type IECTree interface {
+	// AddChild 子实体（Entity）加入父实体，在实体加入运行时上下文（Runtime Context）后调用，
+	//切换父实体时，先调用RemoveChild()离开旧父实体，在调用AddChild()加入新父实体，非线程安全
 	AddChild(parentID uint64, childID uint64) error
+
+	// RemoveChild 子实体（Entity）离开父实体，在实体从运行时上下文（Runtime Context）中删除前调用，
+	//切换父实体时，先调用RemoveChild()离开旧父实体，在调用AddChild()加入新父实体，非线程安全
 	RemoveChild(childID uint64)
+
+	// RangeChildren 遍历子实体（Entity），非线程安全
 	RangeChildren(parentID uint64, fun func(child Entity) bool)
+
+	// ReverseRangeChildren 反向遍历子实体（Entity），非线程安全
 	ReverseRangeChildren(parentID uint64, fun func(child Entity) bool)
+
+	// GetChildCount 获取子实体（Entity）数量，非线程安全
 	GetChildCount(parentID uint64) int
+
+	// GetParent 获取子实体（Entity）的父实体，非线程安全
 	GetParent(childID uint64) (Entity, bool)
+
+	// EventECTreeAddChild 事件：EC树中子实体加入父实体
 	EventECTreeAddChild() IEvent
+
+	// EventECTreeRemoveChild 事件：EC树中子实体离开父实体
 	EventECTreeRemoveChild() IEvent
 }
 
@@ -23,6 +41,9 @@ type _ECNode struct {
 	Removing        bool
 }
 
+// ECTree EC树，除了运行时上下文（Runtime Context）的主EC树以外，自己创建的EC树全部是对实体（Entity）的引用，我们称为EC引用树，
+//主要区别是，从主EC树中删除父实体会递归删除并销毁所有子实体，从EC引用树中删除父实体则仅会递归删除所有子实体。
+//同个实体可以同时加入多个EC引用树，这个特性可以实现一些特殊的需求。
 type ECTree struct {
 	runtimeCtx             RuntimeContext
 	masterTree             bool
@@ -33,14 +54,18 @@ type ECTree struct {
 	hook                   Hook
 }
 
+// Init 初始化EC树，非线程安全
 func (ecTree *ECTree) Init(runtimeCtx RuntimeContext) {
 	ecTree.init(runtimeCtx, false)
 }
 
+// Shut 销毁EC树，非线程安全
 func (ecTree *ECTree) Shut() {
 	if !ecTree.masterTree {
 		ecTree.hook.Unbind()
 	}
+	ecTree.eventECTreeAddChild.Close()
+	ecTree.eventECTreeRemoveChild.Close()
 }
 
 func (ecTree *ECTree) init(runtimeCtx RuntimeContext, masterTree bool) {
@@ -68,6 +93,8 @@ func (ecTree *ECTree) onEntityMgrNotifyECTreeRemoveEntity(runtimeCtx RuntimeCont
 	ecTree.RemoveChild(entity.GetID())
 }
 
+// AddChild 子实体（Entity）加入父实体，在实体加入运行时上下文（Runtime Context）后调用，
+//切换父实体时，先调用RemoveChild()离开旧父实体，在调用AddChild()加入新父实体，非线程安全
 func (ecTree *ECTree) AddChild(parentID uint64, childID uint64) error {
 	if parentID == childID {
 		return errors.New("parentID equal childID invalid")
@@ -112,6 +139,8 @@ func (ecTree *ECTree) AddChild(parentID uint64, childID uint64) error {
 	return nil
 }
 
+// RemoveChild 子实体（Entity）离开父实体，在实体从运行时上下文（Runtime Context）中删除前调用，
+//切换父实体时，先调用RemoveChild()离开旧父实体，在调用AddChild()加入新父实体，非线程安全
 func (ecTree *ECTree) RemoveChild(childID uint64) {
 	node, ok := ecTree.ecTree[childID]
 	if !ok {
@@ -148,6 +177,7 @@ func (ecTree *ECTree) RemoveChild(childID uint64) {
 	emitEventECTreeRemoveChild(ecTree.EventECTreeRemoveChild(), ecTree, node.Parent, child)
 }
 
+// RangeChildren 遍历子实体（Entity），非线程安全
 func (ecTree *ECTree) RangeChildren(parentID uint64, fun func(child Entity) bool) {
 	if fun == nil {
 		return
@@ -163,6 +193,7 @@ func (ecTree *ECTree) RangeChildren(parentID uint64, fun func(child Entity) bool
 	})
 }
 
+// ReverseRangeChildren 反向遍历子实体（Entity），非线程安全
 func (ecTree *ECTree) ReverseRangeChildren(parentID uint64, fun func(child Entity) bool) {
 	if fun == nil {
 		return
@@ -178,6 +209,7 @@ func (ecTree *ECTree) ReverseRangeChildren(parentID uint64, fun func(child Entit
 	})
 }
 
+// GetChildCount 获取子实体（Entity）数量，非线程安全
 func (ecTree *ECTree) GetChildCount(parentID uint64) int {
 	node, ok := ecTree.ecTree[parentID]
 	if !ok || node.Children == nil {
@@ -187,6 +219,7 @@ func (ecTree *ECTree) GetChildCount(parentID uint64) int {
 	return node.Children.Len()
 }
 
+// GetParent 获取子实体（Entity）的父实体，非线程安全
 func (ecTree *ECTree) GetParent(childID uint64) (Entity, bool) {
 	node, ok := ecTree.ecTree[childID]
 	if !ok {
@@ -196,10 +229,12 @@ func (ecTree *ECTree) GetParent(childID uint64) (Entity, bool) {
 	return node.Parent, node.Parent != nil
 }
 
+// EventECTreeAddChild 事件：EC树中子实体加入父实体
 func (ecTree *ECTree) EventECTreeAddChild() IEvent {
 	return &ecTree.eventECTreeAddChild
 }
 
+// EventECTreeRemoveChild 事件：EC树中子实体离开父实体
 func (ecTree *ECTree) EventECTreeRemoveChild() IEvent {
 	return &ecTree.eventECTreeRemoveChild
 }

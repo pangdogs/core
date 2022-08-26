@@ -4,6 +4,7 @@ import (
 	"time"
 )
 
+// Frame ...
 type Frame interface {
 	GetTargetFPS() float32
 	GetCurFPS() float32
@@ -25,6 +26,7 @@ type Frame interface {
 	updateEnd()
 }
 
+// NewFrame ...
 func NewFrame(targetFPS float32, totalFrames uint64, blink bool) Frame {
 	frame := &_Frame{}
 	frame.init(targetFPS, totalFrames, blink)
@@ -64,18 +66,22 @@ func (frame *_Frame) init(targetFPS float32, totalFrames uint64, blink bool) {
 	}
 }
 
+// GetTargetFPS ...
 func (frame *_Frame) GetTargetFPS() float32 {
 	return frame.targetFPS
 }
 
+// GetCurFPS ...
 func (frame *_Frame) GetCurFPS() float32 {
 	return frame.curFPS
 }
 
+// GetTotalFrames ...
 func (frame *_Frame) GetTotalFrames() uint64 {
 	return frame.totalFrames
 }
 
+// GetCurFrames ...
 func (frame *_Frame) GetCurFrames() uint64 {
 	return frame.curFrames
 }
@@ -84,30 +90,37 @@ func (frame *_Frame) setCurFrames(v uint64) {
 	frame.curFrames = v
 }
 
+// Blink ...
 func (frame *_Frame) Blink() bool {
 	return frame.blink
 }
 
+// GetRunningBeginTime ...
 func (frame *_Frame) GetRunningBeginTime() time.Time {
 	return frame.runningBeginTime
 }
 
+// GetRunningElapseTime ...
 func (frame *_Frame) GetRunningElapseTime() time.Duration {
 	return frame.runningElapseTime
 }
 
+// GetFrameBeginTime ...
 func (frame *_Frame) GetFrameBeginTime() time.Time {
 	return frame.frameBeginTime
 }
 
+// GetLastFrameElapseTime ...
 func (frame *_Frame) GetLastFrameElapseTime() time.Duration {
 	return frame.lastFrameElapseTime
 }
 
+// GetUpdateBeginTime ...
 func (frame *_Frame) GetUpdateBeginTime() time.Time {
 	return frame.updateBeginTime
 }
 
+// GetLastUpdateElapseTime ...
 func (frame *_Frame) GetLastUpdateElapseTime() time.Duration {
 	return frame.lastUpdateElapseTime
 }

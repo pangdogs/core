@@ -2,16 +2,17 @@ package core
 
 import "github.com/pangdogs/galaxy/core/container"
 
+// RuntimeContext ...
 type RuntimeContext interface {
 	container.GC
 	container.GCCollector
 	Context
 	_RunnableMark
-	EntityMgr
-	EntityMgrEvents
-	EntityReverseQuery
-	EntityCountQuery
-	SafeCall
+	_EntityMgr
+	_EntityMgrEvents
+	_EntityReverseQuery
+	_EntityCountQuery
+	_SafeCall
 	init(servCtx ServiceContext, opts *RuntimeContextOptions)
 	getOptions() *RuntimeContextOptions
 	GetServiceCtx() ServiceContext
@@ -20,18 +21,22 @@ type RuntimeContext interface {
 	GetECTree() IECTree
 }
 
+// RuntimeContextGetOptions ...
 func RuntimeContextGetOptions(runtimeCtx RuntimeContext) RuntimeContextOptions {
 	return *runtimeCtx.getOptions()
 }
 
+// RuntimeContextGetInheritor ...
 func RuntimeContextGetInheritor(runtimeCtx RuntimeContext) Face[RuntimeContext] {
 	return runtimeCtx.getOptions().Inheritor
 }
 
+// RuntimeContextGetInheritorIFace ...
 func RuntimeContextGetInheritorIFace[T any](runtimeCtx RuntimeContext) T {
 	return Cache2IFace[T](runtimeCtx.getOptions().Inheritor.Cache)
 }
 
+// NewRuntimeContext ...
 func NewRuntimeContext(servCtx ServiceContext, optFuncs ...NewRuntimeContextOptionFunc) RuntimeContext {
 	opts := &RuntimeContextOptions{}
 	NewRuntimeContextOption.Default()(opts)
@@ -45,7 +50,7 @@ func NewRuntimeContext(servCtx ServiceContext, optFuncs ...NewRuntimeContextOpti
 		return opts.Inheritor.IFace
 	}
 
-	runtimeCtx := &RuntimeContextBehavior{}
+	runtimeCtx := &_RuntimeContextBehavior{}
 	runtimeCtx.init(servCtx, opts)
 
 	return runtimeCtx.opts.Inheritor.IFace
@@ -56,7 +61,7 @@ type _RuntimeCtxEntityInfo struct {
 	Hooks   [2]Hook
 }
 
-type RuntimeContextBehavior struct {
+type _RuntimeContextBehavior struct {
 	_ContextBehavior
 	_RunnableMarkBehavior
 	opts                                    RuntimeContextOptions
@@ -75,18 +80,21 @@ type RuntimeContextBehavior struct {
 	gcList                                  []container.GC
 }
 
-func (runtimeCtx *RuntimeContextBehavior) GC() {
+// GC ...
+func (runtimeCtx *_RuntimeContextBehavior) GC() {
 	for i := range runtimeCtx.gcList {
 		runtimeCtx.gcList[i].GC()
 	}
 	runtimeCtx.gcList = runtimeCtx.gcList[:0]
 }
 
-func (runtimeCtx *RuntimeContextBehavior) NeedGC() bool {
+// NeedGC ...
+func (runtimeCtx *_RuntimeContextBehavior) NeedGC() bool {
 	return len(runtimeCtx.gcList) > 0
 }
 
-func (runtimeCtx *RuntimeContextBehavior) CollectGC(gc container.GC) {
+// CollectGC ...
+func (runtimeCtx *_RuntimeContextBehavior) CollectGC(gc container.GC) {
 	if gc == nil || !gc.NeedGC() {
 		return
 	}
@@ -94,7 +102,7 @@ func (runtimeCtx *RuntimeContextBehavior) CollectGC(gc container.GC) {
 	runtimeCtx.gcList = append(runtimeCtx.gcList, gc)
 }
 
-func (runtimeCtx *RuntimeContextBehavior) init(servCtx ServiceContext, opts *RuntimeContextOptions) {
+func (runtimeCtx *_RuntimeContextBehavior) init(servCtx ServiceContext, opts *RuntimeContextOptions) {
 	if servCtx == nil {
 		panic("nil servCtx")
 	}
@@ -125,22 +133,25 @@ func (runtimeCtx *RuntimeContextBehavior) init(servCtx ServiceContext, opts *Run
 	runtimeCtx.ecTree.init(runtimeCtx.opts.Inheritor.IFace, true)
 }
 
-func (runtimeCtx *RuntimeContextBehavior) getOptions() *RuntimeContextOptions {
+func (runtimeCtx *_RuntimeContextBehavior) getOptions() *RuntimeContextOptions {
 	return &runtimeCtx.opts
 }
 
-func (runtimeCtx *RuntimeContextBehavior) GetServiceCtx() ServiceContext {
+// GetServiceCtx ...
+func (runtimeCtx *_RuntimeContextBehavior) GetServiceCtx() ServiceContext {
 	return runtimeCtx.servCtx
 }
 
-func (runtimeCtx *RuntimeContextBehavior) setFrame(frame Frame) {
+func (runtimeCtx *_RuntimeContextBehavior) setFrame(frame Frame) {
 	runtimeCtx.frame = frame
 }
 
-func (runtimeCtx *RuntimeContextBehavior) GetFrame() Frame {
+// GetFrame ...
+func (runtimeCtx *_RuntimeContextBehavior) GetFrame() Frame {
 	return runtimeCtx.frame
 }
 
-func (runtimeCtx *RuntimeContextBehavior) GetECTree() IECTree {
+// GetECTree ...
+func (runtimeCtx *_RuntimeContextBehavior) GetECTree() IECTree {
 	return &runtimeCtx.ecTree
 }

@@ -5,6 +5,16 @@ import (
 	"github.com/pangdogs/galaxy/core/container"
 )
 
+// _ComponentMgrEvents 组件管理器事件表
+type _ComponentMgrEvents interface {
+	// EventCompMgrAddComponents 事件：实体的组件管理器加入一些组件
+	EventCompMgrAddComponents() IEvent
+
+	// EventCompMgrRemoveComponent 事件：实体的组件管理器删除组件
+	EventCompMgrRemoveComponent() IEvent
+}
+
+// GetComponent 使用名称查询组件（Component），一般情况下名称指组件接口名称，也可以自定义名称，同个名称指向多个组件时，返回首个组件，非线程安全
 func (entity *EntityBehavior) GetComponent(name string) Component {
 	if e, ok := entity.getComponentElement(name); ok {
 		comp := Cache2IFace[Component](e.Value.Cache)
@@ -14,6 +24,7 @@ func (entity *EntityBehavior) GetComponent(name string) Component {
 	return nil
 }
 
+// GetComponentByID 使用组件（Component）运行时ID查询组件，非线程安全
 func (entity *EntityBehavior) GetComponentByID(id uint64) Component {
 	if e, ok := entity.getComponentElementByID(id); ok {
 		comp := Cache2IFace[Component](e.Value.Cache)
@@ -23,6 +34,7 @@ func (entity *EntityBehavior) GetComponentByID(id uint64) Component {
 	return nil
 }
 
+// GetComponents 使用名称查询所有指向的组件（Component），非线程安全
 func (entity *EntityBehavior) GetComponents(name string) []Component {
 	if e, ok := entity.getComponentElement(name); ok {
 		var components []Component
@@ -42,6 +54,7 @@ func (entity *EntityBehavior) GetComponents(name string) []Component {
 	return nil
 }
 
+// RangeComponents 遍历所有组件，非线程安全
 func (entity *EntityBehavior) RangeComponents(fun func(component Component) bool) {
 	if fun == nil {
 		return
@@ -53,6 +66,7 @@ func (entity *EntityBehavior) RangeComponents(fun func(component Component) bool
 	})
 }
 
+// AddComponents 使用同个名称添加多个组件（Component），一般情况下名称指组件接口名称，也可以自定义名称，非线程安全
 func (entity *EntityBehavior) AddComponents(name string, components []Component) error {
 	for i := range components {
 		if err := entity.addSingleComponent(name, components[i]); err != nil {
@@ -64,6 +78,7 @@ func (entity *EntityBehavior) AddComponents(name string, components []Component)
 	return nil
 }
 
+// AddComponent 添加单个组件（Component），因为同个名称可以指向多个组件，所有名称指向的组件已存在时，不会返回错误，非线程安全
 func (entity *EntityBehavior) AddComponent(name string, component Component) error {
 	if err := entity.addSingleComponent(name, component); err != nil {
 		return err
@@ -73,6 +88,7 @@ func (entity *EntityBehavior) AddComponent(name string, component Component) err
 	return nil
 }
 
+// RemoveComponent 删除名称指向的组件（Component），会删除同个名称指向的多个组件，非线程安全
 func (entity *EntityBehavior) RemoveComponent(name string) {
 	e, ok := entity.getComponentElement(name)
 	if !ok {
@@ -94,6 +110,7 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 	}, e)
 }
 
+// RemoveComponentByID 使用组件（Component）运行时ID删除组件，非线程安全
 func (entity *EntityBehavior) RemoveComponentByID(id uint64) {
 	e, ok := entity.getComponentElementByID(id)
 	if !ok {
@@ -108,10 +125,12 @@ func (entity *EntityBehavior) RemoveComponentByID(id uint64) {
 	emitEventCompMgrRemoveComponent(&entity.eventCompMgrRemoveComponent, entity.opts.Inheritor.IFace, Cache2IFace[Component](e.Value.Cache))
 }
 
+// EventCompMgrAddComponents 事件：实体的组件管理器加入一些组件
 func (entity *EntityBehavior) EventCompMgrAddComponents() IEvent {
 	return &entity.eventCompMgrAddComponents
 }
 
+// EventCompMgrRemoveComponent 事件：实体的组件管理器删除组件
 func (entity *EntityBehavior) EventCompMgrRemoveComponent() IEvent {
 	return &entity.eventCompMgrRemoveComponent
 }

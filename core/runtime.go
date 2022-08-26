@@ -4,28 +4,33 @@ import (
 	"github.com/pangdogs/galaxy/core/container"
 )
 
+// Runtime ...
 type Runtime interface {
 	container.GC
-	Runnable
+	_Runnable
 	init(runtimeCtx RuntimeContext, opts *RuntimeOptions)
 	getOptions() *RuntimeOptions
 	GetID() uint64
 	GetRuntimeCtx() RuntimeContext
 }
 
+// RuntimeGetOptions ...
 func RuntimeGetOptions(runtime Runtime) RuntimeOptions {
 	return *runtime.getOptions()
 }
 
+// RuntimeGetInheritor ...
 func RuntimeGetInheritor(runtime Runtime) Face[Runtime] {
 	return runtime.getOptions().Inheritor
 }
 
+// RuntimeGetInheritorIFace ...
 func RuntimeGetInheritorIFace[T any](runtime Runtime) T {
 	return Cache2IFace[T](runtime.getOptions().Inheritor.Cache)
 }
 
-func NewRuntime(runtimeCtx RuntimeContext, optFuncs ...NewRuntimeOptionFunc) Runtime {
+// NewRuntime ...
+func NewRuntime(runtimeCtx RuntimeContext, optFuncs ..._NewRuntimeOptionFunc) Runtime {
 	opts := &RuntimeOptions{}
 	NewRuntimeOption.Default()(opts)
 
@@ -38,13 +43,13 @@ func NewRuntime(runtimeCtx RuntimeContext, optFuncs ...NewRuntimeOptionFunc) Run
 		return opts.Inheritor.IFace
 	}
 
-	runtime := &RuntimeBehavior{}
+	runtime := &_RuntimeBehavior{}
 	runtime.init(runtimeCtx, opts)
 
 	return runtime.opts.Inheritor.IFace
 }
 
-type RuntimeBehavior struct {
+type _RuntimeBehavior struct {
 	id              uint64
 	opts            RuntimeOptions
 	ctx             RuntimeContext
@@ -54,20 +59,23 @@ type RuntimeBehavior struct {
 	eventLateUpdate Event
 }
 
-func (runtime *RuntimeBehavior) GC() {
+// GC ...
+func (runtime *_RuntimeBehavior) GC() {
 	runtime.ctx.GC()
 	runtime.eventUpdate.GC()
 	runtime.eventLateUpdate.GC()
 }
 
-func (runtime *RuntimeBehavior) NeedGC() bool {
+// NeedGC ...
+func (runtime *_RuntimeBehavior) NeedGC() bool {
 	return true
 }
 
-func (runtime *RuntimeBehavior) CollectGC(gc container.GC) {
+// CollectGC ...
+func (runtime *_RuntimeBehavior) CollectGC(gc container.GC) {
 }
 
-func (runtime *RuntimeBehavior) init(runtimeCtx RuntimeContext, opts *RuntimeOptions) {
+func (runtime *_RuntimeBehavior) init(runtimeCtx RuntimeContext, opts *RuntimeOptions) {
 	if runtimeCtx == nil {
 		panic("nil runtimeCtx")
 	}
@@ -94,49 +102,55 @@ func (runtime *RuntimeBehavior) init(runtimeCtx RuntimeContext, opts *RuntimeOpt
 	}
 }
 
-func (runtime *RuntimeBehavior) getOptions() *RuntimeOptions {
+func (runtime *_RuntimeBehavior) getOptions() *RuntimeOptions {
 	return &runtime.opts
 }
 
-func (runtime *RuntimeBehavior) GetID() uint64 {
+// GetID ...
+func (runtime *_RuntimeBehavior) GetID() uint64 {
 	return runtime.id
 }
 
-func (runtime *RuntimeBehavior) GetRuntimeCtx() RuntimeContext {
+// GetRuntimeCtx ...
+func (runtime *_RuntimeBehavior) GetRuntimeCtx() RuntimeContext {
 	return runtime.ctx
 }
 
-func (runtime *RuntimeBehavior) OnEntityMgrAddEntity(runtimeCtx RuntimeContext, entity Entity) {
+// OnEntityMgrAddEntity ...
+func (runtime *_RuntimeBehavior) OnEntityMgrAddEntity(runtimeCtx RuntimeContext, entity Entity) {
 	runtime.initEntity(entity)
 	runtime.connectEntity(entity)
 }
 
-func (runtime *RuntimeBehavior) OnEntityMgrRemoveEntity(runtimeCtx RuntimeContext, entity Entity) {
+// OnEntityMgrRemoveEntity ...
+func (runtime *_RuntimeBehavior) OnEntityMgrRemoveEntity(runtimeCtx RuntimeContext, entity Entity) {
 	runtime.disconnectEntity(entity)
 	runtime.shutEntity(entity)
 }
 
-func (runtime *RuntimeBehavior) OnEntityMgrEntityAddComponents(runtimeCtx RuntimeContext, entity Entity, components []Component) {
+// OnEntityMgrEntityAddComponents ...
+func (runtime *_RuntimeBehavior) OnEntityMgrEntityAddComponents(runtimeCtx RuntimeContext, entity Entity, components []Component) {
 	runtime.addComponents(components)
 }
 
-func (runtime *RuntimeBehavior) OnEntityMgrEntityRemoveComponent(runtimeCtx RuntimeContext, entity Entity, component Component) {
+// OnEntityMgrEntityRemoveComponent ...
+func (runtime *_RuntimeBehavior) OnEntityMgrEntityRemoveComponent(runtimeCtx RuntimeContext, entity Entity, component Component) {
 	runtime.removeComponent(component)
 }
 
-func (runtime *RuntimeBehavior) onEntityDestroySelf(entity Entity) {
+func (runtime *_RuntimeBehavior) onEntityDestroySelf(entity Entity) {
 	runtime.ctx.RemoveEntity(entity.GetID())
 }
 
-func (runtime *RuntimeBehavior) onComponentDestroySelf(comp Component) {
+func (runtime *_RuntimeBehavior) onComponentDestroySelf(comp Component) {
 	comp.GetEntity().RemoveComponentByID(comp.GetID())
 }
 
-func (runtime *RuntimeBehavior) initEntity(entity Entity) {
+func (runtime *_RuntimeBehavior) initEntity(entity Entity) {
 	entity.setInitialing(true)
 	defer entity.setInitialing(false)
 
-	if entityInit, ok := entity.(EntityInit); ok {
+	if entityInit, ok := entity.(_EntityInit); ok {
 		entityInit.Init()
 	}
 
@@ -150,7 +164,7 @@ func (runtime *RuntimeBehavior) initEntity(entity Entity) {
 			return true
 		}
 
-		if compAwake, ok := comp.(ComponentAwake); ok {
+		if compAwake, ok := comp.(_ComponentAwake); ok {
 			compAwake.Awake()
 		}
 
@@ -162,44 +176,44 @@ func (runtime *RuntimeBehavior) initEntity(entity Entity) {
 			return true
 		}
 
-		if compStart, ok := comp.(ComponentStart); ok {
+		if compStart, ok := comp.(_ComponentStart); ok {
 			compStart.Start()
 		}
 
 		return true
 	})
 
-	if entityInitFin, ok := entity.(EntityInitFin); ok {
+	if entityInitFin, ok := entity.(_EntityInitFin); ok {
 		entityInitFin.InitFin()
 	}
 }
 
-func (runtime *RuntimeBehavior) shutEntity(entity Entity) {
-	if entityShut, ok := entity.(EntityShut); ok {
+func (runtime *_RuntimeBehavior) shutEntity(entity Entity) {
+	if entityShut, ok := entity.(_EntityShut); ok {
 		entityShut.Shut()
 	}
 
 	entity.RangeComponents(func(comp Component) bool {
-		if compShut, ok := comp.(ComponentShut); ok {
+		if compShut, ok := comp.(_ComponentShut); ok {
 			compShut.Shut()
 		}
 		return true
 	})
 
-	if entityShutFin, ok := entity.(EntityShutFin); ok {
+	if entityShutFin, ok := entity.(_EntityShutFin); ok {
 		entityShutFin.ShutFin()
 	}
 }
 
-func (runtime *RuntimeBehavior) connectEntity(entity Entity) {
+func (runtime *_RuntimeBehavior) connectEntity(entity Entity) {
 	var hooks [3]Hook
 
-	if entityUpdate, ok := entity.(EntityUpdate); ok {
-		hooks[0] = BindEvent[EntityUpdate](&runtime.eventUpdate, entityUpdate)
+	if entityUpdate, ok := entity.(_EntityUpdate); ok {
+		hooks[0] = BindEvent[_EntityUpdate](&runtime.eventUpdate, entityUpdate)
 	}
 
-	if entityLateUpdate, ok := entity.(EntityLateUpdate); ok {
-		hooks[1] = BindEvent[EntityLateUpdate](&runtime.eventLateUpdate, entityLateUpdate)
+	if entityLateUpdate, ok := entity.(_EntityLateUpdate); ok {
+		hooks[1] = BindEvent[_EntityLateUpdate](&runtime.eventLateUpdate, entityLateUpdate)
 	}
 
 	hooks[2] = BindEvent[eventEntityDestroySelf](entity.eventEntityDestroySelf(), runtime)
@@ -214,7 +228,7 @@ func (runtime *RuntimeBehavior) connectEntity(entity Entity) {
 	})
 }
 
-func (runtime *RuntimeBehavior) disconnectEntity(entity Entity) {
+func (runtime *_RuntimeBehavior) disconnectEntity(entity Entity) {
 	entity.RangeComponents(func(comp Component) bool {
 		runtime.disconnectComponent(comp)
 		return true
@@ -230,15 +244,15 @@ func (runtime *RuntimeBehavior) disconnectEntity(entity Entity) {
 	}
 }
 
-func (runtime *RuntimeBehavior) addComponents(components []Component) {
+func (runtime *_RuntimeBehavior) addComponents(components []Component) {
 	for i := range components {
-		if compAwake, ok := components[i].(ComponentAwake); ok {
+		if compAwake, ok := components[i].(_ComponentAwake); ok {
 			compAwake.Awake()
 		}
 	}
 
 	for i := range components {
-		if compStart, ok := components[i].(ComponentStart); ok {
+		if compStart, ok := components[i].(_ComponentStart); ok {
 			compStart.Start()
 		}
 	}
@@ -248,23 +262,23 @@ func (runtime *RuntimeBehavior) addComponents(components []Component) {
 	}
 }
 
-func (runtime *RuntimeBehavior) removeComponent(component Component) {
+func (runtime *_RuntimeBehavior) removeComponent(component Component) {
 	runtime.disconnectComponent(component)
 
-	if compShut, ok := component.(ComponentShut); ok {
+	if compShut, ok := component.(_ComponentShut); ok {
 		compShut.Shut()
 	}
 }
 
-func (runtime *RuntimeBehavior) connectComponent(comp Component) {
+func (runtime *_RuntimeBehavior) connectComponent(comp Component) {
 	var hooks [3]Hook
 
-	if compUpdate, ok := comp.(ComponentUpdate); ok {
-		hooks[0] = BindEvent[ComponentUpdate](&runtime.eventUpdate, compUpdate)
+	if compUpdate, ok := comp.(_ComponentUpdate); ok {
+		hooks[0] = BindEvent[_ComponentUpdate](&runtime.eventUpdate, compUpdate)
 	}
 
-	if compLateUpdate, ok := comp.(ComponentLateUpdate); ok {
-		hooks[1] = BindEvent[ComponentLateUpdate](&runtime.eventLateUpdate, compLateUpdate)
+	if compLateUpdate, ok := comp.(_ComponentLateUpdate); ok {
+		hooks[1] = BindEvent[_ComponentLateUpdate](&runtime.eventLateUpdate, compLateUpdate)
 	}
 
 	hooks[2] = BindEvent[eventComponentDestroySelf](comp.eventComponentDestroySelf(), runtime)
@@ -272,7 +286,7 @@ func (runtime *RuntimeBehavior) connectComponent(comp Component) {
 	runtime.hooksMap[comp.GetID()] = hooks
 }
 
-func (runtime *RuntimeBehavior) disconnectComponent(comp Component) {
+func (runtime *_RuntimeBehavior) disconnectComponent(comp Component) {
 	hooks, ok := runtime.hooksMap[comp.GetID()]
 	if ok {
 		delete(runtime.hooksMap, comp.GetID())

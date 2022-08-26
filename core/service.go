@@ -1,24 +1,29 @@
 package core
 
+// Service ...
 type Service interface {
-	Runnable
+	_Runnable
 	init(ctx ServiceContext, opts *ServiceOptions)
 	getOptions() *ServiceOptions
 	GetContext() ServiceContext
 }
 
+// ServiceGetOptions ...
 func ServiceGetOptions(serv Service) ServiceOptions {
 	return *serv.getOptions()
 }
 
+// ServiceGetInheritor ...
 func ServiceGetInheritor(serv Service) Face[Service] {
 	return serv.getOptions().Inheritor
 }
 
+// ServiceGetInheritorIFace ...
 func ServiceGetInheritorIFace[T any](serv Service) T {
 	return Cache2IFace[T](serv.getOptions().Inheritor.Cache)
 }
 
+// NewService ...
 func NewService(servCtx ServiceContext, optFuncs ...NewServiceOptionFunc) Service {
 	opts := &ServiceOptions{}
 	NewServiceOption.Default()(opts)
@@ -32,18 +37,18 @@ func NewService(servCtx ServiceContext, optFuncs ...NewServiceOptionFunc) Servic
 		return opts.Inheritor.IFace
 	}
 
-	serv := &ServiceBehavior{}
+	serv := &_ServiceBehavior{}
 	serv.init(servCtx, opts)
 
 	return serv.opts.Inheritor.IFace
 }
 
-type ServiceBehavior struct {
+type _ServiceBehavior struct {
 	opts ServiceOptions
 	ctx  ServiceContext
 }
 
-func (serv *ServiceBehavior) init(servCtx ServiceContext, opts *ServiceOptions) {
+func (serv *_ServiceBehavior) init(servCtx ServiceContext, opts *ServiceOptions) {
 	if servCtx == nil {
 		panic("nil servCtx")
 	}
@@ -61,10 +66,11 @@ func (serv *ServiceBehavior) init(servCtx ServiceContext, opts *ServiceOptions) 
 	serv.ctx = servCtx
 }
 
-func (serv *ServiceBehavior) getOptions() *ServiceOptions {
+func (serv *_ServiceBehavior) getOptions() *ServiceOptions {
 	return &serv.opts
 }
 
-func (serv *ServiceBehavior) GetContext() ServiceContext {
+// GetContext ...
+func (serv *_ServiceBehavior) GetContext() ServiceContext {
 	return serv.ctx
 }

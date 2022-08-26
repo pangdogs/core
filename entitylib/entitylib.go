@@ -1,3 +1,4 @@
+// Package entitylib
 package entitylib
 
 import (
