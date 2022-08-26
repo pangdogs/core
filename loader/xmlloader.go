@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 )
 
-// XmlLoader XML格式原型配置加载器
+// XmlLoader XML格式配置加载器
 type XmlLoader[T any] struct {
 	config T
 }

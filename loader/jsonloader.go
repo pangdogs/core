@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 )
 
-// JsonLoader Json格式原型配置加载器
+// JsonLoader Json格式配置加载器
 type JsonLoader[T any] struct {
 	config T
 }

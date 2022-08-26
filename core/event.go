@@ -54,7 +54,7 @@ type Event struct {
 	inited         bool
 }
 
-// Init ...
+// Init 初始化事件
 func (event *Event) Init(autoRecover bool, reportError chan error, eventRecursion EventRecursion, hookCache *container.Cache[Hook], gcCollector container.GCCollector) {
 	if gcCollector == nil {
 		panic("nil gcCollector")
@@ -73,20 +73,20 @@ func (event *Event) Init(autoRecover bool, reportError chan error, eventRecursio
 	event.inited = true
 }
 
-// Open ...
+// Open 打开事件
 func (event *Event) Open() {
 	event.subscribers.SetGCCollector(event.gcCollector)
 	event.opened = true
 }
 
-// Close ...
+// Close 关闭事件
 func (event *Event) Close() {
 	event.subscribers.SetGCCollector(nil)
 	event.Clean()
 	event.opened = false
 }
 
-// Clean ...
+// Clean 清除全部订阅者
 func (event *Event) Clean() {
 	event.subscribers.Traversal(func(e *container.Element[Hook]) bool {
 		e.Value.Unbind()
@@ -94,17 +94,17 @@ func (event *Event) Clean() {
 	})
 }
 
-// GC ...
+// GC 执行GC
 func (event *Event) GC() {
 	event.subscribers.GC()
 }
 
-// NeedGC ...
+// NeedGC 是否需要GC
 func (event *Event) NeedGC() bool {
 	return event.subscribers.NeedGC()
 }
 
-// Emit ...
+// Emit 发送事件，一般情况下是在事件生成的代码中使用
 func (event *Event) Emit(fun func(delegate IFaceCache) bool) {
 	if fun == nil {
 		return
