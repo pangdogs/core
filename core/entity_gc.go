@@ -7,7 +7,7 @@ type _EntityBehaviorGC struct {
 	gcMark, gcCollected bool
 }
 
-// GC ...
+// GC GC
 func (egc *_EntityBehaviorGC) GC() {
 	if !egc.gcMark {
 		return
@@ -21,12 +21,12 @@ func (egc *_EntityBehaviorGC) GC() {
 	egc.eventCompMgrRemoveComponent.gc()
 }
 
-// NeedGC ...
+// NeedGC 是否需要GC
 func (egc *_EntityBehaviorGC) NeedGC() bool {
 	return egc.gcMark
 }
 
-// CollectGC ...
+// CollectGC 收集GC
 func (egc *_EntityBehaviorGC) CollectGC(gc container.GC) {
 	if gc == nil || !gc.NeedGC() {
 		return

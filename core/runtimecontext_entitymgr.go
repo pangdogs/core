@@ -5,21 +5,42 @@ import (
 	"github.com/pangdogs/galaxy/core/container"
 )
 
+// _RuntimeContextEntityMgr 运行时上下文（Runtime Context）的实体（Entity）管理器
 type _RuntimeContextEntityMgr interface {
+	// GetEntity 查询实体
 	GetEntity(id int64) (Entity, bool)
+
+	// RangeEntities 遍历所有实体
 	RangeEntities(func(entity Entity) bool)
+
+	// ReverseRangeEntities 反向遍历所有实体
 	ReverseRangeEntities(func(entity Entity) bool)
+
+	// GetEntityCount 获取实体数量
 	GetEntityCount() int
+
+	// AddEntity 添加实体
 	AddEntity(entity Entity)
+
+	// RemoveEntity 删除实体
 	RemoveEntity(id int64)
+
+	// EventEntityMgrAddEntity 事件：运行时上下文（Runtime Context）添加实体（Entity）
 	EventEntityMgrAddEntity() IEvent
+
+	// EventEntityMgrRemoveEntity 事件：运行时上下文（Runtime Context）删除实体（Entity）
 	EventEntityMgrRemoveEntity() IEvent
+
+	// EventEntityMgrEntityAddComponents 事件：运行时上下文（Runtime Context）中的实体（Entity）添加组件（Component）
 	EventEntityMgrEntityAddComponents() IEvent
+
+	// EventEntityMgrEntityRemoveComponent 事件：运行时上下文（Runtime Context）中的实体（Entity）删除组件（Component）
 	EventEntityMgrEntityRemoveComponent() IEvent
+
 	eventEntityMgrNotifyECTreeRemoveEntity() IEvent
 }
 
-// GetEntity ...
+// GetEntity 查询实体
 func (runtimeCtx *_RuntimeContextBehavior) GetEntity(id int64) (Entity, bool) {
 	e, ok := runtimeCtx.entityMap[id]
 	if !ok {
@@ -33,7 +54,7 @@ func (runtimeCtx *_RuntimeContextBehavior) GetEntity(id int64) (Entity, bool) {
 	return Cache2IFace[Entity](e.Element.Value.Cache), true
 }
 
-// RangeEntities ...
+// RangeEntities 遍历所有实体
 func (runtimeCtx *_RuntimeContextBehavior) RangeEntities(fun func(entity Entity) bool) {
 	if fun == nil {
 		return
@@ -44,7 +65,7 @@ func (runtimeCtx *_RuntimeContextBehavior) RangeEntities(fun func(entity Entity)
 	})
 }
 
-// ReverseRangeEntities ...
+// ReverseRangeEntities 反向遍历所有实体
 func (runtimeCtx *_RuntimeContextBehavior) ReverseRangeEntities(fun func(entity Entity) bool) {
 	if fun == nil {
 		return
@@ -55,7 +76,12 @@ func (runtimeCtx *_RuntimeContextBehavior) ReverseRangeEntities(fun func(entity 
 	})
 }
 
-// AddEntity ...
+// GetEntityCount 获取实体数量
+func (runtimeCtx *_RuntimeContextBehavior) GetEntityCount() int {
+	return runtimeCtx.entityList.Len()
+}
+
+// AddEntity 添加实体
 func (runtimeCtx *_RuntimeContextBehavior) AddEntity(entity Entity) {
 	if entity == nil {
 		panic("nil entity")
@@ -98,7 +124,7 @@ func (runtimeCtx *_RuntimeContextBehavior) AddEntity(entity Entity) {
 	emitEventEntityMgrAddEntity[RuntimeContext](&runtimeCtx.eventEntityMgrAddEntity, runtimeCtx.opts.Inheritor.IFace, entity)
 }
 
-// RemoveEntity ...
+// RemoveEntity 删除实体
 func (runtimeCtx *_RuntimeContextBehavior) RemoveEntity(id int64) {
 	e, ok := runtimeCtx.entityMap[id]
 	if !ok {
@@ -127,27 +153,22 @@ func (runtimeCtx *_RuntimeContextBehavior) RemoveEntity(id int64) {
 	emitEventEntityMgrRemoveEntity[RuntimeContext](&runtimeCtx.eventEntityMgrRemoveEntity, runtimeCtx.opts.Inheritor.IFace, entity)
 }
 
-// GetEntityCount ...
-func (runtimeCtx *_RuntimeContextBehavior) GetEntityCount() int {
-	return runtimeCtx.entityList.Len()
-}
-
-// EventEntityMgrAddEntity ...
+// EventEntityMgrAddEntity 事件：运行时上下文（Runtime Context）添加实体（Entity）
 func (runtimeCtx *_RuntimeContextBehavior) EventEntityMgrAddEntity() IEvent {
 	return &runtimeCtx.eventEntityMgrAddEntity
 }
 
-// EventEntityMgrRemoveEntity ...
+// EventEntityMgrRemoveEntity 事件：运行时上下文（Runtime Context）删除实体（Entity）
 func (runtimeCtx *_RuntimeContextBehavior) EventEntityMgrRemoveEntity() IEvent {
 	return &runtimeCtx.eventEntityMgrRemoveEntity
 }
 
-// EventEntityMgrEntityAddComponents ...
+// EventEntityMgrEntityAddComponents 事件：运行时上下文（Runtime Context）中的实体（Entity）添加组件（Component）
 func (runtimeCtx *_RuntimeContextBehavior) EventEntityMgrEntityAddComponents() IEvent {
 	return &runtimeCtx.eventEntityMgrEntityAddComponents
 }
 
-// EventEntityMgrEntityRemoveComponent ...
+// EventEntityMgrEntityRemoveComponent 事件：运行时上下文（Runtime Context）中的实体（Entity）删除组件（Component）
 func (runtimeCtx *_RuntimeContextBehavior) EventEntityMgrEntityRemoveComponent() IEvent {
 	return &runtimeCtx.eventEntityMgrEntityRemoveComponent
 }
@@ -156,7 +177,7 @@ func (runtimeCtx *_RuntimeContextBehavior) eventEntityMgrNotifyECTreeRemoveEntit
 	return &runtimeCtx._eventEntityMgrNotifyECTreeRemoveEntity
 }
 
-// OnCompMgrAddComponents ...
+// OnCompMgrAddComponents 事件回调：实体的组件管理器加入一些组件
 func (runtimeCtx *_RuntimeContextBehavior) OnCompMgrAddComponents(entity Entity, components []Component) {
 	for i := range components {
 		if components[i].GetID() <= 0 {
@@ -166,7 +187,7 @@ func (runtimeCtx *_RuntimeContextBehavior) OnCompMgrAddComponents(entity Entity,
 	emitEventEntityMgrEntityAddComponents(&runtimeCtx.eventEntityMgrEntityAddComponents, runtimeCtx.opts.Inheritor.IFace, entity, components)
 }
 
-// OnCompMgrRemoveComponent ...
+// OnCompMgrRemoveComponent 事件回调：实体的组件管理器删除组件
 func (runtimeCtx *_RuntimeContextBehavior) OnCompMgrRemoveComponent(entity Entity, component Component) {
 	emitEventEntityMgrEntityRemoveComponent(&runtimeCtx.eventEntityMgrEntityRemoveComponent, runtimeCtx.opts.Inheritor.IFace, entity, component)
 }

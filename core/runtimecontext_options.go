@@ -4,29 +4,28 @@ import (
 	"github.com/pangdogs/galaxy/core/container"
 )
 
-// NewRuntimeContextOption ...
-var NewRuntimeContextOption = &NewRuntimeContextOptions{}
-
-// RuntimeContextOptions ...
+// RuntimeContextOptions 创建运行时上下文（Runtime Context）的所有选项
 type RuntimeContextOptions struct {
-	Inheritor   Face[RuntimeContext]
-	ReportError chan error
-	StartedCallback,
-	StoppedCallback func(runtime Runtime)
-	FaceCache *container.Cache[FaceAny]
-	HookCache *container.Cache[Hook]
+	Inheritor       Face[RuntimeContext]      // 继承者，需要拓展运行时上下文自身功能时需要使用
+	ReportError     chan error                // panic时错误写入的error channel
+	StartedCallback func(runtime Runtime)     // 启动运行时回调函数
+	StoppedCallback func(runtime Runtime)     // 停止运行时回调函数
+	FaceCache       *container.Cache[FaceAny] // Face缓存，用于提高性能
+	HookCache       *container.Cache[Hook]    // Hook缓存，用于提高性能
 }
 
-// NewRuntimeContextOptionFunc ...
-type NewRuntimeContextOptionFunc func(o *RuntimeContextOptions)
+// RuntimeContextOptionSetter 运行时上下文（Runtime Context）选项设置器
+var RuntimeContextOptionSetter = &_RuntimeContextOptionSetter{}
 
-// NewRuntimeContextOptions ...
-type NewRuntimeContextOptions struct{}
+type _RuntimeContextOptionSetterFunc func(o *RuntimeContextOptions)
 
-// Default ...
-func (*NewRuntimeContextOptions) Default() NewRuntimeContextOptionFunc {
+type _RuntimeContextOptionSetter struct{}
+
+// Default 默认值
+func (*_RuntimeContextOptionSetter) Default() _RuntimeContextOptionSetterFunc {
 	return func(o *RuntimeContextOptions) {
 		o.Inheritor = Face[RuntimeContext]{}
+		o.ReportError = nil
 		o.StartedCallback = nil
 		o.StoppedCallback = nil
 		o.FaceCache = nil
@@ -34,43 +33,43 @@ func (*NewRuntimeContextOptions) Default() NewRuntimeContextOptionFunc {
 	}
 }
 
-// Inheritor ...
-func (*NewRuntimeContextOptions) Inheritor(v Face[RuntimeContext]) NewRuntimeContextOptionFunc {
+// Inheritor 继承者，需要拓展运行时上下文自身功能时需要使用
+func (*_RuntimeContextOptionSetter) Inheritor(v Face[RuntimeContext]) _RuntimeContextOptionSetterFunc {
 	return func(o *RuntimeContextOptions) {
 		o.Inheritor = v
 	}
 }
 
-// ReportError ...
-func (*NewRuntimeContextOptions) ReportError(v chan error) NewRuntimeContextOptionFunc {
+// ReportError panic时错误写入的error channel
+func (*_RuntimeContextOptionSetter) ReportError(v chan error) _RuntimeContextOptionSetterFunc {
 	return func(o *RuntimeContextOptions) {
 		o.ReportError = v
 	}
 }
 
-// StartFunc ...
-func (*NewRuntimeContextOptions) StartFunc(v func(rt Runtime)) NewRuntimeContextOptionFunc {
+// StartFunc 启动运行时回调函数
+func (*_RuntimeContextOptionSetter) StartFunc(v func(rt Runtime)) _RuntimeContextOptionSetterFunc {
 	return func(o *RuntimeContextOptions) {
 		o.StartedCallback = v
 	}
 }
 
-// StopFunc ...
-func (*NewRuntimeContextOptions) StopFunc(v func(rt Runtime)) NewRuntimeContextOptionFunc {
+// StopFunc 停止运行时回调函数
+func (*_RuntimeContextOptionSetter) StopFunc(v func(rt Runtime)) _RuntimeContextOptionSetterFunc {
 	return func(o *RuntimeContextOptions) {
 		o.StoppedCallback = v
 	}
 }
 
-// FaceCache ...
-func (*NewRuntimeContextOptions) FaceCache(v *container.Cache[FaceAny]) NewRuntimeContextOptionFunc {
+// FaceCache Face缓存，用于提高性能
+func (*_RuntimeContextOptionSetter) FaceCache(v *container.Cache[FaceAny]) _RuntimeContextOptionSetterFunc {
 	return func(o *RuntimeContextOptions) {
 		o.FaceCache = v
 	}
 }
 
-// HookCache ...
-func (*NewRuntimeContextOptions) HookCache(v *container.Cache[Hook]) NewRuntimeContextOptionFunc {
+// HookCache Hook缓存，用于提高性能
+func (*_RuntimeContextOptionSetter) HookCache(v *container.Cache[Hook]) _RuntimeContextOptionSetterFunc {
 	return func(o *RuntimeContextOptions) {
 		o.HookCache = v
 	}

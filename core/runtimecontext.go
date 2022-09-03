@@ -4,7 +4,7 @@ import (
 	"github.com/pangdogs/galaxy/core/container"
 )
 
-// RuntimeContext ...
+// RuntimeContext 运行时上下文接口
 type RuntimeContext interface {
 	container.GCCollector
 	_InnerGC
@@ -12,23 +12,32 @@ type RuntimeContext interface {
 	_RunnableMark
 	_RuntimeContextEntityMgr
 	_SafeCall
+
 	init(servCtx ServiceContext, opts *RuntimeContextOptions)
+
 	getOptions() *RuntimeContextOptions
+
+	// GetServiceCtx 获取服务上下文（Service Context）
 	GetServiceCtx() ServiceContext
+
 	setFrame(frame Frame)
+
+	// GetFrame 获取帧
 	GetFrame() Frame
+
+	// GetECTree 获取主EC树
 	GetECTree() IECTree
 }
 
-// RuntimeContextGetOptions ...
+// RuntimeContextGetOptions 获取运行时上下文创建选项，线程安全
 func RuntimeContextGetOptions(runtimeCtx RuntimeContext) RuntimeContextOptions {
 	return *runtimeCtx.getOptions()
 }
 
-// NewRuntimeContext ...
-func NewRuntimeContext(servCtx ServiceContext, optSetterFuncs ...NewRuntimeContextOptionFunc) RuntimeContext {
+// NewRuntimeContext 创建运行时上下文，线程安全
+func NewRuntimeContext(servCtx ServiceContext, optSetterFuncs ..._RuntimeContextOptionSetterFunc) RuntimeContext {
 	opts := RuntimeContextOptions{}
-	NewRuntimeContextOption.Default()(&opts)
+	RuntimeContextOptionSetter.Default()(&opts)
 
 	for i := range optSetterFuncs {
 		optSetterFuncs[i](&opts)
@@ -37,7 +46,7 @@ func NewRuntimeContext(servCtx ServiceContext, optSetterFuncs ...NewRuntimeConte
 	return NewRuntimeContextWithOpts(servCtx, opts)
 }
 
-// NewRuntimeContextWithOpts ...
+// NewRuntimeContextWithOpts 创建运行时上下文并传入参数，线程安全
 func NewRuntimeContextWithOpts(servCtx ServiceContext, opts RuntimeContextOptions) RuntimeContext {
 	if !opts.Inheritor.IsNil() {
 		opts.Inheritor.IFace.init(servCtx, &opts)
@@ -110,7 +119,7 @@ func (runtimeCtx *_RuntimeContextBehavior) getOptions() *RuntimeContextOptions {
 	return &runtimeCtx.opts
 }
 
-// GetServiceCtx ...
+// GetServiceCtx 获取服务上下文（Service Context）
 func (runtimeCtx *_RuntimeContextBehavior) GetServiceCtx() ServiceContext {
 	return runtimeCtx.servCtx
 }
@@ -119,12 +128,12 @@ func (runtimeCtx *_RuntimeContextBehavior) setFrame(frame Frame) {
 	runtimeCtx.frame = frame
 }
 
-// GetFrame ...
+// GetFrame 获取帧
 func (runtimeCtx *_RuntimeContextBehavior) GetFrame() Frame {
 	return runtimeCtx.frame
 }
 
-// GetECTree ...
+// GetECTree 获取主EC树
 func (runtimeCtx *_RuntimeContextBehavior) GetECTree() IECTree {
 	return &runtimeCtx.ecTree
 }

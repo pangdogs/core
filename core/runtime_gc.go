@@ -8,6 +8,6 @@ func (runtime *_RuntimeBehavior) gc() {
 	runtime.eventLateUpdate.gc()
 }
 
-// CollectGC ...
+// CollectGC 收集GC
 func (runtime *_RuntimeBehavior) CollectGC(gc container.GC) {
 }

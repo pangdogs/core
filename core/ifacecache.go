@@ -1,4 +1,3 @@
-// Package ifaceutil 接口处理工具包。
 package core
 
 import (

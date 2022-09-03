@@ -6,7 +6,7 @@ type _RuntimeContextBehaviorGC struct {
 	*_RuntimeContextBehavior
 }
 
-// GC ...
+// GC GC
 func (rgc *_RuntimeContextBehaviorGC) GC() {
 	for i := range rgc._RuntimeContextBehavior.gcList {
 		rgc._RuntimeContextBehavior.gcList[i].GC()
@@ -14,12 +14,12 @@ func (rgc *_RuntimeContextBehaviorGC) GC() {
 	rgc._RuntimeContextBehavior.gcList = rgc._RuntimeContextBehavior.gcList[:0]
 }
 
-// NeedGC ...
+// NeedGC 是否需要GC
 func (rgc *_RuntimeContextBehaviorGC) NeedGC() bool {
 	return len(rgc._RuntimeContextBehavior.gcList) > 0
 }
 
-// CollectGC ...
+// CollectGC 收集GC
 func (runtimeCtx *_RuntimeContextBehavior) CollectGC(gc container.GC) {
 	if gc == nil || !gc.NeedGC() {
 		return

@@ -1,19 +1,23 @@
 package core
 
-// Runtime 运行时
+// Runtime 运行时接口
 type Runtime interface {
 	_Runnable
+
 	init(runtimeCtx RuntimeContext, opts *RuntimeOptions)
+
 	getOptions() *RuntimeOptions
+
+	// GetRuntimeCtx 获取运行时上下文（Runtime Context），线程安全
 	GetRuntimeCtx() RuntimeContext
 }
 
-// RuntimeGetOptions ...
+// RuntimeGetOptions 获取运行时创建选项，线程安全
 func RuntimeGetOptions(runtime Runtime) RuntimeOptions {
 	return *runtime.getOptions()
 }
 
-// NewRuntime ...
+// NewRuntime 创建运行时，线程安全
 func NewRuntime(runtimeCtx RuntimeContext, optSetterFuncs ..._RuntimeOptionSetterFunc) Runtime {
 	opts := RuntimeOptions{}
 	RuntimeOptionSetter.Default()(&opts)
@@ -25,7 +29,7 @@ func NewRuntime(runtimeCtx RuntimeContext, optSetterFuncs ..._RuntimeOptionSette
 	return NewRuntimeWithOpts(runtimeCtx, opts)
 }
 
-// NewRuntimeWithOpts ...
+// NewRuntimeWithOpts 创建运行时并传入参数，线程安全
 func NewRuntimeWithOpts(runtimeCtx RuntimeContext, opts RuntimeOptions) Runtime {
 	if !opts.Inheritor.IsNil() {
 		opts.Inheritor.IFace.init(runtimeCtx, &opts)
@@ -77,29 +81,29 @@ func (runtime *_RuntimeBehavior) getOptions() *RuntimeOptions {
 	return &runtime.opts
 }
 
-// GetRuntimeCtx ...
+// GetRuntimeCtx 获取运行时上下文（Runtime Context），线程安全
 func (runtime *_RuntimeBehavior) GetRuntimeCtx() RuntimeContext {
 	return runtime.ctx
 }
 
-// OnEntityMgrAddEntity ...
+// OnEntityMgrAddEntity 事件回调：运行时上下文（Runtime Context）添加实体（Entity）
 func (runtime *_RuntimeBehavior) OnEntityMgrAddEntity(runtimeCtx RuntimeContext, entity Entity) {
 	runtime.initEntity(entity)
 	runtime.connectEntity(entity)
 }
 
-// OnEntityMgrRemoveEntity ...
+// OnEntityMgrRemoveEntity 事件回调：运行时上下文（Runtime Context）删除实体（Entity）
 func (runtime *_RuntimeBehavior) OnEntityMgrRemoveEntity(runtimeCtx RuntimeContext, entity Entity) {
 	runtime.disconnectEntity(entity)
 	runtime.shutEntity(entity)
 }
 
-// OnEntityMgrEntityAddComponents ...
+// OnEntityMgrEntityAddComponents 事件回调：运行时上下文（Runtime Context）中的实体（Entity）添加组件（Component）
 func (runtime *_RuntimeBehavior) OnEntityMgrEntityAddComponents(runtimeCtx RuntimeContext, entity Entity, components []Component) {
 	runtime.addComponents(components)
 }
 
-// OnEntityMgrEntityRemoveComponent ...
+// OnEntityMgrEntityRemoveComponent 事件回调：运行时上下文（Runtime Context）中的实体（Entity）删除组件（Component）
 func (runtime *_RuntimeBehavior) OnEntityMgrEntityRemoveComponent(runtimeCtx RuntimeContext, entity Entity, component Component) {
 	runtime.removeComponent(component)
 }

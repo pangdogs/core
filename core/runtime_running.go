@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-// Run ...
+// Run 运行，返回的channel用于线程同步，可以阻塞等待至运行结束
 func (runtime *_RuntimeBehavior) Run() <-chan struct{} {
 	if !runtime.ctx.markRunning() {
 		panic("runtime already running")
@@ -21,7 +21,7 @@ func (runtime *_RuntimeBehavior) Run() <-chan struct{} {
 	return shutChan
 }
 
-// Stop ...
+// Stop 停止
 func (runtime *_RuntimeBehavior) Stop() {
 	runtime.ctx.GetCancelFunc()()
 }

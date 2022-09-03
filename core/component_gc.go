@@ -7,7 +7,7 @@ type _ComponentBehaviorGC struct {
 	gcMark, gcCollected bool
 }
 
-// GC ...
+// GC GC
 func (cgc *_ComponentBehaviorGC) GC() {
 	if !cgc.gcMark {
 		return
@@ -18,12 +18,12 @@ func (cgc *_ComponentBehaviorGC) GC() {
 	cgc._eventComponentDestroySelf.gc()
 }
 
-// NeedGC ...
+// NeedGC 是否需要GC
 func (cgc *_ComponentBehaviorGC) NeedGC() bool {
 	return cgc.gcMark
 }
 
-// CollectGC ...
+// CollectGC 收集GC
 func (cgc *_ComponentBehaviorGC) CollectGC(gc container.GC) {
 	if gc == nil || !gc.NeedGC() {
 		return
