@@ -16,6 +16,7 @@ import (
 )
 
 func main() {
+	// 基础选项
 	corePackage := flag.String("core", "core", "银河（Galaxy）框架的核心部分包名")
 	eventRegexp := flag.String("regexp", "^[eE]vent.+", "匹配事件定义的正则表达式")
 	declFile := flag.String("decl", "", "定义事件的源文件（*.go）")

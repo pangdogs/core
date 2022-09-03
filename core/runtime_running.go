@@ -1,6 +1,8 @@
 package core
 
-import "time"
+import (
+	"time"
+)
 
 // Run ...
 func (runtime *_RuntimeBehavior) Run() <-chan struct{} {
@@ -25,8 +27,8 @@ func (runtime *_RuntimeBehavior) Stop() {
 }
 
 func (runtime *_RuntimeBehavior) running(shutChan chan struct{}) {
-	if parentCtx, ok := runtime.ctx.GetParentCtx().(Context); ok {
-		parentCtx.GetWaitGroup().Add(1)
+	if parentCtx, ok := runtime.ctx.GetParentCtx().(_Context); ok {
+		parentCtx.getWaitGroup().Add(1)
 	}
 
 	hooks := runtime.loopStarted()
@@ -34,11 +36,11 @@ func (runtime *_RuntimeBehavior) running(shutChan chan struct{}) {
 	defer func() {
 		runtime.loopStopped(hooks)
 
-		if parentCtx, ok := runtime.ctx.GetParentCtx().(Context); ok {
-			parentCtx.GetWaitGroup().Done()
+		if parentCtx, ok := runtime.ctx.GetParentCtx().(_Context); ok {
+			parentCtx.getWaitGroup().Done()
 		}
 
-		runtime.ctx.GetWaitGroup().Wait()
+		runtime.ctx.getWaitGroup().Wait()
 
 		runtime.ctx.markShutdown()
 		shutChan <- struct{}{}
@@ -74,13 +76,13 @@ func (runtime *_RuntimeBehavior) loopStarted() (hooks [4]Hook) {
 	hooks[3] = BindEvent[EventEntityMgrEntityRemoveComponent[RuntimeContext]](runtimeCtx.EventEntityMgrEntityRemoveComponent(), runtime)
 
 	runtimeCtx.RangeEntities(func(entity Entity) bool {
-		CallOuterNoRet(runtime.opts.EnableAutoRecover, runtimeCtx.GetReportError(), func() {
+		callOuterNoRet(runtime.opts.EnableAutoRecover, runtimeCtx.GetReportError(), func() {
 			runtime.OnEntityMgrAddEntity(runtimeCtx, entity)
 		})
 		return true
 	})
 
-	CallOuterNoRet(runtime.opts.EnableAutoRecover, runtimeCtx.GetReportError(), func() {
+	callOuterNoRet(runtime.opts.EnableAutoRecover, runtimeCtx.GetReportError(), func() {
 		if runtimeCtx.getOptions().StartedCallback != nil {
 			runtimeCtx.getOptions().StartedCallback(runtime.opts.Inheritor.IFace)
 		}
@@ -93,14 +95,14 @@ func (runtime *_RuntimeBehavior) loopStopped(hooks [4]Hook) {
 	runtimeCtx := runtime.ctx
 	frame := runtime.opts.Frame
 
-	CallOuterNoRet(runtime.opts.EnableAutoRecover, runtimeCtx.GetReportError(), func() {
+	callOuterNoRet(runtime.opts.EnableAutoRecover, runtimeCtx.GetReportError(), func() {
 		if runtimeCtx.getOptions().StoppedCallback != nil {
 			runtimeCtx.getOptions().StoppedCallback(runtime.opts.Inheritor.IFace)
 		}
 	})
 
 	runtimeCtx.ReverseRangeEntities(func(entity Entity) bool {
-		CallOuterNoRet(runtime.opts.EnableAutoRecover, runtimeCtx.GetReportError(), func() {
+		callOuterNoRet(runtime.opts.EnableAutoRecover, runtimeCtx.GetReportError(), func() {
 			runtime.OnEntityMgrRemoveEntity(runtimeCtx, entity)
 		})
 		return true
@@ -125,10 +127,10 @@ func (runtime *_RuntimeBehavior) loopNoFrame() {
 			if !ok {
 				return
 			}
-			CallOuterNoRet(runtime.opts.EnableAutoRecover, runtime.ctx.GetReportError(), process)
+			callOuterNoRet(runtime.opts.EnableAutoRecover, runtime.ctx.GetReportError(), process)
 
 		case <-gcTicker.C:
-			runtime.opts.Inheritor.IFace.GC()
+			runtime.gc()
 
 		case <-runtime.ctx.Done():
 			return
@@ -145,7 +147,7 @@ func (runtime *_RuntimeBehavior) loopNoFrameEnd() {
 			if !ok {
 				return
 			}
-			CallOuterNoRet(runtime.opts.EnableAutoRecover, runtime.ctx.GetReportError(), process)
+			callOuterNoRet(runtime.opts.EnableAutoRecover, runtime.ctx.GetReportError(), process)
 
 		default:
 			return
@@ -169,7 +171,7 @@ func (runtime *_RuntimeBehavior) loopWithFrame() {
 
 			select {
 			case <-updateTicker.C:
-				CallOuterNoRet(runtime.opts.EnableAutoRecover, runtime.ctx.GetReportError(), func() {
+				callOuterNoRet(runtime.opts.EnableAutoRecover, runtime.ctx.GetReportError(), func() {
 					timeoutTimer := time.NewTimer(runtime.opts.ProcessQueueTimeout)
 					defer timeoutTimer.Stop()
 
@@ -200,10 +202,10 @@ func (runtime *_RuntimeBehavior) loopWithFrame() {
 			if !ok {
 				return
 			}
-			CallOuterNoRet(runtime.opts.EnableAutoRecover, runtime.ctx.GetReportError(), process)
+			callOuterNoRet(runtime.opts.EnableAutoRecover, runtime.ctx.GetReportError(), process)
 
 		case <-gcTicker.C:
-			runtime.opts.Inheritor.IFace.GC()
+			runtime.gc()
 
 		case <-runtime.ctx.Done():
 			return
@@ -223,7 +225,7 @@ func (runtime *_RuntimeBehavior) loopWithFrameEnd() {
 				if !ok {
 					return
 				}
-				CallOuterNoRet(runtime.opts.EnableAutoRecover, runtime.ctx.GetReportError(), process)
+				callOuterNoRet(runtime.opts.EnableAutoRecover, runtime.ctx.GetReportError(), process)
 
 			default:
 				return
@@ -274,7 +276,7 @@ func (runtime *_RuntimeBehavior) loopWithBlinkFrame() {
 		}
 
 		if curFrames%gcFrames == 0 {
-			runtime.opts.Inheritor.IFace.GC()
+			runtime.gc()
 		}
 
 		frame.setCurFrames(curFrames + 1)
@@ -290,7 +292,7 @@ func (runtime *_RuntimeBehavior) loopWithBlinkFrameEnd() {
 			if !ok {
 				return
 			}
-			CallOuterNoRet(runtime.opts.EnableAutoRecover, runtime.ctx.GetReportError(), process)
+			callOuterNoRet(runtime.opts.EnableAutoRecover, runtime.ctx.GetReportError(), process)
 
 		default:
 			break

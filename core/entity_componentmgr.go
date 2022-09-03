@@ -5,8 +5,32 @@ import (
 	"github.com/pangdogs/galaxy/core/container"
 )
 
-// _ComponentMgrEvents 组件管理器事件表
-type _ComponentMgrEvents interface {
+// _EntityComponentMgr 实体（Entity）的组件（Component）管理器接口
+type _EntityComponentMgr interface {
+	// GetComponent 使用名称查询组件（Component），一般情况下名称指组件接口名称，也可以自定义名称，同个名称指向多个组件时，返回首个组件，非线程安全
+	GetComponent(name string) Component
+
+	// GetComponentByID 使用组件（Component）运行时ID查询组件，非线程安全
+	GetComponentByID(id int64) Component
+
+	// GetComponents 使用名称查询所有指向的组件（Component），非线程安全
+	GetComponents(name string) []Component
+
+	// RangeComponents 遍历所有组件，非线程安全
+	RangeComponents(fun func(component Component) bool)
+
+	// AddComponents 使用同个名称添加多个组件（Component），一般情况下名称指组件接口名称，也可以自定义名称，非线程安全
+	AddComponents(name string, components []Component) error
+
+	// AddComponent 添加单个组件（Component），因为同个名称可以指向多个组件，所有名称指向的组件已存在时，不会返回错误，非线程安全
+	AddComponent(name string, component Component) error
+
+	// RemoveComponent 删除名称指向的组件（Component），会删除同个名称指向的多个组件，非线程安全
+	RemoveComponent(name string)
+
+	// RemoveComponentByID 使用组件（Component）运行时ID删除组件，非线程安全
+	RemoveComponentByID(id int64)
+
 	// EventCompMgrAddComponents 事件：实体的组件管理器加入一些组件
 	EventCompMgrAddComponents() IEvent
 
@@ -25,7 +49,7 @@ func (entity *EntityBehavior) GetComponent(name string) Component {
 }
 
 // GetComponentByID 使用组件（Component）运行时ID查询组件，非线程安全
-func (entity *EntityBehavior) GetComponentByID(id uint64) Component {
+func (entity *EntityBehavior) GetComponentByID(id int64) Component {
 	if e, ok := entity.getComponentElementByID(id); ok {
 		comp := Cache2IFace[Component](e.Value.Cache)
 		return comp
@@ -111,7 +135,7 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 }
 
 // RemoveComponentByID 使用组件（Component）运行时ID删除组件，非线程安全
-func (entity *EntityBehavior) RemoveComponentByID(id uint64) {
+func (entity *EntityBehavior) RemoveComponentByID(id int64) {
 	e, ok := entity.getComponentElementByID(id)
 	if !ok {
 		return
@@ -174,7 +198,7 @@ func (entity *EntityBehavior) addSingleComponent(name string, component Componen
 		}
 	}
 
-	entity.CollectGC(component)
+	entity.getGCCollector().CollectGC(component.getGC())
 
 	return nil
 }
@@ -198,7 +222,7 @@ func (entity *EntityBehavior) getComponentElement(name string) (*container.Eleme
 	return e, e != nil
 }
 
-func (entity *EntityBehavior) getComponentElementByID(id uint64) (*container.Element[FaceAny], bool) {
+func (entity *EntityBehavior) getComponentElementByID(id int64) (*container.Element[FaceAny], bool) {
 	if entity.opts.EnableFastGetComponentByID {
 		e, ok := entity.componentByIDMap[id]
 		return e, ok

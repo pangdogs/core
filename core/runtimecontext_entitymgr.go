@@ -5,27 +5,13 @@ import (
 	"github.com/pangdogs/galaxy/core/container"
 )
 
-type _EntityQuery interface {
-	GetEntity(id uint64) (Entity, bool)
-	GetEntityByPersistID(persistID string) (Entity, bool)
+type _RuntimeContextEntityMgr interface {
+	GetEntity(id int64) (Entity, bool)
 	RangeEntities(func(entity Entity) bool)
-}
-
-type _EntityReverseQuery interface {
 	ReverseRangeEntities(func(entity Entity) bool)
-}
-
-type _EntityCountQuery interface {
 	GetEntityCount() int
-}
-
-type _EntityMgr interface {
-	_EntityQuery
 	AddEntity(entity Entity)
-	RemoveEntity(id uint64)
-}
-
-type _EntityMgrEvents interface {
+	RemoveEntity(id int64)
 	EventEntityMgrAddEntity() IEvent
 	EventEntityMgrRemoveEntity() IEvent
 	EventEntityMgrEntityAddComponents() IEvent
@@ -34,7 +20,7 @@ type _EntityMgrEvents interface {
 }
 
 // GetEntity ...
-func (runtimeCtx *_RuntimeContextBehavior) GetEntity(id uint64) (Entity, bool) {
+func (runtimeCtx *_RuntimeContextBehavior) GetEntity(id int64) (Entity, bool) {
 	e, ok := runtimeCtx.entityMap[id]
 	if !ok {
 		return nil, false
@@ -45,12 +31,6 @@ func (runtimeCtx *_RuntimeContextBehavior) GetEntity(id uint64) (Entity, bool) {
 	}
 
 	return Cache2IFace[Entity](e.Element.Value.Cache), true
-}
-
-// GetEntityByPersistID ...
-func (runtimeCtx *_RuntimeContextBehavior) GetEntityByPersistID(persistID string) (Entity, bool) {
-	entity, ok := runtimeCtx.persistentEntityMap[persistID]
-	return entity, ok
 }
 
 // RangeEntities ...
@@ -85,21 +65,20 @@ func (runtimeCtx *_RuntimeContextBehavior) AddEntity(entity Entity) {
 		panic("entity already added in runtime context")
 	}
 
-	entity.setID(runtimeCtx.servCtx.genUID())
+	if entity.GetID() <= 0 {
+		entity.setID(runtimeCtx.servCtx.GenUID())
+	}
+
 	entity.setRuntimeCtx(runtimeCtx.opts.Inheritor.IFace)
 	entity.RangeComponents(func(comp Component) bool {
-		comp.setID(runtimeCtx.servCtx.genUID())
+		if comp.GetID() <= 0 {
+			comp.setID(runtimeCtx.servCtx.GenUID())
+		}
 		return true
 	})
 
 	if _, ok := runtimeCtx.entityMap[entity.GetID()]; ok {
 		panic(fmt.Errorf("repeated entity '{%d}' in this runtime context", entity.GetID()))
-	}
-
-	if entity.GetPersistID() != "" {
-		if _, ok := runtimeCtx.persistentEntityMap[entity.GetPersistID()]; ok {
-			panic(fmt.Errorf("repeated persistent entity '{%s}' in this runtime context", entity.GetPersistID()))
-		}
 	}
 
 	entityInfo := _RuntimeCtxEntityInfo{}
@@ -114,17 +93,13 @@ func (runtimeCtx *_RuntimeContextBehavior) AddEntity(entity Entity) {
 
 	runtimeCtx.entityMap[entity.GetID()] = entityInfo
 
-	if entity.GetPersistID() != "" {
-		runtimeCtx.persistentEntityMap[entity.GetPersistID()] = entity
-	}
-
-	runtimeCtx.CollectGC(entity)
+	runtimeCtx.CollectGC(entity.getGC())
 
 	emitEventEntityMgrAddEntity[RuntimeContext](&runtimeCtx.eventEntityMgrAddEntity, runtimeCtx.opts.Inheritor.IFace, entity)
 }
 
 // RemoveEntity ...
-func (runtimeCtx *_RuntimeContextBehavior) RemoveEntity(id uint64) {
+func (runtimeCtx *_RuntimeContextBehavior) RemoveEntity(id int64) {
 	e, ok := runtimeCtx.entityMap[id]
 	if !ok {
 		return
@@ -144,10 +119,6 @@ func (runtimeCtx *_RuntimeContextBehavior) RemoveEntity(id uint64) {
 
 	delete(runtimeCtx.entityMap, id)
 	e.Element.Escape()
-
-	if entity.GetPersistID() != "" {
-		delete(runtimeCtx.persistentEntityMap, entity.GetPersistID())
-	}
 
 	for i := range e.Hooks {
 		e.Hooks[i].Unbind()
@@ -188,7 +159,9 @@ func (runtimeCtx *_RuntimeContextBehavior) eventEntityMgrNotifyECTreeRemoveEntit
 // OnCompMgrAddComponents ...
 func (runtimeCtx *_RuntimeContextBehavior) OnCompMgrAddComponents(entity Entity, components []Component) {
 	for i := range components {
-		components[i].setID(runtimeCtx.servCtx.genUID())
+		if components[i].GetID() <= 0 {
+			components[i].setID(runtimeCtx.servCtx.GenUID())
+		}
 	}
 	emitEventEntityMgrEntityAddComponents(&runtimeCtx.eventEntityMgrEntityAddComponents, runtimeCtx.opts.Inheritor.IFace, entity, components)
 }

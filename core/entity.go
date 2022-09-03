@@ -6,22 +6,18 @@ import (
 
 // Entity 实体接口
 type Entity interface {
-	container.GC
-	container.GCCollector
-	_ComponentMgr
-	_ComponentMgrEvents
+	_InnerGCCollector
+	_InnerGC
+	_EntityComponentMgr
 
 	init(opts *EntityOptions)
 
 	getOptions() *EntityOptions
 
-	setID(id uint64)
+	setID(id int64)
 
-	// GetID 获取实体（Entity）运行时ID，线程安全
-	GetID() uint64
-
-	// GetPersistID 获取实体（Entity）持久化ID，线程安全
-	GetPersistID() string
+	// GetID 获取实体（Entity）全局唯一ID，线程安全
+	GetID() int64
 
 	// GetPrototype 获取实体（Entity）原型，线程安全
 	GetPrototype() string
@@ -58,13 +54,21 @@ func EntityGetOptions(e Entity) EntityOptions {
 	return *e.getOptions()
 }
 
-// EntityGetInheritor 获取实体的继承者，线程安全
-func EntityGetInheritor(e Entity) Face[Entity] {
-	return e.getOptions().Inheritor
+// EntitySetPersistID 实体（Entity）设置持久化ID，需要在实体加入运行时上下文（Runtime Context）前设置，通常用于实体持久化
+func EntitySetPersistID(entity Entity, persistID int64) {
+	if persistID <= 0 {
+		panic("persistID not invalid")
+	}
+
+	if entity.GetRuntimeCtx() != nil {
+		panic("entity already added in runtime context")
+	}
+
+	entity.setID(persistID)
 }
 
-// EntityGetInheritorIFace 获取实体的继承者接口，线程安全
-func EntityGetInheritorIFace[T any](e Entity) T {
+// EntityGetInheritor 获取实体的继承者，线程安全
+func EntityGetInheritor[T any](e Entity) T {
 	return Cache2IFace[T](e.getOptions().Inheritor.Cache)
 }
 
@@ -105,51 +109,18 @@ func NewEntityWithOpts(opts EntityOptions) Entity {
 
 // EntityBehavior 实体行为，拓展实体时需要将此结构体匿名嵌入至实体结构体中，大部分情况下无需使用
 type EntityBehavior struct {
-	id                          uint64
+	id                          int64
 	opts                        EntityOptions
 	runtimeCtx                  RuntimeContext
 	parent                      Entity
 	componentList               container.List[FaceAny]
 	componentMap                map[string]*container.Element[FaceAny]
-	componentByIDMap            map[uint64]*container.Element[FaceAny]
+	componentByIDMap            map[int64]*container.Element[FaceAny]
 	initialing, shutting        bool
 	_eventEntityDestroySelf     Event
 	eventCompMgrAddComponents   Event
 	eventCompMgrRemoveComponent Event
-	gcMark, gcCollected         bool
-}
-
-// GC 执行GC
-func (entity *EntityBehavior) GC() {
-	if !entity.gcMark {
-		return
-	}
-	entity.gcMark = false
-	entity.gcCollected = false
-
-	entity.componentList.GC()
-	entity._eventEntityDestroySelf.GC()
-	entity.eventCompMgrAddComponents.GC()
-	entity.eventCompMgrRemoveComponent.GC()
-}
-
-// NeedGC 是否需要GC
-func (entity *EntityBehavior) NeedGC() bool {
-	return entity.gcMark
-}
-
-// CollectGC 收集GC
-func (entity *EntityBehavior) CollectGC(gc container.GC) {
-	if gc == nil || !gc.NeedGC() {
-		return
-	}
-
-	entity.gcMark = true
-
-	if entity.runtimeCtx != nil && !entity.gcCollected {
-		entity.gcCollected = true
-		entity.runtimeCtx.CollectGC(entity.opts.Inheritor.IFace)
-	}
+	gc                          _EntityBehaviorGC
 }
 
 func (entity *EntityBehavior) init(opts *EntityOptions) {
@@ -163,37 +134,34 @@ func (entity *EntityBehavior) init(opts *EntityOptions) {
 		entity.opts.Inheritor = NewFace[Entity](entity)
 	}
 
-	entity.componentList.Init(entity.opts.FaceCache, entity.opts.Inheritor.IFace)
+	entity.gc.EntityBehavior = entity
+
+	entity.componentList.Init(entity.opts.FaceCache, entity.getGCCollector())
 
 	if entity.opts.EnableFastGetComponent {
 		entity.componentMap = map[string]*container.Element[FaceAny]{}
 	}
 
 	if entity.opts.EnableFastGetComponentByID {
-		entity.componentByIDMap = map[uint64]*container.Element[FaceAny]{}
+		entity.componentByIDMap = map[int64]*container.Element[FaceAny]{}
 	}
 
-	entity._eventEntityDestroySelf.Init(false, nil, EventRecursion_Discard, opts.HookCache, entity.opts.Inheritor.IFace)
-	entity.eventCompMgrAddComponents.Init(false, nil, EventRecursion_Discard, opts.HookCache, entity.opts.Inheritor.IFace)
-	entity.eventCompMgrRemoveComponent.Init(false, nil, EventRecursion_Discard, opts.HookCache, entity.opts.Inheritor.IFace)
+	entity._eventEntityDestroySelf.Init(false, nil, EventRecursion_Discard, opts.HookCache, entity.getGCCollector())
+	entity.eventCompMgrAddComponents.Init(false, nil, EventRecursion_Discard, opts.HookCache, entity.getGCCollector())
+	entity.eventCompMgrRemoveComponent.Init(false, nil, EventRecursion_Discard, opts.HookCache, entity.getGCCollector())
 }
 
 func (entity *EntityBehavior) getOptions() *EntityOptions {
 	return &entity.opts
 }
 
-func (entity *EntityBehavior) setID(id uint64) {
+func (entity *EntityBehavior) setID(id int64) {
 	entity.id = id
 }
 
-// GetID 获取实体（Entity）运行时ID，线程安全
-func (entity *EntityBehavior) GetID() uint64 {
+// GetID 获取实体（Entity）全局唯一ID，线程安全
+func (entity *EntityBehavior) GetID() int64 {
 	return entity.id
-}
-
-// GetPersistID 获取实体（Entity）持久化ID，线程安全
-func (entity *EntityBehavior) GetPersistID() string {
-	return entity.opts.PersistID
 }
 
 // GetPrototype 获取实体原型（Entity Prototype），线程安全

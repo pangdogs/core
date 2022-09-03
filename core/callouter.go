@@ -5,8 +5,7 @@ import (
 	"runtime"
 )
 
-// CallOuter 调用外部逻辑，有返回值
-func CallOuter[T any](autoRecover bool, reportError chan error, fun func() T) (ret T, exception error) {
+func callOuter[T any](autoRecover bool, reportError chan error, fun func() T) (ret T, exception error) {
 	if fun == nil {
 		return Zero[T](), nil
 	}
@@ -15,7 +14,7 @@ func CallOuter[T any](autoRecover bool, reportError chan error, fun func() T) (r
 		defer func() {
 			if info := recover(); info != nil {
 				if reportError != nil {
-					exception = ErrorAddStackTrace(info)
+					exception = errorAddStackTrace(info)
 					select {
 					case reportError <- exception:
 					default:
@@ -30,8 +29,7 @@ func CallOuter[T any](autoRecover bool, reportError chan error, fun func() T) (r
 	return
 }
 
-// CallOuterNoRet 调用外部逻辑，无返回值
-func CallOuterNoRet(autoRecover bool, reportError chan error, fun func()) (exception error) {
+func callOuterNoRet(autoRecover bool, reportError chan error, fun func()) (exception error) {
 	if fun == nil {
 		return nil
 	}
@@ -40,7 +38,7 @@ func CallOuterNoRet(autoRecover bool, reportError chan error, fun func()) (excep
 		defer func() {
 			if info := recover(); info != nil {
 				if reportError != nil {
-					exception = ErrorAddStackTrace(info)
+					exception = errorAddStackTrace(info)
 					select {
 					case reportError <- exception:
 					default:
@@ -55,8 +53,7 @@ func CallOuterNoRet(autoRecover bool, reportError chan error, fun func()) (excep
 	return
 }
 
-// ErrorAddStackTrace 获取错误堆栈信息
-func ErrorAddStackTrace(info interface{}) error {
+func errorAddStackTrace(info interface{}) error {
 	stackBuf := make([]byte, 4096)
 	n := runtime.Stack(stackBuf, false)
 	return fmt.Errorf("Error: %v\nStack: %s\n", info, stackBuf[:n])

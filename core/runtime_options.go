@@ -1,9 +1,8 @@
 package core
 
-import "time"
-
-// NewRuntimeOption ...
-var NewRuntimeOption = &_NewRuntimeOptions{}
+import (
+	"time"
+)
 
 // RuntimeOptions ...
 type RuntimeOptions struct {
@@ -17,12 +16,15 @@ type RuntimeOptions struct {
 	GCInterval               time.Duration
 }
 
-type _NewRuntimeOptionFunc func(o *RuntimeOptions)
+// RuntimeOptionSetter ...
+var RuntimeOptionSetter = &_RuntimeOptionSetter{}
 
-type _NewRuntimeOptions struct{}
+type _RuntimeOptionSetterFunc func(o *RuntimeOptions)
+
+type _RuntimeOptionSetter struct{}
 
 // Default ...
-func (*_NewRuntimeOptions) Default() _NewRuntimeOptionFunc {
+func (*_RuntimeOptionSetter) Default() _RuntimeOptionSetterFunc {
 	return func(o *RuntimeOptions) {
 		o.Inheritor = Face[Runtime]{}
 		o.EnableAutoRun = false
@@ -36,35 +38,35 @@ func (*_NewRuntimeOptions) Default() _NewRuntimeOptionFunc {
 }
 
 // Inheritor ...
-func (*_NewRuntimeOptions) Inheritor(v Face[Runtime]) _NewRuntimeOptionFunc {
+func (*_RuntimeOptionSetter) Inheritor(v Face[Runtime]) _RuntimeOptionSetterFunc {
 	return func(o *RuntimeOptions) {
 		o.Inheritor = v
 	}
 }
 
 // EnableAutoRun ...
-func (*_NewRuntimeOptions) EnableAutoRun(v bool) _NewRuntimeOptionFunc {
+func (*_RuntimeOptionSetter) EnableAutoRun(v bool) _RuntimeOptionSetterFunc {
 	return func(o *RuntimeOptions) {
 		o.EnableAutoRun = v
 	}
 }
 
 // EnableAutoRecover ...
-func (*_NewRuntimeOptions) EnableAutoRecover(v bool) _NewRuntimeOptionFunc {
+func (*_RuntimeOptionSetter) EnableAutoRecover(v bool) _RuntimeOptionSetterFunc {
 	return func(o *RuntimeOptions) {
 		o.EnableAutoRecover = v
 	}
 }
 
 // EnableSortCompStartOrder ...
-func (*_NewRuntimeOptions) EnableSortCompStartOrder(v bool) _NewRuntimeOptionFunc {
+func (*_RuntimeOptionSetter) EnableSortCompStartOrder(v bool) _RuntimeOptionSetterFunc {
 	return func(o *RuntimeOptions) {
 		o.EnableSortCompStartOrder = v
 	}
 }
 
 // ProcessQueueCapacity ...
-func (*_NewRuntimeOptions) ProcessQueueCapacity(v int) _NewRuntimeOptionFunc {
+func (*_RuntimeOptionSetter) ProcessQueueCapacity(v int) _RuntimeOptionSetterFunc {
 	return func(o *RuntimeOptions) {
 		if v <= 0 {
 			panic("ProcessQueueCapacity less equal 0 invalid")
@@ -74,7 +76,7 @@ func (*_NewRuntimeOptions) ProcessQueueCapacity(v int) _NewRuntimeOptionFunc {
 }
 
 // ProcessQueueTimeout ...
-func (*_NewRuntimeOptions) ProcessQueueTimeout(v time.Duration) _NewRuntimeOptionFunc {
+func (*_RuntimeOptionSetter) ProcessQueueTimeout(v time.Duration) _RuntimeOptionSetterFunc {
 	return func(o *RuntimeOptions) {
 		if v <= 0 {
 			panic("ProcessQueueTimeout less equal 0 invalid")
@@ -84,14 +86,14 @@ func (*_NewRuntimeOptions) ProcessQueueTimeout(v time.Duration) _NewRuntimeOptio
 }
 
 // Frame ...
-func (*_NewRuntimeOptions) Frame(v Frame) _NewRuntimeOptionFunc {
+func (*_RuntimeOptionSetter) Frame(v Frame) _RuntimeOptionSetterFunc {
 	return func(o *RuntimeOptions) {
 		o.Frame = v
 	}
 }
 
 // GCInterval ...
-func (*_NewRuntimeOptions) GCInterval(v time.Duration) _NewRuntimeOptionFunc {
+func (*_RuntimeOptionSetter) GCInterval(v time.Duration) _RuntimeOptionSetterFunc {
 	return func(o *RuntimeOptions) {
 		if v <= 0 {
 			panic("GCInterval less equal 0 invalid")

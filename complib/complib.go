@@ -148,7 +148,7 @@ func (lib *_ComponentLib) register(api, descr string, constructType _ComponentCo
 
 // New ...
 func (lib *_ComponentLib) New(tag string) (api string, comp core.Component) {
-	atomic.StoreInt32(&lib.registerDisabled, 1)
+	atomic.CompareAndSwapInt32(&lib.registerDisabled, 0, 1)
 
 	info, ok := lib.compInfoMap[tag]
 	if !ok {
@@ -167,7 +167,7 @@ func (lib *_ComponentLib) New(tag string) (api string, comp core.Component) {
 
 // Range ...
 func (lib *_ComponentLib) Range(fun func(info ComponentInfo) bool) {
-	atomic.StoreInt32(&lib.registerDisabled, 1)
+	atomic.CompareAndSwapInt32(&lib.registerDisabled, 0, 1)
 
 	if fun == nil {
 		return

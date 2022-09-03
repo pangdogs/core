@@ -9,23 +9,23 @@ import (
 type IECTree interface {
 	// AddChild 子实体（Entity）加入父实体，在实体加入运行时上下文（Runtime Context）后调用，
 	//切换父实体时，先调用RemoveChild()离开旧父实体，在调用AddChild()加入新父实体，非线程安全
-	AddChild(parentID uint64, childID uint64) error
+	AddChild(parentID, childID int64) error
 
 	// RemoveChild 子实体（Entity）离开父实体，在实体从运行时上下文（Runtime Context）中删除前调用，
 	//切换父实体时，先调用RemoveChild()离开旧父实体，在调用AddChild()加入新父实体，非线程安全
-	RemoveChild(childID uint64)
+	RemoveChild(childID int64)
 
 	// RangeChildren 遍历子实体（Entity），非线程安全
-	RangeChildren(parentID uint64, fun func(child Entity) bool)
+	RangeChildren(parentID int64, fun func(child Entity) bool)
 
 	// ReverseRangeChildren 反向遍历子实体（Entity），非线程安全
-	ReverseRangeChildren(parentID uint64, fun func(child Entity) bool)
+	ReverseRangeChildren(parentID int64, fun func(child Entity) bool)
 
 	// GetChildCount 获取子实体（Entity）数量，非线程安全
-	GetChildCount(parentID uint64) int
+	GetChildCount(parentID int64) int
 
 	// GetParent 获取子实体（Entity）的父实体，非线程安全
-	GetParent(childID uint64) (Entity, bool)
+	GetParent(childID int64) (Entity, bool)
 
 	// EventECTreeAddChild 事件：EC树中子实体加入父实体
 	EventECTreeAddChild() IEvent
@@ -47,7 +47,7 @@ type _ECNode struct {
 type ECTree struct {
 	runtimeCtx             RuntimeContext
 	masterTree             bool
-	ecTree                 map[uint64]_ECNode
+	ecTree                 map[int64]_ECNode
 	eventECTreeAddChild    Event
 	eventECTreeRemoveChild Event
 	inited                 bool
@@ -79,7 +79,7 @@ func (ecTree *ECTree) init(runtimeCtx RuntimeContext, masterTree bool) {
 
 	ecTree.runtimeCtx = runtimeCtx
 	ecTree.masterTree = masterTree
-	ecTree.ecTree = map[uint64]_ECNode{}
+	ecTree.ecTree = map[int64]_ECNode{}
 	ecTree.eventECTreeAddChild.Init(false, nil, EventRecursion_Discard, RuntimeContextGetOptions(runtimeCtx).HookCache, runtimeCtx)
 	ecTree.eventECTreeRemoveChild.Init(false, nil, EventRecursion_Discard, RuntimeContextGetOptions(runtimeCtx).HookCache, runtimeCtx)
 	ecTree.inited = true
@@ -95,7 +95,7 @@ func (ecTree *ECTree) onEntityMgrNotifyECTreeRemoveEntity(runtimeCtx RuntimeCont
 
 // AddChild 子实体（Entity）加入父实体，在实体加入运行时上下文（Runtime Context）后调用，
 //切换父实体时，先调用RemoveChild()离开旧父实体，在调用AddChild()加入新父实体，非线程安全
-func (ecTree *ECTree) AddChild(parentID uint64, childID uint64) error {
+func (ecTree *ECTree) AddChild(parentID, childID int64) error {
 	if parentID == childID {
 		return errors.New("parentID equal childID invalid")
 	}
@@ -141,7 +141,7 @@ func (ecTree *ECTree) AddChild(parentID uint64, childID uint64) error {
 
 // RemoveChild 子实体（Entity）离开父实体，在实体从运行时上下文（Runtime Context）中删除前调用，
 //切换父实体时，先调用RemoveChild()离开旧父实体，在调用AddChild()加入新父实体，非线程安全
-func (ecTree *ECTree) RemoveChild(childID uint64) {
+func (ecTree *ECTree) RemoveChild(childID int64) {
 	node, ok := ecTree.ecTree[childID]
 	if !ok {
 		return
@@ -178,7 +178,7 @@ func (ecTree *ECTree) RemoveChild(childID uint64) {
 }
 
 // RangeChildren 遍历子实体（Entity），非线程安全
-func (ecTree *ECTree) RangeChildren(parentID uint64, fun func(child Entity) bool) {
+func (ecTree *ECTree) RangeChildren(parentID int64, fun func(child Entity) bool) {
 	if fun == nil {
 		return
 	}
@@ -194,7 +194,7 @@ func (ecTree *ECTree) RangeChildren(parentID uint64, fun func(child Entity) bool
 }
 
 // ReverseRangeChildren 反向遍历子实体（Entity），非线程安全
-func (ecTree *ECTree) ReverseRangeChildren(parentID uint64, fun func(child Entity) bool) {
+func (ecTree *ECTree) ReverseRangeChildren(parentID int64, fun func(child Entity) bool) {
 	if fun == nil {
 		return
 	}
@@ -210,7 +210,7 @@ func (ecTree *ECTree) ReverseRangeChildren(parentID uint64, fun func(child Entit
 }
 
 // GetChildCount 获取子实体（Entity）数量，非线程安全
-func (ecTree *ECTree) GetChildCount(parentID uint64) int {
+func (ecTree *ECTree) GetChildCount(parentID int64) int {
 	node, ok := ecTree.ecTree[parentID]
 	if !ok || node.Children == nil {
 		return 0
@@ -220,7 +220,7 @@ func (ecTree *ECTree) GetChildCount(parentID uint64) int {
 }
 
 // GetParent 获取子实体（Entity）的父实体，非线程安全
-func (ecTree *ECTree) GetParent(childID uint64) (Entity, bool) {
+func (ecTree *ECTree) GetParent(childID int64) (Entity, bool) {
 	node, ok := ecTree.ecTree[childID]
 	if !ok {
 		return nil, false

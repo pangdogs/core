@@ -1,30 +1,35 @@
 package core
 
-var NewServiceOption = &NewServiceOptions{}
-
+// ServiceOptions 创建服务（Service）的所有选项
 type ServiceOptions struct {
 	Inheritor         Face[Service]
 	EnableAutoRecover bool
 }
 
-type NewServiceOptionFunc func(o *ServiceOptions)
+// ServiceOptionSetter ...
+var ServiceOptionSetter = &_ServiceOptionSetter{}
 
-type NewServiceOptions struct{}
+type _ServiceOptionSetterFunc func(o *ServiceOptions)
 
-func (*NewServiceOptions) Default() NewServiceOptionFunc {
+type _ServiceOptionSetter struct{}
+
+// Default ...
+func (*_ServiceOptionSetter) Default() _ServiceOptionSetterFunc {
 	return func(o *ServiceOptions) {
 		o.Inheritor = Face[Service]{}
 		o.EnableAutoRecover = false
 	}
 }
 
-func (*NewServiceOptions) Inheritor(v Face[Service]) NewServiceOptionFunc {
+// Inheritor ...
+func (*_ServiceOptionSetter) Inheritor(v Face[Service]) _ServiceOptionSetterFunc {
 	return func(o *ServiceOptions) {
 		o.Inheritor = v
 	}
 }
 
-func (*NewServiceOptions) EnableAutoRecover(v bool) NewServiceOptionFunc {
+// EnableAutoRecover ...
+func (*_ServiceOptionSetter) EnableAutoRecover(v bool) _ServiceOptionSetterFunc {
 	return func(o *ServiceOptions) {
 		o.EnableAutoRecover = v
 	}

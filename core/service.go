@@ -1,10 +1,14 @@
 package core
 
-// Service ...
+// Service 服务
 type Service interface {
 	_Runnable
+
 	init(ctx ServiceContext, opts *ServiceOptions)
+
 	getOptions() *ServiceOptions
+
+	// GetContext 获取服务上下文（Service Context）
 	GetContext() ServiceContext
 }
 
@@ -13,34 +17,29 @@ func ServiceGetOptions(serv Service) ServiceOptions {
 	return *serv.getOptions()
 }
 
-// ServiceGetInheritor ...
-func ServiceGetInheritor(serv Service) Face[Service] {
-	return serv.getOptions().Inheritor
-}
-
-// ServiceGetInheritorIFace ...
-func ServiceGetInheritorIFace[T any](serv Service) T {
-	return Cache2IFace[T](serv.getOptions().Inheritor.Cache)
-}
-
 // NewService ...
-func NewService(servCtx ServiceContext, optFuncs ...NewServiceOptionFunc) Service {
-	opts := &ServiceOptions{}
-	NewServiceOption.Default()(opts)
+func NewService(servCtx ServiceContext, optSetterFuncs ..._ServiceOptionSetterFunc) Service {
+	opts := ServiceOptions{}
+	ServiceOptionSetter.Default()(&opts)
 
-	for i := range optFuncs {
-		optFuncs[i](opts)
+	for i := range optSetterFuncs {
+		optSetterFuncs[i](&opts)
 	}
 
+	return NewServiceWithOpts(servCtx, opts)
+}
+
+// NewServiceWithOpts ...
+func NewServiceWithOpts(servCtx ServiceContext, opts ServiceOptions) Service {
 	if !opts.Inheritor.IsNil() {
-		opts.Inheritor.IFace.init(servCtx, opts)
+		opts.Inheritor.IFace.init(servCtx, &opts)
 		return opts.Inheritor.IFace
 	}
 
-	serv := &_ServiceBehavior{}
-	serv.init(servCtx, opts)
+	e := &_ServiceBehavior{}
+	e.init(servCtx, &opts)
 
-	return serv.opts.Inheritor.IFace
+	return e.opts.Inheritor.IFace
 }
 
 type _ServiceBehavior struct {
@@ -70,7 +69,7 @@ func (serv *_ServiceBehavior) getOptions() *ServiceOptions {
 	return &serv.opts
 }
 
-// GetContext ...
+// GetContext 获取服务上下文（Service Context）
 func (serv *_ServiceBehavior) GetContext() ServiceContext {
 	return serv.ctx
 }

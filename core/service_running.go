@@ -19,24 +19,24 @@ func (serv *_ServiceBehavior) Stop() {
 }
 
 func (serv *_ServiceBehavior) running(shutChan chan struct{}) {
-	if parentCtx, ok := serv.ctx.GetParentCtx().(Context); ok {
-		parentCtx.GetWaitGroup().Add(1)
+	if parentCtx, ok := serv.ctx.GetParentCtx().(_Context); ok {
+		parentCtx.getWaitGroup().Add(1)
 	}
 
 	defer func() {
-		CallOuterNoRet(serv.opts.EnableAutoRecover, serv.ctx.GetReportError(), func() {
+		callOuterNoRet(serv.opts.EnableAutoRecover, serv.ctx.GetReportError(), func() {
 			if serv.ctx.getOptions().StoppingCallback != nil {
 				serv.ctx.getOptions().StoppingCallback(serv)
 			}
 		})
 
-		if parentCtx, ok := serv.ctx.GetParentCtx().(Context); ok {
-			parentCtx.GetWaitGroup().Done()
+		if parentCtx, ok := serv.ctx.GetParentCtx().(_Context); ok {
+			parentCtx.getWaitGroup().Done()
 		}
 
-		serv.ctx.GetWaitGroup().Wait()
+		serv.ctx.getWaitGroup().Wait()
 
-		CallOuterNoRet(serv.opts.EnableAutoRecover, serv.ctx.GetReportError(), func() {
+		callOuterNoRet(serv.opts.EnableAutoRecover, serv.ctx.GetReportError(), func() {
 			if serv.ctx.getOptions().StoppedCallback != nil {
 				serv.ctx.getOptions().StoppedCallback(serv)
 			}
@@ -46,7 +46,7 @@ func (serv *_ServiceBehavior) running(shutChan chan struct{}) {
 		shutChan <- struct{}{}
 	}()
 
-	CallOuterNoRet(serv.opts.EnableAutoRecover, serv.ctx.GetReportError(), func() {
+	callOuterNoRet(serv.opts.EnableAutoRecover, serv.ctx.GetReportError(), func() {
 		if serv.ctx.getOptions().StartedCallback != nil {
 			serv.ctx.getOptions().StartedCallback(serv)
 		}

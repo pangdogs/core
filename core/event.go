@@ -1,13 +1,15 @@
 package core
 
-import "github.com/pangdogs/galaxy/core/container"
+import (
+	"github.com/pangdogs/galaxy/core/container"
+)
 
-// IEvent 事件接口
+// IEvent 事件接口，非线程安全，不能用于跨线程事件通知
 type IEvent interface {
-	// Emit 发送事件，一般情况下是在事件生成的代码中使用
+	// Emit 发送事件，一般情况下是在事件生成的代码中使用，非线程安全
 	Emit(fun func(delegate IFaceCache) bool)
 
-	newHook(delegate interface{}, delegateFastIFace IFaceCache, priority int32) Hook
+	newHook(delegateFace FaceAny, priority int32) Hook
 
 	removeDelegate(delegate interface{})
 }
@@ -33,15 +35,16 @@ type IEventTab interface {
 // EventRecursion 发生事件递归的处理方式，事件递归是指在一个事件的订阅者中再次发送这个事件
 type EventRecursion int32
 
+// EventRecursion_Allow EventRecursion 发生事件递归的处理方式的枚举定义
 const (
 	EventRecursion_Allow    EventRecursion = iota // 允许事件递归，但是可能会造成无限递归
 	EventRecursion_Disallow                       // 不允许事件递归，发生时会panic
-	EventRecursion_NotEmit                        // 不再发送事件，在订阅者中再次发送这个事件，不会再发送给任何订阅者
-	EventRecursion_Discard                        // 丢弃递归的事件，在订阅者中再次发送这个事件，不会再次进入这个订阅者，但是会进入其他订阅者
-	EventRecursion_Deepest                        // 深度优先处理递归事件，在订阅者中再次发送这个事件，会中断上次事件发送过程，并在本次事件发送过程中，不会再次进入这个订阅者
+	EventRecursion_NotEmit                        // 不再发送事件，如果在订阅者中再次发送这个事件，那么不会再发送给任何订阅者
+	EventRecursion_Discard                        // 丢弃递归的事件，如果在订阅者中再次发送这个事件，那么不会再次进入这个订阅者，但是会进入其他订阅者
+	EventRecursion_Deepest                        // 深度优先处理递归事件，如果在订阅者中再次发送这个事件，那么会中断上次事件发送过程，并在本次事件发送过程中，不会再次进入这个订阅者
 )
 
-// Event 事件
+// Event 事件，非线程安全，不能用于跨线程事件通知
 type Event struct {
 	subscribers    container.List[Hook]
 	autoRecover    bool
@@ -54,7 +57,7 @@ type Event struct {
 	inited         bool
 }
 
-// Init 初始化事件
+// Init 初始化事件，非线程安全
 func (event *Event) Init(autoRecover bool, reportError chan error, eventRecursion EventRecursion, hookCache *container.Cache[Hook], gcCollector container.GCCollector) {
 	if gcCollector == nil {
 		panic("nil gcCollector")
@@ -73,20 +76,20 @@ func (event *Event) Init(autoRecover bool, reportError chan error, eventRecursio
 	event.inited = true
 }
 
-// Open 打开事件
+// Open 打开事件，非线程安全
 func (event *Event) Open() {
 	event.subscribers.SetGCCollector(event.gcCollector)
 	event.opened = true
 }
 
-// Close 关闭事件
+// Close 关闭事件，非线程安全
 func (event *Event) Close() {
 	event.subscribers.SetGCCollector(nil)
 	event.Clean()
 	event.opened = false
 }
 
-// Clean 清除全部订阅者
+// Clean 清除全部订阅者，非线程安全
 func (event *Event) Clean() {
 	event.subscribers.Traversal(func(e *container.Element[Hook]) bool {
 		e.Value.Unbind()
@@ -94,17 +97,7 @@ func (event *Event) Clean() {
 	})
 }
 
-// GC 执行GC
-func (event *Event) GC() {
-	event.subscribers.GC()
-}
-
-// NeedGC 是否需要GC
-func (event *Event) NeedGC() bool {
-	return event.subscribers.NeedGC()
-}
-
-// Emit 发送事件，一般情况下是在事件生成的代码中使用
+// Emit 发送事件，一般情况下是在事件生成的代码中使用，非线程安全
 func (event *Event) Emit(fun func(delegate IFaceCache) bool) {
 	if fun == nil {
 		return
@@ -129,7 +122,7 @@ func (event *Event) Emit(fun func(delegate IFaceCache) bool) {
 			return false
 		}
 
-		if e.Value.delegateFastIFace == NilIFaceCache {
+		if e.Value.delegateFace.IsNil() {
 			return true
 		}
 
@@ -158,8 +151,8 @@ func (event *Event) Emit(fun func(delegate IFaceCache) bool) {
 			e.Value.received--
 		}()
 
-		ret, err := CallOuter(event.autoRecover, event.reportError, func() bool {
-			return fun(e.Value.delegateFastIFace)
+		ret, err := callOuter(event.autoRecover, event.reportError, func() bool {
+			return fun(e.Value.delegateFace.Cache)
 		})
 
 		if err != nil {
@@ -170,15 +163,14 @@ func (event *Event) Emit(fun func(delegate IFaceCache) bool) {
 	})
 }
 
-func (event *Event) newHook(delegate interface{}, delegateFastIFace IFaceCache, priority int32) Hook {
+func (event *Event) newHook(delegateFace FaceAny, priority int32) Hook {
 	if !event.opened {
 		panic("event closed")
 	}
 
 	hook := Hook{
-		delegate:          delegate,
-		delegateFastIFace: delegateFastIFace,
-		priority:          priority,
+		delegateFace: delegateFace,
+		priority:     priority,
 	}
 
 	var mark *container.Element[Hook]
@@ -204,10 +196,14 @@ func (event *Event) newHook(delegate interface{}, delegateFastIFace IFaceCache, 
 
 func (event *Event) removeDelegate(delegate interface{}) {
 	event.subscribers.ReverseTraversal(func(other *container.Element[Hook]) bool {
-		if other.Value.delegate == delegate {
+		if other.Value.delegateFace.IFace == delegate {
 			other.Escape()
 			return false
 		}
 		return true
 	})
+}
+
+func (event *Event) gc() {
+	event.subscribers.GC()
 }

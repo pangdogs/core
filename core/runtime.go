@@ -1,16 +1,10 @@
 package core
 
-import (
-	"github.com/pangdogs/galaxy/core/container"
-)
-
-// Runtime ...
+// Runtime 运行时
 type Runtime interface {
-	container.GC
 	_Runnable
 	init(runtimeCtx RuntimeContext, opts *RuntimeOptions)
 	getOptions() *RuntimeOptions
-	GetID() uint64
 	GetRuntimeCtx() RuntimeContext
 }
 
@@ -19,60 +13,38 @@ func RuntimeGetOptions(runtime Runtime) RuntimeOptions {
 	return *runtime.getOptions()
 }
 
-// RuntimeGetInheritor ...
-func RuntimeGetInheritor(runtime Runtime) Face[Runtime] {
-	return runtime.getOptions().Inheritor
-}
-
-// RuntimeGetInheritorIFace ...
-func RuntimeGetInheritorIFace[T any](runtime Runtime) T {
-	return Cache2IFace[T](runtime.getOptions().Inheritor.Cache)
-}
-
 // NewRuntime ...
-func NewRuntime(runtimeCtx RuntimeContext, optFuncs ..._NewRuntimeOptionFunc) Runtime {
-	opts := &RuntimeOptions{}
-	NewRuntimeOption.Default()(opts)
+func NewRuntime(runtimeCtx RuntimeContext, optSetterFuncs ..._RuntimeOptionSetterFunc) Runtime {
+	opts := RuntimeOptions{}
+	RuntimeOptionSetter.Default()(&opts)
 
-	for i := range optFuncs {
-		optFuncs[i](opts)
+	for i := range optSetterFuncs {
+		optSetterFuncs[i](&opts)
 	}
 
+	return NewRuntimeWithOpts(runtimeCtx, opts)
+}
+
+// NewRuntimeWithOpts ...
+func NewRuntimeWithOpts(runtimeCtx RuntimeContext, opts RuntimeOptions) Runtime {
 	if !opts.Inheritor.IsNil() {
-		opts.Inheritor.IFace.init(runtimeCtx, opts)
+		opts.Inheritor.IFace.init(runtimeCtx, &opts)
 		return opts.Inheritor.IFace
 	}
 
 	runtime := &_RuntimeBehavior{}
-	runtime.init(runtimeCtx, opts)
+	runtime.init(runtimeCtx, &opts)
 
 	return runtime.opts.Inheritor.IFace
 }
 
 type _RuntimeBehavior struct {
-	id              uint64
 	opts            RuntimeOptions
 	ctx             RuntimeContext
-	hooksMap        map[uint64][3]Hook
+	hooksMap        map[int64][3]Hook
 	processQueue    chan func()
 	eventUpdate     Event
 	eventLateUpdate Event
-}
-
-// GC ...
-func (runtime *_RuntimeBehavior) GC() {
-	runtime.ctx.GC()
-	runtime.eventUpdate.GC()
-	runtime.eventLateUpdate.GC()
-}
-
-// NeedGC ...
-func (runtime *_RuntimeBehavior) NeedGC() bool {
-	return true
-}
-
-// CollectGC ...
-func (runtime *_RuntimeBehavior) CollectGC(gc container.GC) {
 }
 
 func (runtime *_RuntimeBehavior) init(runtimeCtx RuntimeContext, opts *RuntimeOptions) {
@@ -90,9 +62,8 @@ func (runtime *_RuntimeBehavior) init(runtimeCtx RuntimeContext, opts *RuntimeOp
 		runtime.opts.Inheritor = NewFace[Runtime](runtime)
 	}
 
-	runtime.id = runtimeCtx.GetServiceCtx().genUID()
 	runtime.ctx = runtimeCtx
-	runtime.hooksMap = make(map[uint64][3]Hook)
+	runtime.hooksMap = make(map[int64][3]Hook)
 
 	runtime.eventUpdate.Init(runtime.getOptions().EnableAutoRecover, runtimeCtx.GetReportError(), EventRecursion_Disallow, runtimeCtx.getOptions().HookCache, runtime)
 	runtime.eventLateUpdate.Init(runtime.getOptions().EnableAutoRecover, runtimeCtx.GetReportError(), EventRecursion_Disallow, runtimeCtx.getOptions().HookCache, runtime)
@@ -104,11 +75,6 @@ func (runtime *_RuntimeBehavior) init(runtimeCtx RuntimeContext, opts *RuntimeOp
 
 func (runtime *_RuntimeBehavior) getOptions() *RuntimeOptions {
 	return &runtime.opts
-}
-
-// GetID ...
-func (runtime *_RuntimeBehavior) GetID() uint64 {
-	return runtime.id
 }
 
 // GetRuntimeCtx ...

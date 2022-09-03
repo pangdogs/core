@@ -7,15 +7,15 @@ import (
 
 // Component 组件接口
 type Component interface {
-	container.GC
-	container.GCCollector
+	_InnerGCCollector
+	_InnerGC
 
 	init(name string, entity Entity, inheritor Component, hookCache *container.Cache[Hook])
 
-	setID(id uint64)
+	setID(id int64)
 
-	// GetID 获取组件（Component）运行时ID，线程安全
-	GetID() uint64
+	// GetID 获取组件（Component）全局唯一ID，线程安全
+	GetID() int64
 
 	// GetName 获取组件（Component）名称，线程安全
 	GetName() string
@@ -41,61 +41,45 @@ type Component interface {
 	eventComponentDestroySelf() IEvent
 }
 
+// ComponentSetPersistID 组件（Component）设置持久化ID，需要在组件加入实体（Entity）前设置，通常用于组件持久化
+func ComponentSetPersistID(comp Component, persistID int64) {
+	if persistID <= 0 {
+		panic("persistID not invalid")
+	}
+
+	if comp.GetEntity() != nil {
+		panic("component already added in entity")
+	}
+
+	comp.setID(persistID)
+}
+
 // ComponentBehavior 组件行为，开发组件时需要将此结构体匿名嵌入至组件结构体中
 type ComponentBehavior struct {
-	id                         uint64
+	id                         int64
 	name                       string
 	entity                     Entity
 	inheritor                  Component
-	primary                    bool
 	reflectValue               reflect.Value
 	_eventComponentDestroySelf Event
-	gcMark, gcCollected        bool
-}
-
-// GC 执行GC
-func (comp *ComponentBehavior) GC() {
-	if !comp.gcMark {
-		return
-	}
-	comp.gcMark = false
-	comp.gcCollected = false
-
-	comp._eventComponentDestroySelf.GC()
-}
-
-// NeedGC 是否需要GC
-func (comp *ComponentBehavior) NeedGC() bool {
-	return comp.gcMark
-}
-
-// CollectGC 收集GC
-func (comp *ComponentBehavior) CollectGC(gc container.GC) {
-	if gc == nil || !gc.NeedGC() {
-		return
-	}
-
-	comp.gcMark = true
-
-	if comp.entity != nil && !comp.gcCollected {
-		comp.gcCollected = true
-		comp.entity.CollectGC(comp.inheritor)
-	}
+	primary                    bool
+	gc                         _ComponentBehaviorGC
 }
 
 func (comp *ComponentBehavior) init(name string, entity Entity, inheritor Component, hookCache *container.Cache[Hook]) {
+	comp.gc.ComponentBehavior = comp
 	comp.name = name
 	comp.entity = entity
 	comp.inheritor = inheritor
-	comp._eventComponentDestroySelf.Init(false, nil, EventRecursion_Discard, hookCache, comp.inheritor)
+	comp._eventComponentDestroySelf.Init(false, nil, EventRecursion_Discard, hookCache, comp.getGCCollector())
 }
 
-func (comp *ComponentBehavior) setID(id uint64) {
+func (comp *ComponentBehavior) setID(id int64) {
 	comp.id = id
 }
 
-// GetID 获取组件（Component）运行时ID，线程安全
-func (comp *ComponentBehavior) GetID() uint64 {
+// GetID 获取组件（Component）全局唯一ID，线程安全
+func (comp *ComponentBehavior) GetID() int64 {
 	return comp.id
 }
 
