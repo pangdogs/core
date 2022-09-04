@@ -19,7 +19,7 @@ type ServiceContext interface {
 	// GenUID 生成运行时唯一ID，向负方向增长，非全局唯一，重启服务后也会生成相同ID，不能使用此ID持久化，性能较好，线程安全
 	GenUID() int64
 
-	// GenPersistID 生成持久化ID，向正方向增长，全局唯一，必须使用此ID持久化，性能较差，单个服务每毫秒仅能生成4096个，线程安全
+	// GenPersistID 生成持久化ID，向正方向增长，全局唯一，必须使用此ID持久化，使用snowflake算法，性能较差，默认情况下单个服务每毫秒仅能生成4096个，线程安全
 	GenPersistID() int64
 
 	// GetPrototype 获取服务原型

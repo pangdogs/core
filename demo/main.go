@@ -22,7 +22,4 @@ l:
 			break l
 		}
 	}
-
-
-core.
 }
