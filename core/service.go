@@ -12,12 +12,12 @@ type Service interface {
 	GetContext() ServiceContext
 }
 
-// ServiceGetOptions ...
+// ServiceGetOptions 获取服务创建选项，线程安全
 func ServiceGetOptions(serv Service) ServiceOptions {
 	return *serv.getOptions()
 }
 
-// NewService ...
+// NewService 创建服务，线程安全
 func NewService(servCtx ServiceContext, optSetterFuncs ..._ServiceOptionSetterFunc) Service {
 	opts := ServiceOptions{}
 	ServiceOptionSetter.Default()(&opts)
@@ -29,7 +29,7 @@ func NewService(servCtx ServiceContext, optSetterFuncs ..._ServiceOptionSetterFu
 	return NewServiceWithOpts(servCtx, opts)
 }
 
-// NewServiceWithOpts ...
+// NewServiceWithOpts 创建服务并传入参数，线程安全
 func NewServiceWithOpts(servCtx ServiceContext, opts ServiceOptions) Service {
 	if !opts.Inheritor.IsNil() {
 		opts.Inheritor.IFace.init(servCtx, &opts)

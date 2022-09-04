@@ -54,7 +54,7 @@ func ComponentSetPersistID(comp Component, persistID int64) {
 	comp.setID(persistID)
 }
 
-// ComponentBehavior 组件行为，开发组件时需要将此结构体匿名嵌入至组件结构体中
+// ComponentBehavior 组件行为，需要在开发新组件时，匿名嵌入至组件结构体中
 type ComponentBehavior struct {
 	id                         int64
 	name                       string

@@ -35,7 +35,6 @@ type IEventTab interface {
 // EventRecursion 发生事件递归的处理方式，事件递归是指在一个事件的订阅者中再次发送这个事件
 type EventRecursion int32
 
-// EventRecursion_Allow EventRecursion 发生事件递归的处理方式的枚举定义
 const (
 	EventRecursion_Allow    EventRecursion = iota // 允许事件递归，但是可能会造成无限递归
 	EventRecursion_Disallow                       // 不允许事件递归，发生时会panic

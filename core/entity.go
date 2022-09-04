@@ -82,7 +82,7 @@ func EntityGetShutting(e Entity) bool {
 	return e.getShutting()
 }
 
-// NewEntity 创建实体，通过不定参数语法糖，传入参数设置器，线程安全
+// NewEntity 创建实体，线程安全
 func NewEntity(optSetterFuncs ..._EntityOptionSetterFunc) Entity {
 	opts := EntityOptions{}
 	EntityOptionSetter.Default()(&opts)
@@ -107,7 +107,7 @@ func NewEntityWithOpts(opts EntityOptions) Entity {
 	return e.opts.Inheritor.IFace
 }
 
-// EntityBehavior 实体行为，拓展实体时需要将此结构体匿名嵌入至实体结构体中，大部分情况下无需使用
+// EntityBehavior 实体行为，需要在拓展实体能力时，匿名嵌入至实体结构体中，一般情况下无需使用
 type EntityBehavior struct {
 	id                          int64
 	opts                        EntityOptions

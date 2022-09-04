@@ -11,7 +11,6 @@ import (
 type ServiceContext interface {
 	_Context
 	_RunnableMark
-	_RuntimeContextEntityMgr
 
 	init(ctx context.Context, opts *ServiceContextOptions)
 
@@ -32,7 +31,7 @@ func ServiceContextGetOptions(servCtx ServiceContext) ServiceContextOptions {
 	return *servCtx.getOptions()
 }
 
-// NewServiceContext ...
+// NewServiceContext 创建服务上下文，线程安全
 func NewServiceContext(ctx context.Context, optSetterFuncs ..._ServiceContextOptionSetterFunc) ServiceContext {
 	opts := ServiceContextOptions{}
 	ServiceContextOptionSetter.Default()(&opts)
@@ -44,7 +43,7 @@ func NewServiceContext(ctx context.Context, optSetterFuncs ..._ServiceContextOpt
 	return NewServiceContextWithOpts(ctx, opts)
 }
 
-// NewServiceContextWithOpts ...
+// NewServiceContextWithOpts 创建服务上下文并传入参数，线程安全
 func NewServiceContextWithOpts(ctx context.Context, opts ServiceContextOptions) ServiceContext {
 	if !opts.Inheritor.IsNil() {
 		opts.Inheritor.IFace.init(ctx, &opts)

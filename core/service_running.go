@@ -1,6 +1,6 @@
 package core
 
-// Run ...
+// Run 运行，返回的channel用于线程同步，可以阻塞等待至运行结束
 func (serv *_ServiceBehavior) Run() <-chan struct{} {
 	if !serv.ctx.markRunning() {
 		panic("serv already running")
@@ -13,7 +13,7 @@ func (serv *_ServiceBehavior) Run() <-chan struct{} {
 	return shutChan
 }
 
-// Stop ...
+// Stop 停止
 func (serv *_ServiceBehavior) Stop() {
 	serv.ctx.GetCancelFunc()()
 }
