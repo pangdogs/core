@@ -119,10 +119,6 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 		return
 	}
 
-	if entity.opts.EnableFastGetComponent {
-		delete(entity.componentMap, name)
-	}
-
 	entity.componentList.TraversalAt(func(other *container.Element[FaceAny]) bool {
 		comp := Cache2IFace[Component](other.Value.Cache)
 		if comp.GetName() == name {
@@ -139,10 +135,6 @@ func (entity *EntityBehavior) RemoveComponentByID(id int64) {
 	e, ok := entity.getComponentElementByID(id)
 	if !ok {
 		return
-	}
-
-	if entity.opts.EnableFastGetComponentByID {
-		delete(entity.componentByIDMap, id)
 	}
 
 	e.Escape()
@@ -188,14 +180,6 @@ func (entity *EntityBehavior) addSingleComponent(name string, component Componen
 
 	} else {
 		e = entity.componentList.PushBack(face)
-
-		if entity.opts.EnableFastGetComponent {
-			entity.componentMap[name] = e
-		}
-
-		if entity.opts.EnableFastGetComponentByID {
-			entity.componentByIDMap[component.GetID()] = e
-		}
 	}
 
 	entity.getGCCollector().CollectGC(component.getGC())
@@ -204,11 +188,6 @@ func (entity *EntityBehavior) addSingleComponent(name string, component Componen
 }
 
 func (entity *EntityBehavior) getComponentElement(name string) (*container.Element[FaceAny], bool) {
-	if entity.opts.EnableFastGetComponent {
-		e, ok := entity.componentMap[name]
-		return e, ok
-	}
-
 	var e *container.Element[FaceAny]
 
 	entity.componentList.Traversal(func(other *container.Element[FaceAny]) bool {
@@ -223,11 +202,6 @@ func (entity *EntityBehavior) getComponentElement(name string) (*container.Eleme
 }
 
 func (entity *EntityBehavior) getComponentElementByID(id int64) (*container.Element[FaceAny], bool) {
-	if entity.opts.EnableFastGetComponentByID {
-		e, ok := entity.componentByIDMap[id]
-		return e, ok
-	}
-
 	var e *container.Element[FaceAny]
 
 	entity.componentList.Traversal(func(other *container.Element[FaceAny]) bool {

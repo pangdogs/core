@@ -6,12 +6,11 @@ import (
 
 // EntityOptions 创建实体（Entity）的所有选项
 type EntityOptions struct {
-	Inheritor                  Face[Entity]              // 继承者，需要拓展实体（Entity）自身功能时需要使用
-	Prototype                  string                    // 实体（Entity）原型
-	FaceCache                  *container.Cache[FaceAny] // FaceCache用于提高性能，通常传入运行时上下文（Runtime Context）选项中的FaceCache
-	HookCache                  *container.Cache[Hook]    // HookCache用于提高性能，通常传入运行时上下文（Runtime Context）选项中的HookCache
-	EnableFastGetComponent     bool                      // 是否开启使用组件（Component）名称快速查询组件功能
-	EnableFastGetComponentByID bool                      // 是否开启使用组件（Component）运行时ID快速查询组件功能
+	Inheritor                    Face[Entity]              // 继承者，需要拓展实体（Entity）自身功能时需要使用
+	Prototype                    string                    // 实体（Entity）原型
+	FaceCache                    *container.Cache[FaceAny] // FaceCache用于提高性能，通常传入运行时上下文（Runtime Context）选项中的FaceCache
+	HookCache                    *container.Cache[Hook]    // HookCache用于提高性能，通常传入运行时上下文（Runtime Context）选项中的HookCache
+	EnableRemovePrimaryComponent bool                      // 主要组件能否被删除
 }
 
 // EntityOptionSetter 实体（Entity）选项设置器
@@ -28,8 +27,7 @@ func (*_EntityOptionSetter) Default() _EntityOptionSetterFunc {
 		o.Prototype = ""
 		o.FaceCache = nil
 		o.HookCache = nil
-		o.EnableFastGetComponent = false
-		o.EnableFastGetComponentByID = false
+		o.EnableRemovePrimaryComponent = false
 	}
 }
 
@@ -61,16 +59,9 @@ func (*_EntityOptionSetter) HookCache(v *container.Cache[Hook]) _EntityOptionSet
 	}
 }
 
-// EnableFastGetComponent 是否开启使用组件（Component）名称快速查询组件功能
-func (*_EntityOptionSetter) EnableFastGetComponent(v bool) _EntityOptionSetterFunc {
+// EnableRemovePrimaryComponent 主要组件能否被删除
+func (*_EntityOptionSetter) EnableRemovePrimaryComponent(v bool) _EntityOptionSetterFunc {
 	return func(o *EntityOptions) {
-		o.EnableFastGetComponent = v
-	}
-}
-
-// EnableFastGetComponentByID 是否开启使用组件（Component）运行时ID快速查询组件功能
-func (*_EntityOptionSetter) EnableFastGetComponentByID(v bool) _EntityOptionSetterFunc {
-	return func(o *EntityOptions) {
-		o.EnableFastGetComponentByID = v
+		o.EnableRemovePrimaryComponent = v
 	}
 }

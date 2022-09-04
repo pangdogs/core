@@ -378,7 +378,7 @@ type I%[1]s interface {
 			eventRecursion := *eventTabDefEventRecursion
 
 			switch eventRecursion {
-			case "EventRecursion_Allow", "EventRecursion_Discard", "EventRecursion_Deepest", "EventRecursion_Disallow":
+			case "EventRecursion_Allow", "EventRecursion_Discard", "EventRecursion_Deepest", "EventRecursion_Disallow", "EventRecursion_NotEmit":
 			default:
 				eventRecursion = "EventRecursion_Discard"
 			}
@@ -391,6 +391,8 @@ type I%[1]s interface {
 				eventRecursion = "EventRecursion_Deepest"
 			} else if strings.Contains(event.Comment, "[EventRecursion_Disallow]") {
 				eventRecursion = "EventRecursion_Disallow"
+			} else if strings.Contains(event.Comment, "[EventRecursion_NotEmit]") {
+				eventRecursion = "EventRecursion_NotEmit"
 			}
 
 			eventsRecursionCode += fmt.Sprintf("\t(*eventTab)[%d].Init(autoRecover, reportError, %s%s, hookCache, gcCollector)\n", i, _corePackage, eventRecursion)

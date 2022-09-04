@@ -114,8 +114,6 @@ type EntityBehavior struct {
 	runtimeCtx                  RuntimeContext
 	parent                      Entity
 	componentList               container.List[FaceAny]
-	componentMap                map[string]*container.Element[FaceAny]
-	componentByIDMap            map[int64]*container.Element[FaceAny]
 	initialing, shutting        bool
 	_eventEntityDestroySelf     Event
 	eventCompMgrAddComponents   Event
@@ -137,14 +135,6 @@ func (entity *EntityBehavior) init(opts *EntityOptions) {
 	entity.gc.EntityBehavior = entity
 
 	entity.componentList.Init(entity.opts.FaceCache, entity.getGCCollector())
-
-	if entity.opts.EnableFastGetComponent {
-		entity.componentMap = map[string]*container.Element[FaceAny]{}
-	}
-
-	if entity.opts.EnableFastGetComponentByID {
-		entity.componentByIDMap = map[int64]*container.Element[FaceAny]{}
-	}
 
 	entity._eventEntityDestroySelf.Init(false, nil, EventRecursion_Discard, opts.HookCache, entity.getGCCollector())
 	entity.eventCompMgrAddComponents.Init(false, nil, EventRecursion_Discard, opts.HookCache, entity.getGCCollector())
