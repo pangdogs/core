@@ -44,7 +44,7 @@ func (servCtx *_ServiceContextBehavior) GetOrCreateEntity(id int64, creator func
 	}
 
 	if id <= 0 {
-		return nil, false, errors.New("entity id less equal 0 invalid")
+		return nil, false, errors.New("input id less equal 0 invalid")
 	}
 
 	entity = creator(id)
