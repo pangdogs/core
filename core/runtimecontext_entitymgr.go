@@ -1,6 +1,7 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"github.com/pangdogs/galaxy/core/container"
 )
@@ -20,7 +21,7 @@ type _RuntimeContextEntityMgr interface {
 	GetEntityCount() int
 
 	// AddEntity 添加实体
-	AddEntity(entity Entity)
+	AddEntity(entity Entity) error
 
 	// RemoveEntity 删除实体
 	RemoveEntity(id int64)
@@ -82,13 +83,13 @@ func (runtimeCtx *_RuntimeContextBehavior) GetEntityCount() int {
 }
 
 // AddEntity 添加实体
-func (runtimeCtx *_RuntimeContextBehavior) AddEntity(entity Entity) {
+func (runtimeCtx *_RuntimeContextBehavior) AddEntity(entity Entity) error {
 	if entity == nil {
-		panic("nil entity")
+		return errors.New("nil entity")
 	}
 
 	if entity.GetRuntimeCtx() != nil {
-		panic("entity already added in runtime context")
+		return errors.New("entity already added in runtime context")
 	}
 
 	if entity.GetID() <= 0 {
@@ -104,7 +105,7 @@ func (runtimeCtx *_RuntimeContextBehavior) AddEntity(entity Entity) {
 	})
 
 	if _, ok := runtimeCtx.entityMap[entity.GetID()]; ok {
-		panic(fmt.Errorf("repeated entity '{%d}' in this runtime context", entity.GetID()))
+		return fmt.Errorf("repeated entity '%d' in this runtime context", entity.GetID())
 	}
 
 	entityInfo := _RuntimeCtxEntityInfo{}
@@ -122,6 +123,8 @@ func (runtimeCtx *_RuntimeContextBehavior) AddEntity(entity Entity) {
 	runtimeCtx.CollectGC(entity.getGC())
 
 	emitEventEntityMgrAddEntity[RuntimeContext](&runtimeCtx.eventEntityMgrAddEntity, runtimeCtx.opts.Inheritor.IFace, entity)
+
+	return nil
 }
 
 // RemoveEntity 删除实体

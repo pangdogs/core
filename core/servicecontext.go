@@ -11,6 +11,7 @@ import (
 type ServiceContext interface {
 	_Context
 	_RunnableMark
+	_ServiceContextEntityMgr
 
 	init(ctx context.Context, opts *ServiceContextOptions)
 
@@ -59,11 +60,11 @@ func NewServiceContextWithOpts(ctx context.Context, opts ServiceContextOptions) 
 type _ServiceContextBehavior struct {
 	_ContextBehavior
 	_RunnableMarkBehavior
-	opts               ServiceContextOptions
-	uidGenerator       int64
-	snowflakeNode      *snowflake.Node
-	entityMap          sync.Map
-	singletonEntityMap map[string]Entity
+	opts           ServiceContextOptions
+	uidGenerator   int64
+	snowflakeNode  *snowflake.Node
+	entityMap      map[int64]Entity
+	entityMapMutex sync.RWMutex
 }
 
 func (servCtx *_ServiceContextBehavior) init(ctx context.Context, opts *ServiceContextOptions) {
