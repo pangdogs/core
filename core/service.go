@@ -18,7 +18,7 @@ func ServiceGetOptions(serv Service) ServiceOptions {
 }
 
 // NewService 创建服务，线程安全
-func NewService(servCtx ServiceContext, optSetterFuncs ..._ServiceOptionSetterFunc) Service {
+func NewService(servCtx ServiceContext, optSetterFuncs ...ServiceOptionSetterFunc) Service {
 	opts := ServiceOptions{}
 	ServiceOptionSetter.Default()(&opts)
 

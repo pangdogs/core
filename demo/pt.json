@@ -2,9 +2,7 @@
   "Gate": {
     "Entity": {
       "Daemon": [
-        "github.com/pangdogs/galaxy/comps/helloworld/HelloWorldComp",
-		"",
-		""
+        "github.com/pangdogs/galaxy/comps/helloworld/HelloWorldComp"
       ]
     },
     "Singleton": [

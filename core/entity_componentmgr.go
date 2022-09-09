@@ -121,12 +121,20 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 
 	entity.componentList.TraversalAt(func(other *container.Element[FaceAny]) bool {
 		comp := Cache2IFace[Component](other.Value.Cache)
-		if comp.GetName() == name {
-			other.Escape()
-			emitEventCompMgrRemoveComponent(&entity.eventCompMgrRemoveComponent, entity.opts.Inheritor.IFace, comp)
-			return true
+		if comp.GetName() != name {
+			return false
 		}
-		return false
+
+		if !entity.opts.EnableRemovePrimaryComponent {
+			if comp.getPrimary() {
+				return true
+			}
+		}
+
+		other.Escape()
+		emitEventCompMgrRemoveComponent(&entity.eventCompMgrRemoveComponent, entity.opts.Inheritor.IFace, comp)
+
+		return true
 	}, e)
 }
 
@@ -135,6 +143,13 @@ func (entity *EntityBehavior) RemoveComponentByID(id int64) {
 	e, ok := entity.getComponentElementByID(id)
 	if !ok {
 		return
+	}
+
+	if !entity.opts.EnableRemovePrimaryComponent {
+		comp := Cache2IFace[Component](e.Value.Cache)
+		if comp.getPrimary() {
+			return
+		}
 	}
 
 	e.Escape()

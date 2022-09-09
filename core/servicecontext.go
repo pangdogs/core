@@ -33,7 +33,7 @@ func ServiceContextGetOptions(servCtx ServiceContext) ServiceContextOptions {
 }
 
 // NewServiceContext 创建服务上下文，线程安全
-func NewServiceContext(ctx context.Context, optSetterFuncs ..._ServiceContextOptionSetterFunc) ServiceContext {
+func NewServiceContext(ctx context.Context, optSetterFuncs ...ServiceContextOptionSetterFunc) ServiceContext {
 	opts := ServiceContextOptions{}
 	ServiceContextOptionSetter.Default()(&opts)
 

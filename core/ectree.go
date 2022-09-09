@@ -85,7 +85,7 @@ func (ecTree *ECTree) init(runtimeCtx RuntimeContext, masterTree bool) {
 	ecTree.inited = true
 
 	if !ecTree.masterTree {
-		ecTree.hook = BindEvent[eventEntityMgrNotifyECTreeRemoveEntity[RuntimeContext]](ecTree.runtimeCtx.eventEntityMgrNotifyECTreeRemoveEntity(), ecTree)
+		ecTree.hook = BindEvent[eventEntityMgrNotifyECTreeRemoveEntity](ecTree.runtimeCtx.eventEntityMgrNotifyECTreeRemoveEntity(), ecTree)
 	}
 }
 

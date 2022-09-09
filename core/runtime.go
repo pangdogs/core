@@ -18,7 +18,7 @@ func RuntimeGetOptions(runtime Runtime) RuntimeOptions {
 }
 
 // NewRuntime 创建运行时，线程安全
-func NewRuntime(runtimeCtx RuntimeContext, optSetterFuncs ..._RuntimeOptionSetterFunc) Runtime {
+func NewRuntime(runtimeCtx RuntimeContext, optSetterFuncs ...RuntimeOptionSetterFunc) Runtime {
 	opts := RuntimeOptions{}
 	RuntimeOptionSetter.Default()(&opts)
 

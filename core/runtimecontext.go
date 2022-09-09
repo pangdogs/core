@@ -35,7 +35,7 @@ func RuntimeContextGetOptions(runtimeCtx RuntimeContext) RuntimeContextOptions {
 }
 
 // NewRuntimeContext 创建运行时上下文，线程安全
-func NewRuntimeContext(servCtx ServiceContext, optSetterFuncs ..._RuntimeContextOptionSetterFunc) RuntimeContext {
+func NewRuntimeContext(servCtx ServiceContext, optSetterFuncs ...RuntimeContextOptionSetterFunc) RuntimeContext {
 	opts := RuntimeContextOptions{}
 	RuntimeContextOptionSetter.Default()(&opts)
 

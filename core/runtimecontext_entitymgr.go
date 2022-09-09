@@ -110,8 +110,8 @@ func (runtimeCtx *_RuntimeContextBehavior) AddEntity(entity Entity) error {
 
 	entityInfo := _RuntimeCtxEntityInfo{}
 
-	entityInfo.Hooks[0] = BindEvent[EventCompMgrAddComponents[Entity]](entity.EventCompMgrAddComponents(), runtimeCtx)
-	entityInfo.Hooks[1] = BindEvent[EventCompMgrRemoveComponent[Entity]](entity.EventCompMgrRemoveComponent(), runtimeCtx)
+	entityInfo.Hooks[0] = BindEvent[EventCompMgrAddComponents](entity.EventCompMgrAddComponents(), runtimeCtx)
+	entityInfo.Hooks[1] = BindEvent[EventCompMgrRemoveComponent](entity.EventCompMgrRemoveComponent(), runtimeCtx)
 
 	entityInfo.Element = runtimeCtx.entityList.PushBack(FaceAny{
 		IFace: entity,
@@ -122,7 +122,7 @@ func (runtimeCtx *_RuntimeContextBehavior) AddEntity(entity Entity) error {
 
 	runtimeCtx.CollectGC(entity.getGC())
 
-	emitEventEntityMgrAddEntity[RuntimeContext](&runtimeCtx.eventEntityMgrAddEntity, runtimeCtx.opts.Inheritor.IFace, entity)
+	emitEventEntityMgrAddEntity(&runtimeCtx.eventEntityMgrAddEntity, runtimeCtx.opts.Inheritor.IFace, entity)
 
 	return nil
 }
@@ -142,7 +142,7 @@ func (runtimeCtx *_RuntimeContextBehavior) RemoveEntity(id int64) {
 	entity.setShutting(true)
 	defer entity.setShutting(false)
 
-	emitEventEntityMgrNotifyECTreeRemoveEntity[RuntimeContext](&runtimeCtx._eventEntityMgrNotifyECTreeRemoveEntity, runtimeCtx.opts.Inheritor.IFace, entity)
+	emitEventEntityMgrNotifyECTreeRemoveEntity(&runtimeCtx._eventEntityMgrNotifyECTreeRemoveEntity, runtimeCtx.opts.Inheritor.IFace, entity)
 
 	runtimeCtx.ecTree.RemoveChild(id)
 
@@ -153,7 +153,7 @@ func (runtimeCtx *_RuntimeContextBehavior) RemoveEntity(id int64) {
 		e.Hooks[i].Unbind()
 	}
 
-	emitEventEntityMgrRemoveEntity[RuntimeContext](&runtimeCtx.eventEntityMgrRemoveEntity, runtimeCtx.opts.Inheritor.IFace, entity)
+	emitEventEntityMgrRemoveEntity(&runtimeCtx.eventEntityMgrRemoveEntity, runtimeCtx.opts.Inheritor.IFace, entity)
 }
 
 // EventEntityMgrAddEntity 事件：运行时上下文（Runtime Context）添加实体（Entity）

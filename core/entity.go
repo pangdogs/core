@@ -83,7 +83,7 @@ func EntityGetShutting(e Entity) bool {
 }
 
 // NewEntity 创建实体，线程安全
-func NewEntity(optSetterFuncs ..._EntityOptionSetterFunc) Entity {
+func NewEntity(optSetterFuncs ...EntityOptionSetterFunc) Entity {
 	opts := EntityOptions{}
 	EntityOptionSetter.Default()(&opts)
 

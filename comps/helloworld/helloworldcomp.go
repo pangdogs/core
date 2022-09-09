@@ -6,7 +6,7 @@ import (
 	"github.com/pangdogs/galaxy/core"
 )
 
-// HelloWorldComp HelloWorld示例组件，实体（Entity）创建时，在控制台打印`Hello World`。
+// HelloWorldComp HelloWorld示例组件，组件Start时，在控制台打印`Hello World`。
 type HelloWorldComp struct {
 	core.ComponentBehavior
 }

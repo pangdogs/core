@@ -9,12 +9,13 @@ type ServiceOptions struct {
 // ServiceOptionSetter 服务（Service）选项设置器
 var ServiceOptionSetter = &_ServiceOptionSetter{}
 
-type _ServiceOptionSetterFunc func(o *ServiceOptions)
+// ServiceOptionSetterFunc 服务（Service）选项设置器函数
+type ServiceOptionSetterFunc func(o *ServiceOptions)
 
 type _ServiceOptionSetter struct{}
 
 // Default 默认值
-func (*_ServiceOptionSetter) Default() _ServiceOptionSetterFunc {
+func (*_ServiceOptionSetter) Default() ServiceOptionSetterFunc {
 	return func(o *ServiceOptions) {
 		o.Inheritor = Face[Service]{}
 		o.EnableAutoRecover = false
@@ -22,14 +23,14 @@ func (*_ServiceOptionSetter) Default() _ServiceOptionSetterFunc {
 }
 
 // Inheritor 继承者，需要拓展服务（Service）自身功能时需要使用
-func (*_ServiceOptionSetter) Inheritor(v Face[Service]) _ServiceOptionSetterFunc {
+func (*_ServiceOptionSetter) Inheritor(v Face[Service]) ServiceOptionSetterFunc {
 	return func(o *ServiceOptions) {
 		o.Inheritor = v
 	}
 }
 
 // EnableAutoRecover 是否开启panic时自动恢复
-func (*_ServiceOptionSetter) EnableAutoRecover(v bool) _ServiceOptionSetterFunc {
+func (*_ServiceOptionSetter) EnableAutoRecover(v bool) ServiceOptionSetterFunc {
 	return func(o *ServiceOptions) {
 		o.EnableAutoRecover = v
 	}

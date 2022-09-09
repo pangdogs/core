@@ -70,10 +70,10 @@ func (runtime *_RuntimeBehavior) loopStarted() (hooks [4]Hook) {
 		frame.runningBegin()
 	}
 
-	hooks[0] = BindEvent[EventEntityMgrAddEntity[RuntimeContext]](runtimeCtx.EventEntityMgrAddEntity(), runtime)
-	hooks[1] = BindEvent[EventEntityMgrRemoveEntity[RuntimeContext]](runtimeCtx.EventEntityMgrRemoveEntity(), runtime)
-	hooks[2] = BindEvent[EventEntityMgrEntityAddComponents[RuntimeContext]](runtimeCtx.EventEntityMgrEntityAddComponents(), runtime)
-	hooks[3] = BindEvent[EventEntityMgrEntityRemoveComponent[RuntimeContext]](runtimeCtx.EventEntityMgrEntityRemoveComponent(), runtime)
+	hooks[0] = BindEvent[EventEntityMgrAddEntity](runtimeCtx.EventEntityMgrAddEntity(), runtime)
+	hooks[1] = BindEvent[EventEntityMgrRemoveEntity](runtimeCtx.EventEntityMgrRemoveEntity(), runtime)
+	hooks[2] = BindEvent[EventEntityMgrEntityAddComponents](runtimeCtx.EventEntityMgrEntityAddComponents(), runtime)
+	hooks[3] = BindEvent[EventEntityMgrEntityRemoveComponent](runtimeCtx.EventEntityMgrEntityRemoveComponent(), runtime)
 
 	runtimeCtx.RangeEntities(func(entity Entity) bool {
 		callOuterNoRet(runtime.opts.EnableAutoRecover, runtimeCtx.GetReportError(), func() {
