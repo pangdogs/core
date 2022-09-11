@@ -5,7 +5,7 @@ import (
 )
 
 // HelloWorld HelloWorld组件接口名称
-var HelloWorld = core.IFaceName[IHelloWorld]()
+var HelloWorld = core.TypeFullName[IHelloWorld]()
 
 // IHelloWorld HelloWorld组件接口定义
 type IHelloWorld interface{}

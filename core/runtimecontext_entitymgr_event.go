@@ -1,4 +1,4 @@
-//go:generate go run github.com/pangdogs/galaxy/core/eventcode -decl $GOFILE -core "" -emit_package $GOPACKAGE -export_emit=false
+//go:generate go run github.com/pangdogs/galaxy/core/eventcode --decl_file=$GOFILE --not_import_core gen_emit --package=$GOPACKAGE --default_export=0
 package core
 
 // EventEntityMgrAddEntity 事件定义：运行时上下文（Runtime Context）添加实体（Entity）

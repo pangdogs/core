@@ -14,7 +14,7 @@ type IEvent interface {
 	removeDelegate(delegate interface{})
 }
 
-// IEventTab 事件表接口，我们可以把一些事件定义在同一个源码文件中，开启事件代码生成器的生成事件表选项，这样可以自动生成事件列表，无需手动声明事件
+// IEventTab 事件表接口，我们可以把一些事件定义在同一个源码文件中，开启事件代码生成器的生成事件表选项，这样可以自动生成事件列表
 type IEventTab interface {
 	// Init 初始化事件表
 	Init(autoRecover bool, reportError chan error, hookCache *container.Cache[Hook], gcCollector container.GCCollector)

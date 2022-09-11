@@ -1,4 +1,4 @@
-//go:generate go run github.com/pangdogs/galaxy/core/eventcode -decl $GOFILE -core "" -emit_package $GOPACKAGE  -export_emit=false
+//go:generate go run github.com/pangdogs/galaxy/core/eventcode --decl_file=$GOFILE --not_import_core gen_emit --package=$GOPACKAGE
 package core
 
 // EventECTreeAddChild 事件定义：EC树中子实体加入父实体
