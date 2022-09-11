@@ -2,7 +2,7 @@
 
 package core
 
-func EmitEventEntityDestroySelf(event IEvent, entity Entity) {
+func emitEventEntityDestroySelf(event IEvent, entity Entity) {
 	if event == nil {
 		panic("nil event")
 	}
