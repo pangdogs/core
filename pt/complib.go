@@ -16,21 +16,21 @@ func init() {
 // RegisterComp 注册组件原型（Component Prototype），共有RegisterComp()与RegisterCreator()两个注册方法，
 //二者选其一使用即可。一般在init()函数中使用。线程安全。
 //	参数：
-//		api：组件实现的api名称，实体将通过api名称来获取组件，多个组件可以实现同一个api。
+//		iface：组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
 //		descr：组件功能的描述说明。
 //		comp：组件对象。
-func RegisterComp(api, descr string, comp interface{}) {
-	componentLib.RegisterComp(api, descr, comp)
+func RegisterComp(iface, descr string, comp interface{}) {
+	componentLib.RegisterComp(iface, descr, comp)
 }
 
 // RegisterCompCreator 注册组件构建函数（Component Builder），共有RegisterComp()与RegisterCreator()两个注册方法，
 //二者选其一使用即可。一般在init()函数中使用。线程安全。
 //	参数：
-//		api：组件实现的api名称，实体将通过api名称来获取组件，多个组件可以实现同一个api。
+//		iface：组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
 //		descr：组件功能的描述说明。
 //		creator：组件构建函数。
-func RegisterCompCreator(api, descr string, creator func() core.Component) {
-	componentLib.RegisterCreator(api, descr, creator)
+func RegisterCompCreator(iface, descr string, creator func() core.Component) {
+	componentLib.RegisterCreator(iface, descr, creator)
 }
 
 // GetCompPt 获取组件原型，线程安全。
@@ -58,31 +58,31 @@ func (lib *_ComponentLib) init() {
 	}
 }
 
-func (lib *_ComponentLib) RegisterComp(api, descr string, comp interface{}) {
-	if api == "" {
-		panic("empty api")
+func (lib *_ComponentLib) RegisterComp(iface, descr string, comp interface{}) {
+	if iface == "" {
+		panic("empty iface")
 	}
 
 	if comp == nil {
 		panic("nil comp")
 	}
 
-	lib.register(api, descr, _CompConstructType_Reflect, reflect.TypeOf(comp), nil)
+	lib.register(iface, descr, _CompConstructType_Reflect, reflect.TypeOf(comp), nil)
 }
 
-func (lib *_ComponentLib) RegisterCreator(api, descr string, creator func() core.Component) {
-	if api == "" {
-		panic("empty api")
+func (lib *_ComponentLib) RegisterCreator(iface, descr string, creator func() core.Component) {
+	if iface == "" {
+		panic("empty iface")
 	}
 
 	if creator == nil {
 		panic("nil creator")
 	}
 
-	lib.register(api, descr, _CompConstructType_Creator, nil, creator)
+	lib.register(iface, descr, _CompConstructType_Creator, nil, creator)
 }
 
-func (lib *_ComponentLib) register(api, descr string, constructType _CompConstructType, tfComp reflect.Type, creator func() core.Component) {
+func (lib *_ComponentLib) register(iface, descr string, constructType _CompConstructType, tfComp reflect.Type, creator func() core.Component) {
 	lib.mutex.Lock()
 	defer lib.mutex.Unlock()
 
@@ -117,9 +117,9 @@ func (lib *_ComponentLib) register(api, descr string, constructType _CompConstru
 	}
 
 	lib.compPtMap[tag] = ComponentPt{
-		Api:           api,
+		Interface:     iface,
 		Tag:           tag,
-		Descr:         descr,
+		Description:   descr,
 		constructType: constructType,
 		tfComp:        tfComp,
 		creator:       creator,

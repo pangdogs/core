@@ -6,8 +6,8 @@ func emitEventEntityMgrAddEntity(event IEvent, runtimeCtx RuntimeContext, entity
 	if event == nil {
 		panic("nil event")
 	}
-	event.Emit(func(delegate IFaceCache) bool {
-		Cache2IFace[EventEntityMgrAddEntity](delegate).OnEntityMgrAddEntity(runtimeCtx, entity)
+	event.Emit(func(delegate IfaceCache) bool {
+		Cache2Iface[EventEntityMgrAddEntity](delegate).OnEntityMgrAddEntity(runtimeCtx, entity)
 		return true
 	})
 }
@@ -16,8 +16,8 @@ func emitEventEntityMgrRemoveEntity(event IEvent, runtimeCtx RuntimeContext, ent
 	if event == nil {
 		panic("nil event")
 	}
-	event.Emit(func(delegate IFaceCache) bool {
-		Cache2IFace[EventEntityMgrRemoveEntity](delegate).OnEntityMgrRemoveEntity(runtimeCtx, entity)
+	event.Emit(func(delegate IfaceCache) bool {
+		Cache2Iface[EventEntityMgrRemoveEntity](delegate).OnEntityMgrRemoveEntity(runtimeCtx, entity)
 		return true
 	})
 }
@@ -26,8 +26,8 @@ func emitEventEntityMgrEntityAddComponents(event IEvent, runtimeCtx RuntimeConte
 	if event == nil {
 		panic("nil event")
 	}
-	event.Emit(func(delegate IFaceCache) bool {
-		Cache2IFace[EventEntityMgrEntityAddComponents](delegate).OnEntityMgrEntityAddComponents(runtimeCtx, entity, components)
+	event.Emit(func(delegate IfaceCache) bool {
+		Cache2Iface[EventEntityMgrEntityAddComponents](delegate).OnEntityMgrEntityAddComponents(runtimeCtx, entity, components)
 		return true
 	})
 }
@@ -36,8 +36,8 @@ func emitEventEntityMgrEntityRemoveComponent(event IEvent, runtimeCtx RuntimeCon
 	if event == nil {
 		panic("nil event")
 	}
-	event.Emit(func(delegate IFaceCache) bool {
-		Cache2IFace[EventEntityMgrEntityRemoveComponent](delegate).OnEntityMgrEntityRemoveComponent(runtimeCtx, entity, component)
+	event.Emit(func(delegate IfaceCache) bool {
+		Cache2Iface[EventEntityMgrEntityRemoveComponent](delegate).OnEntityMgrEntityRemoveComponent(runtimeCtx, entity, component)
 		return true
 	})
 }
@@ -46,8 +46,8 @@ func emitEventEntityMgrNotifyECTreeRemoveEntity(event IEvent, runtimeCtx Runtime
 	if event == nil {
 		panic("nil event")
 	}
-	event.Emit(func(delegate IFaceCache) bool {
-		Cache2IFace[eventEntityMgrNotifyECTreeRemoveEntity](delegate).onEntityMgrNotifyECTreeRemoveEntity(runtimeCtx, entity)
+	event.Emit(func(delegate IfaceCache) bool {
+		Cache2Iface[eventEntityMgrNotifyECTreeRemoveEntity](delegate).onEntityMgrNotifyECTreeRemoveEntity(runtimeCtx, entity)
 		return true
 	})
 }

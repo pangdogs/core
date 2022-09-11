@@ -14,9 +14,9 @@ const (
 
 // ComponentPt 组件原型
 type ComponentPt struct {
-	Api           string
+	Interface     string
 	Tag           string
-	Descr         string
+	Description   string
 	constructType _CompConstructType
 	tfComp        reflect.Type
 	creator       func() core.Component

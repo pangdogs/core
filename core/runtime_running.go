@@ -84,7 +84,7 @@ func (runtime *_RuntimeBehavior) loopStarted() (hooks [4]Hook) {
 
 	callOuterNoRet(runtime.opts.EnableAutoRecover, runtimeCtx.GetReportError(), func() {
 		if runtimeCtx.getOptions().StartedCallback != nil {
-			runtimeCtx.getOptions().StartedCallback(runtime.opts.Inheritor.IFace)
+			runtimeCtx.getOptions().StartedCallback(runtime.opts.Inheritor.Iface)
 		}
 	})
 
@@ -97,7 +97,7 @@ func (runtime *_RuntimeBehavior) loopStopped(hooks [4]Hook) {
 
 	callOuterNoRet(runtime.opts.EnableAutoRecover, runtimeCtx.GetReportError(), func() {
 		if runtimeCtx.getOptions().StoppedCallback != nil {
-			runtimeCtx.getOptions().StoppedCallback(runtime.opts.Inheritor.IFace)
+			runtimeCtx.getOptions().StoppedCallback(runtime.opts.Inheritor.Iface)
 		}
 	})
 

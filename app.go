@@ -9,7 +9,7 @@ type App struct {
 
 func (app *App) Run() {
 	var runApp = kingpin.Command("run", "开始运行。").Default()
-	var ptConfFile = runApp.Flag("pt", "原型配置文件(json|xml)。").Default("pt.json").String()
+	var ptConfFile = runApp.Flag("pt_file", "原型配置文件(*.json|*.xml)。").Default("pt.json").String()
 	var printInfo = kingpin.Command("print", "打印信息。").Alias("p")
 	var printComp = printInfo.Command("comp", "打印所有组件。")
 

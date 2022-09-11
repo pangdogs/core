@@ -6,8 +6,8 @@ func emitEventEntityDestroySelf(event IEvent, entity Entity) {
 	if event == nil {
 		panic("nil event")
 	}
-	event.Emit(func(delegate IFaceCache) bool {
-		Cache2IFace[eventEntityDestroySelf](delegate).onEntityDestroySelf(entity)
+	event.Emit(func(delegate IfaceCache) bool {
+		Cache2Iface[eventEntityDestroySelf](delegate).onEntityDestroySelf(entity)
 		return true
 	})
 }

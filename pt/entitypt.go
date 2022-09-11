@@ -28,7 +28,7 @@ func (pt *EntityPt) NewWithOpts(opts core.EntityOptions) core.Entity {
 
 	entity := core.NewEntityWithOpts(opts)
 	for i := range pt.compPts {
-		entity.AddComponent(pt.compPts[i].Api, pt.compPts[i].New())
+		entity.AddComponent(pt.compPts[i].Interface, pt.compPts[i].New())
 	}
 
 	return entity

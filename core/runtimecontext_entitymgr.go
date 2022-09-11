@@ -52,7 +52,7 @@ func (runtimeCtx *_RuntimeContextBehavior) GetEntity(id int64) (Entity, bool) {
 		return nil, false
 	}
 
-	return Cache2IFace[Entity](e.Element.Value.Cache), true
+	return Cache2Iface[Entity](e.Element.Value.Cache), true
 }
 
 // RangeEntities 遍历所有实体
@@ -62,7 +62,7 @@ func (runtimeCtx *_RuntimeContextBehavior) RangeEntities(fun func(entity Entity)
 	}
 
 	runtimeCtx.entityList.Traversal(func(e *container.Element[FaceAny]) bool {
-		return fun(Cache2IFace[Entity](e.Value.Cache))
+		return fun(Cache2Iface[Entity](e.Value.Cache))
 	})
 }
 
@@ -73,7 +73,7 @@ func (runtimeCtx *_RuntimeContextBehavior) ReverseRangeEntities(fun func(entity 
 	}
 
 	runtimeCtx.entityList.ReverseTraversal(func(e *container.Element[FaceAny]) bool {
-		return fun(Cache2IFace[Entity](e.Value.Cache))
+		return fun(Cache2Iface[Entity](e.Value.Cache))
 	})
 }
 
@@ -96,7 +96,7 @@ func (runtimeCtx *_RuntimeContextBehavior) AddEntity(entity Entity) error {
 		entity.setID(runtimeCtx.servCtx.GenUID())
 	}
 
-	entity.setRuntimeCtx(runtimeCtx.opts.Inheritor.IFace)
+	entity.setRuntimeCtx(runtimeCtx.opts.Inheritor.Iface)
 	entity.RangeComponents(func(comp Component) bool {
 		if comp.GetID() <= 0 {
 			comp.setID(runtimeCtx.servCtx.GenUID())
@@ -114,15 +114,15 @@ func (runtimeCtx *_RuntimeContextBehavior) AddEntity(entity Entity) error {
 	entityInfo.Hooks[1] = BindEvent[EventCompMgrRemoveComponent](entity.EventCompMgrRemoveComponent(), runtimeCtx)
 
 	entityInfo.Element = runtimeCtx.entityList.PushBack(FaceAny{
-		IFace: entity,
-		Cache: IFace2Cache(entity),
+		Iface: entity,
+		Cache: Iface2Cache(entity),
 	})
 
 	runtimeCtx.entityMap[entity.GetID()] = entityInfo
 
 	runtimeCtx.CollectGC(entity.getGC())
 
-	emitEventEntityMgrAddEntity(&runtimeCtx.eventEntityMgrAddEntity, runtimeCtx.opts.Inheritor.IFace, entity)
+	emitEventEntityMgrAddEntity(&runtimeCtx.eventEntityMgrAddEntity, runtimeCtx.opts.Inheritor.Iface, entity)
 
 	return nil
 }
@@ -134,7 +134,7 @@ func (runtimeCtx *_RuntimeContextBehavior) RemoveEntity(id int64) {
 		return
 	}
 
-	entity := Cache2IFace[Entity](e.Element.Value.Cache)
+	entity := Cache2Iface[Entity](e.Element.Value.Cache)
 	if entity.getInitialing() || entity.getShutting() {
 		return
 	}
@@ -142,7 +142,7 @@ func (runtimeCtx *_RuntimeContextBehavior) RemoveEntity(id int64) {
 	entity.setShutting(true)
 	defer entity.setShutting(false)
 
-	emitEventEntityMgrNotifyECTreeRemoveEntity(&runtimeCtx._eventEntityMgrNotifyECTreeRemoveEntity, runtimeCtx.opts.Inheritor.IFace, entity)
+	emitEventEntityMgrNotifyECTreeRemoveEntity(&runtimeCtx._eventEntityMgrNotifyECTreeRemoveEntity, runtimeCtx.opts.Inheritor.Iface, entity)
 
 	runtimeCtx.ecTree.RemoveChild(id)
 
@@ -153,7 +153,7 @@ func (runtimeCtx *_RuntimeContextBehavior) RemoveEntity(id int64) {
 		e.Hooks[i].Unbind()
 	}
 
-	emitEventEntityMgrRemoveEntity(&runtimeCtx.eventEntityMgrRemoveEntity, runtimeCtx.opts.Inheritor.IFace, entity)
+	emitEventEntityMgrRemoveEntity(&runtimeCtx.eventEntityMgrRemoveEntity, runtimeCtx.opts.Inheritor.Iface, entity)
 }
 
 // EventEntityMgrAddEntity 事件：运行时上下文（Runtime Context）添加实体（Entity）
@@ -187,10 +187,10 @@ func (runtimeCtx *_RuntimeContextBehavior) OnCompMgrAddComponents(entity Entity,
 			components[i].setID(runtimeCtx.servCtx.GenUID())
 		}
 	}
-	emitEventEntityMgrEntityAddComponents(&runtimeCtx.eventEntityMgrEntityAddComponents, runtimeCtx.opts.Inheritor.IFace, entity, components)
+	emitEventEntityMgrEntityAddComponents(&runtimeCtx.eventEntityMgrEntityAddComponents, runtimeCtx.opts.Inheritor.Iface, entity, components)
 }
 
 // OnCompMgrRemoveComponent 事件回调：实体的组件管理器删除组件
 func (runtimeCtx *_RuntimeContextBehavior) OnCompMgrRemoveComponent(entity Entity, component Component) {
-	emitEventEntityMgrEntityRemoveComponent(&runtimeCtx.eventEntityMgrEntityRemoveComponent, runtimeCtx.opts.Inheritor.IFace, entity, component)
+	emitEventEntityMgrEntityRemoveComponent(&runtimeCtx.eventEntityMgrEntityRemoveComponent, runtimeCtx.opts.Inheritor.Iface, entity, component)
 }

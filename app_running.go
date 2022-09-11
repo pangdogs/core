@@ -47,11 +47,17 @@ func (app *App) runService(ctx context.Context, wg *sync.WaitGroup, servicePtNam
 		entityLib.Register(entityPtName, entityPtConf)
 	}
 
-	core.NewServiceContext(ctx,
+	serviceCtx := core.NewServiceContext(ctx,
 		core.ServiceContextOptionSetter.Prototype(servicePtName),
 		core.ServiceContextOptionSetter.NodeID(10),
+		core.ServiceContextOptionSetter.ReportError(make(chan error, 10)),
 	)
 
+	service := core.NewService(serviceCtx)
+
+	//runtimeCtx := core.NewRuntimeContext(serviceCtx)
+
+	<-service.Run()
 }
 
 func (app *App) loadPtConfig(ptConfFile string) pt.ServiceConfTab {

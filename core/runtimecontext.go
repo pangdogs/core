@@ -49,14 +49,14 @@ func NewRuntimeContext(servCtx ServiceContext, optSetterFuncs ...RuntimeContextO
 // NewRuntimeContextWithOpts 创建运行时上下文并传入参数，线程安全
 func NewRuntimeContextWithOpts(servCtx ServiceContext, opts RuntimeContextOptions) RuntimeContext {
 	if !opts.Inheritor.IsNil() {
-		opts.Inheritor.IFace.init(servCtx, &opts)
-		return opts.Inheritor.IFace
+		opts.Inheritor.Iface.init(servCtx, &opts)
+		return opts.Inheritor.Iface
 	}
 
 	runtimeCtx := &_RuntimeContextBehavior{}
 	runtimeCtx.init(servCtx, &opts)
 
-	return runtimeCtx.opts.Inheritor.IFace
+	return runtimeCtx.opts.Inheritor.Iface
 }
 
 type _RuntimeCtxEntityInfo struct {
@@ -103,16 +103,16 @@ func (runtimeCtx *_RuntimeContextBehavior) init(servCtx ServiceContext, opts *Ru
 	runtimeCtx._ContextBehavior.init(servCtx, runtimeCtx.opts.ReportError)
 	runtimeCtx.servCtx = servCtx
 
-	runtimeCtx.entityList.Init(runtimeCtx.opts.FaceCache, runtimeCtx.opts.Inheritor.IFace)
+	runtimeCtx.entityList.Init(runtimeCtx.opts.FaceCache, runtimeCtx.opts.Inheritor.Iface)
 	runtimeCtx.entityMap = map[int64]_RuntimeCtxEntityInfo{}
 
-	runtimeCtx.eventEntityMgrAddEntity.Init(false, nil, EventRecursion_Discard, runtimeCtx.opts.HookCache, runtimeCtx.opts.Inheritor.IFace)
-	runtimeCtx.eventEntityMgrRemoveEntity.Init(false, nil, EventRecursion_Discard, runtimeCtx.opts.HookCache, runtimeCtx.opts.Inheritor.IFace)
-	runtimeCtx.eventEntityMgrEntityAddComponents.Init(false, nil, EventRecursion_Discard, runtimeCtx.opts.HookCache, runtimeCtx.opts.Inheritor.IFace)
-	runtimeCtx.eventEntityMgrEntityRemoveComponent.Init(false, nil, EventRecursion_Discard, runtimeCtx.opts.HookCache, runtimeCtx.opts.Inheritor.IFace)
-	runtimeCtx._eventEntityMgrNotifyECTreeRemoveEntity.Init(false, nil, EventRecursion_Discard, runtimeCtx.opts.HookCache, runtimeCtx.opts.Inheritor.IFace)
+	runtimeCtx.eventEntityMgrAddEntity.Init(false, nil, EventRecursion_Discard, runtimeCtx.opts.HookCache, runtimeCtx.opts.Inheritor.Iface)
+	runtimeCtx.eventEntityMgrRemoveEntity.Init(false, nil, EventRecursion_Discard, runtimeCtx.opts.HookCache, runtimeCtx.opts.Inheritor.Iface)
+	runtimeCtx.eventEntityMgrEntityAddComponents.Init(false, nil, EventRecursion_Discard, runtimeCtx.opts.HookCache, runtimeCtx.opts.Inheritor.Iface)
+	runtimeCtx.eventEntityMgrEntityRemoveComponent.Init(false, nil, EventRecursion_Discard, runtimeCtx.opts.HookCache, runtimeCtx.opts.Inheritor.Iface)
+	runtimeCtx._eventEntityMgrNotifyECTreeRemoveEntity.Init(false, nil, EventRecursion_Discard, runtimeCtx.opts.HookCache, runtimeCtx.opts.Inheritor.Iface)
 
-	runtimeCtx.ecTree.init(runtimeCtx.opts.Inheritor.IFace, true)
+	runtimeCtx.ecTree.init(runtimeCtx.opts.Inheritor.Iface, true)
 }
 
 func (runtimeCtx *_RuntimeContextBehavior) getOptions() *RuntimeContextOptions {

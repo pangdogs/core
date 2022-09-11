@@ -103,8 +103,8 @@ func %[9]s%[1]s%[7]s(event %[6]sIEvent%[4]s) {
 	if event == nil {
 		panic("nil event")
 	}
-	event.Emit(func(delegate %[6]sIFaceCache) bool {
-		return %[6]sCache2IFace[%[2]s%[8]s](delegate).%[3]s(%[5]s)
+	event.Emit(func(delegate %[6]sIfaceCache) bool {
+		return %[6]sCache2Iface[%[2]s%[8]s](delegate).%[3]s(%[5]s)
 	})
 }
 `, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, corePrefix, eventDecl.FuncTypeParamsDecl, eventDecl.FuncTypeParams, exportEmitStr)
@@ -115,8 +115,8 @@ func %[9]s%[1]s%[7]s(event %[6]sIEvent%[4]s) {
 	if event == nil {
 		panic("nil event")
 	}
-	event.Emit(func(delegate %[6]sIFaceCache) bool {
-		%[6]sCache2IFace[%[2]s%[8]s](delegate).%[3]s(%[5]s)
+	event.Emit(func(delegate %[6]sIfaceCache) bool {
+		%[6]sCache2Iface[%[2]s%[8]s](delegate).%[3]s(%[5]s)
 		return true
 	})
 }

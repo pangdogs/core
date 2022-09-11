@@ -32,14 +32,14 @@ func NewService(servCtx ServiceContext, optSetterFuncs ...ServiceOptionSetterFun
 // NewServiceWithOpts 创建服务并传入参数，线程安全
 func NewServiceWithOpts(servCtx ServiceContext, opts ServiceOptions) Service {
 	if !opts.Inheritor.IsNil() {
-		opts.Inheritor.IFace.init(servCtx, &opts)
-		return opts.Inheritor.IFace
+		opts.Inheritor.Iface.init(servCtx, &opts)
+		return opts.Inheritor.Iface
 	}
 
 	e := &_ServiceBehavior{}
 	e.init(servCtx, &opts)
 
-	return e.opts.Inheritor.IFace
+	return e.opts.Inheritor.Iface
 }
 
 type _ServiceBehavior struct {

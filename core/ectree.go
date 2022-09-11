@@ -121,8 +121,8 @@ func (ecTree *ECTree) AddChild(parentID, childID int64) error {
 	}
 
 	element := node.Children.PushBack(FaceAny{
-		IFace: child,
-		Cache: IFace2Cache[Entity](child),
+		Iface: child,
+		Cache: Iface2Cache[Entity](child),
 	})
 
 	ecTree.ecTree[childID] = _ECNode{
@@ -157,9 +157,9 @@ func (ecTree *ECTree) RemoveChild(childID int64) {
 	if node.Children != nil {
 		node.Children.ReverseTraversal(func(e *container.Element[FaceAny]) bool {
 			if ecTree.masterTree {
-				Cache2IFace[Entity](e.Value.Cache).DestroySelf()
+				Cache2Iface[Entity](e.Value.Cache).DestroySelf()
 			} else {
-				ecTree.RemoveChild(Cache2IFace[Entity](e.Value.Cache).GetID())
+				ecTree.RemoveChild(Cache2Iface[Entity](e.Value.Cache).GetID())
 			}
 			return true
 		})
@@ -168,7 +168,7 @@ func (ecTree *ECTree) RemoveChild(childID int64) {
 	delete(ecTree.ecTree, childID)
 	node.ElementInParent.Escape()
 
-	child := Cache2IFace[Entity](node.ElementInParent.Value.Cache)
+	child := Cache2Iface[Entity](node.ElementInParent.Value.Cache)
 
 	if ecTree.masterTree {
 		child.setParent(nil)
@@ -189,7 +189,7 @@ func (ecTree *ECTree) RangeChildren(parentID int64, fun func(child Entity) bool)
 	}
 
 	node.Children.Traversal(func(e *container.Element[FaceAny]) bool {
-		return fun(Cache2IFace[Entity](e.Value.Cache))
+		return fun(Cache2Iface[Entity](e.Value.Cache))
 	})
 }
 
@@ -205,7 +205,7 @@ func (ecTree *ECTree) ReverseRangeChildren(parentID int64, fun func(child Entity
 	}
 
 	node.Children.ReverseTraversal(func(e *container.Element[FaceAny]) bool {
-		return fun(Cache2IFace[Entity](e.Value.Cache))
+		return fun(Cache2Iface[Entity](e.Value.Cache))
 	})
 }
 

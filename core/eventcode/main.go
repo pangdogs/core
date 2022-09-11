@@ -58,14 +58,14 @@ func main() {
 	emitCmd := kingpin.Command("gen_emit", "通过定义的事件生成发送事件代码。")
 	emitPackage := emitCmd.Flag("package", "生成的发送事件代码时使用的包名。").String()
 	emitDir := emitCmd.Flag("dir", "生成的发送事件代码产生的源文件（*.go）存放的相对目录。").String()
-	emitDefExport := emitCmd.Flag("default_export", "生成的发送事件代码默认的可见性。").Default("true").String()
+	emitDefExport := emitCmd.Flag("default_export", "生成的发送事件代码默认的可见性，事件选项[EmitExport][EmitUnExport]可以覆盖此配置。").Default("true").String()
 
 	// 生成事件表代码相关选项
 	eventTabCmd := kingpin.Command("gen_eventtab", "通过定义的事件生成事件表代码。")
 	eventTabPackage := eventTabCmd.Flag("package", "生成的事件表代码使用的包名。").String()
 	eventTabDir := eventTabCmd.Flag("dir", "生成的事件表产生的源文件（*.go）存放的相对目录。").String()
 	eventTabName := eventTabCmd.Flag("name", "生成的事件表名。").String()
-	eventTabDefEventRecursion := eventTabCmd.Flag("default_event_recursion", "生成的事件表代码默认的事件递归处理方式。").Default("EventRecursion_Discard").String()
+	eventTabDefEventRecursion := eventTabCmd.Flag("default_event_recursion", "生成的事件表代码默认的事件递归处理方式，事件选项[EventRecursion_Allow][EventRecursion_Disallow][EventRecursion_NotEmit][EventRecursion_Discard][EventRecursion_Deepest]可以覆盖此配置。").Default("EventRecursion_Discard").String()
 
 	cmd := kingpin.Parse()
 

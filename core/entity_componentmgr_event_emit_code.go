@@ -6,8 +6,8 @@ func emitEventCompMgrAddComponents(event IEvent, entity Entity, components []Com
 	if event == nil {
 		panic("nil event")
 	}
-	event.Emit(func(delegate IFaceCache) bool {
-		Cache2IFace[EventCompMgrAddComponents](delegate).OnCompMgrAddComponents(entity, components)
+	event.Emit(func(delegate IfaceCache) bool {
+		Cache2Iface[EventCompMgrAddComponents](delegate).OnCompMgrAddComponents(entity, components)
 		return true
 	})
 }
@@ -16,8 +16,8 @@ func emitEventCompMgrRemoveComponent(event IEvent, entity Entity, component Comp
 	if event == nil {
 		panic("nil event")
 	}
-	event.Emit(func(delegate IFaceCache) bool {
-		Cache2IFace[EventCompMgrRemoveComponent](delegate).OnCompMgrRemoveComponent(entity, component)
+	event.Emit(func(delegate IfaceCache) bool {
+		Cache2Iface[EventCompMgrRemoveComponent](delegate).OnCompMgrRemoveComponent(entity, component)
 		return true
 	})
 }

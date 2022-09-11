@@ -41,7 +41,7 @@ type _EntityComponentMgr interface {
 // GetComponent 使用名称查询组件（Component），一般情况下名称指组件接口名称，也可以自定义名称，同个名称指向多个组件时，返回首个组件，非线程安全
 func (entity *EntityBehavior) GetComponent(name string) Component {
 	if e, ok := entity.getComponentElement(name); ok {
-		comp := Cache2IFace[Component](e.Value.Cache)
+		comp := Cache2Iface[Component](e.Value.Cache)
 		return comp
 	}
 
@@ -51,7 +51,7 @@ func (entity *EntityBehavior) GetComponent(name string) Component {
 // GetComponentByID 使用组件（Component）运行时ID查询组件，非线程安全
 func (entity *EntityBehavior) GetComponentByID(id int64) Component {
 	if e, ok := entity.getComponentElementByID(id); ok {
-		comp := Cache2IFace[Component](e.Value.Cache)
+		comp := Cache2Iface[Component](e.Value.Cache)
 		return comp
 	}
 
@@ -64,7 +64,7 @@ func (entity *EntityBehavior) GetComponents(name string) []Component {
 		var components []Component
 
 		entity.componentList.TraversalAt(func(other *container.Element[FaceAny]) bool {
-			comp := Cache2IFace[Component](other.Value.Cache)
+			comp := Cache2Iface[Component](other.Value.Cache)
 			if comp.GetName() == name {
 				components = append(components, comp)
 				return true
@@ -85,7 +85,7 @@ func (entity *EntityBehavior) RangeComponents(fun func(component Component) bool
 	}
 
 	entity.componentList.Traversal(func(e *container.Element[FaceAny]) bool {
-		comp := Cache2IFace[Component](e.Value.Cache)
+		comp := Cache2Iface[Component](e.Value.Cache)
 		return fun(comp)
 	})
 }
@@ -98,7 +98,7 @@ func (entity *EntityBehavior) AddComponents(name string, components []Component)
 		}
 	}
 
-	emitEventCompMgrAddComponents(&entity.eventCompMgrAddComponents, entity.opts.Inheritor.IFace, components)
+	emitEventCompMgrAddComponents(&entity.eventCompMgrAddComponents, entity.opts.Inheritor.Iface, components)
 	return nil
 }
 
@@ -108,7 +108,7 @@ func (entity *EntityBehavior) AddComponent(name string, component Component) err
 		return err
 	}
 
-	emitEventCompMgrAddComponents(&entity.eventCompMgrAddComponents, entity.opts.Inheritor.IFace, []Component{component})
+	emitEventCompMgrAddComponents(&entity.eventCompMgrAddComponents, entity.opts.Inheritor.Iface, []Component{component})
 	return nil
 }
 
@@ -120,7 +120,7 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 	}
 
 	entity.componentList.TraversalAt(func(other *container.Element[FaceAny]) bool {
-		comp := Cache2IFace[Component](other.Value.Cache)
+		comp := Cache2Iface[Component](other.Value.Cache)
 		if comp.GetName() != name {
 			return false
 		}
@@ -132,7 +132,7 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 		}
 
 		other.Escape()
-		emitEventCompMgrRemoveComponent(&entity.eventCompMgrRemoveComponent, entity.opts.Inheritor.IFace, comp)
+		emitEventCompMgrRemoveComponent(&entity.eventCompMgrRemoveComponent, entity.opts.Inheritor.Iface, comp)
 
 		return true
 	}, e)
@@ -146,14 +146,14 @@ func (entity *EntityBehavior) RemoveComponentByID(id int64) {
 	}
 
 	if !entity.opts.EnableRemovePrimaryComponent {
-		comp := Cache2IFace[Component](e.Value.Cache)
+		comp := Cache2Iface[Component](e.Value.Cache)
 		if comp.getPrimary() {
 			return
 		}
 	}
 
 	e.Escape()
-	emitEventCompMgrRemoveComponent(&entity.eventCompMgrRemoveComponent, entity.opts.Inheritor.IFace, Cache2IFace[Component](e.Value.Cache))
+	emitEventCompMgrRemoveComponent(&entity.eventCompMgrRemoveComponent, entity.opts.Inheritor.Iface, Cache2Iface[Component](e.Value.Cache))
 }
 
 // EventCompMgrAddComponents 事件：实体的组件管理器加入一些组件
@@ -175,16 +175,16 @@ func (entity *EntityBehavior) addSingleComponent(name string, component Componen
 		return errors.New("component already added in entity")
 	}
 
-	component.init(name, entity.opts.Inheritor.IFace, component, entity.opts.HookCache)
+	component.init(name, entity.opts.Inheritor.Iface, component, entity.opts.HookCache)
 
 	face := FaceAny{
-		IFace: component,
-		Cache: IFace2Cache(component),
+		Iface: component,
+		Cache: Iface2Cache(component),
 	}
 
 	if e, ok := entity.getComponentElement(name); ok {
 		entity.componentList.TraversalAt(func(other *container.Element[FaceAny]) bool {
-			if Cache2IFace[Component](other.Value.Cache).GetName() == name {
+			if Cache2Iface[Component](other.Value.Cache).GetName() == name {
 				e = other
 				return true
 			}
@@ -206,7 +206,7 @@ func (entity *EntityBehavior) getComponentElement(name string) (*container.Eleme
 	var e *container.Element[FaceAny]
 
 	entity.componentList.Traversal(func(other *container.Element[FaceAny]) bool {
-		if Cache2IFace[Component](other.Value.Cache).GetName() == name {
+		if Cache2Iface[Component](other.Value.Cache).GetName() == name {
 			e = other
 			return false
 		}
@@ -220,7 +220,7 @@ func (entity *EntityBehavior) getComponentElementByID(id int64) (*container.Elem
 	var e *container.Element[FaceAny]
 
 	entity.componentList.Traversal(func(other *container.Element[FaceAny]) bool {
-		if Cache2IFace[Component](other.Value.Cache).GetID() == id {
+		if Cache2Iface[Component](other.Value.Cache).GetID() == id {
 			e = other
 			return false
 		}

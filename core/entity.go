@@ -69,7 +69,7 @@ func EntitySetPersistID(entity Entity, persistID int64) {
 
 // EntityGetInheritor 获取实体的继承者，线程安全
 func EntityGetInheritor[T any](e Entity) T {
-	return Cache2IFace[T](e.getOptions().Inheritor.Cache)
+	return Cache2Iface[T](e.getOptions().Inheritor.Cache)
 }
 
 // EntityGetInitialing 获取实体是否正在初始化，非线程安全
@@ -97,14 +97,14 @@ func NewEntity(optSetterFuncs ...EntityOptionSetterFunc) Entity {
 // NewEntityWithOpts 创建实体并传入参数，线程安全
 func NewEntityWithOpts(opts EntityOptions) Entity {
 	if !opts.Inheritor.IsNil() {
-		opts.Inheritor.IFace.init(&opts)
-		return opts.Inheritor.IFace
+		opts.Inheritor.Iface.init(&opts)
+		return opts.Inheritor.Iface
 	}
 
 	e := &EntityBehavior{}
 	e.init(&opts)
 
-	return e.opts.Inheritor.IFace
+	return e.opts.Inheritor.Iface
 }
 
 // EntityBehavior 实体行为，需要在拓展实体能力时，匿名嵌入至实体结构体中，一般情况下无需使用
@@ -200,7 +200,7 @@ func (entity *EntityBehavior) getShutting() bool {
 
 // DestroySelf 销毁自身，注意在生命周期[Init,InitFin,Shut,ShutFin]中调用无效，非线程安全
 func (entity *EntityBehavior) DestroySelf() {
-	emitEventEntityDestroySelf(&entity._eventEntityDestroySelf, entity.opts.Inheritor.IFace)
+	emitEventEntityDestroySelf(&entity._eventEntityDestroySelf, entity.opts.Inheritor.Iface)
 }
 
 func (entity *EntityBehavior) eventEntityDestroySelf() IEvent {

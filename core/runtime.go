@@ -32,14 +32,14 @@ func NewRuntime(runtimeCtx RuntimeContext, optSetterFuncs ...RuntimeOptionSetter
 // NewRuntimeWithOpts 创建运行时并传入参数，线程安全
 func NewRuntimeWithOpts(runtimeCtx RuntimeContext, opts RuntimeOptions) Runtime {
 	if !opts.Inheritor.IsNil() {
-		opts.Inheritor.IFace.init(runtimeCtx, &opts)
-		return opts.Inheritor.IFace
+		opts.Inheritor.Iface.init(runtimeCtx, &opts)
+		return opts.Inheritor.Iface
 	}
 
 	runtime := &_RuntimeBehavior{}
 	runtime.init(runtimeCtx, &opts)
 
-	return runtime.opts.Inheritor.IFace
+	return runtime.opts.Inheritor.Iface
 }
 
 type _RuntimeBehavior struct {
@@ -73,7 +73,7 @@ func (runtime *_RuntimeBehavior) init(runtimeCtx RuntimeContext, opts *RuntimeOp
 	runtime.eventLateUpdate.Init(runtime.getOptions().EnableAutoRecover, runtimeCtx.GetReportError(), EventRecursion_Disallow, runtimeCtx.getOptions().HookCache, runtime)
 
 	if opts.EnableAutoRun {
-		runtime.opts.Inheritor.IFace.Run()
+		runtime.opts.Inheritor.Iface.Run()
 	}
 }
 

@@ -47,14 +47,14 @@ func NewServiceContext(ctx context.Context, optSetterFuncs ...ServiceContextOpti
 // NewServiceContextWithOpts 创建服务上下文并传入参数，线程安全
 func NewServiceContextWithOpts(ctx context.Context, opts ServiceContextOptions) ServiceContext {
 	if !opts.Inheritor.IsNil() {
-		opts.Inheritor.IFace.init(ctx, &opts)
-		return opts.Inheritor.IFace
+		opts.Inheritor.Iface.init(ctx, &opts)
+		return opts.Inheritor.Iface
 	}
 
 	serv := &_ServiceContextBehavior{}
 	serv.init(ctx, &opts)
 
-	return serv.opts.Inheritor.IFace
+	return serv.opts.Inheritor.Iface
 }
 
 type _ServiceContextBehavior struct {

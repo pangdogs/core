@@ -6,8 +6,8 @@ func emitEventComponentDestroySelf(event IEvent, comp Component) {
 	if event == nil {
 		panic("nil event")
 	}
-	event.Emit(func(delegate IFaceCache) bool {
-		Cache2IFace[eventComponentDestroySelf](delegate).onComponentDestroySelf(comp)
+	event.Emit(func(delegate IfaceCache) bool {
+		Cache2Iface[eventComponentDestroySelf](delegate).onComponentDestroySelf(comp)
 		return true
 	})
 }

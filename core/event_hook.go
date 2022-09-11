@@ -15,8 +15,8 @@ func BindEventWithPriority[T any](event IEvent, delegate T, priority int32) Hook
 		panic("nil event")
 	}
 	return event.newHook(FaceAny{
-		IFace: delegate,
-		Cache: IFace2Cache(delegate),
+		Iface: delegate,
+		Cache: Iface2Cache(delegate),
 	}, priority)
 }
 

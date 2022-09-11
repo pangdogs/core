@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// As 从实体提取一些需要的组件API（Component API），复合在一起直接使用，提取失败不会panic，非线程安全，例如：
+// As 从实体提取一些需要的组件接口（Component Interface），复合在一起直接使用，提取失败不会panic，非线程安全，例如：
 //	type A interface {
 //		TestA()
 //	}
@@ -23,52 +23,52 @@ import (
 //	As[Complex](entity).TestB()
 // 注意提取后从实体删除或更换组件后，需要重新提取
 func As[T any](entity Entity) (T, bool) {
-	complexApi := Zero[T]()
-	vfComplexApi := reflect.ValueOf(&complexApi).Elem()
+	complexIface := Zero[T]()
+	vfComplexIface := reflect.ValueOf(&complexIface).Elem()
 
 	sb := strings.Builder{}
 	sb.Grow(128)
 
-	switch vfComplexApi.Kind() {
+	switch vfComplexIface.Kind() {
 	case reflect.Struct:
-		for i := 0; i < vfComplexApi.NumField(); i++ {
-			vfCompApi := vfComplexApi.Field(i)
+		for i := 0; i < vfComplexIface.NumField(); i++ {
+			vfCompIface := vfComplexIface.Field(i)
 
-			if vfCompApi.Kind() != reflect.Interface {
+			if vfCompIface.Kind() != reflect.Interface {
 				return Zero[T](), false
 			}
 
-			tfCompApi := vfCompApi.Type()
+			tfCompIface := vfCompIface.Type()
 
 			sb.Reset()
-			sb.WriteString(tfCompApi.PkgPath())
+			sb.WriteString(tfCompIface.PkgPath())
 			sb.WriteString("/")
-			sb.WriteString(tfCompApi.Name())
+			sb.WriteString(tfCompIface.Name())
 
 			comp := entity.GetComponent(sb.String())
 			if comp == nil {
 				return Zero[T](), false
 			}
 
-			vfCompApi.Set(comp.getReflectValue())
+			vfCompIface.Set(comp.getReflectValue())
 		}
 
-		return complexApi, true
+		return complexIface, true
 
 	case reflect.Interface:
-		tfComplexApi := vfComplexApi.Type()
+		tfComplexIface := vfComplexIface.Type()
 
 		sb.Reset()
-		sb.WriteString(tfComplexApi.PkgPath())
+		sb.WriteString(tfComplexIface.PkgPath())
 		sb.WriteString("/")
-		sb.WriteString(tfComplexApi.Name())
+		sb.WriteString(tfComplexIface.Name())
 
 		comp := entity.GetComponent(sb.String())
 		if comp == nil {
 			return Zero[T](), false
 		}
 
-		return complexApi, true
+		return complexIface, true
 
 	default:
 		return Zero[T](), false

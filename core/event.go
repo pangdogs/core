@@ -7,7 +7,7 @@ import (
 // IEvent 事件接口，非线程安全，不能用于跨线程事件通知
 type IEvent interface {
 	// Emit 发送事件，一般情况下是在事件生成的代码中使用，非线程安全
-	Emit(fun func(delegate IFaceCache) bool)
+	Emit(fun func(delegate IfaceCache) bool)
 
 	newHook(delegateFace FaceAny, priority int32) Hook
 
@@ -97,7 +97,7 @@ func (event *Event) Clean() {
 }
 
 // Emit 发送事件，一般情况下是在事件生成的代码中使用，非线程安全
-func (event *Event) Emit(fun func(delegate IFaceCache) bool) {
+func (event *Event) Emit(fun func(delegate IfaceCache) bool) {
 	if fun == nil {
 		return
 	}
@@ -195,7 +195,7 @@ func (event *Event) newHook(delegateFace FaceAny, priority int32) Hook {
 
 func (event *Event) removeDelegate(delegate interface{}) {
 	event.subscribers.ReverseTraversal(func(other *container.Element[Hook]) bool {
-		if other.Value.delegateFace.IFace == delegate {
+		if other.Value.delegateFace.Iface == delegate {
 			other.Escape()
 			return false
 		}

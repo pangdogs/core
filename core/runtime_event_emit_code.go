@@ -6,8 +6,8 @@ func emitEventUpdate(event IEvent) {
 	if event == nil {
 		panic("nil event")
 	}
-	event.Emit(func(delegate IFaceCache) bool {
-		Cache2IFace[eventUpdate](delegate).Update()
+	event.Emit(func(delegate IfaceCache) bool {
+		Cache2Iface[eventUpdate](delegate).Update()
 		return true
 	})
 }
@@ -16,8 +16,8 @@ func emitEventLateUpdate(event IEvent) {
 	if event == nil {
 		panic("nil event")
 	}
-	event.Emit(func(delegate IFaceCache) bool {
-		Cache2IFace[eventLateUpdate](delegate).LateUpdate()
+	event.Emit(func(delegate IfaceCache) bool {
+		Cache2Iface[eventLateUpdate](delegate).LateUpdate()
 		return true
 	})
 }

@@ -45,16 +45,16 @@ func (tab *_EventDeclTab) Parse(ctx *_CommandContext) {
 			return true
 		}
 
-		eventIFace, ok := ts.Type.(*ast.InterfaceType)
+		eventIface, ok := ts.Type.(*ast.InterfaceType)
 		if !ok {
 			return true
 		}
 
-		if eventIFace.Methods.NumFields() <= 0 {
+		if eventIface.Methods.NumFields() <= 0 {
 			return true
 		}
 
-		eventFuncField := eventIFace.Methods.List[0]
+		eventFuncField := eventIface.Methods.List[0]
 
 		if len(eventFuncField.Names) <= 0 {
 			return true
