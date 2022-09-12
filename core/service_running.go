@@ -8,6 +8,10 @@ func (serv *_ServiceBehavior) Run() <-chan struct{} {
 
 	shutChan := make(chan struct{}, 1)
 
+	if parentCtx, ok := serv.ctx.GetParentCtx().(_Context); ok {
+		parentCtx.getWaitGroup().Add(1)
+	}
+
 	go serv.running(shutChan)
 
 	return shutChan
@@ -19,20 +23,12 @@ func (serv *_ServiceBehavior) Stop() {
 }
 
 func (serv *_ServiceBehavior) running(shutChan chan struct{}) {
-	if parentCtx, ok := serv.ctx.GetParentCtx().(_Context); ok {
-		parentCtx.getWaitGroup().Add(1)
-	}
-
 	defer func() {
 		callOuterNoRet(serv.opts.EnableAutoRecover, serv.ctx.GetReportError(), func() {
 			if serv.ctx.getOptions().StoppingCallback != nil {
 				serv.ctx.getOptions().StoppingCallback(serv)
 			}
 		})
-
-		if parentCtx, ok := serv.ctx.GetParentCtx().(_Context); ok {
-			parentCtx.getWaitGroup().Done()
-		}
 
 		serv.ctx.getWaitGroup().Wait()
 
@@ -41,6 +37,10 @@ func (serv *_ServiceBehavior) running(shutChan chan struct{}) {
 				serv.ctx.getOptions().StoppedCallback(serv)
 			}
 		})
+
+		if parentCtx, ok := serv.ctx.GetParentCtx().(_Context); ok {
+			parentCtx.getWaitGroup().Done()
+		}
 
 		serv.ctx.markShutdown()
 		shutChan <- struct{}{}

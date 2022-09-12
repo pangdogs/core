@@ -13,7 +13,7 @@ type ServiceContext interface {
 	_RunnableMark
 	_ServiceContextEntityMgr
 
-	init(ctx context.Context, opts *ServiceContextOptions)
+	init(opts *ServiceContextOptions)
 
 	getOptions() *ServiceContextOptions
 
@@ -33,7 +33,7 @@ func ServiceContextGetOptions(servCtx ServiceContext) ServiceContextOptions {
 }
 
 // NewServiceContext 创建服务上下文，线程安全
-func NewServiceContext(ctx context.Context, optSetterFuncs ...ServiceContextOptionSetterFunc) ServiceContext {
+func NewServiceContext(optSetterFuncs ...ServiceContextOptionSetterFunc) ServiceContext {
 	opts := ServiceContextOptions{}
 	ServiceContextOptionSetter.Default()(&opts)
 
@@ -41,18 +41,18 @@ func NewServiceContext(ctx context.Context, optSetterFuncs ...ServiceContextOpti
 		optSetterFuncs[i](&opts)
 	}
 
-	return NewServiceContextWithOpts(ctx, opts)
+	return NewServiceContextWithOpts(opts)
 }
 
 // NewServiceContextWithOpts 创建服务上下文并传入参数，线程安全
-func NewServiceContextWithOpts(ctx context.Context, opts ServiceContextOptions) ServiceContext {
+func NewServiceContextWithOpts(opts ServiceContextOptions) ServiceContext {
 	if !opts.Inheritor.IsNil() {
-		opts.Inheritor.Iface.init(ctx, &opts)
+		opts.Inheritor.Iface.init(&opts)
 		return opts.Inheritor.Iface
 	}
 
 	serv := &_ServiceContextBehavior{}
-	serv.init(ctx, &opts)
+	serv.init(&opts)
 
 	return serv.opts.Inheritor.Iface
 }
@@ -67,11 +67,7 @@ type _ServiceContextBehavior struct {
 	entityMapMutex sync.RWMutex
 }
 
-func (servCtx *_ServiceContextBehavior) init(ctx context.Context, opts *ServiceContextOptions) {
-	if ctx == nil {
-		panic("nil ctx")
-	}
-
+func (servCtx *_ServiceContextBehavior) init(opts *ServiceContextOptions) {
 	if opts == nil {
 		panic("nil opts")
 	}
@@ -82,13 +78,17 @@ func (servCtx *_ServiceContextBehavior) init(ctx context.Context, opts *ServiceC
 		servCtx.opts.Inheritor = NewFace[ServiceContext](servCtx)
 	}
 
+	if servCtx.opts.ParentContext == nil {
+		servCtx.opts.ParentContext = context.Background()
+	}
+
 	snowflakeNode, err := snowflake.NewNode(servCtx.opts.NodeID)
 	if err != nil {
 		panic(err)
 	}
 	servCtx.snowflakeNode = snowflakeNode
 
-	servCtx._ContextBehavior.init(ctx, servCtx.opts.ReportError)
+	servCtx._ContextBehavior.init(servCtx.opts.ParentContext, servCtx.opts.ReportError)
 }
 
 func (servCtx *_ServiceContextBehavior) getOptions() *ServiceContextOptions {

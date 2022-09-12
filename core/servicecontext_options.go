@@ -1,11 +1,14 @@
 package core
 
+import "context"
+
 // ServiceContextOptions 创建服务上下文（Service Context）的所有选项
 type ServiceContextOptions struct {
 	Inheritor        Face[ServiceContext] // 继承者，需要拓展服务上下文（Service Context）自身功能时需要使用
 	Prototype        string               // 服务（Service）原型
 	NodeID           int64                // 服务分布式节点ID，主要用于snowflake算法生成唯一ID，需要全局唯一
 	ReportError      chan error           // panic时错误写入的error channel
+	ParentContext    context.Context      // 父Context
 	StartedCallback  func(serv Service)   // 启动运行时回调函数
 	StoppingCallback func(serv Service)   // 开始停止运行时回调函数
 	StoppedCallback  func(serv Service)   // 完全停止运行时回调函数
@@ -26,6 +29,7 @@ func (*_ServiceContextOptionSetter) Default() ServiceContextOptionSetterFunc {
 		o.Prototype = ""
 		o.NodeID = 0
 		o.ReportError = nil
+		o.ParentContext = nil
 		o.StartedCallback = nil
 		o.StoppingCallback = nil
 		o.StoppedCallback = nil
@@ -57,6 +61,13 @@ func (*_ServiceContextOptionSetter) NodeID(v int64) ServiceContextOptionSetterFu
 func (*_ServiceContextOptionSetter) ReportError(v chan error) ServiceContextOptionSetterFunc {
 	return func(o *ServiceContextOptions) {
 		o.ReportError = v
+	}
+}
+
+// ParentContext 父Context
+func (*_ServiceContextOptionSetter) ParentContext(v context.Context) ServiceContextOptionSetterFunc {
+	return func(o *ServiceContextOptions) {
+		o.ParentContext = v
 	}
 }
 

@@ -16,6 +16,10 @@ func (runtime *_RuntimeBehavior) Run() <-chan struct{} {
 	runtime.processQueue = make(chan func(), runtime.opts.ProcessQueueCapacity)
 	runtime.ctx.setCallee(runtime)
 
+	if parentCtx, ok := runtime.ctx.GetParentCtx().(_Context); ok {
+		parentCtx.getWaitGroup().Add(1)
+	}
+
 	go runtime.running(shutChan)
 
 	return shutChan
@@ -27,20 +31,16 @@ func (runtime *_RuntimeBehavior) Stop() {
 }
 
 func (runtime *_RuntimeBehavior) running(shutChan chan struct{}) {
-	if parentCtx, ok := runtime.ctx.GetParentCtx().(_Context); ok {
-		parentCtx.getWaitGroup().Add(1)
-	}
-
 	hooks := runtime.loopStarted()
 
 	defer func() {
 		runtime.loopStopped(hooks)
 
+		runtime.ctx.getWaitGroup().Wait()
+
 		if parentCtx, ok := runtime.ctx.GetParentCtx().(_Context); ok {
 			parentCtx.getWaitGroup().Done()
 		}
-
-		runtime.ctx.getWaitGroup().Wait()
 
 		runtime.ctx.markShutdown()
 		shutChan <- struct{}{}

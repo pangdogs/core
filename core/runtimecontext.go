@@ -98,9 +98,13 @@ func (runtimeCtx *_RuntimeContextBehavior) init(servCtx ServiceContext, opts *Ru
 		runtimeCtx.opts.Inheritor = NewFace[RuntimeContext](runtimeCtx)
 	}
 
+	if runtimeCtx.opts.ParentContext == nil {
+		runtimeCtx.opts.ParentContext = servCtx
+	}
+
 	runtimeCtx.gc._RuntimeContextBehavior = runtimeCtx
 
-	runtimeCtx._ContextBehavior.init(servCtx, runtimeCtx.opts.ReportError)
+	runtimeCtx._ContextBehavior.init(runtimeCtx.opts.ParentContext, runtimeCtx.opts.ReportError)
 	runtimeCtx.servCtx = servCtx
 
 	runtimeCtx.entityList.Init(runtimeCtx.opts.FaceCache, runtimeCtx.opts.Inheritor.Iface)

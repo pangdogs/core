@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"github.com/pangdogs/galaxy/core/container"
 )
 
@@ -8,6 +9,7 @@ import (
 type RuntimeContextOptions struct {
 	Inheritor       Face[RuntimeContext]      // 继承者，需要拓展运行时上下文自身功能时需要使用
 	ReportError     chan error                // panic时错误写入的error channel
+	ParentContext   context.Context           // 父Context
 	StartedCallback func(runtime Runtime)     // 启动运行时回调函数
 	StoppedCallback func(runtime Runtime)     // 停止运行时回调函数
 	FaceCache       *container.Cache[FaceAny] // Face缓存，用于提高性能
@@ -27,6 +29,7 @@ func (*_RuntimeContextOptionSetter) Default() RuntimeContextOptionSetterFunc {
 	return func(o *RuntimeContextOptions) {
 		o.Inheritor = Face[RuntimeContext]{}
 		o.ReportError = nil
+		o.ParentContext = nil
 		o.StartedCallback = nil
 		o.StoppedCallback = nil
 		o.FaceCache = nil
@@ -45,6 +48,13 @@ func (*_RuntimeContextOptionSetter) Inheritor(v Face[RuntimeContext]) RuntimeCon
 func (*_RuntimeContextOptionSetter) ReportError(v chan error) RuntimeContextOptionSetterFunc {
 	return func(o *RuntimeContextOptions) {
 		o.ReportError = v
+	}
+}
+
+// ParentContext 父Context
+func (*_RuntimeContextOptionSetter) ParentContext(v context.Context) RuntimeContextOptionSetterFunc {
+	return func(o *RuntimeContextOptions) {
+		o.ParentContext = v
 	}
 }
 
