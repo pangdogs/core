@@ -5,12 +5,19 @@ import (
 	"sync"
 )
 
+// EntityLib 实体原型库
 type EntityLib interface {
+	// Register 注册实体原型，线程安全
 	Register(prototype string, compTags []string)
+
+	// Get 获取实体原型，线程安全
 	Get(prototype string) EntityPt
+
+	// Range 遍历所有已注册的实体原型，线程安全
 	Range(fun func(entityPt EntityPt) bool)
 }
 
+// NewEntityLib 创建实体原型库
 func NewEntityLib() EntityLib {
 	lib := &_EntityLib{}
 	lib.init()
@@ -42,7 +49,7 @@ func (lib *_EntityLib) Register(prototype string, compTags []string) {
 	}
 
 	for i := range compTags {
-		entityPt.compPts = append(entityPt.compPts, GetCompPt(compTags[i]))
+		entityPt.compPts = append(entityPt.compPts, GetComponentPt(compTags[i]))
 	}
 
 	lib.entityPtMap[prototype] = entityPt

@@ -2,7 +2,7 @@ package pt
 
 import (
 	"fmt"
-	"github.com/pangdogs/galaxy/core"
+	"github.com/pangdogs/galaxy/ec"
 	"reflect"
 	"sync"
 )
@@ -13,37 +13,38 @@ func init() {
 	componentLib.init()
 }
 
-// RegisterComp 注册组件原型（Component Prototype），共有RegisterComp()与RegisterCreator()两个注册方法，
-//二者选其一使用即可。一般在init()函数中使用。线程安全。
-//	参数：
-//		iface：组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
-//		descr：组件功能的描述说明。
-//		comp：组件对象。
-func RegisterComp(iface, descr string, comp interface{}) {
-	componentLib.RegisterComp(iface, descr, comp)
+// RegisterComponent 注册组件原型，共有RegisterComp()与RegisterCreator()两个注册方法，
+// 二者选其一使用即可。一般在init()函数中使用，线程安全。
+//
+//	@param iface 组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
+//	@param descr 组件功能的描述说明。
+//	@param comp 组件对象。
+func RegisterComponent(iface, descr string, comp interface{}) {
+	componentLib.RegisterComponent(iface, descr, comp)
 }
 
-// RegisterCompCreator 注册组件构建函数（Component Builder），共有RegisterComp()与RegisterCreator()两个注册方法，
-//二者选其一使用即可。一般在init()函数中使用。线程安全。
-//	参数：
-//		iface：组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
-//		descr：组件功能的描述说明。
-//		creator：组件构建函数。
-func RegisterCompCreator(iface, descr string, creator func() core.Component) {
+// RegisterComponentCreator 注册组件构建函数，共有RegisterComp()与RegisterCreator()两个注册方法，
+// 二者选其一使用即可。一般在init()函数中使用，线程安全。
+//
+//	@param iface 组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
+//	@param descr 组件功能的描述说明。
+//	@param creator 组件构建函数。
+func RegisterComponentCreator(iface, descr string, creator func() ec.Component) {
 	componentLib.RegisterCreator(iface, descr, creator)
 }
 
-// GetCompPt 获取组件原型，线程安全。
-//	参数：
-//		tag：组件标签，用于查询组件，格式为组件所在包路径+组件名，例如：`github.com/pangdogs/galaxy/comps/helloworld/HelloWorldComp`。
-//	返回值：
-//		-：组件原型。
-func GetCompPt(tag string) ComponentPt {
+// GetComponentPt 获取组件原型，线程安全。
+//
+//	@param tag 组件标签 用于查询组件，格式为组件所在包路径+组件名，例如：`github.com/pangdogs/galaxy/ec/comps/helloworld/HelloWorldComp`。
+//	@return 组件原型，可以用于创建组件。
+func GetComponentPt(tag string) ComponentPt {
 	return componentLib.Get(tag)
 }
 
-// RangeCompPts 遍历所有已注册的组件原型，线程安全
-func RangeCompPts(fun func(compPt ComponentPt) bool) {
+// RangeComponentPts 遍历所有已注册的组件原型，线程安全。
+//
+//	@param fun 遍历函数。
+func RangeComponentPts(fun func(compPt ComponentPt) bool) {
 	componentLib.Range(fun)
 }
 
@@ -58,7 +59,7 @@ func (lib *_ComponentLib) init() {
 	}
 }
 
-func (lib *_ComponentLib) RegisterComp(iface, descr string, comp interface{}) {
+func (lib *_ComponentLib) RegisterComponent(iface, descr string, comp interface{}) {
 	if iface == "" {
 		panic("empty iface")
 	}
@@ -70,7 +71,7 @@ func (lib *_ComponentLib) RegisterComp(iface, descr string, comp interface{}) {
 	lib.register(iface, descr, _CompConstructType_Reflect, reflect.TypeOf(comp), nil)
 }
 
-func (lib *_ComponentLib) RegisterCreator(iface, descr string, creator func() core.Component) {
+func (lib *_ComponentLib) RegisterCreator(iface, descr string, creator func() ec.Component) {
 	if iface == "" {
 		panic("empty iface")
 	}
@@ -82,7 +83,7 @@ func (lib *_ComponentLib) RegisterCreator(iface, descr string, creator func() co
 	lib.register(iface, descr, _CompConstructType_Creator, nil, creator)
 }
 
-func (lib *_ComponentLib) register(iface, descr string, constructType _CompConstructType, tfComp reflect.Type, creator func() core.Component) {
+func (lib *_ComponentLib) register(iface, descr string, constructType _CompConstructType, tfComp reflect.Type, creator func() ec.Component) {
 	lib.mutex.Lock()
 	defer lib.mutex.Unlock()
 
@@ -107,8 +108,8 @@ func (lib *_ComponentLib) register(iface, descr string, constructType _CompConst
 
 	tag := _tfComp.PkgPath() + "/" + _tfComp.Name()
 
-	if !reflect.PointerTo(_tfComp).Implements(reflect.TypeOf((*core.Component)(nil)).Elem()) {
-		panic(fmt.Errorf("component '%s' not implement core.Component invalid", tag))
+	if !reflect.PointerTo(_tfComp).Implements(reflect.TypeOf((*ec.Component)(nil)).Elem()) {
+		panic(fmt.Errorf("component '%s' not implement ec.Component invalid", tag))
 	}
 
 	_, ok := lib.compPtMap[tag]

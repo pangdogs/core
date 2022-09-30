@@ -1,2 +1,2 @@
-// Package util 一些工具类。
+// Package util 一些工具类与函数。
 package util
