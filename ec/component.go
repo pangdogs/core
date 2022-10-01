@@ -52,7 +52,8 @@ type ComponentBehavior struct {
 	name                       string
 	entity                     Entity
 	inheritor                  Component
-	primary, awoke, started    bool
+	primary                    bool
+	awoke, started             bool
 	reflectValue               reflect.Value
 	_eventComponentDestroySelf localevent.Event
 	innerGC                    _ComponentInnerGC

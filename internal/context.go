@@ -12,8 +12,10 @@ type Context interface {
 	// GetParentCtx 获取父上下文
 	GetParentCtx() context.Context
 
-	// GetReportError 在打开服务或运行时的AutoRecover选项时，panic时将会恢复并将错误写入error channel，
-	//此函数可以获取error channel
+	// GetAutoRecover panic时是否自动恢复
+	GetAutoRecover() bool
+
+	// GetReportError 在开启panic时自动恢复时，将会恢复并将错误写入此error channel
 	GetReportError() chan error
 
 	// GetWaitGroup 获取等待组
@@ -27,19 +29,21 @@ type Context interface {
 type ContextBehavior struct {
 	context.Context
 	parentCtx   context.Context
+	autoRecover bool
 	reportError chan error
 	cancel      context.CancelFunc
 	wg          sync.WaitGroup
 }
 
 // Init 初始化
-func (ctx *ContextBehavior) Init(parentCtx context.Context, reportError chan error) {
+func (ctx *ContextBehavior) Init(parentCtx context.Context, autoRecover bool, reportError chan error) {
 	if parentCtx == nil {
 		ctx.parentCtx = context.Background()
 	} else {
 		ctx.parentCtx = parentCtx
 	}
 
+	ctx.autoRecover = autoRecover
 	ctx.reportError = reportError
 
 	ctx.Context, ctx.cancel = context.WithCancel(ctx.parentCtx)
@@ -50,8 +54,12 @@ func (ctx *ContextBehavior) GetParentCtx() context.Context {
 	return ctx.parentCtx
 }
 
-// GetReportError 在打开服务或运行时的AutoRecover选项时，panic时将会恢复并将错误写入error channel，
-// 此函数可以获取error channel
+// GetAutoRecover panic时是否自动恢复
+func (ctx *ContextBehavior) GetAutoRecover() bool {
+	return ctx.autoRecover
+}
+
+// GetReportError 在开启panic时自动恢复时，将会恢复并将错误写入此error channel
 func (ctx *ContextBehavior) GetReportError() chan error {
 	return ctx.reportError
 }

@@ -47,7 +47,7 @@ func (event *Event) Init(autoRecover bool, reportError chan error, eventRecursio
 	}
 
 	if event.inited {
-		panic("repeated init event invalid")
+		panic("repeated init event")
 	}
 
 	event.autoRecover = autoRecover

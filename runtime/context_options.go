@@ -9,14 +9,15 @@ import (
 
 // ContextOptions 创建运行时上下文的所有选项
 type ContextOptions struct {
-	Inheritor        util.Face[Context]                // 继承者，需要拓展运行时上下文自身能力时需要使用
-	ReportError      chan error                        // panic时错误写入的error channel
-	ParentContext    context.Context                   // 父Context
-	StartedCallback  func(runtimeCtx Context)          // 启动运行时回调函数
-	StoppingCallback func(runtimeCtx Context)          // 开始停止运行时回调函数
-	StoppedCallback  func(runtimeCtx Context)          // 完全停止运行时回调函数
-	FaceCache        *container.Cache[util.FaceAny]    // Face缓存，用于提高性能
-	HookCache        *container.Cache[localevent.Hook] // Hook缓存，用于提高性能
+	Inheritor         util.Face[Context]                // 继承者，需要拓展运行时上下文自身能力时需要使用
+	EnableAutoRecover bool                              // 是否开启panic时自动恢复
+	ReportError       chan error                        // panic时错误写入的error channel
+	ParentContext     context.Context                   // 父Context
+	StartedCallback   func(runtimeCtx Context)          // 启动运行时回调函数
+	StoppingCallback  func(runtimeCtx Context)          // 开始停止运行时回调函数
+	StoppedCallback   func(runtimeCtx Context)          // 完全停止运行时回调函数
+	FaceCache         *container.Cache[util.FaceAny]    // Face缓存，用于提高性能
+	HookCache         *container.Cache[localevent.Hook] // Hook缓存，用于提高性能
 }
 
 // ContextOption 创建运行时上下文的选项
@@ -31,6 +32,7 @@ type _ContextOptionSetter struct{}
 func (*_ContextOptionSetter) Default() ContextOptionSetter {
 	return func(o *ContextOptions) {
 		o.Inheritor = util.Face[Context]{}
+		o.EnableAutoRecover = false
 		o.ReportError = nil
 		o.ParentContext = nil
 		o.StartedCallback = nil
@@ -45,6 +47,13 @@ func (*_ContextOptionSetter) Default() ContextOptionSetter {
 func (*_ContextOptionSetter) Inheritor(v util.Face[Context]) ContextOptionSetter {
 	return func(o *ContextOptions) {
 		o.Inheritor = v
+	}
+}
+
+// EnableAutoRecover 是否开启panic时自动恢复
+func (*_ContextOptionSetter) EnableAutoRecover(v bool) ContextOptionSetter {
+	return func(o *ContextOptions) {
+		o.EnableAutoRecover = v
 	}
 }
 

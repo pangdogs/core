@@ -39,7 +39,7 @@ func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
 
 	defer func() {
 		if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().StoppingCallback; callback != nil {
-			internal.CallOuterNoRet(_runtime.opts.EnableAutoRecover, _runtime.ctx.GetReportError(), func() {
+			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 				callback(_runtime.ctx)
 			})
 		}
@@ -49,7 +49,7 @@ func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
 		_runtime.ctx.GetWaitGroup().Wait()
 
 		if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().StoppedCallback; callback != nil {
-			internal.CallOuterNoRet(_runtime.opts.EnableAutoRecover, _runtime.ctx.GetReportError(), func() {
+			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 				callback(_runtime.ctx)
 			})
 		}
@@ -92,14 +92,14 @@ func (_runtime *RuntimeBehavior) loopStarted() (hooks [4]localevent.Hook) {
 	hooks[3] = localevent.BindEvent[runtime.EventEntityMgrEntityRemoveComponent](runtimeCtx.EventEntityMgrEntityRemoveComponent(), _runtime)
 
 	runtimeCtx.RangeEntities(func(entity ec.Entity) bool {
-		internal.CallOuterNoRet(_runtime.opts.EnableAutoRecover, runtimeCtx.GetReportError(), func() {
+		internal.CallOuterNoRet(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), func() {
 			_runtime.OnEntityMgrAddEntity(runtimeCtx, entity)
 		})
 		return true
 	})
 
 	if callback := runtime.UnsafeContext(runtimeCtx).GetOptions().StartedCallback; callback != nil {
-		internal.CallOuterNoRet(_runtime.opts.EnableAutoRecover, runtimeCtx.GetReportError(), func() {
+		internal.CallOuterNoRet(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), func() {
 			callback(runtimeCtx)
 		})
 	}
@@ -112,7 +112,7 @@ func (_runtime *RuntimeBehavior) loopStopped(hooks [4]localevent.Hook) {
 	frame := _runtime.opts.Frame
 
 	runtimeCtx.ReverseRangeEntities(func(entity ec.Entity) bool {
-		internal.CallOuterNoRet(_runtime.opts.EnableAutoRecover, runtimeCtx.GetReportError(), func() {
+		internal.CallOuterNoRet(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), func() {
 			_runtime.OnEntityMgrRemoveEntity(runtimeCtx, entity)
 		})
 		return true
@@ -137,7 +137,7 @@ func (_runtime *RuntimeBehavior) loopNoFrame() {
 			if !ok {
 				return
 			}
-			internal.CallOuterNoRet(_runtime.opts.EnableAutoRecover, _runtime.ctx.GetReportError(), process)
+			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), process)
 
 		case <-gcTicker.C:
 			_runtime.gc()
@@ -157,7 +157,7 @@ func (_runtime *RuntimeBehavior) loopNoFrameEnd() {
 			if !ok {
 				return
 			}
-			internal.CallOuterNoRet(_runtime.opts.EnableAutoRecover, _runtime.ctx.GetReportError(), process)
+			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), process)
 
 		default:
 			return
@@ -181,7 +181,7 @@ func (_runtime *RuntimeBehavior) loopWithFrame() {
 
 			select {
 			case <-updateTicker.C:
-				internal.CallOuterNoRet(_runtime.opts.EnableAutoRecover, _runtime.ctx.GetReportError(), func() {
+				internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 					timeoutTimer := time.NewTimer(_runtime.opts.ProcessQueueTimeout)
 					defer timeoutTimer.Stop()
 
@@ -212,7 +212,7 @@ func (_runtime *RuntimeBehavior) loopWithFrame() {
 			if !ok {
 				return
 			}
-			internal.CallOuterNoRet(_runtime.opts.EnableAutoRecover, _runtime.ctx.GetReportError(), process)
+			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), process)
 
 		case <-gcTicker.C:
 			_runtime.gc()
@@ -235,7 +235,7 @@ func (_runtime *RuntimeBehavior) loopWithFrameEnd() {
 				if !ok {
 					return
 				}
-				internal.CallOuterNoRet(_runtime.opts.EnableAutoRecover, _runtime.ctx.GetReportError(), process)
+				internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), process)
 
 			default:
 				return
@@ -302,7 +302,7 @@ func (_runtime *RuntimeBehavior) loopWithBlinkFrameEnd() {
 			if !ok {
 				return
 			}
-			internal.CallOuterNoRet(_runtime.opts.EnableAutoRecover, _runtime.ctx.GetReportError(), process)
+			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), process)
 
 		default:
 			break

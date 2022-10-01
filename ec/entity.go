@@ -45,6 +45,14 @@ type Entity interface {
 
 	getShutting() bool
 
+	setAdding(v bool)
+
+	getAdding() bool
+
+	setRemoving(v bool)
+
+	getRemoving() bool
+
 	// DestroySelf 销毁自身，注意在生命周期[Init,InitFin,Shut,ShutFin]中调用无效
 	DestroySelf()
 
@@ -79,6 +87,7 @@ type EntityBehavior struct {
 	gcCollector                 container.GCCollector
 	parent                      Entity
 	componentList               container.List[util.FaceAny]
+	adding, removing            bool
 	initialing, shutting        bool
 	_eventEntityDestroySelf     localevent.Event
 	eventCompMgrAddComponents   localevent.Event
@@ -148,6 +157,22 @@ func (entity *EntityBehavior) setParent(parent Entity) {
 // GetParent 获取在运行时上下文的主EC树上的父实体
 func (entity *EntityBehavior) GetParent() (Entity, bool) {
 	return entity.parent, entity.parent != nil
+}
+
+func (entity *EntityBehavior) setAdding(v bool) {
+	entity.adding = v
+}
+
+func (entity *EntityBehavior) getAdding() bool {
+	return entity.adding
+}
+
+func (entity *EntityBehavior) setRemoving(v bool) {
+	entity.removing = v
+}
+
+func (entity *EntityBehavior) getRemoving() bool {
+	return entity.removing
 }
 
 func (entity *EntityBehavior) setInitialing(v bool) {

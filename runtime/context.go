@@ -104,17 +104,17 @@ func (ctx *ContextBehavior) init(serviceCtx service.Context, opts *ContextOption
 
 	ctx.innerGC.Init(ctx)
 
-	ctx.ContextBehavior.Init(ctx.opts.ParentContext, ctx.opts.ReportError)
+	ctx.ContextBehavior.Init(ctx.opts.ParentContext, ctx.opts.EnableAutoRecover, ctx.opts.ReportError)
 	ctx.serviceCtx = serviceCtx
 
 	ctx.entityList.Init(ctx.opts.FaceCache, ctx.opts.Inheritor.Iface)
 	ctx.entityMap = map[int64]_EntityInfo{}
 
-	ctx.eventEntityMgrAddEntity.Init(false, nil, localevent.EventRecursion_Discard, ctx.opts.HookCache, ctx.opts.Inheritor.Iface)
-	ctx.eventEntityMgrRemoveEntity.Init(false, nil, localevent.EventRecursion_Discard, ctx.opts.HookCache, ctx.opts.Inheritor.Iface)
-	ctx.eventEntityMgrEntityAddComponents.Init(false, nil, localevent.EventRecursion_Discard, ctx.opts.HookCache, ctx.opts.Inheritor.Iface)
-	ctx.eventEntityMgrEntityRemoveComponent.Init(false, nil, localevent.EventRecursion_Discard, ctx.opts.HookCache, ctx.opts.Inheritor.Iface)
-	ctx._eventEntityMgrNotifyECTreeRemoveEntity.Init(false, nil, localevent.EventRecursion_Discard, ctx.opts.HookCache, ctx.opts.Inheritor.Iface)
+	ctx.eventEntityMgrAddEntity.Init(ctx.opts.Inheritor.Iface.GetAutoRecover(), ctx.opts.Inheritor.Iface.GetReportError(), localevent.EventRecursion_Discard, ctx.opts.HookCache, ctx.opts.Inheritor.Iface)
+	ctx.eventEntityMgrRemoveEntity.Init(ctx.opts.Inheritor.Iface.GetAutoRecover(), ctx.opts.Inheritor.Iface.GetReportError(), localevent.EventRecursion_Discard, ctx.opts.HookCache, ctx.opts.Inheritor.Iface)
+	ctx.eventEntityMgrEntityAddComponents.Init(ctx.opts.Inheritor.Iface.GetAutoRecover(), ctx.opts.Inheritor.Iface.GetReportError(), localevent.EventRecursion_Discard, ctx.opts.HookCache, ctx.opts.Inheritor.Iface)
+	ctx.eventEntityMgrEntityRemoveComponent.Init(ctx.opts.Inheritor.Iface.GetAutoRecover(), ctx.opts.Inheritor.Iface.GetReportError(), localevent.EventRecursion_Discard, ctx.opts.HookCache, ctx.opts.Inheritor.Iface)
+	ctx._eventEntityMgrNotifyECTreeRemoveEntity.Init(ctx.opts.Inheritor.Iface.GetAutoRecover(), ctx.opts.Inheritor.Iface.GetReportError(), localevent.EventRecursion_Discard, ctx.opts.HookCache, ctx.opts.Inheritor.Iface)
 
 	ctx.ecTree.init(ctx.opts.Inheritor.Iface, true)
 }

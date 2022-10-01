@@ -67,8 +67,8 @@ func (_runtime *RuntimeBehavior) init(runtimeCtx runtime.Context, opts *RuntimeO
 	_runtime.ctx = runtimeCtx
 	_runtime.hooksMap = make(map[int64][3]localevent.Hook)
 
-	_runtime.eventUpdate.Init(_runtime.getOptions().EnableAutoRecover, runtimeCtx.GetReportError(), localevent.EventRecursion_Disallow, runtimeCtx.GetHookCache(), _runtime)
-	_runtime.eventLateUpdate.Init(_runtime.getOptions().EnableAutoRecover, runtimeCtx.GetReportError(), localevent.EventRecursion_Disallow, runtimeCtx.GetHookCache(), _runtime)
+	_runtime.eventUpdate.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Disallow, runtimeCtx.GetHookCache(), _runtime)
+	_runtime.eventLateUpdate.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Disallow, runtimeCtx.GetHookCache(), _runtime)
 
 	if opts.EnableAutoRun {
 		_runtime.opts.Inheritor.Iface.Run()
@@ -160,6 +160,9 @@ func (_runtime *RuntimeBehavior) initEntity(entity ec.Entity) {
 }
 
 func (_runtime *RuntimeBehavior) shutEntity(entity ec.Entity) {
+	ec.UnsafeEntity(entity).SetShutting(true)
+	defer ec.UnsafeEntity(entity).SetShutting(false)
+
 	if entityShut, ok := entity.(_EntityShut); ok {
 		entityShut.Shut()
 	}

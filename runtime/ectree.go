@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"errors"
+	"fmt"
 	"github.com/pangdogs/galaxy/ec"
 	"github.com/pangdogs/galaxy/localevent"
 	"github.com/pangdogs/galaxy/util"
@@ -77,19 +78,20 @@ func (ecTree *ECTree) init(runtimeCtx Context, masterTree bool) {
 	}
 
 	if ecTree.inited {
-		panic("repeated init ec-tree invalid")
+		panic("repeated init ec-tree")
 	}
 
 	ecTree.runtimeCtx = runtimeCtx
 	ecTree.masterTree = masterTree
 	ecTree.ecTree = map[int64]_ECNode{}
-	ecTree.eventECTreeAddChild.Init(false, nil, localevent.EventRecursion_Discard, runtimeCtx.getOptions().HookCache, runtimeCtx)
-	ecTree.eventECTreeRemoveChild.Init(false, nil, localevent.EventRecursion_Discard, runtimeCtx.getOptions().HookCache, runtimeCtx)
-	ecTree.inited = true
+	ecTree.eventECTreeAddChild.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Discard, runtimeCtx.getOptions().HookCache, runtimeCtx)
+	ecTree.eventECTreeRemoveChild.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Discard, runtimeCtx.getOptions().HookCache, runtimeCtx)
 
 	if !ecTree.masterTree {
 		ecTree.hook = localevent.BindEvent[eventEntityMgrNotifyECTreeRemoveEntity](ecTree.runtimeCtx.eventEntityMgrNotifyECTreeRemoveEntity(), ecTree)
 	}
+
+	ecTree.inited = true
 }
 
 func (ecTree *ECTree) onEntityMgrNotifyECTreeRemoveEntity(runtimeCtx Context, entity ec.Entity) {
@@ -114,7 +116,7 @@ func (ecTree *ECTree) AddChild(parentID, childID int64) error {
 	}
 
 	if _, ok = ecTree.ecTree[childID]; ok {
-		return errors.New("child already in ec-tree")
+		return fmt.Errorf("child '%d' already in this ec-tree", childID)
 	}
 
 	node, ok := ecTree.ecTree[parentID]

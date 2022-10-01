@@ -94,7 +94,7 @@ func (ctx *ContextBehavior) AddEntity(entity ec.Entity) error {
 	_entity := ec.UnsafeEntity(entity)
 
 	if _entity.GetContext() != util.NilIfaceCache {
-		return errors.New("entity already added in runtime context")
+		return errors.New("entity context has already been setup")
 	}
 
 	if entity.GetID() <= 0 {
@@ -120,18 +120,18 @@ func (ctx *ContextBehavior) AddEntity(entity ec.Entity) error {
 		return fmt.Errorf("repeated entity '%d' in this runtime context", entity.GetID())
 	}
 
-	entityInfo := _EntityInfo{}
+	_entity.SetAdding(true)
+	defer _entity.SetAdding(false)
 
+	entityInfo := _EntityInfo{}
 	entityInfo.Hooks[0] = localevent.BindEvent[ec.EventCompMgrAddComponents](entity.EventCompMgrAddComponents(), ctx)
 	entityInfo.Hooks[1] = localevent.BindEvent[ec.EventCompMgrRemoveComponent](entity.EventCompMgrRemoveComponent(), ctx)
-
 	entityInfo.Element = ctx.entityList.PushBack(util.FaceAny{
 		Iface: entity,
 		Cache: util.Iface2Cache(entity),
 	})
 
 	ctx.entityMap[entity.GetID()] = entityInfo
-
 	ctx.CollectGC(_entity.GetInnerGC())
 
 	emitEventEntityMgrAddEntity(&ctx.eventEntityMgrAddEntity, ctx.opts.Inheritor.Iface, entity)
@@ -141,33 +141,30 @@ func (ctx *ContextBehavior) AddEntity(entity ec.Entity) error {
 
 // RemoveEntity 删除实体
 func (ctx *ContextBehavior) RemoveEntity(id int64) {
-	e, ok := ctx.entityMap[id]
+	entityInfo, ok := ctx.entityMap[id]
 	if !ok {
 		return
 	}
 
-	entity := util.Cache2Iface[ec.Entity](e.Element.Value.Cache)
-	_entity := ec.UnsafeEntity(entity)
-
-	if _entity.GetInitialing() || _entity.GetShutting() {
+	entity := ec.UnsafeEntity(util.Cache2Iface[ec.Entity](entityInfo.Element.Value.Cache))
+	if entity.GetAdding() || entity.GetRemoving() || entity.GetInitialing() || entity.GetShutting() {
 		return
 	}
 
-	_entity.SetShutting(true)
-	defer _entity.SetShutting(false)
+	entity.SetRemoving(true)
+	defer entity.SetRemoving(false)
 
-	emitEventEntityMgrNotifyECTreeRemoveEntity(&ctx._eventEntityMgrNotifyECTreeRemoveEntity, ctx.opts.Inheritor.Iface, entity)
-
+	emitEventEntityMgrNotifyECTreeRemoveEntity(&ctx._eventEntityMgrNotifyECTreeRemoveEntity, ctx.opts.Inheritor.Iface, entity.Entity)
 	ctx.ecTree.RemoveChild(id)
 
 	delete(ctx.entityMap, id)
-	e.Element.Escape()
+	entityInfo.Element.Escape()
 
-	for i := range e.Hooks {
-		e.Hooks[i].Unbind()
+	for i := range entityInfo.Hooks {
+		entityInfo.Hooks[i].Unbind()
 	}
 
-	emitEventEntityMgrRemoveEntity(&ctx.eventEntityMgrRemoveEntity, ctx.opts.Inheritor.Iface, entity)
+	emitEventEntityMgrRemoveEntity(&ctx.eventEntityMgrRemoveEntity, ctx.opts.Inheritor.Iface, entity.Entity)
 }
 
 // EventEntityMgrAddEntity 事件：运行时上下文添加实体

@@ -10,7 +10,6 @@ import (
 type RuntimeOptions struct {
 	Inheritor            util.Face[Runtime] // 继承者，需要拓展运行时自身功能时需要使用
 	EnableAutoRun        bool               // 是否开启自动运行
-	EnableAutoRecover    bool               // 是否开启panic时自动恢复
 	ProcessQueueCapacity int                // 任务处理流水线大小
 	ProcessQueueTimeout  time.Duration      // 任务插入流水线超时时长
 	Frame                runtime.Frame      // 帧
@@ -30,7 +29,6 @@ func (*_RuntimeOptionSetter) Default() RuntimeOptionSetter {
 	return func(o *RuntimeOptions) {
 		o.Inheritor = util.Face[Runtime]{}
 		o.EnableAutoRun = false
-		o.EnableAutoRecover = false
 		o.ProcessQueueCapacity = 128
 		o.ProcessQueueTimeout = 5 * time.Second
 		o.Frame = nil
@@ -49,13 +47,6 @@ func (*_RuntimeOptionSetter) Inheritor(v util.Face[Runtime]) RuntimeOptionSetter
 func (*_RuntimeOptionSetter) EnableAutoRun(v bool) RuntimeOptionSetter {
 	return func(o *RuntimeOptions) {
 		o.EnableAutoRun = v
-	}
-}
-
-// EnableAutoRecover 是否开启panic时自动恢复
-func (*_RuntimeOptionSetter) EnableAutoRecover(v bool) RuntimeOptionSetter {
-	return func(o *RuntimeOptions) {
-		o.EnableAutoRecover = v
 	}
 }
 

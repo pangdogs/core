@@ -48,6 +48,22 @@ func (ue _UnsafeEntity) SetParent(parent Entity) {
 	ue.setParent(parent)
 }
 
+func (ue _UnsafeEntity) SetAdding(v bool) {
+	ue.setAdding(v)
+}
+
+func (ue _UnsafeEntity) GetAdding() bool {
+	return ue.getAdding()
+}
+
+func (ue _UnsafeEntity) SetRemoving(v bool) {
+	ue.setRemoving(v)
+}
+
+func (ue _UnsafeEntity) GetRemoving() bool {
+	return ue.getRemoving()
+}
+
 func (ue _UnsafeEntity) SetInitialing(v bool) {
 	ue.setInitialing(v)
 }
