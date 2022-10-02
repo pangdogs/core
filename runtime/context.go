@@ -14,7 +14,6 @@ type Context interface {
 	container.GCCollector
 	internal.Context
 	internal.RunningMark
-	_EntityMgr
 	_SafeCall
 
 	init(serviceCtx service.Context, opts *ContextOptions)
@@ -34,6 +33,9 @@ type Context interface {
 
 	// GetFrame 获取帧
 	GetFrame() Frame
+
+	// GetEntityMgr 获取实体管理器
+	GetEntityMgr() IEntityMgr
 
 	// GetECTree 获取主EC树
 	GetECTree() IECTree
@@ -61,26 +63,20 @@ func NewContext(serviceCtx service.Context, optSetter ...ContextOptionSetter) Co
 
 type _EntityInfo struct {
 	Element *container.Element[util.FaceAny]
-	Hooks   [2]localevent.Hook
+	Hooks   [3]localevent.Hook
 }
 
 type ContextBehavior struct {
 	internal.ContextBehavior
 	internal.RunningMarkBehavior
-	opts                                    ContextOptions
-	serviceCtx                              service.Context
-	entityMap                               map[int64]_EntityInfo
-	entityList                              container.List[util.FaceAny]
-	frame                                   Frame
-	ecTree                                  ECTree
-	callee                                  Callee
-	eventEntityMgrAddEntity                 localevent.Event
-	eventEntityMgrRemoveEntity              localevent.Event
-	eventEntityMgrEntityAddComponents       localevent.Event
-	eventEntityMgrEntityRemoveComponent     localevent.Event
-	_eventEntityMgrNotifyECTreeRemoveEntity localevent.Event
-	gcList                                  []container.GC
-	innerGC                                 _ContextInnerGC
+	opts       ContextOptions
+	serviceCtx service.Context
+	frame      Frame
+	entityMgr  EntityMgr
+	ecTree     ECTree
+	callee     Callee
+	gcList     []container.GC
+	innerGC    _ContextInnerGC
 }
 
 func (ctx *ContextBehavior) init(serviceCtx service.Context, opts *ContextOptions) {
@@ -104,18 +100,9 @@ func (ctx *ContextBehavior) init(serviceCtx service.Context, opts *ContextOption
 
 	ctx.innerGC.Init(ctx)
 
-	ctx.ContextBehavior.Init(ctx.opts.ParentContext, ctx.opts.EnableAutoRecover, ctx.opts.ReportError)
+	ctx.ContextBehavior.Init(ctx.opts.ParentContext, ctx.opts.AutoRecover, ctx.opts.ReportError)
 	ctx.serviceCtx = serviceCtx
-
-	ctx.entityList.Init(ctx.opts.FaceCache, ctx.opts.Inheritor.Iface)
-	ctx.entityMap = map[int64]_EntityInfo{}
-
-	ctx.eventEntityMgrAddEntity.Init(ctx.opts.Inheritor.Iface.GetAutoRecover(), ctx.opts.Inheritor.Iface.GetReportError(), localevent.EventRecursion_Discard, ctx.opts.HookCache, ctx.opts.Inheritor.Iface)
-	ctx.eventEntityMgrRemoveEntity.Init(ctx.opts.Inheritor.Iface.GetAutoRecover(), ctx.opts.Inheritor.Iface.GetReportError(), localevent.EventRecursion_Discard, ctx.opts.HookCache, ctx.opts.Inheritor.Iface)
-	ctx.eventEntityMgrEntityAddComponents.Init(ctx.opts.Inheritor.Iface.GetAutoRecover(), ctx.opts.Inheritor.Iface.GetReportError(), localevent.EventRecursion_Discard, ctx.opts.HookCache, ctx.opts.Inheritor.Iface)
-	ctx.eventEntityMgrEntityRemoveComponent.Init(ctx.opts.Inheritor.Iface.GetAutoRecover(), ctx.opts.Inheritor.Iface.GetReportError(), localevent.EventRecursion_Discard, ctx.opts.HookCache, ctx.opts.Inheritor.Iface)
-	ctx._eventEntityMgrNotifyECTreeRemoveEntity.Init(ctx.opts.Inheritor.Iface.GetAutoRecover(), ctx.opts.Inheritor.Iface.GetReportError(), localevent.EventRecursion_Discard, ctx.opts.HookCache, ctx.opts.Inheritor.Iface)
-
+	ctx.entityMgr.Init(ctx.getOptions().Inheritor.Iface)
 	ctx.ecTree.init(ctx.opts.Inheritor.Iface, true)
 }
 
@@ -145,6 +132,11 @@ func (ctx *ContextBehavior) setFrame(frame Frame) {
 // GetFrame 获取帧
 func (ctx *ContextBehavior) GetFrame() Frame {
 	return ctx.frame
+}
+
+// GetEntityMgr 获取实体管理器
+func (ctx *ContextBehavior) GetEntityMgr() IEntityMgr {
+	return &ctx.entityMgr
 }
 
 // GetECTree 获取主EC树

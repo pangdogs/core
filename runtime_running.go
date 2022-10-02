@@ -78,7 +78,7 @@ func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
 	}
 }
 
-func (_runtime *RuntimeBehavior) loopStarted() (hooks [4]localevent.Hook) {
+func (_runtime *RuntimeBehavior) loopStarted() (hooks [5]localevent.Hook) {
 	runtimeCtx := _runtime.ctx
 	frame := _runtime.opts.Frame
 
@@ -86,14 +86,15 @@ func (_runtime *RuntimeBehavior) loopStarted() (hooks [4]localevent.Hook) {
 		runtime.UnsafeFrame(frame).RunningBegin()
 	}
 
-	hooks[0] = localevent.BindEvent[runtime.EventEntityMgrAddEntity](runtimeCtx.EventEntityMgrAddEntity(), _runtime)
-	hooks[1] = localevent.BindEvent[runtime.EventEntityMgrRemoveEntity](runtimeCtx.EventEntityMgrRemoveEntity(), _runtime)
-	hooks[2] = localevent.BindEvent[runtime.EventEntityMgrEntityAddComponents](runtimeCtx.EventEntityMgrEntityAddComponents(), _runtime)
-	hooks[3] = localevent.BindEvent[runtime.EventEntityMgrEntityRemoveComponent](runtimeCtx.EventEntityMgrEntityRemoveComponent(), _runtime)
+	hooks[0] = localevent.BindEvent[runtime.EventEntityMgrAddEntity](runtimeCtx.GetEntityMgr().EventEntityMgrAddEntity(), _runtime)
+	hooks[1] = localevent.BindEvent[runtime.EventEntityMgrRemoveEntity](runtimeCtx.GetEntityMgr().EventEntityMgrRemoveEntity(), _runtime)
+	hooks[2] = localevent.BindEvent[runtime.EventEntityMgrEntityAddComponents](runtimeCtx.GetEntityMgr().EventEntityMgrEntityAddComponents(), _runtime)
+	hooks[3] = localevent.BindEvent[runtime.EventEntityMgrEntityRemoveComponent](runtimeCtx.GetEntityMgr().EventEntityMgrEntityRemoveComponent(), _runtime)
+	hooks[4] = localevent.BindEvent[runtime.EventEntityMgrEntityFirstAccessComponent](runtimeCtx.GetEntityMgr().EventEntityMgrEntityFirstAccessComponent(), _runtime)
 
-	runtimeCtx.RangeEntities(func(entity ec.Entity) bool {
+	runtimeCtx.GetEntityMgr().RangeEntities(func(entity ec.Entity) bool {
 		internal.CallOuterNoRet(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), func() {
-			_runtime.OnEntityMgrAddEntity(runtimeCtx, entity)
+			_runtime.OnEntityMgrAddEntity(runtimeCtx.GetEntityMgr(), entity)
 		})
 		return true
 	})
@@ -107,13 +108,13 @@ func (_runtime *RuntimeBehavior) loopStarted() (hooks [4]localevent.Hook) {
 	return
 }
 
-func (_runtime *RuntimeBehavior) loopStopped(hooks [4]localevent.Hook) {
+func (_runtime *RuntimeBehavior) loopStopped(hooks [5]localevent.Hook) {
 	runtimeCtx := _runtime.ctx
 	frame := _runtime.opts.Frame
 
-	runtimeCtx.ReverseRangeEntities(func(entity ec.Entity) bool {
+	runtimeCtx.GetEntityMgr().ReverseRangeEntities(func(entity ec.Entity) bool {
 		internal.CallOuterNoRet(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), func() {
-			_runtime.OnEntityMgrRemoveEntity(runtimeCtx, entity)
+			_runtime.OnEntityMgrRemoveEntity(runtimeCtx.GetEntityMgr(), entity)
 		})
 		return true
 	})

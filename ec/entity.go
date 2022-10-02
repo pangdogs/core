@@ -81,18 +81,19 @@ func NewEntity(optSetter ...EntityOptionSetter) Entity {
 
 // EntityBehavior 实体行为，在需要拓展实体能力时，匿名嵌入至实体结构体中
 type EntityBehavior struct {
-	id                          int64
-	opts                        EntityOptions
-	context                     util.IfaceCache
-	gcCollector                 container.GCCollector
-	parent                      Entity
-	componentList               container.List[util.FaceAny]
-	adding, removing            bool
-	initialing, shutting        bool
-	_eventEntityDestroySelf     localevent.Event
-	eventCompMgrAddComponents   localevent.Event
-	eventCompMgrRemoveComponent localevent.Event
-	innerGC                     _EntityInnerGC
+	id                               int64
+	opts                             EntityOptions
+	context                          util.IfaceCache
+	gcCollector                      container.GCCollector
+	parent                           Entity
+	componentList                    container.List[util.FaceAny]
+	adding, removing                 bool
+	initialing, shutting             bool
+	_eventEntityDestroySelf          localevent.Event
+	eventCompMgrAddComponents        localevent.Event
+	eventCompMgrRemoveComponent      localevent.Event
+	eventCompMgrFirstAccessComponent localevent.Event
+	innerGC                          _EntityInnerGC
 }
 
 func (entity *EntityBehavior) init(opts *EntityOptions) {
@@ -114,6 +115,7 @@ func (entity *EntityBehavior) init(opts *EntityOptions) {
 	entity._eventEntityDestroySelf.Init(false, nil, localevent.EventRecursion_NotEmit, opts.HookCache, &entity.innerGC)
 	entity.eventCompMgrAddComponents.Init(false, nil, localevent.EventRecursion_Discard, opts.HookCache, &entity.innerGC)
 	entity.eventCompMgrRemoveComponent.Init(false, nil, localevent.EventRecursion_Discard, opts.HookCache, &entity.innerGC)
+	entity.eventCompMgrFirstAccessComponent.Init(false, nil, localevent.EventRecursion_Discard, opts.HookCache, &entity.innerGC)
 }
 
 func (entity *EntityBehavior) getOptions() *EntityOptions {

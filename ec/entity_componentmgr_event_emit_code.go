@@ -26,3 +26,13 @@ func emitEventCompMgrRemoveComponent(event localevent.IEvent, entity Entity, com
 		return true
 	})
 }
+
+func emitEventCompMgrFirstAccessComponent(event localevent.IEvent, entity Entity, component Component) {
+	if event == nil {
+		panic("nil event")
+	}
+	event.Emit(func(delegate util.IfaceCache) bool {
+		util.Cache2Iface[EventCompMgrFirstAccessComponent](delegate).OnCompMgrFirstAccessComponent(entity, component)
+		return true
+	})
+}

@@ -10,3 +10,8 @@ type EventCompMgrAddComponents interface {
 type EventCompMgrRemoveComponent interface {
 	OnCompMgrRemoveComponent(entity Entity, component Component)
 }
+
+// EventCompMgrFirstAccessComponent [EmitUnExport] 事件定义：实体的组件管理器首次访问组件
+type EventCompMgrFirstAccessComponent interface {
+	OnCompMgrFirstAccessComponent(entity Entity, component Component)
+}

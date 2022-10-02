@@ -38,12 +38,20 @@ type _ComponentMgr interface {
 
 	// EventCompMgrRemoveComponent 事件：实体的组件管理器删除组件
 	EventCompMgrRemoveComponent() localevent.IEvent
+
+	// EventCompMgrFirstAccessComponent 事件：实体的组件管理器首次访问组件
+	EventCompMgrFirstAccessComponent() localevent.IEvent
 }
 
 // GetComponent 使用名称查询组件，一般情况下名称指组件接口名称，也可以自定义名称，同个名称指向多个组件时，返回首个组件
 func (entity *EntityBehavior) GetComponent(name string) Component {
 	if e, ok := entity.getComponentElement(name); ok {
 		comp := util.Cache2Iface[Component](e.Value.Cache)
+
+		if entity.opts.EnableComponentAwakeByAccess && !comp.getAwoke() {
+			emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, comp)
+		}
+
 		return comp
 	}
 
@@ -54,6 +62,11 @@ func (entity *EntityBehavior) GetComponent(name string) Component {
 func (entity *EntityBehavior) GetComponentByID(id int64) Component {
 	if e, ok := entity.getComponentElementByID(id); ok {
 		comp := util.Cache2Iface[Component](e.Value.Cache)
+
+		if entity.opts.EnableComponentAwakeByAccess && !comp.getAwoke() {
+			emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, comp)
+		}
+
 		return comp
 	}
 
@@ -74,6 +87,14 @@ func (entity *EntityBehavior) GetComponents(name string) []Component {
 			return false
 		}, e)
 
+		if entity.opts.EnableComponentAwakeByAccess {
+			for i := range components {
+				if !components[i].getAwoke() {
+					emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, components[i])
+				}
+			}
+		}
+
 		return components
 	}
 
@@ -88,6 +109,11 @@ func (entity *EntityBehavior) RangeComponents(fun func(component Component) bool
 
 	entity.componentList.Traversal(func(e *container.Element[util.FaceAny]) bool {
 		comp := util.Cache2Iface[Component](e.Value.Cache)
+
+		if entity.opts.EnableComponentAwakeByAccess && !comp.getAwoke() {
+			emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, comp)
+		}
+
 		return fun(comp)
 	})
 }
@@ -167,6 +193,11 @@ func (entity *EntityBehavior) EventCompMgrAddComponents() localevent.IEvent {
 // EventCompMgrRemoveComponent 事件：实体的组件管理器删除组件
 func (entity *EntityBehavior) EventCompMgrRemoveComponent() localevent.IEvent {
 	return &entity.eventCompMgrRemoveComponent
+}
+
+// EventCompMgrFirstAccessComponent 事件：实体的组件管理器首次访问组件
+func (entity *EntityBehavior) EventCompMgrFirstAccessComponent() localevent.IEvent {
+	return &entity.eventCompMgrFirstAccessComponent
 }
 
 func (entity *EntityBehavior) addSingleComponent(name string, component Component) error {

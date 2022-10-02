@@ -85,30 +85,44 @@ func (_runtime *RuntimeBehavior) GetRuntimeCtx() runtime.Context {
 }
 
 // OnEntityMgrAddEntity 事件回调：运行时上下文添加实体
-func (_runtime *RuntimeBehavior) OnEntityMgrAddEntity(runtimeCtx runtime.Context, entity ec.Entity) {
+func (_runtime *RuntimeBehavior) OnEntityMgrAddEntity(entityMgr runtime.IEntityMgr, entity ec.Entity) {
 	_runtime.initEntity(entity)
 	_runtime.connectEntity(entity)
 }
 
 // OnEntityMgrRemoveEntity 事件回调：运行时上下文删除实体
-func (_runtime *RuntimeBehavior) OnEntityMgrRemoveEntity(runtimeCtx runtime.Context, entity ec.Entity) {
+func (_runtime *RuntimeBehavior) OnEntityMgrRemoveEntity(entityMgr runtime.IEntityMgr, entity ec.Entity) {
 	_runtime.disconnectEntity(entity)
 	_runtime.shutEntity(entity)
 }
 
+// OnEntityMgrEntityFirstAccessComponent 事件回调：运行时上下文中的实体首次访问组件
+func (_runtime *RuntimeBehavior) OnEntityMgrEntityFirstAccessComponent(entityMgr runtime.IEntityMgr, entity ec.Entity, component ec.Component) {
+	comp := ec.UnsafeComponent(component)
+
+	if comp.GetAwoke() {
+		return
+	}
+	comp.SetAwoke(true)
+
+	if compAwake, ok := component.(_ComponentAwake); ok {
+		compAwake.Awake()
+	}
+}
+
 // OnEntityMgrEntityAddComponents 事件回调：运行时上下文中的实体添加组件
-func (_runtime *RuntimeBehavior) OnEntityMgrEntityAddComponents(runtimeCtx runtime.Context, entity ec.Entity, components []ec.Component) {
+func (_runtime *RuntimeBehavior) OnEntityMgrEntityAddComponents(entityMgr runtime.IEntityMgr, entity ec.Entity, components []ec.Component) {
 	_runtime.addComponents(components)
 }
 
 // OnEntityMgrEntityRemoveComponent 事件回调：运行时上下文中的实体删除组件
-func (_runtime *RuntimeBehavior) OnEntityMgrEntityRemoveComponent(runtimeCtx runtime.Context, entity ec.Entity, component ec.Component) {
+func (_runtime *RuntimeBehavior) OnEntityMgrEntityRemoveComponent(entityMgr runtime.IEntityMgr, entity ec.Entity, component ec.Component) {
 	_runtime.removeComponent(component)
 }
 
 // OnEntityDestroySelf 事件回调：实体销毁自身
 func (_runtime *RuntimeBehavior) OnEntityDestroySelf(entity ec.Entity) {
-	_runtime.ctx.RemoveEntity(entity.GetID())
+	_runtime.ctx.GetEntityMgr().RemoveEntity(entity.GetID())
 }
 
 // OnComponentDestroySelf 事件回调：组件销毁自身

@@ -11,6 +11,9 @@ import (
 
 // IECTree EC树接口
 type IECTree interface {
+	// GetRuntimeCtx 获取运行时上下文
+	GetRuntimeCtx() Context
+
 	// AddChild 子实体加入父实体，在实体加入运行时上下文后调用，
 	// 切换父实体时，先调用RemoveChild()离开旧父实体，再调用AddChild()加入新父实体
 	AddChild(parentID, childID int64) error
@@ -54,8 +57,8 @@ type ECTree struct {
 	ecTree                 map[int64]_ECNode
 	eventECTreeAddChild    localevent.Event
 	eventECTreeRemoveChild localevent.Event
-	inited                 bool
 	hook                   localevent.Hook
+	inited                 bool
 }
 
 // Init 初始化EC树
@@ -88,14 +91,19 @@ func (ecTree *ECTree) init(runtimeCtx Context, masterTree bool) {
 	ecTree.eventECTreeRemoveChild.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Discard, runtimeCtx.getOptions().HookCache, runtimeCtx)
 
 	if !ecTree.masterTree {
-		ecTree.hook = localevent.BindEvent[eventEntityMgrNotifyECTreeRemoveEntity](ecTree.runtimeCtx.eventEntityMgrNotifyECTreeRemoveEntity(), ecTree)
+		ecTree.hook = localevent.BindEvent[eventEntityMgrNotifyECTreeRemoveEntity](ecTree.runtimeCtx.GetEntityMgr().eventEntityMgrNotifyECTreeRemoveEntity(), ecTree)
 	}
 
 	ecTree.inited = true
 }
 
-func (ecTree *ECTree) onEntityMgrNotifyECTreeRemoveEntity(runtimeCtx Context, entity ec.Entity) {
+func (ecTree *ECTree) onEntityMgrNotifyECTreeRemoveEntity(entityMgr IEntityMgr, entity ec.Entity) {
 	ecTree.RemoveChild(entity.GetID())
+}
+
+// GetRuntimeCtx 获取运行时上下文
+func (ecTree *ECTree) GetRuntimeCtx() Context {
+	return ecTree.runtimeCtx
 }
 
 // AddChild 子实体加入父实体，在实体加入运行时上下文后调用，
@@ -105,12 +113,12 @@ func (ecTree *ECTree) AddChild(parentID, childID int64) error {
 		return errors.New("parentID equal childID invalid")
 	}
 
-	parent, ok := ecTree.runtimeCtx.GetEntity(parentID)
+	parent, ok := ecTree.runtimeCtx.GetEntityMgr().GetEntity(parentID)
 	if !ok {
 		return errors.New("parent not exist")
 	}
 
-	child, ok := ecTree.runtimeCtx.GetEntity(childID)
+	child, ok := ecTree.runtimeCtx.GetEntityMgr().GetEntity(childID)
 	if !ok {
 		return errors.New("child not exist")
 	}

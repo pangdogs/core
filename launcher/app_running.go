@@ -115,7 +115,7 @@ func (app *App) newService(ctx context.Context, servicePtName string, servicePtC
 //	)
 //
 //	singletonRuntime := core.NewRuntime(singletonRuntimeCtx,
-//		core.RuntimeOptionSetter.EnableAutoRecover(viper.GetBool(fmt.Sprintf("%s.Singleton.EnableAutoRecover", servicePtName))),
+//		core.RuntimeOptionSetter.AutoRecover(viper.GetBool(fmt.Sprintf("%s.Singleton.AutoRecover", servicePtName))),
 //		core.RuntimeOptionSetter.ProcessQueueCapacity(viper.GetInt(fmt.Sprintf("%s.Singleton.ProcessQueueCapacity", servicePtName))),
 //		core.RuntimeOptionSetter.ProcessQueueTimeout(time.Duration(viper.GetInt64(fmt.Sprintf("%s.Singleton.ProcessQueueTimeout", servicePtName)))),
 //		core.RuntimeOptionSetter.GCInterval(time.Duration(viper.GetInt64(fmt.Sprintf("%s.Singleton.GCInterval", servicePtName)))),
