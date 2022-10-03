@@ -220,27 +220,27 @@ func (entityMgr *EntityMgr) RemoveEntity(id int64) {
 	emitEventEntityMgrRemoveEntity(&entityMgr.eventEntityMgrRemoveEntity, entityMgr, entity.Entity)
 }
 
-// EventEntityMgrAddEntity 事件：运行时上下文添加实体
+// EventEntityMgrAddEntity 事件：实体管理器中添加实体
 func (entityMgr *EntityMgr) EventEntityMgrAddEntity() localevent.IEvent {
 	return &entityMgr.eventEntityMgrAddEntity
 }
 
-// EventEntityMgrRemoveEntity 事件：运行时上下文删除实体
+// EventEntityMgrRemoveEntity 事件：实体管理器中删除实体
 func (entityMgr *EntityMgr) EventEntityMgrRemoveEntity() localevent.IEvent {
 	return &entityMgr.eventEntityMgrRemoveEntity
 }
 
-// EventEntityMgrEntityAddComponents 事件：运行时上下文中的实体添加组件
+// EventEntityMgrEntityAddComponents 事件：实体管理器中的实体添加组件
 func (entityMgr *EntityMgr) EventEntityMgrEntityAddComponents() localevent.IEvent {
 	return &entityMgr.eventEntityMgrEntityAddComponents
 }
 
-// EventEntityMgrEntityRemoveComponent 事件：运行时上下文中的实体删除组件
+// EventEntityMgrEntityRemoveComponent 事件：实体管理器中的实体删除组件
 func (entityMgr *EntityMgr) EventEntityMgrEntityRemoveComponent() localevent.IEvent {
 	return &entityMgr.eventEntityMgrEntityRemoveComponent
 }
 
-// EventEntityMgrEntityFirstAccessComponent 事件：运行时上下文中的实体首次访问组件
+// EventEntityMgrEntityFirstAccessComponent 事件：实体管理器中的实体首次访问组件
 func (entityMgr *EntityMgr) EventEntityMgrEntityFirstAccessComponent() localevent.IEvent {
 	return &entityMgr.eventEntityMgrEntityFirstAccessComponent
 }

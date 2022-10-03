@@ -14,7 +14,6 @@ import (
 type Context interface {
 	internal.Context
 	internal.RunningMark
-	_ServiceContextEntityMgr
 
 	init(opts *ContextOptions)
 
@@ -75,7 +74,7 @@ func (ctx *ContextBehavior) init(opts *ContextOptions) {
 		ctx.opts.ParentContext = context.Background()
 	}
 
-	ctx.ContextBehavior.Init(ctx.opts.ParentContext, ctx.opts.ctx.opts.ReportError)
+	ctx.ContextBehavior.Init(ctx.opts.ParentContext, ctx.opts.AutoRecover, ctx.opts.ReportError)
 
 	snowflakeNode, err := snowflake.NewNode(ctx.opts.NodeID)
 	if err != nil {

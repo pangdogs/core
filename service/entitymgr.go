@@ -6,14 +6,8 @@ import (
 	"github.com/pangdogs/galaxy/ec"
 )
 
-// _ServiceContextEntityMgr 服务上下文的实体管理器
-type _ServiceContextEntityMgr interface {
-	// GetEntity 查询实体
-	GetEntity(id int64) (ec.Entity, bool)
-
-	// GetOrCreateEntity 查询实体，不存在时创建实体
-	GetOrCreateEntity(id int64, creator func(id int64) ec.Entity) (actual ec.Entity, loaded bool, err error)
-
+// EntityMgr 服务上下文的实体管理器
+type EntityMgr interface {
 	// AddEntity 添加实体
 	AddEntity(entity ec.Entity) error
 
