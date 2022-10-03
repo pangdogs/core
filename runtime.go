@@ -84,19 +84,19 @@ func (_runtime *RuntimeBehavior) GetRuntimeCtx() runtime.Context {
 	return _runtime.ctx
 }
 
-// OnEntityMgrAddEntity 事件回调：运行时上下文添加实体
+// OnEntityMgrAddEntity 事件回调：实体管理器中添加实体
 func (_runtime *RuntimeBehavior) OnEntityMgrAddEntity(entityMgr runtime.IEntityMgr, entity ec.Entity) {
 	_runtime.initEntity(entity)
 	_runtime.connectEntity(entity)
 }
 
-// OnEntityMgrRemoveEntity 事件回调：运行时上下文删除实体
+// OnEntityMgrRemoveEntity 事件回调：实体管理器中删除实体
 func (_runtime *RuntimeBehavior) OnEntityMgrRemoveEntity(entityMgr runtime.IEntityMgr, entity ec.Entity) {
 	_runtime.disconnectEntity(entity)
 	_runtime.shutEntity(entity)
 }
 
-// OnEntityMgrEntityFirstAccessComponent 事件回调：运行时上下文中的实体首次访问组件
+// OnEntityMgrEntityFirstAccessComponent 事件回调：实体管理器中的实体首次访问组件
 func (_runtime *RuntimeBehavior) OnEntityMgrEntityFirstAccessComponent(entityMgr runtime.IEntityMgr, entity ec.Entity, component ec.Component) {
 	comp := ec.UnsafeComponent(component)
 
@@ -110,12 +110,12 @@ func (_runtime *RuntimeBehavior) OnEntityMgrEntityFirstAccessComponent(entityMgr
 	}
 }
 
-// OnEntityMgrEntityAddComponents 事件回调：运行时上下文中的实体添加组件
+// OnEntityMgrEntityAddComponents 事件回调：实体管理器中的实体添加组件
 func (_runtime *RuntimeBehavior) OnEntityMgrEntityAddComponents(entityMgr runtime.IEntityMgr, entity ec.Entity, components []ec.Component) {
 	_runtime.addComponents(components)
 }
 
-// OnEntityMgrEntityRemoveComponent 事件回调：运行时上下文中的实体删除组件
+// OnEntityMgrEntityRemoveComponent 事件回调：实体管理器中的实体删除组件
 func (_runtime *RuntimeBehavior) OnEntityMgrEntityRemoveComponent(entityMgr runtime.IEntityMgr, entity ec.Entity, component ec.Component) {
 	_runtime.removeComponent(component)
 }
