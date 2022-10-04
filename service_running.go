@@ -1,16 +1,19 @@
 package galaxy
 
-import "github.com/pangdogs/galaxy/ec"
+import (
+	"github.com/pangdogs/galaxy/internal"
+	"github.com/pangdogs/galaxy/service"
+)
 
 // Run 运行，返回的channel用于线程同步，可以阻塞等待至运行结束
 func (serv *_ServiceBehavior) Run() <-chan struct{} {
-	if !serv.ctx.markRunning() {
-		panic("serv already running")
+	if !service.UnsafeContext(serv.ctx).MarkRunning() {
+		panic("service already running")
 	}
 
 	shutChan := make(chan struct{}, 1)
 
-	if parentCtx, ok := serv.ctx.GetParentCtx().(ec._Context); ok {
+	if parentCtx, ok := serv.ctx.GetParentCtx().(internal.Context); ok {
 		parentCtx.GetWaitGroup().Add(1)
 	}
 
@@ -26,31 +29,31 @@ func (serv *_ServiceBehavior) Stop() {
 
 func (serv *_ServiceBehavior) running(shutChan chan struct{}) {
 	defer func() {
-		ec.callOuterNoRet(serv.opts.EnableAutoRecover, serv.ctx.GetReportError(), func() {
-			if serv.ctx.getOptions().StoppingCallback != nil {
-				serv.ctx.getOptions().StoppingCallback(serv)
+		internal.CallOuterNoRet(serv.ctx.GetAutoRecover(), serv.ctx.GetReportError(), func() {
+			if service.UnsafeContext(serv.ctx).GetOptions().StoppingCallback != nil {
+				service.UnsafeContext(serv.ctx).GetOptions().StoppingCallback(serv.ctx)
 			}
 		})
 
 		serv.ctx.GetWaitGroup().Wait()
 
-		ec.callOuterNoRet(serv.opts.EnableAutoRecover, serv.ctx.GetReportError(), func() {
-			if serv.ctx.getOptions().StoppedCallback != nil {
-				serv.ctx.getOptions().StoppedCallback(serv)
+		internal.CallOuterNoRet(serv.ctx.GetAutoRecover(), serv.ctx.GetReportError(), func() {
+			if service.UnsafeContext(serv.ctx).GetOptions().StoppedCallback != nil {
+				service.UnsafeContext(serv.ctx).GetOptions().StoppedCallback(serv.ctx)
 			}
 		})
 
-		if parentCtx, ok := serv.ctx.GetParentCtx().(ec._Context); ok {
+		if parentCtx, ok := serv.ctx.GetParentCtx().(internal.Context); ok {
 			parentCtx.GetWaitGroup().Done()
 		}
 
-		serv.ctx.markShutdown()
+		service.UnsafeContext(serv.ctx).MarkShutdown()
 		shutChan <- struct{}{}
 	}()
 
-	ec.callOuterNoRet(serv.opts.EnableAutoRecover, serv.ctx.GetReportError(), func() {
-		if serv.ctx.getOptions().StartedCallback != nil {
-			serv.ctx.getOptions().StartedCallback(serv)
+	internal.CallOuterNoRet(serv.ctx.GetAutoRecover(), serv.ctx.GetReportError(), func() {
+		if service.UnsafeContext(serv.ctx).GetOptions().StartedCallback != nil {
+			service.UnsafeContext(serv.ctx).GetOptions().StartedCallback(serv.ctx)
 		}
 	})
 

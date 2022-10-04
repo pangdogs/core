@@ -1,8 +1,6 @@
 package runtime
 
-import (
-	"fmt"
-)
+import "fmt"
 
 // SafeRet 安全调用结果
 type SafeRet struct {
@@ -16,16 +14,31 @@ type _SafeCall interface {
 	//
 	//	注意：
 	//	- 代码片段中的线程安全问题。
-	//	- 如果任务流水线一直满时，那么这次调用会阻塞等待后超时返回错误。
+	//	- 如果任务流水线一直满时，会阻塞。
 	//	- 如果在代码片段中，又向调用方所在的运行时发起安全调用，并且调用方阻塞并等待返回结果，那么这次调用会阻塞等待后超时。
 	SafeCall(segment func() SafeRet) <-chan SafeRet
 
-	// SafeCallNoRet 在运行时中，将代码片段压入任务流水线，串行化的进行调用，没有返回值，无法阻塞。
+	// SafeCallNoWait 在运行时中，将代码片段压入任务流水线，串行化的进行调用，返回result channel，可以选择阻塞并等待返回结果。
 	//
 	//	注意：
 	//	- 代码片段中的线程安全问题。
-	//	- 如果任务流水线一直满时，那么这次调用会阻塞等待后超时，但不会收到任何错误信息。
+	//	- 如果任务流水线一直满时，不会阻塞。
+	//	- 如果在代码片段中，又向调用方所在的运行时发起安全调用，并且调用方阻塞并等待返回结果，那么这次调用会阻塞等待后超时。
+	SafeCallNoWait(segment func() SafeRet) <-chan SafeRet
+
+	// SafeCallNoRet 在运行时中，将代码片段压入任务流水线，串行化的进行调用，没有返回值，任务流水线满时会阻塞。
+	//
+	//	注意：
+	//	- 代码片段中的线程安全问题。
+	//	- 如果任务流水线一直满时，会阻塞。
 	SafeCallNoRet(segment func())
+
+	// SafeCallNoRetNoWait 在运行时中，将代码片段压入任务流水线，串行化的进行调用，没有返回值，任务流水线满时不会阻塞。
+	//
+	//	注意：
+	//	- 代码片段中的线程安全问题。
+	//	- 如果任务流水线一直满时，不会阻塞。
+	SafeCallNoRetNoWait(segment func())
 
 	setCallee(callee Callee)
 }
@@ -34,16 +47,12 @@ type _SafeCall interface {
 //
 //	注意：
 //	- 代码片段中的线程安全问题。
-//	- 如果任务流水线一直满时，那么这次调用会阻塞等待后超时返回错误。
+//	- 如果任务流水线一直满时，会阻塞。
 //	- 如果在代码片段中，又向调用方所在的运行时发起安全调用，并且调用方阻塞并等待返回结果，那么这次调用会阻塞等待后超时。
 func (ctx *ContextBehavior) SafeCall(segment func() SafeRet) <-chan SafeRet {
-	if segment == nil {
-		panic("nil segment")
-	}
-
 	ret := make(chan SafeRet, 1)
 
-	ctx.callee.PushCall(func() {
+	func() {
 		defer func() {
 			if info := recover(); info != nil {
 				err, ok := info.(error)
@@ -51,27 +60,83 @@ func (ctx *ContextBehavior) SafeCall(segment func() SafeRet) <-chan SafeRet {
 					err = fmt.Errorf("%v", info)
 				}
 				ret <- SafeRet{Err: err}
-				panic(err)
 			}
 		}()
 
-		ret <- segment()
-	})
+		if segment == nil {
+			panic("nil segment")
+		}
+
+		ctx.callee.PushCall(func() {
+			ret <- segment()
+		})
+	}()
 
 	return ret
 }
 
-// SafeCallNoRet 在运行时中，将代码片段压入任务流水线，串行化的进行调用，没有返回值，无法阻塞。
+// SafeCallNoWait 在运行时中，将代码片段压入任务流水线，串行化的进行调用，返回result channel，可以选择阻塞并等待返回结果。
 //
 //	注意：
 //	- 代码片段中的线程安全问题。
-//	- 如果任务流水线一直满时，那么这次调用会阻塞等待后超时，但不会收到任何错误信息。
-func (ctx *ContextBehavior) SafeCallNoRet(segment func()) {
-	if segment == nil {
-		panic("nil segment")
-	}
+//	- 如果任务流水线一直满时，不会阻塞。
+//	- 如果在代码片段中，又向调用方所在的运行时发起安全调用，并且调用方阻塞并等待返回结果，那么这次调用会阻塞等待后超时。
+func (ctx *ContextBehavior) SafeCallNoWait(segment func() SafeRet) <-chan SafeRet {
+	ret := make(chan SafeRet, 1)
 
-	ctx.callee.PushCall(segment)
+	go func() {
+		defer func() {
+			recover()
+		}()
+
+		if segment == nil {
+			panic("nil segment")
+		}
+
+		ctx.callee.PushCall(func() {
+			ret <- segment()
+		})
+	}()
+
+	return ret
+}
+
+// SafeCallNoRet 在运行时中，将代码片段压入任务流水线，串行化的进行调用，没有返回值，任务流水线满时会阻塞。
+//
+//	注意：
+//	- 代码片段中的线程安全问题。
+//	- 如果任务流水线一直满时，会阻塞。
+func (ctx *ContextBehavior) SafeCallNoRet(segment func()) {
+	func() {
+		defer func() {
+			recover()
+		}()
+
+		if segment == nil {
+			panic("nil segment")
+		}
+
+		ctx.callee.PushCall(segment)
+	}()
+}
+
+// SafeCallNoRetNoWait 在运行时中，将代码片段压入任务流水线，串行化的进行调用，没有返回值，任务流水线满时不会阻塞。
+//
+//	注意：
+//	- 代码片段中的线程安全问题。
+//	- 如果任务流水线一直满时，不会阻塞。
+func (ctx *ContextBehavior) SafeCallNoRetNoWait(segment func()) {
+	go func() {
+		defer func() {
+			recover()
+		}()
+
+		if segment == nil {
+			panic("nil segment")
+		}
+
+		ctx.callee.PushCall(segment)
+	}()
 }
 
 func (ctx *ContextBehavior) setCallee(callee Callee) {

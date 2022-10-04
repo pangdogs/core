@@ -66,6 +66,7 @@ type _EntityInfo struct {
 	Hooks   [3]localevent.Hook
 }
 
+// ContextBehavior 运行时上下文行为，在需要拓展运行时上下文能力时，匿名嵌入至运行时上下文结构体中
 type ContextBehavior struct {
 	internal.ContextBehavior
 	internal.RunningMarkBehavior

@@ -24,7 +24,7 @@ func ServiceGetOptions(serv Service) ServiceOptions {
 }
 
 // NewService 创建服务
-func NewService(servCtx service.Context, optSetter ...ServiceOptionSetterFunc) Service {
+func NewService(serviceCtx service.Context, optSetter ...ServiceOptionSetterFunc) Service {
 	opts := ServiceOptions{}
 	ServiceOption.Default()(&opts)
 
@@ -33,12 +33,12 @@ func NewService(servCtx service.Context, optSetter ...ServiceOptionSetterFunc) S
 	}
 
 	if !opts.Inheritor.IsNil() {
-		opts.Inheritor.Iface.init(servCtx, &opts)
+		opts.Inheritor.Iface.init(serviceCtx, &opts)
 		return opts.Inheritor.Iface
 	}
 
 	e := &_ServiceBehavior{}
-	e.init(servCtx, &opts)
+	e.init(serviceCtx, &opts)
 
 	return e.opts.Inheritor.Iface
 }
@@ -48,9 +48,9 @@ type _ServiceBehavior struct {
 	ctx  service.Context
 }
 
-func (serv *_ServiceBehavior) init(servCtx service.Context, opts *ServiceOptions) {
-	if servCtx == nil {
-		panic("nil servCtx")
+func (serv *_ServiceBehavior) init(serviceCtx service.Context, opts *ServiceOptions) {
+	if serviceCtx == nil {
+		panic("nil serviceCtx")
 	}
 
 	if opts == nil {
@@ -63,7 +63,7 @@ func (serv *_ServiceBehavior) init(servCtx service.Context, opts *ServiceOptions
 		serv.opts.Inheritor = util.NewFace[Service](serv)
 	}
 
-	serv.ctx = servCtx
+	serv.ctx = serviceCtx
 }
 
 func (serv *_ServiceBehavior) getOptions() *ServiceOptions {

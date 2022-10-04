@@ -2,88 +2,118 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"github.com/pangdogs/galaxy/ec"
+	"github.com/pangdogs/galaxy/util"
+	"sync"
 )
 
-// EntityMgr 服务上下文的实体管理器
-type EntityMgr interface {
+// IEntityMgr 实体管理器接口
+type IEntityMgr interface {
+	// GetServiceCtx 获取服务上下文
+	GetServiceCtx() Context
+
+	// GetEntity 查询实体
+	GetEntity(id int64) (ec.Entity, bool)
+
+	// GetOrAddEntity 查询或添加实体
+	GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, error)
+
 	// AddEntity 添加实体
 	AddEntity(entity ec.Entity) error
+
+	// GetAndRemoveEntity 查询并删除实体
+	GetAndRemoveEntity(id int64) (ec.Entity, bool)
 
 	// RemoveEntity 删除实体
 	RemoveEntity(id int64)
 }
 
-// GetEntity 查询实体
-func (ctx *ContextBehavior) GetEntity(id int64) (ec.Entity, bool) {
-	ctx.entityMapMutex.RLock()
-	defer ctx.entityMapMutex.RUnlock()
-
-	entity, ok := ctx.entityMap[id]
-	return entity, ok
+// EntityMgr 实体管理器
+type EntityMgr struct {
+	serviceCtx Context
+	entityMap  sync.Map
+	inited     bool
 }
 
-// GetOrCreateEntity 查询实体，不存在时创建实体
-func (ctx *ContextBehavior) GetOrCreateEntity(id int64, creator func(id int64) ec.Entity) (actual ec.Entity, loaded bool, err error) {
-	if creator == nil {
-		return nil, false, errors.New("nil creator")
+// Init 初始化实体管理器
+func (entityMgr *EntityMgr) Init(serviceCtx Context) {
+	if serviceCtx == nil {
+		panic("nil serviceCtx")
 	}
 
-	ctx.entityMapMutex.Lock()
-	defer ctx.entityMapMutex.Unlock()
-
-	entity, ok := ctx.entityMap[id]
-	if ok {
-		return entity, true, nil
+	if entityMgr.inited {
+		panic("repeated init entity manager")
 	}
 
-	if id <= 0 {
-		return nil, false, errors.New("input id less equal 0 invalid")
+	entityMgr.serviceCtx = serviceCtx
+	entityMgr.inited = true
+}
+
+// GetServiceCtx 获取服务上下文
+func (entityMgr *EntityMgr) GetServiceCtx() Context {
+	return entityMgr.serviceCtx
+}
+
+// GetEntity 查询实体
+func (entityMgr *EntityMgr) GetEntity(id int64) (ec.Entity, bool) {
+	v, ok := entityMgr.entityMap.Load(id)
+	if !ok {
+		return nil, false
 	}
+	return v.(ec.Entity), true
+}
 
-	entity = creator(id)
-
+// GetOrAddEntity 查询或添加实体
+func (entityMgr *EntityMgr) GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, error) {
 	if entity == nil {
-		return nil, false, errors.New("creator return nil entity invalid")
+		return nil, false, errors.New("nil entity")
 	}
 
-	if entity.GetID() != id {
-		return nil, false, errors.New("creator return entity id not equal input id invalid")
+	if entity.GetID() == 0 {
+		return nil, false, errors.New("entity id invalid")
 	}
 
-	ctx.entityMap[entity.GetID()] = entity
+	if ec.UnsafeEntity(entity).GetContext() == util.NilIfaceCache {
+		return nil, false, errors.New("entity context not setup")
+	}
+
+	v, loaded := entityMgr.entityMap.LoadOrStore(entity.GetID(), entity)
+	if loaded {
+		return v.(ec.Entity), true, nil
+	}
 
 	return entity, false, nil
 }
 
 // AddEntity 添加实体
-func (ctx *ContextBehavior) AddEntity(entity ec.Entity) error {
-	ctx.entityMapMutex.Lock()
-	defer ctx.entityMapMutex.Unlock()
-
+func (entityMgr *EntityMgr) AddEntity(entity ec.Entity) error {
 	if entity == nil {
 		return errors.New("nil entity")
 	}
 
-	if entity.GetID() <= 0 {
-		return errors.New("entity id less equal 0 invalid")
+	if entity.GetID() == 0 {
+		return errors.New("entity id invalid")
 	}
 
-	_, ok := ctx.entityMap[entity.GetID()]
-	if ok {
-		return fmt.Errorf("repeated entity '%d' in this service context", entity.GetID())
+	if ec.UnsafeEntity(entity).GetContext() == util.NilIfaceCache {
+		return errors.New("entity context not setup")
 	}
 
-	ctx.entityMap[entity.GetID()] = entity
+	entityMgr.entityMap.Store(entity.GetID(), entity)
 
 	return nil
 }
 
-// RemoveEntity 删除实体
-func (ctx *ContextBehavior) RemoveEntity(id int64) {
-	ctx.entityMapMutex.Lock()
-	defer ctx.entityMapMutex.Unlock()
+// GetAndRemoveEntity 查询并删除实体
+func (entityMgr *EntityMgr) GetAndRemoveEntity(id int64) (ec.Entity, bool) {
+	v, loaded := entityMgr.entityMap.LoadAndDelete(id)
+	if loaded {
+		return v.(ec.Entity), true
+	}
+	return nil, false
+}
 
-	delete(ctx.entityMap, id)
+// RemoveEntity 删除实体
+func (entityMgr *EntityMgr) RemoveEntity(id int64) {
+	entityMgr.entityMap.Delete(id)
 }

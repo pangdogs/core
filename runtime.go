@@ -40,6 +40,7 @@ func NewRuntime(runtimeCtx runtime.Context, optSetter ...RuntimeOptionSetter) Ru
 	return runtime.opts.Inheritor.Iface
 }
 
+// RuntimeBehavior 运行时行为，在需要拓展运行时能力时，匿名嵌入至运行时结构体中
 type RuntimeBehavior struct {
 	opts            RuntimeOptions
 	ctx             runtime.Context

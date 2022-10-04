@@ -6,8 +6,7 @@ import (
 
 // ServiceOptions 创建服务的所有选项
 type ServiceOptions struct {
-	Inheritor         util.Face[Service] // 继承者，需要拓展服务自身功能时需要使用
-	EnableAutoRecover bool               // 是否开启panic时自动恢复
+	Inheritor util.Face[Service] // 继承者，需要拓展服务自身功能时需要使用
 }
 
 // ServiceOption 创建服务的选项
@@ -22,7 +21,6 @@ type _ServiceOptionSetter struct{}
 func (*_ServiceOptionSetter) Default() ServiceOptionSetterFunc {
 	return func(o *ServiceOptions) {
 		o.Inheritor = util.Face[Service]{}
-		o.EnableAutoRecover = false
 	}
 }
 
@@ -30,12 +28,5 @@ func (*_ServiceOptionSetter) Default() ServiceOptionSetterFunc {
 func (*_ServiceOptionSetter) Inheritor(v util.Face[Service]) ServiceOptionSetterFunc {
 	return func(o *ServiceOptions) {
 		o.Inheritor = v
-	}
-}
-
-// EnableAutoRecover 是否开启panic时自动恢复
-func (*_ServiceOptionSetter) EnableAutoRecover(v bool) ServiceOptionSetterFunc {
-	return func(o *ServiceOptions) {
-		o.EnableAutoRecover = v
 	}
 }

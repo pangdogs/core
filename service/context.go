@@ -3,10 +3,8 @@ package service
 import (
 	"context"
 	"github.com/bwmarrin/snowflake"
-	"github.com/pangdogs/galaxy/ec"
 	"github.com/pangdogs/galaxy/internal"
 	"github.com/pangdogs/galaxy/util"
-	"sync"
 	"sync/atomic"
 )
 
@@ -14,6 +12,7 @@ import (
 type Context interface {
 	internal.Context
 	internal.RunningMark
+	_SafeCall
 
 	init(opts *ContextOptions)
 
@@ -27,6 +26,9 @@ type Context interface {
 
 	// GenPersistID 生成持久化ID，向正方向增长，全局唯一，必须使用此ID持久化，使用snowflake算法，性能较差，默认情况下单个服务每毫秒仅能生成4096个，值大于0
 	GenPersistID() int64
+
+	// GetEntityMgr 获取实体管理器
+	GetEntityMgr() IEntityMgr
 }
 
 // NewContext 创建服务上下文
@@ -49,14 +51,14 @@ func NewContext(optSetter ...ContextOptionSetter) Context {
 	return serv.opts.Inheritor.Iface
 }
 
+// ContextBehavior 服务上下文行为，在需要拓展服务上下文能力时，匿名嵌入至服务上下文结构体中
 type ContextBehavior struct {
 	internal.ContextBehavior
 	internal.RunningMarkBehavior
-	opts           ContextOptions
-	uidGenerator   int64
-	snowflakeNode  *snowflake.Node
-	entityMap      map[int64]ec.Entity
-	entityMapMutex sync.RWMutex
+	opts          ContextOptions
+	uidGenerator  int64
+	snowflakeNode *snowflake.Node
+	entityMgr     EntityMgr
 }
 
 func (ctx *ContextBehavior) init(opts *ContextOptions) {
@@ -81,6 +83,8 @@ func (ctx *ContextBehavior) init(opts *ContextOptions) {
 		panic(err)
 	}
 	ctx.snowflakeNode = snowflakeNode
+
+	ctx.entityMgr.Init(ctx.opts.Inheritor.Iface)
 }
 
 func (ctx *ContextBehavior) getOptions() *ContextOptions {
@@ -100,4 +104,9 @@ func (ctx *ContextBehavior) GenUID() int64 {
 // GenPersistID 生成持久化ID，向正方向增长，全局唯一，必须使用此ID持久化，性能较差，单个服务每毫秒仅能生成4096个，值大于0
 func (ctx *ContextBehavior) GenPersistID() int64 {
 	return int64(ctx.snowflakeNode.Generate())
+}
+
+// GetEntityMgr 获取实体管理器
+func (ctx *ContextBehavior) GetEntityMgr() IEntityMgr {
+	return &ctx.entityMgr
 }
