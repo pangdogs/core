@@ -55,10 +55,10 @@ func NewContext(serviceCtx service.Context, optSetter ...ContextOptionSetter) Co
 		return opts.Inheritor.Iface
 	}
 
-	runtimeCtx := &ContextBehavior{}
-	runtimeCtx.init(serviceCtx, &opts)
+	ctx := &ContextBehavior{}
+	ctx.init(serviceCtx, &opts)
 
-	return runtimeCtx.opts.Inheritor.Iface
+	return ctx.opts.Inheritor.Iface
 }
 
 type _EntityInfo struct {

@@ -18,11 +18,6 @@ type Service interface {
 	GetContext() service.Context
 }
 
-// ServiceGetOptions 获取创建服务的所有选项
-func ServiceGetOptions(serv Service) ServiceOptions {
-	return *serv.getOptions()
-}
-
 // NewService 创建服务
 func NewService(serviceCtx service.Context, optSetter ...ServiceOptionSetterFunc) Service {
 	opts := ServiceOptions{}
@@ -37,10 +32,10 @@ func NewService(serviceCtx service.Context, optSetter ...ServiceOptionSetterFunc
 		return opts.Inheritor.Iface
 	}
 
-	e := &_ServiceBehavior{}
-	e.init(serviceCtx, &opts)
+	service := &_ServiceBehavior{}
+	service.init(serviceCtx, &opts)
 
-	return e.opts.Inheritor.Iface
+	return service.opts.Inheritor.Iface
 }
 
 type _ServiceBehavior struct {

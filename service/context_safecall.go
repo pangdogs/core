@@ -65,12 +65,18 @@ func (ctx *ContextBehavior) SafeCall(entityID int64, segment func(entity ec.Enti
 	if ok {
 		ret := make(chan runtime.SafeRet, 1)
 		ret <- runtime.SafeRet{
-			Err: errors.New("entity not exist"),
+			Err: errors.New("entity not exist in service context"),
 		}
 		return ret
 	}
 
 	return runtime.EntityContext(entity).SafeCall(func() runtime.SafeRet {
+		_, ok := runtime.EntityContext(entity).GetEntityMgr().GetEntity(entity.GetID())
+		if !ok {
+			return runtime.SafeRet{
+				Err: errors.New("entity not exist in runtime context"),
+			}
+		}
 		return segment(entity)
 	})
 }
@@ -102,12 +108,18 @@ func (ctx *ContextBehavior) SafeCallNoWait(entityID int64, segment func(entity e
 	if ok {
 		ret := make(chan runtime.SafeRet, 1)
 		ret <- runtime.SafeRet{
-			Err: errors.New("entity not exist"),
+			Err: errors.New("entity not exist in service context"),
 		}
 		return ret
 	}
 
 	return runtime.EntityContext(entity).SafeCallNoWait(func() runtime.SafeRet {
+		_, ok := runtime.EntityContext(entity).GetEntityMgr().GetEntity(entity.GetID())
+		if !ok {
+			return runtime.SafeRet{
+				Err: errors.New("entity not exist in runtime context"),
+			}
+		}
 		return segment(entity)
 	})
 }
@@ -132,6 +144,10 @@ func (ctx *ContextBehavior) SafeCallNoRet(entityID int64, segment func(entity ec
 	}
 
 	runtime.EntityContext(entity).SafeCallNoRet(func() {
+		_, ok := runtime.EntityContext(entity).GetEntityMgr().GetEntity(entity.GetID())
+		if !ok {
+			return
+		}
 		segment(entity)
 	})
 }
@@ -156,6 +172,10 @@ func (ctx *ContextBehavior) SafeCallNoRetNoWait(entityID int64, segment func(ent
 	}
 
 	runtime.EntityContext(entity).SafeCallNoRetNoWait(func() {
+		_, ok := runtime.EntityContext(entity).GetEntityMgr().GetEntity(entity.GetID())
+		if !ok {
+			return
+		}
 		segment(entity)
 	})
 }

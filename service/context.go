@@ -45,10 +45,10 @@ func NewContext(optSetter ...ContextOptionSetter) Context {
 		return opts.Inheritor.Iface
 	}
 
-	serv := &ContextBehavior{}
-	serv.init(&opts)
+	ctx := &ContextBehavior{}
+	ctx.init(&opts)
 
-	return serv.opts.Inheritor.Iface
+	return ctx.opts.Inheritor.Iface
 }
 
 // ContextBehavior 服务上下文行为，在需要拓展服务上下文能力时，匿名嵌入至服务上下文结构体中
