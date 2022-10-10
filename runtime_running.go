@@ -5,6 +5,7 @@ import (
 	"github.com/pangdogs/galaxy/internal"
 	"github.com/pangdogs/galaxy/localevent"
 	"github.com/pangdogs/galaxy/runtime"
+	"github.com/pangdogs/galaxy/util"
 	"time"
 )
 
@@ -35,6 +36,15 @@ func (_runtime *RuntimeBehavior) Stop() {
 }
 
 func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
+	if pluginLib := runtime.UnsafeContext(_runtime.ctx).GetOptions().PluginLib; pluginLib != nil {
+		pluginLib.Range(func(pluginName string, pluginFace util.FaceAny) bool {
+			if pluginInit, ok := pluginFace.Iface.(_PluginInit); ok {
+				pluginInit.Init()
+			}
+			return true
+		})
+	}
+
 	hooks := _runtime.loopStarted()
 
 	defer func() {
@@ -56,6 +66,15 @@ func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
 
 		if parentCtx, ok := _runtime.ctx.GetParentContext().(internal.Context); ok {
 			parentCtx.GetWaitGroup().Done()
+		}
+
+		if pluginLib := runtime.UnsafeContext(_runtime.ctx).GetOptions().PluginLib; pluginLib != nil {
+			pluginLib.Range(func(pluginName string, pluginFace util.FaceAny) bool {
+				if pluginShut, ok := pluginFace.Iface.(_PluginShut); ok {
+					pluginShut.Shut()
+				}
+				return true
+			})
 		}
 
 		runtime.UnsafeContext(_runtime.ctx).MarkShutdown()

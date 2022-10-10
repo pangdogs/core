@@ -43,7 +43,7 @@ type _ServiceBehavior struct {
 	ctx  service.Context
 }
 
-func (serv *_ServiceBehavior) init(serviceCtx service.Context, opts *ServiceOptions) {
+func (_service *_ServiceBehavior) init(serviceCtx service.Context, opts *ServiceOptions) {
 	if serviceCtx == nil {
 		panic("nil serviceCtx")
 	}
@@ -52,20 +52,20 @@ func (serv *_ServiceBehavior) init(serviceCtx service.Context, opts *ServiceOpti
 		panic("nil opts")
 	}
 
-	serv.opts = *opts
+	_service.opts = *opts
 
-	if serv.opts.Inheritor.IsNil() {
-		serv.opts.Inheritor = util.NewFace[Service](serv)
+	if _service.opts.Inheritor.IsNil() {
+		_service.opts.Inheritor = util.NewFace[Service](_service)
 	}
 
-	serv.ctx = serviceCtx
+	_service.ctx = serviceCtx
 }
 
-func (serv *_ServiceBehavior) getOptions() *ServiceOptions {
-	return &serv.opts
+func (_service *_ServiceBehavior) getOptions() *ServiceOptions {
+	return &_service.opts
 }
 
 // GetContext 获取服务上下文
-func (serv *_ServiceBehavior) GetContext() service.Context {
-	return serv.ctx
+func (_service *_ServiceBehavior) GetContext() service.Context {
+	return _service.ctx
 }

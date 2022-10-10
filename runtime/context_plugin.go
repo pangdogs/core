@@ -12,5 +12,5 @@ func Plugin[T any](ctx Context, pluginName string) T {
 		panic("nil pluginLib")
 	}
 
-	return util.Cache2Iface[T](pluginLib.Get(pluginName))
+	return util.Cache2Iface[T](pluginLib.Get(pluginName).Cache)
 }
