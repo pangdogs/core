@@ -10,6 +10,9 @@ type EntityLib interface {
 	// Register 注册实体原型，线程安全
 	Register(prototype string, compTags []string)
 
+	// Unregister 取消注册实体原型，线程安全
+	Unregister(prototype string)
+
 	// Get 获取实体原型，线程安全
 	Get(prototype string) EntityPt
 
@@ -53,6 +56,13 @@ func (lib *_EntityLib) Register(prototype string, compTags []string) {
 	}
 
 	lib.entityPtMap[prototype] = entityPt
+}
+
+func (lib *_EntityLib) Unregister(prototype string) {
+	lib.mutex.Lock()
+	defer lib.mutex.Unlock()
+
+	delete(lib.entityPtMap, prototype)
 }
 
 func (lib *_EntityLib) Get(prototype string) EntityPt {

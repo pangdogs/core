@@ -13,7 +13,7 @@ func (serv *_ServiceBehavior) Run() <-chan struct{} {
 
 	shutChan := make(chan struct{}, 1)
 
-	if parentCtx, ok := serv.ctx.GetParentCtx().(internal.Context); ok {
+	if parentCtx, ok := serv.ctx.GetParentContext().(internal.Context); ok {
 		parentCtx.GetWaitGroup().Add(1)
 	}
 
@@ -43,7 +43,7 @@ func (serv *_ServiceBehavior) running(shutChan chan struct{}) {
 			}
 		})
 
-		if parentCtx, ok := serv.ctx.GetParentCtx().(internal.Context); ok {
+		if parentCtx, ok := serv.ctx.GetParentContext().(internal.Context); ok {
 			parentCtx.GetWaitGroup().Done()
 		}
 

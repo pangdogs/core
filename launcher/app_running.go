@@ -56,17 +56,17 @@ func (app *App) runApp() {
 	wg.Wait()
 }
 
-func (app *App) runService(ctx context.Context, wg *sync.WaitGroup, servicePtName string, servicePtConf pt.ServiceConf) {
+func (app *App) runService(ctx context.Context, wg *sync.WaitGroup, servicePtName string, servicePtConf ServiceConf) {
 	defer wg.Done()
 
 	app.newService(ctx, servicePtName, servicePtConf)
 
 }
 
-func (app *App) loadPtConfig(ptConfFile string) pt.ServiceConfTab {
+func (app *App) loadPtConfig(ptConfFile string) ServiceConfTab {
 	switch strings.ToLower(filepath.Ext(ptConfFile)) {
 	case ".json":
-		loader := util.JsonLoader[pt.ServiceConfTab]{}
+		loader := util.JsonLoader[ServiceConfTab]{}
 
 		if err := loader.SetFile(ptConfFile); err != nil {
 			panic(fmt.Errorf("load prototype config file '%s' failed, %v", ptConfFile, err))
@@ -75,7 +75,7 @@ func (app *App) loadPtConfig(ptConfFile string) pt.ServiceConfTab {
 		return loader.Get()
 
 	case ".xml":
-		loader := util.XmlLoader[pt.ServiceConfTab]{}
+		loader := util.XmlLoader[ServiceConfTab]{}
 
 		if err := loader.SetFile(ptConfFile); err != nil {
 			panic(fmt.Errorf("load prototype config file '%s' failed, %v", ptConfFile, err))
@@ -88,7 +88,7 @@ func (app *App) loadPtConfig(ptConfFile string) pt.ServiceConfTab {
 	}
 }
 
-func (app *App) newService(ctx context.Context, servicePtName string, servicePtConf pt.ServiceConf) galaxy.Service {
+func (app *App) newService(ctx context.Context, servicePtName string, servicePtConf ServiceConf) galaxy.Service {
 	entityLib := pt.NewEntityLib()
 
 	for entityPtName, entityPtConf := range servicePtConf.EntityTab {
@@ -100,7 +100,7 @@ func (app *App) newService(ctx context.Context, servicePtName string, servicePtC
 	serviceCtx := service.NewContext(
 		service.ContextOption.Prototype(servicePtName),
 		service.ContextOption.NodeID(viper.GetInt64(fmt.Sprintf("%s.NodeID", servicePtName))),
-		service.ContextOption.ParentContext(ctx),
+		service.ContextOption.Context(ctx),
 	)
 
 	return galaxy.NewService(serviceCtx)
@@ -111,7 +111,7 @@ func (app *App) newService(ctx context.Context, servicePtName string, servicePtC
 //
 //	singletonRuntimeCtx := core.NewRuntimeContext(serviceCtx,
 //		core.RuntimeContextOptionSetter.ReportError(make(chan error, 100)),
-//		core.RuntimeContextOptionSetter.ParentContext(singletonContext),
+//		core.RuntimeContextOptionSetter.Context(singletonContext),
 //	)
 //
 //	singletonRuntime := core.NewRuntime(singletonRuntimeCtx,

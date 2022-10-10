@@ -28,15 +28,15 @@ type IEntityMgr interface {
 	RemoveEntity(id int64)
 }
 
-// EntityMgr 实体管理器
-type EntityMgr struct {
+// _EntityMgr 实体管理器
+type _EntityMgr struct {
 	serviceCtx Context
 	entityMap  sync.Map
 	inited     bool
 }
 
 // Init 初始化实体管理器
-func (entityMgr *EntityMgr) Init(serviceCtx Context) {
+func (entityMgr *_EntityMgr) Init(serviceCtx Context) {
 	if serviceCtx == nil {
 		panic("nil serviceCtx")
 	}
@@ -50,12 +50,12 @@ func (entityMgr *EntityMgr) Init(serviceCtx Context) {
 }
 
 // GetServiceCtx 获取服务上下文
-func (entityMgr *EntityMgr) GetServiceCtx() Context {
+func (entityMgr *_EntityMgr) GetServiceCtx() Context {
 	return entityMgr.serviceCtx
 }
 
 // GetEntity 查询实体
-func (entityMgr *EntityMgr) GetEntity(id int64) (ec.Entity, bool) {
+func (entityMgr *_EntityMgr) GetEntity(id int64) (ec.Entity, bool) {
 	v, ok := entityMgr.entityMap.Load(id)
 	if !ok {
 		return nil, false
@@ -64,7 +64,7 @@ func (entityMgr *EntityMgr) GetEntity(id int64) (ec.Entity, bool) {
 }
 
 // GetOrAddEntity 查询或添加实体
-func (entityMgr *EntityMgr) GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, error) {
+func (entityMgr *_EntityMgr) GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, error) {
 	if entity == nil {
 		return nil, false, errors.New("nil entity")
 	}
@@ -86,7 +86,7 @@ func (entityMgr *EntityMgr) GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, e
 }
 
 // AddEntity 添加实体
-func (entityMgr *EntityMgr) AddEntity(entity ec.Entity) error {
+func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity) error {
 	if entity == nil {
 		return errors.New("nil entity")
 	}
@@ -105,7 +105,7 @@ func (entityMgr *EntityMgr) AddEntity(entity ec.Entity) error {
 }
 
 // GetAndRemoveEntity 查询并删除实体
-func (entityMgr *EntityMgr) GetAndRemoveEntity(id int64) (ec.Entity, bool) {
+func (entityMgr *_EntityMgr) GetAndRemoveEntity(id int64) (ec.Entity, bool) {
 	v, loaded := entityMgr.entityMap.LoadAndDelete(id)
 	if loaded {
 		return v.(ec.Entity), true
@@ -114,6 +114,6 @@ func (entityMgr *EntityMgr) GetAndRemoveEntity(id int64) (ec.Entity, bool) {
 }
 
 // RemoveEntity 删除实体
-func (entityMgr *EntityMgr) RemoveEntity(id int64) {
+func (entityMgr *_EntityMgr) RemoveEntity(id int64) {
 	entityMgr.entityMap.Delete(id)
 }

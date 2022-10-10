@@ -1,4 +1,4 @@
-package pt
+package launcher
 
 // ServiceConfTab 服务原型配置表
 type ServiceConfTab map[string]ServiceConf

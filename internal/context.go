@@ -9,8 +9,8 @@ import (
 type Context interface {
 	context.Context
 
-	// GetParentCtx 获取父上下文
-	GetParentCtx() context.Context
+	// GetParentContext 获取父上下文
+	GetParentContext() context.Context
 
 	// GetAutoRecover panic时是否自动恢复
 	GetAutoRecover() bool
@@ -49,8 +49,8 @@ func (ctx *ContextBehavior) Init(parentCtx context.Context, autoRecover bool, re
 	ctx.Context, ctx.cancel = context.WithCancel(ctx.parentCtx)
 }
 
-// GetParentCtx 获取父上下文
-func (ctx *ContextBehavior) GetParentCtx() context.Context {
+// GetParentContext 获取父上下文
+func (ctx *ContextBehavior) GetParentContext() context.Context {
 	return ctx.parentCtx
 }
 

@@ -3,6 +3,7 @@ package runtime
 import (
 	"context"
 	"github.com/pangdogs/galaxy/localevent"
+	"github.com/pangdogs/galaxy/plugin"
 	"github.com/pangdogs/galaxy/util"
 	"github.com/pangdogs/galaxy/util/container"
 )
@@ -10,9 +11,10 @@ import (
 // ContextOptions 创建运行时上下文的所有选项
 type ContextOptions struct {
 	Inheritor        util.Face[Context]                // 继承者，需要拓展运行时上下文自身能力时需要使用
+	Context          context.Context                   // 父Context
 	AutoRecover      bool                              // 是否开启panic时自动恢复
 	ReportError      chan error                        // panic时错误写入的error channel
-	ParentContext    context.Context                   // 父Context
+	PluginLib        plugin.PluginLib                  // 插件库
 	StartedCallback  func(runtimeCtx Context)          // 启动运行时回调函数
 	StoppingCallback func(runtimeCtx Context)          // 开始停止运行时回调函数
 	StoppedCallback  func(runtimeCtx Context)          // 完全停止运行时回调函数
@@ -32,9 +34,9 @@ type _ContextOptionSetter struct{}
 func (*_ContextOptionSetter) Default() ContextOptionSetter {
 	return func(o *ContextOptions) {
 		o.Inheritor = util.Face[Context]{}
+		o.Context = nil
 		o.AutoRecover = false
 		o.ReportError = nil
-		o.ParentContext = nil
 		o.StartedCallback = nil
 		o.StoppingCallback = nil
 		o.StoppedCallback = nil
@@ -47,6 +49,13 @@ func (*_ContextOptionSetter) Default() ContextOptionSetter {
 func (*_ContextOptionSetter) Inheritor(v util.Face[Context]) ContextOptionSetter {
 	return func(o *ContextOptions) {
 		o.Inheritor = v
+	}
+}
+
+// Context 父Context
+func (*_ContextOptionSetter) Context(v context.Context) ContextOptionSetter {
+	return func(o *ContextOptions) {
+		o.Context = v
 	}
 }
 
@@ -64,10 +73,10 @@ func (*_ContextOptionSetter) ReportError(v chan error) ContextOptionSetter {
 	}
 }
 
-// ParentContext 父Context
-func (*_ContextOptionSetter) ParentContext(v context.Context) ContextOptionSetter {
+// PluginLib 插件库
+func (*_ContextOptionSetter) PluginLib(v plugin.PluginLib) ContextOptionSetter {
 	return func(o *ContextOptions) {
-		o.ParentContext = v
+		o.PluginLib = v
 	}
 }
 

@@ -2,17 +2,21 @@ package service
 
 import (
 	"context"
+	"github.com/pangdogs/galaxy/plugin"
+	"github.com/pangdogs/galaxy/pt"
 	"github.com/pangdogs/galaxy/util"
 )
 
 // ContextOptions 创建服务上下文的所有选项
 type ContextOptions struct {
 	Inheritor        util.Face[Context]       // 继承者，需要拓展服务上下文自身能力时需要使用
-	Prototype        string                   // 服务原型名称
-	NodeID           int64                    // 服务分布式节点ID，主要用于snowflake算法生成唯一ID，需要全局唯一
+	Context          context.Context          // 父Context
 	AutoRecover      bool                     // 是否开启panic时自动恢复
 	ReportError      chan error               // panic时错误写入的error channel
-	ParentContext    context.Context          // 父Context
+	Prototype        string                   // 服务原型名称
+	NodeID           int64                    // 服务分布式节点ID，主要用于snowflake算法生成唯一ID，需要全局唯一
+	EntityLib        pt.EntityLib             // 实体原型库
+	PluginLib        plugin.PluginLib         // 插件库
 	StartedCallback  func(serviceCtx Context) // 启动运行时回调函数
 	StoppingCallback func(serviceCtx Context) // 开始停止运行时回调函数
 	StoppedCallback  func(serviceCtx Context) // 完全停止运行时回调函数
@@ -30,11 +34,13 @@ type _ContextOptionSetter struct{}
 func (*_ContextOptionSetter) Default() ContextOptionSetter {
 	return func(o *ContextOptions) {
 		o.Inheritor = util.Face[Context]{}
-		o.Prototype = ""
-		o.NodeID = 0
+		o.Context = nil
 		o.AutoRecover = false
 		o.ReportError = nil
-		o.ParentContext = nil
+		o.Prototype = ""
+		o.NodeID = 0
+		o.EntityLib = nil
+		o.PluginLib = nil
 		o.StartedCallback = nil
 		o.StoppingCallback = nil
 		o.StoppedCallback = nil
@@ -48,17 +54,10 @@ func (*_ContextOptionSetter) Inheritor(v util.Face[Context]) ContextOptionSetter
 	}
 }
 
-// Prototype 服务原型名称
-func (*_ContextOptionSetter) Prototype(v string) ContextOptionSetter {
+// Context 父Context
+func (*_ContextOptionSetter) Context(v context.Context) ContextOptionSetter {
 	return func(o *ContextOptions) {
-		o.Prototype = v
-	}
-}
-
-// NodeID 服务分布式节点ID，主要用于snowflake算法生成唯一ID，需要全局唯一
-func (*_ContextOptionSetter) NodeID(v int64) ContextOptionSetter {
-	return func(o *ContextOptions) {
-		o.NodeID = v
+		o.Context = v
 	}
 }
 
@@ -76,10 +75,31 @@ func (*_ContextOptionSetter) ReportError(v chan error) ContextOptionSetter {
 	}
 }
 
-// ParentContext 父Context
-func (*_ContextOptionSetter) ParentContext(v context.Context) ContextOptionSetter {
+// Prototype 服务原型名称
+func (*_ContextOptionSetter) Prototype(v string) ContextOptionSetter {
 	return func(o *ContextOptions) {
-		o.ParentContext = v
+		o.Prototype = v
+	}
+}
+
+// NodeID 服务分布式节点ID，主要用于snowflake算法生成唯一ID，需要全局唯一
+func (*_ContextOptionSetter) NodeID(v int64) ContextOptionSetter {
+	return func(o *ContextOptions) {
+		o.NodeID = v
+	}
+}
+
+// EntityLib 实体原型库
+func (*_ContextOptionSetter) EntityLib(v pt.EntityLib) ContextOptionSetter {
+	return func(o *ContextOptions) {
+		o.EntityLib = v
+	}
+}
+
+// PluginLib 插件库
+func (*_ContextOptionSetter) PluginLib(v plugin.PluginLib) ContextOptionSetter {
+	return func(o *ContextOptions) {
+		o.PluginLib = v
 	}
 }
 

@@ -16,26 +16,33 @@ func init() {
 // RegisterComponent 注册组件原型，共有RegisterComp()与RegisterCreator()两个注册方法，
 // 二者选其一使用即可。一般在init()函数中使用，线程安全。
 //
-//	@param iface 组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
+//	@param compName 组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
 //	@param descr 组件功能的描述说明。
 //	@param comp 组件对象。
-func RegisterComponent(iface, descr string, comp interface{}) {
-	componentLib.RegisterComponent(iface, descr, comp)
+func RegisterComponent(compName, descr string, comp interface{}) {
+	componentLib.RegisterComponent(compName, descr, comp)
 }
 
 // RegisterComponentCreator 注册组件构建函数，共有RegisterComp()与RegisterCreator()两个注册方法，
 // 二者选其一使用即可。一般在init()函数中使用，线程安全。
 //
-//	@param iface 组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
+//	@param compName 组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
 //	@param descr 组件功能的描述说明。
 //	@param creator 组件构建函数。
-func RegisterComponentCreator(iface, descr string, creator func() ec.Component) {
-	componentLib.RegisterCreator(iface, descr, creator)
+func RegisterComponentCreator(compName, descr string, creator func() ec.Component) {
+	componentLib.RegisterCreator(compName, descr, creator)
+}
+
+// UnregisterComponentPt 取消注册组件原型，线程安全。
+//
+//	@param tag 组件标签，格式为组件所在包路径+组件名，例如：`github.com/pangdogs/galaxy/ec/comps/helloworld/HelloWorldComp`。
+func UnregisterComponentPt(tag string) {
+	componentLib.UnregisterComponentPt(tag)
 }
 
 // GetComponentPt 获取组件原型，线程安全。
 //
-//	@param tag 组件标签 用于查询组件，格式为组件所在包路径+组件名，例如：`github.com/pangdogs/galaxy/ec/comps/helloworld/HelloWorldComp`。
+//	@param tag 组件标签，格式为组件所在包路径+组件名，例如：`github.com/pangdogs/galaxy/ec/comps/helloworld/HelloWorldComp`。
 //	@return 组件原型，可以用于创建组件。
 func GetComponentPt(tag string) ComponentPt {
 	return componentLib.Get(tag)
@@ -59,31 +66,65 @@ func (lib *_ComponentLib) init() {
 	}
 }
 
-func (lib *_ComponentLib) RegisterComponent(iface, descr string, comp interface{}) {
-	if iface == "" {
-		panic("empty iface")
+func (lib *_ComponentLib) RegisterComponent(compName, descr string, comp interface{}) {
+	if compName == "" {
+		panic("empty compName")
 	}
 
 	if comp == nil {
 		panic("nil comp")
 	}
 
-	lib.register(iface, descr, _CompConstructType_Reflect, reflect.TypeOf(comp), nil)
+	lib.register(compName, descr, _CompConstructType_Reflect, reflect.TypeOf(comp), nil)
 }
 
-func (lib *_ComponentLib) RegisterCreator(iface, descr string, creator func() ec.Component) {
-	if iface == "" {
-		panic("empty iface")
+func (lib *_ComponentLib) RegisterCreator(compName, descr string, creator func() ec.Component) {
+	if compName == "" {
+		panic("empty compName")
 	}
 
 	if creator == nil {
 		panic("nil creator")
 	}
 
-	lib.register(iface, descr, _CompConstructType_Creator, nil, creator)
+	lib.register(compName, descr, _CompConstructType_Creator, nil, creator)
 }
 
-func (lib *_ComponentLib) register(iface, descr string, constructType _CompConstructType, tfComp reflect.Type, creator func() ec.Component) {
+func (lib *_ComponentLib) UnregisterComponentPt(tag string) {
+	lib.mutex.Lock()
+	defer lib.mutex.Unlock()
+
+	delete(lib.compPtMap, tag)
+}
+
+func (lib *_ComponentLib) Get(tag string) ComponentPt {
+	lib.mutex.RLock()
+	defer lib.mutex.RUnlock()
+
+	compPt, ok := lib.compPtMap[tag]
+	if !ok {
+		panic(fmt.Errorf("component '%s' not registered invalid", tag))
+	}
+
+	return compPt
+}
+
+func (lib *_ComponentLib) Range(fun func(compPt ComponentPt) bool) {
+	lib.mutex.RLock()
+	defer lib.mutex.RUnlock()
+
+	if fun == nil {
+		return
+	}
+
+	for _, compPt := range lib.compPtMap {
+		if !fun(compPt) {
+			return
+		}
+	}
+}
+
+func (lib *_ComponentLib) register(compName, descr string, constructType _CompConstructType, tfComp reflect.Type, creator func() ec.Component) {
 	lib.mutex.Lock()
 	defer lib.mutex.Unlock()
 
@@ -118,38 +159,11 @@ func (lib *_ComponentLib) register(iface, descr string, constructType _CompConst
 	}
 
 	lib.compPtMap[tag] = ComponentPt{
-		Interface:     iface,
+		Interface:     compName,
 		Tag:           tag,
 		Description:   descr,
 		constructType: constructType,
 		tfComp:        tfComp,
 		creator:       creator,
-	}
-}
-
-func (lib *_ComponentLib) Get(tag string) ComponentPt {
-	lib.mutex.RLock()
-	defer lib.mutex.RUnlock()
-
-	compPt, ok := lib.compPtMap[tag]
-	if !ok {
-		panic(fmt.Errorf("component '%s' not registered invalid", tag))
-	}
-
-	return compPt
-}
-
-func (lib *_ComponentLib) Range(fun func(compPt ComponentPt) bool) {
-	lib.mutex.RLock()
-	defer lib.mutex.RUnlock()
-
-	if fun == nil {
-		return
-	}
-
-	for _, compPt := range lib.compPtMap {
-		if !fun(compPt) {
-			return
-		}
 	}
 }

@@ -20,12 +20,6 @@ type Context interface {
 
 	getOptions() *ContextOptions
 
-	// GetFaceCache 获取Face缓存
-	GetFaceCache() *container.Cache[util.FaceAny]
-
-	// GetHookCache 获取Hook缓存
-	GetHookCache() *container.Cache[localevent.Hook]
-
 	// GetServiceCtx 获取服务上下文
 	GetServiceCtx() service.Context
 
@@ -39,6 +33,12 @@ type Context interface {
 
 	// GetECTree 获取主EC树
 	GetECTree() IECTree
+
+	// GetFaceCache 获取Face缓存
+	GetFaceCache() *container.Cache[util.FaceAny]
+
+	// GetHookCache 获取Hook缓存
+	GetHookCache() *container.Cache[localevent.Hook]
 }
 
 // NewContext 创建运行时上下文
@@ -73,7 +73,7 @@ type ContextBehavior struct {
 	opts       ContextOptions
 	serviceCtx service.Context
 	frame      Frame
-	entityMgr  EntityMgr
+	entityMgr  _EntityMgr
 	ecTree     ECTree
 	callee     Callee
 	gcList     []container.GC
@@ -95,13 +95,13 @@ func (ctx *ContextBehavior) init(serviceCtx service.Context, opts *ContextOption
 		ctx.opts.Inheritor = util.NewFace[Context](ctx)
 	}
 
-	if ctx.opts.ParentContext == nil {
-		ctx.opts.ParentContext = serviceCtx
+	if ctx.opts.Context == nil {
+		ctx.opts.Context = serviceCtx
 	}
 
 	ctx.innerGC.Init(ctx)
 
-	ctx.ContextBehavior.Init(ctx.opts.ParentContext, ctx.opts.AutoRecover, ctx.opts.ReportError)
+	ctx.ContextBehavior.Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
 	ctx.serviceCtx = serviceCtx
 	ctx.entityMgr.Init(ctx.getOptions().Inheritor.Iface)
 	ctx.ecTree.init(ctx.opts.Inheritor.Iface, true)
@@ -109,16 +109,6 @@ func (ctx *ContextBehavior) init(serviceCtx service.Context, opts *ContextOption
 
 func (ctx *ContextBehavior) getOptions() *ContextOptions {
 	return &ctx.opts
-}
-
-// GetFaceCache 获取Face缓存
-func (ctx *ContextBehavior) GetFaceCache() *container.Cache[util.FaceAny] {
-	return ctx.opts.FaceCache
-}
-
-// GetHookCache 获取Hook缓存
-func (ctx *ContextBehavior) GetHookCache() *container.Cache[localevent.Hook] {
-	return ctx.opts.HookCache
 }
 
 // GetServiceCtx 获取服务上下文
@@ -143,6 +133,16 @@ func (ctx *ContextBehavior) GetEntityMgr() IEntityMgr {
 // GetECTree 获取主EC树
 func (ctx *ContextBehavior) GetECTree() IECTree {
 	return &ctx.ecTree
+}
+
+// GetFaceCache 获取Face缓存
+func (ctx *ContextBehavior) GetFaceCache() *container.Cache[util.FaceAny] {
+	return ctx.opts.FaceCache
+}
+
+// GetHookCache 获取Hook缓存
+func (ctx *ContextBehavior) GetHookCache() *container.Cache[localevent.Hook] {
+	return ctx.opts.HookCache
 }
 
 func (ctx *ContextBehavior) CollectGC(gc container.GC) {

@@ -20,7 +20,7 @@ func (_runtime *RuntimeBehavior) Run() <-chan struct{} {
 	_runtime.processQueue = make(chan func(), _runtime.opts.ProcessQueueCapacity)
 	runtime.UnsafeContext(_runtime.ctx).SetCallee(_runtime)
 
-	if parentCtx, ok := _runtime.ctx.GetParentCtx().(internal.Context); ok {
+	if parentCtx, ok := _runtime.ctx.GetParentContext().(internal.Context); ok {
 		parentCtx.GetWaitGroup().Add(1)
 	}
 
@@ -54,7 +54,7 @@ func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
 			})
 		}
 
-		if parentCtx, ok := _runtime.ctx.GetParentCtx().(internal.Context); ok {
+		if parentCtx, ok := _runtime.ctx.GetParentContext().(internal.Context); ok {
 			parentCtx.GetWaitGroup().Done()
 		}
 

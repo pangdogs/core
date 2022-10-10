@@ -50,8 +50,8 @@ type IEntityMgr interface {
 	eventEntityMgrNotifyECTreeRemoveEntity() localevent.IEvent
 }
 
-// EntityMgr 实体管理器
-type EntityMgr struct {
+// _EntityMgr 实体管理器
+type _EntityMgr struct {
 	runtimeCtx                               Context
 	entityMap                                map[int64]_EntityInfo
 	entityList                               container.List[util.FaceAny]
@@ -65,7 +65,7 @@ type EntityMgr struct {
 }
 
 // Init 初始化实体管理器
-func (entityMgr *EntityMgr) Init(runtimeCtx Context) {
+func (entityMgr *_EntityMgr) Init(runtimeCtx Context) {
 	if runtimeCtx == nil {
 		panic("nil runtimeCtx")
 	}
@@ -88,12 +88,12 @@ func (entityMgr *EntityMgr) Init(runtimeCtx Context) {
 }
 
 // GetRuntimeCtx 获取运行时上下文
-func (entityMgr *EntityMgr) GetRuntimeCtx() Context {
+func (entityMgr *_EntityMgr) GetRuntimeCtx() Context {
 	return entityMgr.runtimeCtx
 }
 
 // GetEntity 查询实体
-func (entityMgr *EntityMgr) GetEntity(id int64) (ec.Entity, bool) {
+func (entityMgr *_EntityMgr) GetEntity(id int64) (ec.Entity, bool) {
 	e, ok := entityMgr.entityMap[id]
 	if !ok {
 		return nil, false
@@ -107,7 +107,7 @@ func (entityMgr *EntityMgr) GetEntity(id int64) (ec.Entity, bool) {
 }
 
 // RangeEntities 遍历所有实体
-func (entityMgr *EntityMgr) RangeEntities(fun func(entity ec.Entity) bool) {
+func (entityMgr *_EntityMgr) RangeEntities(fun func(entity ec.Entity) bool) {
 	if fun == nil {
 		return
 	}
@@ -118,7 +118,7 @@ func (entityMgr *EntityMgr) RangeEntities(fun func(entity ec.Entity) bool) {
 }
 
 // ReverseRangeEntities 反向遍历所有实体
-func (entityMgr *EntityMgr) ReverseRangeEntities(fun func(entity ec.Entity) bool) {
+func (entityMgr *_EntityMgr) ReverseRangeEntities(fun func(entity ec.Entity) bool) {
 	if fun == nil {
 		return
 	}
@@ -129,12 +129,12 @@ func (entityMgr *EntityMgr) ReverseRangeEntities(fun func(entity ec.Entity) bool
 }
 
 // GetEntityCount 获取实体数量
-func (entityMgr *EntityMgr) GetEntityCount() int {
+func (entityMgr *_EntityMgr) GetEntityCount() int {
 	return entityMgr.entityList.Len()
 }
 
 // AddEntity 添加实体
-func (entityMgr *EntityMgr) AddEntity(entity ec.Entity) error {
+func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity) error {
 	if entity == nil {
 		return errors.New("nil entity")
 	}
@@ -179,10 +179,7 @@ func (entityMgr *EntityMgr) AddEntity(entity ec.Entity) error {
 		entityInfo.Hooks[2] = localevent.BindEvent[ec.EventCompMgrFirstAccessComponent](entity.EventCompMgrFirstAccessComponent(), entityMgr)
 	}
 
-	entityInfo.Element = entityMgr.entityList.PushBack(util.FaceAny{
-		Iface: entity,
-		Cache: util.Iface2Cache(entity),
-	})
+	entityInfo.Element = entityMgr.entityList.PushBack(util.NewFacePair[interface{}](entity, entity))
 
 	entityMgr.entityMap[entity.GetID()] = entityInfo
 	entityMgr.runtimeCtx.CollectGC(_entity.GetInnerGC())
@@ -193,7 +190,7 @@ func (entityMgr *EntityMgr) AddEntity(entity ec.Entity) error {
 }
 
 // RemoveEntity 删除实体
-func (entityMgr *EntityMgr) RemoveEntity(id int64) {
+func (entityMgr *_EntityMgr) RemoveEntity(id int64) {
 	entityInfo, ok := entityMgr.entityMap[id]
 	if !ok {
 		return
@@ -221,36 +218,36 @@ func (entityMgr *EntityMgr) RemoveEntity(id int64) {
 }
 
 // EventEntityMgrAddEntity 事件：实体管理器中添加实体
-func (entityMgr *EntityMgr) EventEntityMgrAddEntity() localevent.IEvent {
+func (entityMgr *_EntityMgr) EventEntityMgrAddEntity() localevent.IEvent {
 	return &entityMgr.eventEntityMgrAddEntity
 }
 
 // EventEntityMgrRemoveEntity 事件：实体管理器中删除实体
-func (entityMgr *EntityMgr) EventEntityMgrRemoveEntity() localevent.IEvent {
+func (entityMgr *_EntityMgr) EventEntityMgrRemoveEntity() localevent.IEvent {
 	return &entityMgr.eventEntityMgrRemoveEntity
 }
 
 // EventEntityMgrEntityAddComponents 事件：实体管理器中的实体添加组件
-func (entityMgr *EntityMgr) EventEntityMgrEntityAddComponents() localevent.IEvent {
+func (entityMgr *_EntityMgr) EventEntityMgrEntityAddComponents() localevent.IEvent {
 	return &entityMgr.eventEntityMgrEntityAddComponents
 }
 
 // EventEntityMgrEntityRemoveComponent 事件：实体管理器中的实体删除组件
-func (entityMgr *EntityMgr) EventEntityMgrEntityRemoveComponent() localevent.IEvent {
+func (entityMgr *_EntityMgr) EventEntityMgrEntityRemoveComponent() localevent.IEvent {
 	return &entityMgr.eventEntityMgrEntityRemoveComponent
 }
 
 // EventEntityMgrEntityFirstAccessComponent 事件：实体管理器中的实体首次访问组件
-func (entityMgr *EntityMgr) EventEntityMgrEntityFirstAccessComponent() localevent.IEvent {
+func (entityMgr *_EntityMgr) EventEntityMgrEntityFirstAccessComponent() localevent.IEvent {
 	return &entityMgr.eventEntityMgrEntityFirstAccessComponent
 }
 
-func (entityMgr *EntityMgr) eventEntityMgrNotifyECTreeRemoveEntity() localevent.IEvent {
+func (entityMgr *_EntityMgr) eventEntityMgrNotifyECTreeRemoveEntity() localevent.IEvent {
 	return &entityMgr._eventEntityMgrNotifyECTreeRemoveEntity
 }
 
 // OnCompMgrAddComponents 事件回调：实体的组件管理器加入一些组件
-func (entityMgr *EntityMgr) OnCompMgrAddComponents(entity ec.Entity, components []ec.Component) {
+func (entityMgr *_EntityMgr) OnCompMgrAddComponents(entity ec.Entity, components []ec.Component) {
 	for i := range components {
 		if components[i].GetID() <= 0 {
 			ec.UnsafeComponent(components[i]).SetID(entityMgr.runtimeCtx.GetServiceCtx().GenUID())
@@ -260,11 +257,11 @@ func (entityMgr *EntityMgr) OnCompMgrAddComponents(entity ec.Entity, components 
 }
 
 // OnCompMgrRemoveComponent 事件回调：实体的组件管理器删除组件
-func (entityMgr *EntityMgr) OnCompMgrRemoveComponent(entity ec.Entity, component ec.Component) {
+func (entityMgr *_EntityMgr) OnCompMgrRemoveComponent(entity ec.Entity, component ec.Component) {
 	emitEventEntityMgrEntityRemoveComponent(&entityMgr.eventEntityMgrEntityRemoveComponent, entityMgr, entity, component)
 }
 
 // OnCompMgrFirstAccessComponent 事件回调：实体的组件管理器首次访问组件
-func (entityMgr *EntityMgr) OnCompMgrFirstAccessComponent(entity ec.Entity, component ec.Component) {
+func (entityMgr *_EntityMgr) OnCompMgrFirstAccessComponent(entity ec.Entity, component ec.Component) {
 	emitEventEntityMgrEntityFirstAccessComponent(&entityMgr.eventEntityMgrEntityFirstAccessComponent, entityMgr, entity, component)
 }

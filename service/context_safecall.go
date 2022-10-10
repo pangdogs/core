@@ -6,6 +6,7 @@ import (
 	"github.com/pangdogs/galaxy/runtime"
 )
 
+// _SafeCall 安全调用
 type _SafeCall interface {
 	// SafeCall 在运行时中，将代码片段压入任务流水线，串行化的进行调用，返回result channel，可以选择阻塞并等待返回结果。
 	//

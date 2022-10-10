@@ -30,8 +30,19 @@ func NewFace[T any](iface T) Face[T] {
 	}
 }
 
-// Face 面，用于存储接口与其存储器，在当前版本Golang（1.18），在接口转换为存储器之后，可以正常的标记对象被引用，为了防止Golang后续版本更新后，
-// 不能通过接口存储器正常标记引用对象，造成错误的GC，可以使用Face同时存储接口与其存储器，避免此类问题。
+// NewFacePair 创建面，同时传入接口与其存储器
+func NewFacePair[T, C any](iface T, cache C) Face[T] {
+	if Iface2Cache(iface)[1] != Iface2Cache(cache)[1] {
+		panic("pointer unmatched")
+	}
+
+	return Face[T]{
+		Iface: iface,
+		Cache: Iface2Cache[C](cache),
+	}
+}
+
+// Face 面，用于存储接口与其存储器，接口可用于断言转换类型，存储器可用于转换为接口
 type Face[T any] struct {
 	Iface T
 	Cache IfaceCache

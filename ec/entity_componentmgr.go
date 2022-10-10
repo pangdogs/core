@@ -219,10 +219,7 @@ func (entity *EntityBehavior) addSingleComponent(name string, component Componen
 		component.setID(compID)
 	}
 
-	face := util.FaceAny{
-		Iface: component,
-		Cache: util.Iface2Cache(component),
-	}
+	face := util.NewFacePair[interface{}](component, component)
 
 	if e, ok := entity.getComponentElement(name); ok {
 		entity.componentList.TraversalAt(func(other *container.Element[util.FaceAny]) bool {
