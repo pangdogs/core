@@ -33,7 +33,7 @@ func NewFace[T any](iface T) Face[T] {
 // NewFacePair 创建面，同时传入接口与其存储器
 func NewFacePair[T, C any](iface T, cache C) Face[T] {
 	if Iface2Cache(iface)[1] != Iface2Cache(cache)[1] {
-		panic("pointer reference different address")
+		panic("different pointer address")
 	}
 
 	return Face[T]{
