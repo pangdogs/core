@@ -15,7 +15,7 @@ type PluginLib interface {
 	Unregister(pluginName string)
 
 	// Get 获取插件，线程安全
-	Get(pluginName string) util.IfaceCache
+	Get(pluginName string) util.FaceAny
 
 	// Range 遍历所有已注册的插件，线程安全
 	Range(fun func(pluginName string, pluginFace util.FaceAny) bool)
@@ -60,7 +60,7 @@ func (lib *_PluginLib) Unregister(pluginName string) {
 	delete(lib.pluginMap, pluginName)
 }
 
-func (lib *_PluginLib) Get(pluginName string) util.IfaceCache {
+func (lib *_PluginLib) Get(pluginName string) util.FaceAny {
 	lib.mutex.RLock()
 	defer lib.mutex.RUnlock()
 
@@ -69,7 +69,7 @@ func (lib *_PluginLib) Get(pluginName string) util.IfaceCache {
 		panic(fmt.Errorf("plugin '%s' not registered invalid", pluginName))
 	}
 
-	return pluginFace.Cache
+	return pluginFace
 }
 
 func (lib *_PluginLib) Range(fun func(pluginName string, pluginFace util.FaceAny) bool) {
