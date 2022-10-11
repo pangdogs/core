@@ -12,7 +12,6 @@ import (
 type Context interface {
 	internal.Context
 	internal.RunningMark
-	_EntityCreator
 	_SafeCall
 
 	init(opts *ContextOptions)

@@ -3,21 +3,20 @@ package plugin
 import (
 	"fmt"
 	"github.com/pangdogs/galaxy/util"
-	"sync"
 )
 
 // PluginLib 组件库
 type PluginLib interface {
-	// Register 注册插件，线程安全
+	// Register 注册插件
 	Register(pluginName string, pluginFace util.FaceAny)
 
-	// Unregister 取消注册插件，线程安全
+	// Unregister 取消注册插件
 	Unregister(pluginName string)
 
-	// Get 获取插件，线程安全
+	// Get 获取插件
 	Get(pluginName string) util.FaceAny
 
-	// Range 遍历所有已注册的插件，线程安全
+	// Range 遍历所有已注册的插件
 	Range(fun func(pluginName string, pluginFace util.FaceAny) bool)
 }
 
@@ -30,7 +29,6 @@ func NewPluginLib() PluginLib {
 
 type _PluginLib struct {
 	pluginMap map[string]util.FaceAny
-	mutex     sync.RWMutex
 }
 
 func (lib *_PluginLib) init() {
@@ -38,9 +36,6 @@ func (lib *_PluginLib) init() {
 }
 
 func (lib *_PluginLib) Register(pluginName string, pluginFace util.FaceAny) {
-	lib.mutex.Lock()
-	defer lib.mutex.Unlock()
-
 	if pluginFace.IsNil() {
 		panic("nil pluginFace")
 	}
@@ -54,16 +49,10 @@ func (lib *_PluginLib) Register(pluginName string, pluginFace util.FaceAny) {
 }
 
 func (lib *_PluginLib) Unregister(pluginName string) {
-	lib.mutex.Lock()
-	defer lib.mutex.Unlock()
-
 	delete(lib.pluginMap, pluginName)
 }
 
 func (lib *_PluginLib) Get(pluginName string) util.FaceAny {
-	lib.mutex.RLock()
-	defer lib.mutex.RUnlock()
-
 	pluginFace, ok := lib.pluginMap[pluginName]
 	if !ok {
 		panic(fmt.Errorf("plugin '%s' not registered invalid", pluginName))
@@ -73,9 +62,6 @@ func (lib *_PluginLib) Get(pluginName string) util.FaceAny {
 }
 
 func (lib *_PluginLib) Range(fun func(pluginName string, pluginFace util.FaceAny) bool) {
-	lib.mutex.RLock()
-	defer lib.mutex.RUnlock()
-
 	if fun == nil {
 		return
 	}
