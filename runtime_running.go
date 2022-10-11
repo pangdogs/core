@@ -39,7 +39,9 @@ func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
 	if pluginLib := runtime.UnsafeContext(_runtime.ctx).GetOptions().PluginLib; pluginLib != nil {
 		pluginLib.Range(func(pluginName string, pluginFace util.FaceAny) bool {
 			if pluginInit, ok := pluginFace.Iface.(_PluginInit); ok {
-				pluginInit.Init()
+				internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+					pluginInit.Init()
+				})
 			}
 			return true
 		})
@@ -71,7 +73,9 @@ func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
 		if pluginLib := runtime.UnsafeContext(_runtime.ctx).GetOptions().PluginLib; pluginLib != nil {
 			pluginLib.Range(func(pluginName string, pluginFace util.FaceAny) bool {
 				if pluginShut, ok := pluginFace.Iface.(_PluginShut); ok {
-					pluginShut.Shut()
+					internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+						pluginShut.Shut()
+					})
 				}
 				return true
 			})

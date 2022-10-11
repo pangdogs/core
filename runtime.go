@@ -107,7 +107,9 @@ func (_runtime *RuntimeBehavior) OnEntityMgrEntityFirstAccessComponent(entityMgr
 	comp.SetAwoke(true)
 
 	if compAwake, ok := component.(_ComponentAwake); ok {
-		compAwake.Awake()
+		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+			compAwake.Awake()
+		})
 	}
 }
 
@@ -136,7 +138,9 @@ func (_runtime *RuntimeBehavior) initEntity(entity ec.Entity) {
 	defer ec.UnsafeEntity(entity).SetInitialing(false)
 
 	if entityInit, ok := entity.(_EntityInit); ok {
-		entityInit.Init()
+		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+			entityInit.Init()
+		})
 	}
 
 	entity.RangeComponents(func(comp ec.Component) bool {
@@ -148,7 +152,9 @@ func (_runtime *RuntimeBehavior) initEntity(entity ec.Entity) {
 		_comp.SetAwoke(true)
 
 		if compAwake, ok := comp.(_ComponentAwake); ok {
-			compAwake.Awake()
+			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+				compAwake.Awake()
+			})
 		}
 
 		return true
@@ -163,14 +169,18 @@ func (_runtime *RuntimeBehavior) initEntity(entity ec.Entity) {
 		_comp.SetStarted(true)
 
 		if compStart, ok := comp.(_ComponentStart); ok {
-			compStart.Start()
+			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+				compStart.Start()
+			})
 		}
 
 		return true
 	})
 
 	if entityInitFin, ok := entity.(_EntityInitFin); ok {
-		entityInitFin.InitFin()
+		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+			entityInitFin.InitFin()
+		})
 	}
 }
 
@@ -179,18 +189,24 @@ func (_runtime *RuntimeBehavior) shutEntity(entity ec.Entity) {
 	defer ec.UnsafeEntity(entity).SetShutting(false)
 
 	if entityShut, ok := entity.(_EntityShut); ok {
-		entityShut.Shut()
+		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+			entityShut.Shut()
+		})
 	}
 
 	entity.RangeComponents(func(comp ec.Component) bool {
 		if compShut, ok := comp.(_ComponentShut); ok {
-			compShut.Shut()
+			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+				compShut.Shut()
+			})
 		}
 		return true
 	})
 
 	if entityShutFin, ok := entity.(_EntityShutFin); ok {
-		entityShutFin.ShutFin()
+		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+			entityShutFin.ShutFin()
+		})
 	}
 }
 
@@ -241,7 +257,9 @@ func (_runtime *RuntimeBehavior) addComponents(components []ec.Component) {
 		_comp.SetAwoke(true)
 
 		if compAwake, ok := components[i].(_ComponentAwake); ok {
-			compAwake.Awake()
+			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+				compAwake.Awake()
+			})
 		}
 	}
 
@@ -254,7 +272,9 @@ func (_runtime *RuntimeBehavior) addComponents(components []ec.Component) {
 		_comp.SetStarted(true)
 
 		if compStart, ok := components[i].(_ComponentStart); ok {
-			compStart.Start()
+			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+				compStart.Start()
+			})
 		}
 	}
 
@@ -267,7 +287,9 @@ func (_runtime *RuntimeBehavior) removeComponent(component ec.Component) {
 	_runtime.disconnectComponent(component)
 
 	if compShut, ok := component.(_ComponentShut); ok {
-		compShut.Shut()
+		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+			compShut.Shut()
+		})
 	}
 }
 
