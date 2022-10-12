@@ -68,6 +68,10 @@ func NewEntity(optSetter ...EntityOptionSetter) Entity {
 		optSetter[i](&opts)
 	}
 
+	return UnsafeNewEntity(opts)
+}
+
+func UnsafeNewEntity(opts EntityOptions) Entity {
 	if !opts.Inheritor.IsNil() {
 		opts.Inheritor.Iface.init(&opts)
 		return opts.Inheritor.Iface

@@ -40,6 +40,10 @@ func NewContext(optSetter ...ContextOptionSetter) Context {
 		optSetter[i](&opts)
 	}
 
+	return UnsafeNewContext(opts)
+}
+
+func UnsafeNewContext(opts ContextOptions) Context {
 	if !opts.Inheritor.IsNil() {
 		opts.Inheritor.Iface.init(&opts)
 		return opts.Inheritor.Iface

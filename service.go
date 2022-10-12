@@ -27,6 +27,10 @@ func NewService(serviceCtx service.Context, optSetter ...ServiceOptionSetterFunc
 		optSetter[i](&opts)
 	}
 
+	return UnsafeNewService(serviceCtx, opts)
+}
+
+func UnsafeNewService(serviceCtx service.Context, opts ServiceOptions) Service {
 	if !opts.Inheritor.IsNil() {
 		opts.Inheritor.Iface.init(serviceCtx, &opts)
 		return opts.Inheritor.Iface

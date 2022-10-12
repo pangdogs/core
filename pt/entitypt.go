@@ -12,11 +12,31 @@ type EntityPt struct {
 
 // New 创建实体
 func (pt *EntityPt) New(optSetter ...ec.EntityOptionSetter) ec.Entity {
-	entity := ec.NewEntity(append(optSetter, ec.EntityOption.Prototype(pt.Prototype))...)
+	opts := ec.EntityOptions{}
+	ec.EntityOption.Default()(&opts)
+
+	for i := range optSetter {
+		optSetter[i](&opts)
+	}
+
+	opts.Prototype = pt.Prototype
+
+	entity := ec.UnsafeNewEntity(opts)
 
 	for i := range pt.compPts {
 		entity.AddComponent(pt.compPts[i].Interface, pt.compPts[i].New())
 	}
 
 	return entity
+}
+
+// AddComponents 向实体添加组件
+func (pt *EntityPt) AddComponents(entity ec.Entity) {
+	if entity == nil {
+		return
+	}
+
+	for i := range pt.compPts {
+		entity.AddComponent(pt.compPts[i].Interface, pt.compPts[i].New())
+	}
 }

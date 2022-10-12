@@ -29,6 +29,10 @@ func NewRuntime(runtimeCtx runtime.Context, optSetter ...RuntimeOptionSetter) Ru
 		optSetter[i](&opts)
 	}
 
+	return UnsafeNewRuntime(runtimeCtx, opts)
+}
+
+func UnsafeNewRuntime(runtimeCtx runtime.Context, opts RuntimeOptions) Runtime {
 	if !opts.Inheritor.IsNil() {
 		opts.Inheritor.Iface.init(runtimeCtx, &opts)
 		return opts.Inheritor.Iface

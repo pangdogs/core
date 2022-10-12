@@ -50,6 +50,10 @@ func NewContext(serviceCtx service.Context, optSetter ...ContextOptionSetter) Co
 		optSetter[i](&opts)
 	}
 
+	return UnsafeNewContext(serviceCtx, opts)
+}
+
+func UnsafeNewContext(serviceCtx service.Context, opts ContextOptions) Context {
 	if !opts.Inheritor.IsNil() {
 		opts.Inheritor.Iface.init(serviceCtx, &opts)
 		return opts.Inheritor.Iface
