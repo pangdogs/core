@@ -16,21 +16,21 @@ func init() {
 // RegisterComponent 注册组件原型，共有RegisterComp()与RegisterCreator()两个注册方法，
 // 二者选其一使用即可。一般在init()函数中使用，线程安全。
 //
-//	@param compName 组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
+//	@param name 组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
 //	@param descr 组件功能的描述说明。
 //	@param comp 组件对象。
-func RegisterComponent(compName, descr string, comp interface{}) {
-	componentLib.RegisterComponent(compName, descr, comp)
+func RegisterComponent(name, descr string, comp interface{}) {
+	componentLib.RegisterComponent(name, descr, comp)
 }
 
 // RegisterComponentCreator 注册组件构建函数，共有RegisterComp()与RegisterCreator()两个注册方法，
 // 二者选其一使用即可。一般在init()函数中使用，线程安全。
 //
-//	@param compName 组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
+//	@param name 组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
 //	@param descr 组件功能的描述说明。
 //	@param creator 组件构建函数。
-func RegisterComponentCreator(compName, descr string, creator func() ec.Component) {
-	componentLib.RegisterCreator(compName, descr, creator)
+func RegisterComponentCreator(name, descr string, creator func() ec.Component) {
+	componentLib.RegisterCreator(name, descr, creator)
 }
 
 // UnregisterComponentPt 取消注册组件原型，线程安全。
@@ -44,7 +44,8 @@ func UnregisterComponentPt(tag string) {
 //
 //	@param tag 组件标签，格式为组件所在包路径+组件名，例如：`github.com/pangdogs/galaxy/ec/comps/helloworld/HelloWorldComp`。
 //	@return 组件原型，可以用于创建组件。
-func GetComponentPt(tag string) ComponentPt {
+//	@return 是否存在。
+func GetComponentPt(tag string) (ComponentPt, bool) {
 	return componentLib.Get(tag)
 }
 
@@ -66,28 +67,28 @@ func (lib *_ComponentLib) init() {
 	}
 }
 
-func (lib *_ComponentLib) RegisterComponent(compName, descr string, comp interface{}) {
-	if compName == "" {
-		panic("empty compName")
+func (lib *_ComponentLib) RegisterComponent(name, descr string, comp interface{}) {
+	if name == "" {
+		panic("empty name")
 	}
 
 	if comp == nil {
 		panic("nil comp")
 	}
 
-	lib.register(compName, descr, _CompConstructType_Reflect, reflect.TypeOf(comp), nil)
+	lib.register(name, descr, _CompConstructType_Reflect, reflect.TypeOf(comp), nil)
 }
 
-func (lib *_ComponentLib) RegisterCreator(compName, descr string, creator func() ec.Component) {
-	if compName == "" {
-		panic("empty compName")
+func (lib *_ComponentLib) RegisterCreator(name, descr string, creator func() ec.Component) {
+	if name == "" {
+		panic("empty name")
 	}
 
 	if creator == nil {
 		panic("nil creator")
 	}
 
-	lib.register(compName, descr, _CompConstructType_Creator, nil, creator)
+	lib.register(name, descr, _CompConstructType_Creator, nil, creator)
 }
 
 func (lib *_ComponentLib) UnregisterComponentPt(tag string) {
@@ -97,16 +98,12 @@ func (lib *_ComponentLib) UnregisterComponentPt(tag string) {
 	delete(lib.compPtMap, tag)
 }
 
-func (lib *_ComponentLib) Get(tag string) ComponentPt {
+func (lib *_ComponentLib) Get(tag string) (ComponentPt, bool) {
 	lib.mutex.RLock()
 	defer lib.mutex.RUnlock()
 
 	compPt, ok := lib.compPtMap[tag]
-	if !ok {
-		panic(fmt.Errorf("component '%s' not registered invalid", tag))
-	}
-
-	return compPt
+	return compPt, ok
 }
 
 func (lib *_ComponentLib) Range(fun func(compPt ComponentPt) bool) {
@@ -150,12 +147,12 @@ func (lib *_ComponentLib) register(compName, descr string, constructType _CompCo
 	tag := _tfComp.PkgPath() + "/" + _tfComp.Name()
 
 	if !reflect.PointerTo(_tfComp).Implements(reflect.TypeOf((*ec.Component)(nil)).Elem()) {
-		panic(fmt.Errorf("component '%s' not implement ec.Component invalid", tag))
+		panic(fmt.Errorf("component '%s' not implement ec.Component", tag))
 	}
 
 	_, ok := lib.compPtMap[tag]
 	if ok {
-		panic(fmt.Errorf("repeated register component '%s' invalid", tag))
+		panic(fmt.Errorf("component '%s' is already registered", tag))
 	}
 
 	lib.compPtMap[tag] = ComponentPt{

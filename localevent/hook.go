@@ -25,7 +25,7 @@ func (hook *Hook) BindWithPriority(event IEvent, priority int32) {
 	}
 
 	if hook.IsBound() {
-		panic("repeated bind event invalid")
+		panic("already bound")
 	}
 
 	*hook = event.newHook(hook.delegateFace, priority)

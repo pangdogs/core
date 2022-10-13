@@ -74,7 +74,7 @@ func (entityMgr *_EntityMgr) GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, 
 	}
 
 	if ec.UnsafeEntity(entity).GetContext() == util.NilIfaceCache {
-		return nil, false, errors.New("entity context not setup")
+		return nil, false, errors.New("entity context has not been setup")
 	}
 
 	v, loaded := entityMgr.entityMap.LoadOrStore(entity.GetID(), entity)
@@ -96,7 +96,7 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity) error {
 	}
 
 	if ec.UnsafeEntity(entity).GetContext() == util.NilIfaceCache {
-		return errors.New("entity context not setup")
+		return errors.New("entity context has not been setup")
 	}
 
 	entityMgr.entityMap.Store(entity.GetID(), entity)

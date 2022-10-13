@@ -165,7 +165,7 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity) error {
 	})
 
 	if _, ok := entityMgr.entityMap[entity.GetID()]; ok {
-		return fmt.Errorf("repeated entity '%d' in this runtime context", entity.GetID())
+		return fmt.Errorf("entity id is already existed")
 	}
 
 	_entity.SetAdding(true)

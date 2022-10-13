@@ -103,7 +103,7 @@ func As[T any](entity Entity) (T, bool) {
 func Cast[T any](entity Entity) T {
 	entityFace, ok := As[T](entity)
 	if !ok {
-		panic("cast invalid")
+		panic("incorrect cast")
 	}
 	return entityFace
 }
