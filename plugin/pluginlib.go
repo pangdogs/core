@@ -1,3 +1,4 @@
+// Package plugin 插件。
 package plugin
 
 import (
@@ -5,7 +6,7 @@ import (
 	"github.com/pangdogs/galaxy/util"
 )
 
-// PluginLib 组件库
+// PluginLib 插件库
 type PluginLib interface {
 	// Register 注册插件。
 	//
@@ -29,6 +30,46 @@ type PluginLib interface {
 	//
 	//	@param fun 遍历函数。
 	Range(fun func(pluginName string, pluginFace util.FaceAny) bool)
+}
+
+// RegisterPlugin 使用插件接口名称，注册插件。
+//
+//	@param pluginLib 插件库。
+//	@param plugin 插件。
+func RegisterPlugin[T any](pluginLib PluginLib, plugin T) {
+	if pluginLib == nil {
+		panic("nil pluginLib")
+	}
+	pluginLib.Register(util.TypeFullName[T](), util.NewFacePair[interface{}](plugin, plugin))
+}
+
+// UnregisterPlugin 使用插件接口名称，取消注册插件。
+//
+//	@param pluginLib 插件库。
+func UnregisterPlugin[T any](pluginLib PluginLib) {
+	if pluginLib == nil {
+		panic("nil pluginLib")
+	}
+	pluginLib.Unregister(util.TypeFullName[T]())
+}
+
+// GetPlugin 获取插件。
+//
+//	@param pluginLib 插件库。
+//	@param pluginName 插件名称。
+//	@return 插件。
+//	@return 是否存在。
+func GetPlugin[T any](pluginLib PluginLib, pluginName string) (T, bool) {
+	if pluginLib == nil {
+		panic("nil pluginLib")
+	}
+
+	pluginFace, ok := pluginLib.Get(pluginName)
+	if !ok {
+		return util.Zero[T](), false
+	}
+
+	return util.Cache2Iface[T](pluginFace.Cache), true
 }
 
 // NewPluginLib 创建插件库

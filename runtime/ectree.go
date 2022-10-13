@@ -2,7 +2,6 @@ package runtime
 
 import (
 	"errors"
-	"fmt"
 	"github.com/pangdogs/galaxy/ec"
 	"github.com/pangdogs/galaxy/localevent"
 	"github.com/pangdogs/galaxy/util"
@@ -124,7 +123,7 @@ func (ecTree *ECTree) AddChild(parentID, childID int64) error {
 	}
 
 	if _, ok = ecTree.ecTree[childID]; ok {
-		return fmt.Errorf("child '%d' already in this ec-tree", childID)
+		return errors.New("child id is already existed")
 	}
 
 	node, ok := ecTree.ecTree[parentID]

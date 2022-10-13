@@ -1,7 +1,11 @@
 package service
 
-import "github.com/pangdogs/galaxy/util"
+import (
+	"fmt"
+	"github.com/pangdogs/galaxy/plugin"
+)
 
+// Plugin 从服务上下文上获取插件
 func Plugin[T any](ctx Context, pluginName string) T {
 	if ctx == nil {
 		panic("nil ctx")
@@ -12,5 +16,10 @@ func Plugin[T any](ctx Context, pluginName string) T {
 		panic("nil pluginLib")
 	}
 
-	return util.Cache2Iface[T](pluginLib.Get(pluginName).Cache)
+	plugin, ok := plugin.GetPlugin[T](pluginLib, pluginName)
+	if !ok {
+		panic(fmt.Errorf("plugin '%s' not registered", pluginName))
+	}
+
+	return plugin
 }

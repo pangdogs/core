@@ -7,7 +7,7 @@ import (
 )
 
 // Run 运行，返回的channel用于线程同步，可以阻塞等待至运行结束
-func (_service *_ServiceBehavior) Run() <-chan struct{} {
+func (_service *ServiceBehavior) Run() <-chan struct{} {
 	if !service.UnsafeContext(_service.ctx).MarkRunning() {
 		panic("service already running")
 	}
@@ -24,11 +24,11 @@ func (_service *_ServiceBehavior) Run() <-chan struct{} {
 }
 
 // Stop 停止
-func (_service *_ServiceBehavior) Stop() {
+func (_service *ServiceBehavior) Stop() {
 	_service.ctx.GetCancelFunc()()
 }
 
-func (_service *_ServiceBehavior) running(shutChan chan struct{}) {
+func (_service *ServiceBehavior) running(shutChan chan struct{}) {
 	if pluginLib := service.UnsafeContext(_service.ctx).GetOptions().PluginLib; pluginLib != nil {
 		pluginLib.Range(func(pluginName string, pluginFace util.FaceAny) bool {
 			if pluginInit, ok := pluginFace.Iface.(_PluginInit); ok {

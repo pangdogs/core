@@ -99,22 +99,18 @@ func (frame *_Frame) init(targetFPS float32, totalFrames uint64, blink bool) {
 	}
 }
 
-// GetTargetFPS 获取目标FPS
 func (frame *_Frame) GetTargetFPS() float32 {
 	return frame.targetFPS
 }
 
-// GetCurFPS 获取当前FPS
 func (frame *_Frame) GetCurFPS() float32 {
 	return frame.curFPS
 }
 
-// GetTotalFrames 获取运行帧数上限
 func (frame *_Frame) GetTotalFrames() uint64 {
 	return frame.totalFrames
 }
 
-// GetCurFrames 获取当前帧数
 func (frame *_Frame) GetCurFrames() uint64 {
 	return frame.curFrames
 }
@@ -123,37 +119,30 @@ func (frame *_Frame) setCurFrames(v uint64) {
 	frame.curFrames = v
 }
 
-// Blink 是否是瞬时运行
 func (frame *_Frame) Blink() bool {
 	return frame.blink
 }
 
-// GetRunningBeginTime 获取运行开始时间
 func (frame *_Frame) GetRunningBeginTime() time.Time {
 	return frame.runningBeginTime
 }
 
-// GetRunningElapseTime 获取运行持续时间
 func (frame *_Frame) GetRunningElapseTime() time.Duration {
 	return frame.runningElapseTime
 }
 
-// GetFrameBeginTime 获取当前帧开始时间
 func (frame *_Frame) GetFrameBeginTime() time.Time {
 	return frame.frameBeginTime
 }
 
-// GetLastFrameElapseTime 获取上一帧耗时
 func (frame *_Frame) GetLastFrameElapseTime() time.Duration {
 	return frame.lastFrameElapseTime
 }
 
-// GetUpdateBeginTime 获取当前帧更新开始时间
 func (frame *_Frame) GetUpdateBeginTime() time.Time {
 	return frame.updateBeginTime
 }
 
-// GetLastUpdateElapseTime 获取上一次帧更新耗时
 func (frame *_Frame) GetLastUpdateElapseTime() time.Duration {
 	return frame.lastUpdateElapseTime
 }

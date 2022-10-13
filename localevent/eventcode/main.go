@@ -10,7 +10,7 @@
 //
 //   - 需要生成事件辅助代码时，在Cmd控制台中，定位到事件定义代码源文件（*.go）的路径下，输入`go generate`指令即可，也可以使用IDE提供的go generate功能。
 //
-//   - 本包可以编译并执行`eventcode --hel`p`查看命令行参数，按需求调整参数改变生成的代码。
+//   - 本包可以编译并执行`eventcode --help`查看命令行参数，按需求调整参数改变生成的代码。
 package main
 
 import (

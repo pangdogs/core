@@ -28,14 +28,12 @@ type IEntityMgr interface {
 	RemoveEntity(id int64)
 }
 
-// _EntityMgr 实体管理器
 type _EntityMgr struct {
 	serviceCtx Context
 	entityMap  sync.Map
 	inited     bool
 }
 
-// Init 初始化实体管理器
 func (entityMgr *_EntityMgr) Init(serviceCtx Context) {
 	if serviceCtx == nil {
 		panic("nil serviceCtx")
@@ -49,12 +47,10 @@ func (entityMgr *_EntityMgr) Init(serviceCtx Context) {
 	entityMgr.inited = true
 }
 
-// GetServiceCtx 获取服务上下文
 func (entityMgr *_EntityMgr) GetServiceCtx() Context {
 	return entityMgr.serviceCtx
 }
 
-// GetEntity 查询实体
 func (entityMgr *_EntityMgr) GetEntity(id int64) (ec.Entity, bool) {
 	v, ok := entityMgr.entityMap.Load(id)
 	if !ok {
@@ -63,7 +59,6 @@ func (entityMgr *_EntityMgr) GetEntity(id int64) (ec.Entity, bool) {
 	return v.(ec.Entity), true
 }
 
-// GetOrAddEntity 查询或添加实体
 func (entityMgr *_EntityMgr) GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, error) {
 	if entity == nil {
 		return nil, false, errors.New("nil entity")
@@ -85,7 +80,6 @@ func (entityMgr *_EntityMgr) GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, 
 	return entity, false, nil
 }
 
-// AddEntity 添加实体
 func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity) error {
 	if entity == nil {
 		return errors.New("nil entity")
@@ -104,7 +98,6 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity) error {
 	return nil
 }
 
-// GetAndRemoveEntity 查询并删除实体
 func (entityMgr *_EntityMgr) GetAndRemoveEntity(id int64) (ec.Entity, bool) {
 	v, loaded := entityMgr.entityMap.LoadAndDelete(id)
 	if loaded {
@@ -113,7 +106,6 @@ func (entityMgr *_EntityMgr) GetAndRemoveEntity(id int64) (ec.Entity, bool) {
 	return nil, false
 }
 
-// RemoveEntity 删除实体
 func (entityMgr *_EntityMgr) RemoveEntity(id int64) {
 	entityMgr.entityMap.Delete(id)
 }

@@ -36,18 +36,18 @@ func UnsafeNewService(serviceCtx service.Context, opts ServiceOptions) Service {
 		return opts.Inheritor.Iface
 	}
 
-	service := &_ServiceBehavior{}
+	service := &ServiceBehavior{}
 	service.init(serviceCtx, &opts)
 
 	return service.opts.Inheritor.Iface
 }
 
-type _ServiceBehavior struct {
+type ServiceBehavior struct {
 	opts ServiceOptions
 	ctx  service.Context
 }
 
-func (_service *_ServiceBehavior) init(serviceCtx service.Context, opts *ServiceOptions) {
+func (_service *ServiceBehavior) init(serviceCtx service.Context, opts *ServiceOptions) {
 	if serviceCtx == nil {
 		panic("nil serviceCtx")
 	}
@@ -65,11 +65,11 @@ func (_service *_ServiceBehavior) init(serviceCtx service.Context, opts *Service
 	_service.ctx = serviceCtx
 }
 
-func (_service *_ServiceBehavior) getOptions() *ServiceOptions {
+func (_service *ServiceBehavior) getOptions() *ServiceOptions {
 	return &_service.opts
 }
 
 // GetContext 获取服务上下文
-func (_service *_ServiceBehavior) GetContext() service.Context {
+func (_service *ServiceBehavior) GetContext() service.Context {
 	return _service.ctx
 }
