@@ -16,37 +16,37 @@ func init() {
 // RegisterComponent 注册组件原型，共有RegisterComp()与RegisterCreator()两个注册方法，
 // 二者选其一使用即可。一般在init()函数中使用，线程安全。
 //
-//	@param name 组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
+//	@param compName 组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
 //	@param descr 组件功能的描述说明。
 //	@param comp 组件对象。
-func RegisterComponent(name, descr string, comp interface{}) {
-	componentLib.RegisterComponent(name, descr, comp)
+func RegisterComponent(compName, descr string, comp interface{}) {
+	componentLib.RegisterComponent(compName, descr, comp)
 }
 
 // RegisterComponentCreator 注册组件构建函数，共有RegisterComp()与RegisterCreator()两个注册方法，
 // 二者选其一使用即可。一般在init()函数中使用，线程安全。
 //
-//	@param name 组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
+//	@param compName 组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
 //	@param descr 组件功能的描述说明。
 //	@param creator 组件构建函数。
-func RegisterComponentCreator(name, descr string, creator func() ec.Component) {
-	componentLib.RegisterCreator(name, descr, creator)
+func RegisterComponentCreator(compName, descr string, creator func() ec.Component) {
+	componentLib.RegisterCreator(compName, descr, creator)
 }
 
 // UnregisterComponentPt 取消注册组件原型，线程安全。
 //
-//	@param tag 组件标签，格式为组件所在包路径+组件名，例如：`github.com/pangdogs/galaxy/ec/comps/helloworld/HelloWorldComp`。
-func UnregisterComponentPt(tag string) {
-	componentLib.UnregisterComponentPt(tag)
+//	@param compTag 组件标签，格式为组件所在包路径+组件名，例如：`github.com/pangdogs/galaxy/ec/comps/helloworld/HelloWorldComp`。
+func UnregisterComponentPt(compTag string) {
+	componentLib.UnregisterComponentPt(compTag)
 }
 
 // GetComponentPt 获取组件原型，线程安全。
 //
-//	@param tag 组件标签，格式为组件所在包路径+组件名，例如：`github.com/pangdogs/galaxy/ec/comps/helloworld/HelloWorldComp`。
+//	@param compTag 组件标签，格式为组件所在包路径+组件名，例如：`github.com/pangdogs/galaxy/ec/comps/helloworld/HelloWorldComp`。
 //	@return 组件原型，可以用于创建组件。
 //	@return 是否存在。
-func GetComponentPt(tag string) (ComponentPt, bool) {
-	return componentLib.Get(tag)
+func GetComponentPt(compTag string) (ComponentPt, bool) {
+	return componentLib.Get(compTag)
 }
 
 // RangeComponentPts 遍历所有已注册的组件原型，线程安全。
@@ -67,42 +67,42 @@ func (lib *_ComponentLib) init() {
 	}
 }
 
-func (lib *_ComponentLib) RegisterComponent(name, descr string, comp interface{}) {
-	if name == "" {
-		panic("empty name")
+func (lib *_ComponentLib) RegisterComponent(compName, descr string, comp interface{}) {
+	if compName == "" {
+		panic("empty compName")
 	}
 
 	if comp == nil {
 		panic("nil comp")
 	}
 
-	lib.register(name, descr, _CompConstructType_Reflect, reflect.TypeOf(comp), nil)
+	lib.register(compName, descr, _CompConstructType_Reflect, reflect.TypeOf(comp), nil)
 }
 
-func (lib *_ComponentLib) RegisterCreator(name, descr string, creator func() ec.Component) {
-	if name == "" {
-		panic("empty name")
+func (lib *_ComponentLib) RegisterCreator(compName, descr string, creator func() ec.Component) {
+	if compName == "" {
+		panic("empty compName")
 	}
 
 	if creator == nil {
 		panic("nil creator")
 	}
 
-	lib.register(name, descr, _CompConstructType_Creator, nil, creator)
+	lib.register(compName, descr, _CompConstructType_Creator, nil, creator)
 }
 
-func (lib *_ComponentLib) UnregisterComponentPt(tag string) {
+func (lib *_ComponentLib) UnregisterComponentPt(compTag string) {
 	lib.mutex.Lock()
 	defer lib.mutex.Unlock()
 
-	delete(lib.compPtMap, tag)
+	delete(lib.compPtMap, compTag)
 }
 
-func (lib *_ComponentLib) Get(tag string) (ComponentPt, bool) {
+func (lib *_ComponentLib) Get(compTag string) (ComponentPt, bool) {
 	lib.mutex.RLock()
 	defer lib.mutex.RUnlock()
 
-	compPt, ok := lib.compPtMap[tag]
+	compPt, ok := lib.compPtMap[compTag]
 	return compPt, ok
 }
 

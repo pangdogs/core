@@ -32,25 +32,16 @@ type PluginLib interface {
 	Range(fun func(pluginName string, pluginFace util.FaceAny) bool)
 }
 
-// RegisterPlugin 使用插件接口名称，注册插件。
+// RegisterPlugin 注册插件。
 //
 //	@param pluginLib 插件库。
+//	@param pluginName 插件名称。
 //	@param plugin 插件。
-func RegisterPlugin[T any](pluginLib PluginLib, plugin T) {
+func RegisterPlugin[T any](pluginLib PluginLib, pluginName string, plugin T) {
 	if pluginLib == nil {
 		panic("nil pluginLib")
 	}
-	pluginLib.Register(util.TypeFullName[T](), util.NewFacePair[interface{}](plugin, plugin))
-}
-
-// UnregisterPlugin 使用插件接口名称，取消注册插件。
-//
-//	@param pluginLib 插件库。
-func UnregisterPlugin[T any](pluginLib PluginLib) {
-	if pluginLib == nil {
-		panic("nil pluginLib")
-	}
-	pluginLib.Unregister(util.TypeFullName[T]())
+	pluginLib.Register(pluginName, util.NewFacePair[interface{}](plugin, plugin))
 }
 
 // GetPlugin 获取插件。
