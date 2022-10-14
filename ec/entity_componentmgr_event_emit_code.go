@@ -11,7 +11,7 @@ func emitEventCompMgrAddComponents(event localevent.IEvent, entity Entity, compo
 	if event == nil {
 		panic("nil event")
 	}
-	event.Emit(func(delegate util.IfaceCache) bool {
+	localevent.UnsafeEvent(event).Emit(func(delegate util.IfaceCache) bool {
 		util.Cache2Iface[EventCompMgrAddComponents](delegate).OnCompMgrAddComponents(entity, components)
 		return true
 	})
@@ -21,7 +21,7 @@ func emitEventCompMgrRemoveComponent(event localevent.IEvent, entity Entity, com
 	if event == nil {
 		panic("nil event")
 	}
-	event.Emit(func(delegate util.IfaceCache) bool {
+	localevent.UnsafeEvent(event).Emit(func(delegate util.IfaceCache) bool {
 		util.Cache2Iface[EventCompMgrRemoveComponent](delegate).OnCompMgrRemoveComponent(entity, component)
 		return true
 	})
@@ -31,7 +31,7 @@ func emitEventCompMgrFirstAccessComponent(event localevent.IEvent, entity Entity
 	if event == nil {
 		panic("nil event")
 	}
-	event.Emit(func(delegate util.IfaceCache) bool {
+	localevent.UnsafeEvent(event).Emit(func(delegate util.IfaceCache) bool {
 		util.Cache2Iface[EventCompMgrFirstAccessComponent](delegate).OnCompMgrFirstAccessComponent(entity, component)
 		return true
 	})

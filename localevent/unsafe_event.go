@@ -2,14 +2,18 @@ package localevent
 
 import "github.com/pangdogs/galaxy/util"
 
-func UnsafeEvent(v *Event) _UnsafeEvent {
+func UnsafeEvent(v IEvent) _UnsafeEvent {
 	return _UnsafeEvent{
-		Event: v,
+		IEvent: v,
 	}
 }
 
 type _UnsafeEvent struct {
-	*Event
+	IEvent
+}
+
+func (ue _UnsafeEvent) Emit(fun func(delegate util.IfaceCache) bool) {
+	ue.emit(fun)
 }
 
 func (ue _UnsafeEvent) NewHook(delegateFace util.FaceAny, priority int32) Hook {

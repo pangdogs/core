@@ -112,7 +112,7 @@ func %[9]s%[1]s%[7]s(event %[6]sIEvent%[4]s) {
 	if event == nil {
 		panic("nil event")
 	}
-	event.Emit(func(delegate util.IfaceCache) bool {
+	%[6]sUnsafeEvent(event).Emit(func(delegate util.IfaceCache) bool {
 		return util.Cache2Iface[%[2]s%[8]s](delegate).%[3]s(%[5]s)
 	})
 }
@@ -124,7 +124,7 @@ func %[9]s%[1]s%[7]s(event %[6]sIEvent%[4]s) {
 	if event == nil {
 		panic("nil event")
 	}
-	event.Emit(func(delegate util.IfaceCache) bool {
+	%[6]sUnsafeEvent(event).Emit(func(delegate util.IfaceCache) bool {
 		util.Cache2Iface[%[2]s%[8]s](delegate).%[3]s(%[5]s)
 		return true
 	})

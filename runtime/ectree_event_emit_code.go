@@ -12,7 +12,7 @@ func emitEventECTreeAddChild(event localevent.IEvent, ecTree IECTree, parent, ch
 	if event == nil {
 		panic("nil event")
 	}
-	event.Emit(func(delegate util.IfaceCache) bool {
+	localevent.UnsafeEvent(event).Emit(func(delegate util.IfaceCache) bool {
 		util.Cache2Iface[EventECTreeAddChild](delegate).OnAddChild(ecTree, parent, child)
 		return true
 	})
@@ -22,7 +22,7 @@ func emitEventECTreeRemoveChild(event localevent.IEvent, ecTree IECTree, parent,
 	if event == nil {
 		panic("nil event")
 	}
-	event.Emit(func(delegate util.IfaceCache) bool {
+	localevent.UnsafeEvent(event).Emit(func(delegate util.IfaceCache) bool {
 		util.Cache2Iface[EventECTreeRemoveChild](delegate).OnRemoveChild(ecTree, parent, child)
 		return true
 	})

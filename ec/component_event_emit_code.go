@@ -11,7 +11,7 @@ func emitEventComponentDestroySelf(event localevent.IEvent, comp Component) {
 	if event == nil {
 		panic("nil event")
 	}
-	event.Emit(func(delegate util.IfaceCache) bool {
+	localevent.UnsafeEvent(event).Emit(func(delegate util.IfaceCache) bool {
 		util.Cache2Iface[EventComponentDestroySelf](delegate).OnComponentDestroySelf(comp)
 		return true
 	})

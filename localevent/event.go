@@ -19,12 +19,10 @@ const (
 
 // IEvent 本地事件接口，非线程安全，不能用于跨线程事件通知
 type IEvent interface {
-	// Emit 发送事件，一般情况下是在事件生成的代码中使用
-	Emit(fun func(delegate util.IfaceCache) bool)
-
+	emit(fun func(delegate util.IfaceCache) bool)
 	newHook(delegateFace util.FaceAny, priority int32) Hook
-
 	removeDelegate(delegate interface{})
+	gc()
 }
 
 // Event 本地事件，非线程安全，不能用于跨线程事件通知
@@ -80,8 +78,7 @@ func (event *Event) Clean() {
 	})
 }
 
-// Emit 发送事件，一般情况下是在事件生成的代码中使用
-func (event *Event) Emit(fun func(delegate util.IfaceCache) bool) {
+func (event *Event) emit(fun func(delegate util.IfaceCache) bool) {
 	if fun == nil {
 		return
 	}
