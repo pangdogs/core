@@ -356,6 +356,4 @@ func (_runtime *RuntimeBehavior) blinkFrameUpdate() bool {
 			return true
 		}
 	}
-
-	return true
 }
