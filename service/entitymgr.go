@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/pangdogs/galaxy/ec"
 	"github.com/pangdogs/galaxy/util"
-	"sync"
+	"github.com/pangdogs/galaxy/util/concurrent"
 )
 
 // IEntityMgr 实体管理器接口
@@ -15,6 +15,9 @@ type IEntityMgr interface {
 	// GetEntity 查询实体
 	GetEntity(id int64) (ec.Entity, bool)
 
+	// GetEntityWithSerialNo 使用ID与序列号查询实体
+	GetEntityWithSerialNo(id, serialNo int64) (ec.Entity, bool)
+
 	// GetOrAddEntity 查询或添加实体
 	GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, error)
 
@@ -24,13 +27,19 @@ type IEntityMgr interface {
 	// GetAndRemoveEntity 查询并删除实体
 	GetAndRemoveEntity(id int64) (ec.Entity, bool)
 
+	// GetAndRemoveEntityWithSerialNo 使用ID与序列号查询并删除实体
+	GetAndRemoveEntityWithSerialNo(id, serialNo int64) (ec.Entity, bool)
+
 	// RemoveEntity 删除实体
 	RemoveEntity(id int64)
+
+	// RemoveEntityWithSerialNo 使用ID与序列号删除实体
+	RemoveEntityWithSerialNo(id, serialNo int64)
 }
 
 type _EntityMgr struct {
 	serviceCtx Context
-	entityMap  sync.Map
+	entityMap  concurrent.Map[int64, ec.Entity]
 	inited     bool
 }
 
@@ -52,11 +61,25 @@ func (entityMgr *_EntityMgr) GetServiceCtx() Context {
 }
 
 func (entityMgr *_EntityMgr) GetEntity(id int64) (ec.Entity, bool) {
-	v, ok := entityMgr.entityMap.Load(id)
+	entity, ok := entityMgr.entityMap.Load(id)
 	if !ok {
 		return nil, false
 	}
-	return v.(ec.Entity), true
+
+	return entity, true
+}
+
+func (entityMgr *_EntityMgr) GetEntityWithSerialNo(id, serialNo int64) (ec.Entity, bool) {
+	entity, ok := entityMgr.entityMap.Load(id)
+	if !ok {
+		return nil, false
+	}
+
+	if entity.GetSerialNo() != serialNo {
+		return nil, false
+	}
+
+	return entity, true
 }
 
 func (entityMgr *_EntityMgr) GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, error) {
@@ -72,12 +95,8 @@ func (entityMgr *_EntityMgr) GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, 
 		return nil, false, errors.New("entity context has not been setup")
 	}
 
-	v, loaded := entityMgr.entityMap.LoadOrStore(entity.GetID(), entity)
-	if loaded {
-		return v.(ec.Entity), true, nil
-	}
-
-	return entity, false, nil
+	actual, loaded := entityMgr.entityMap.LoadOrStore(entity.GetID(), entity)
+	return actual, loaded, nil
 }
 
 func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity) error {
@@ -99,13 +118,21 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity) error {
 }
 
 func (entityMgr *_EntityMgr) GetAndRemoveEntity(id int64) (ec.Entity, bool) {
-	v, loaded := entityMgr.entityMap.LoadAndDelete(id)
-	if loaded {
-		return v.(ec.Entity), true
-	}
-	return nil, false
+	return entityMgr.entityMap.LoadAndDelete(id)
+}
+
+func (entityMgr *_EntityMgr) GetAndRemoveEntityWithSerialNo(id, serialNo int64) (ec.Entity, bool) {
+	return entityMgr.entityMap.TryLoadAndDelete(id, func(entity ec.Entity) bool {
+		return entity.GetSerialNo() == serialNo
+	})
 }
 
 func (entityMgr *_EntityMgr) RemoveEntity(id int64) {
 	entityMgr.entityMap.Delete(id)
+}
+
+func (entityMgr *_EntityMgr) RemoveEntityWithSerialNo(id, serialNo int64) {
+	entityMgr.entityMap.TryDelete(id, func(entity ec.Entity) bool {
+		return entity.GetSerialNo() == serialNo
+	})
 }

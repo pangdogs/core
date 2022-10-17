@@ -30,8 +30,8 @@ func (pt *EntityPt) New(optSetter ...ec.EntityOptionSetter) ec.Entity {
 	return entity
 }
 
-// AddComponents 向实体添加组件
-func (pt *EntityPt) AddComponents(entity ec.Entity) {
+// InstallComponents 向实体安装组件
+func (pt *EntityPt) InstallComponents(entity ec.Entity) {
 	if entity == nil {
 		return
 	}

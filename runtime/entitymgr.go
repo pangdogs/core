@@ -29,6 +29,12 @@ type IEntityMgr interface {
 	// AddEntity 添加实体
 	AddEntity(entity ec.Entity) error
 
+	// AddGlobalEntity 添加全局实体
+	AddGlobalEntity(entity ec.Entity) error
+
+	// TryAddGlobalEntity 尝试添加全局实体
+	TryAddGlobalEntity(entity ec.Entity) error
+
 	// RemoveEntity 删除实体
 	RemoveEntity(id int64)
 
@@ -48,6 +54,12 @@ type IEntityMgr interface {
 	EventEntityMgrEntityFirstAccessComponent() localevent.IEvent
 
 	eventEntityMgrNotifyECTreeRemoveEntity() localevent.IEvent
+}
+
+type _EntityInfo struct {
+	Element    *container.Element[util.FaceAny]
+	Hooks      [3]localevent.Hook
+	GlobalMark bool
 }
 
 type _EntityMgr struct {
@@ -127,6 +139,31 @@ func (entityMgr *_EntityMgr) GetEntityCount() int {
 }
 
 func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity) error {
+	return entityMgr.addEntity(entity, nil)
+}
+
+// AddGlobalEntity 添加全局实体
+func (entityMgr *_EntityMgr) AddGlobalEntity(entity ec.Entity) error {
+	return entityMgr.addEntity(entity, func() error {
+		return entityMgr.GetRuntimeCtx().GetServiceCtx().GetEntityMgr().AddEntity(entity)
+	})
+}
+
+// TryAddGlobalEntity 尝试添加全局实体
+func (entityMgr *_EntityMgr) TryAddGlobalEntity(entity ec.Entity) error {
+	return entityMgr.addEntity(entity, func() error {
+		_, loaded, err := entityMgr.GetRuntimeCtx().GetServiceCtx().GetEntityMgr().GetOrAddEntity(entity)
+		if err != nil {
+			return err
+		}
+		if loaded {
+			return errors.New("entity id is already existed")
+		}
+		return nil
+	})
+}
+
+func (entityMgr *_EntityMgr) addEntity(entity ec.Entity, add2ServiceCtx func() error) (err error) {
 	if entity == nil {
 		return errors.New("nil entity")
 	}
@@ -137,18 +174,38 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity) error {
 		return errors.New("entity context has already been setup")
 	}
 
+	runtimeCtx := entityMgr.runtimeCtx
+	serviceCtx := runtimeCtx.GetServiceCtx()
+
 	if entity.GetID() <= 0 {
-		_entity.SetID(entityMgr.runtimeCtx.GetServiceCtx().GenUID())
+		_entity.SetID(serviceCtx.GenUID())
 	}
 
-	_entity.SetContext(util.Iface2Cache[Context](entityMgr.runtimeCtx))
-	_entity.SetGCCollector(entityMgr.runtimeCtx)
+	if _, ok := entityMgr.entityMap[entity.GetID()]; ok {
+		return fmt.Errorf("entity id is already existed")
+	}
+
+	_entity.SetSerialNo(serviceCtx.GenUID())
+	_entity.SetContext(util.Iface2Cache[Context](runtimeCtx))
+
+	if add2ServiceCtx != nil {
+		if err := add2ServiceCtx(); err != nil {
+			return fmt.Errorf("add entity to service context failed, %v", err)
+		}
+		defer func() {
+			if err != nil {
+				serviceCtx.GetEntityMgr().RemoveEntityWithSerialNo(entity.GetID(), entity.GetSerialNo())
+			}
+		}()
+	}
+
+	_entity.SetGCCollector(runtimeCtx)
 
 	entity.RangeComponents(func(comp ec.Component) bool {
 		_comp := ec.UnsafeComponent(comp)
 
 		if _comp.GetID() <= 0 {
-			_comp.SetID(entityMgr.runtimeCtx.GetServiceCtx().GenUID())
+			_comp.SetID(serviceCtx.GenUID())
 		}
 
 		_comp.SetPrimary(true)
@@ -156,25 +213,22 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity) error {
 		return true
 	})
 
-	if _, ok := entityMgr.entityMap[entity.GetID()]; ok {
-		return fmt.Errorf("entity id is already existed")
-	}
-
 	_entity.SetAdding(true)
 	defer _entity.SetAdding(false)
 
 	entityInfo := _EntityInfo{}
+	entityInfo.Element = entityMgr.entityList.PushBack(util.NewFacePair[interface{}](entity, entity))
+
 	entityInfo.Hooks[0] = localevent.BindEvent[ec.EventCompMgrAddComponents](entity.EventCompMgrAddComponents(), entityMgr)
 	entityInfo.Hooks[1] = localevent.BindEvent[ec.EventCompMgrRemoveComponent](entity.EventCompMgrRemoveComponent(), entityMgr)
-
 	if _entity.GetOptions().EnableComponentAwakeByAccess {
 		entityInfo.Hooks[2] = localevent.BindEvent[ec.EventCompMgrFirstAccessComponent](entity.EventCompMgrFirstAccessComponent(), entityMgr)
 	}
 
-	entityInfo.Element = entityMgr.entityList.PushBack(util.NewFacePair[interface{}](entity, entity))
+	entityInfo.GlobalMark = add2ServiceCtx != nil
 
 	entityMgr.entityMap[entity.GetID()] = entityInfo
-	entityMgr.runtimeCtx.CollectGC(_entity.GetInnerGC())
+	runtimeCtx.CollectGC(_entity.GetInnerGC())
 
 	emitEventEntityMgrAddEntity(&entityMgr.eventEntityMgrAddEntity, entityMgr, entity)
 
@@ -192,11 +246,18 @@ func (entityMgr *_EntityMgr) RemoveEntity(id int64) {
 		return
 	}
 
+	runtimeCtx := entityMgr.runtimeCtx
+	serviceCtx := runtimeCtx.GetServiceCtx()
+
 	entity.SetRemoving(true)
 	defer entity.SetRemoving(false)
 
+	if entityInfo.GlobalMark {
+		serviceCtx.GetEntityMgr().RemoveEntityWithSerialNo(entity.GetID(), entity.GetSerialNo())
+	}
+
 	emitEventEntityMgrNotifyECTreeRemoveEntity(&entityMgr._eventEntityMgrNotifyECTreeRemoveEntity, entityMgr, entity.Entity)
-	entityMgr.runtimeCtx.GetECTree().RemoveChild(id)
+	runtimeCtx.GetECTree().RemoveChild(id)
 
 	delete(entityMgr.entityMap, id)
 	entityInfo.Element.Escape()

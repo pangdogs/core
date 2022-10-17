@@ -13,7 +13,7 @@ type EntityOptions struct {
 	PersistID                    int64                             // 实体持久化ID
 	ComponentPersistID           func(comp Component) int64        // 组件持久化ID
 	EnableRemovePrimaryComponent bool                              // 开启主要组件可以被删除，主要组件是指实体加入运行时上下文前添加的组件
-	EnableComponentAwakeByAccess bool                              // 开启访问组件时，检测并调用Awake()
+	EnableComponentAwakeByAccess bool                              // 开启组件被访问时，检测并调用Awake()
 	FaceCache                    *container.Cache[util.FaceAny]    // FaceCache用于提高性能，通常传入运行时上下文选项中的FaceCache
 	HookCache                    *container.Cache[localevent.Hook] // HookCache用于提高性能，通常传入运行时上下文选项中的HookCache
 }
@@ -78,7 +78,7 @@ func (*_EntityOption) EnableRemovePrimaryComponent(v bool) EntityOptionSetter {
 	}
 }
 
-// EnableComponentAwakeByAccess 开启访问组件时，检测并调用Awake()
+// EnableComponentAwakeByAccess 开启组件被访问时，检测并调用Awake()
 func (*_EntityOption) EnableComponentAwakeByAccess(v bool) EntityOptionSetter {
 	return func(o *EntityOptions) {
 		o.EnableComponentAwakeByAccess = v

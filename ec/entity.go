@@ -21,6 +21,11 @@ type Entity interface {
 	// GetID 获取实体全局唯一ID
 	GetID() int64
 
+	setSerialNo(sn int64)
+
+	// GetSerialNo 获取序列号
+	GetSerialNo() int64
+
 	// GetPrototype 获取实体原型
 	GetPrototype() string
 
@@ -85,7 +90,7 @@ func UnsafeNewEntity(opts EntityOptions) Entity {
 
 // EntityBehavior 实体行为，在需要拓展实体能力时，匿名嵌入至实体结构体中
 type EntityBehavior struct {
-	id                               int64
+	id, serialNo                     int64
 	opts                             EntityOptions
 	context                          util.IfaceCache
 	gcCollector                      container.GCCollector
@@ -133,6 +138,15 @@ func (entity *EntityBehavior) setID(id int64) {
 // GetID 获取实体全局唯一ID
 func (entity *EntityBehavior) GetID() int64 {
 	return entity.id
+}
+
+func (entity *EntityBehavior) setSerialNo(sn int64) {
+	entity.serialNo = sn
+}
+
+// GetSerialNo 获取序列号
+func (entity *EntityBehavior) GetSerialNo() int64 {
+	return entity.serialNo
 }
 
 // GetPrototype 获取实体原型

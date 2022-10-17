@@ -65,11 +65,6 @@ func UnsafeNewContext(serviceCtx service.Context, opts ContextOptions) Context {
 	return ctx.opts.Inheritor.Iface
 }
 
-type _EntityInfo struct {
-	Element *container.Element[util.FaceAny]
-	Hooks   [3]localevent.Hook
-}
-
 // ContextBehavior 运行时上下文行为，在需要拓展运行时上下文能力时，匿名嵌入至运行时上下文结构体中
 type ContextBehavior struct {
 	internal.ContextBehavior

@@ -28,6 +28,10 @@ func (ue _UnsafeEntity) SetID(id int64) {
 	ue.setID(id)
 }
 
+func (ue _UnsafeEntity) SetSerialNo(sn int64) {
+	ue.setSerialNo(sn)
+}
+
 func (ue _UnsafeEntity) SetContext(ctx util.IfaceCache) {
 	ue.setContext(ctx)
 }

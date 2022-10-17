@@ -3,7 +3,9 @@ module github.com/pangdogs/galaxy
 go 1.18
 
 require (
+	github.com/alphadose/haxmap v1.0.2
 	github.com/bwmarrin/snowflake v0.3.0
+	github.com/orcaman/concurrent-map/v2 v2.0.0
 	github.com/spf13/viper v1.13.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )

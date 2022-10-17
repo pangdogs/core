@@ -35,7 +35,7 @@ func (creator _EntityCreator) Options(optSetter ...ec.EntityOptionSetter) _Entit
 
 func (creator _EntityCreator) Build() (ec.Entity, error) {
 	if creator.runtimeCtx == nil {
-		return nil, errors.New("RuntimeCtx has not been setup")
+		return nil, errors.New("nil runtimeCtx")
 	}
 
 	runtimeCtx := creator.runtimeCtx
@@ -43,7 +43,7 @@ func (creator _EntityCreator) Build() (ec.Entity, error) {
 
 	entityLib := service.UnsafeContext(serviceCtx).GetOptions().EntityLib
 	if entityLib == nil {
-		return nil, errors.New("ServiceCtx option EntityLib has not been setup")
+		return nil, errors.New("nil entityLib")
 	}
 
 	entityPt, ok := entityLib.Get(creator.prototype)
@@ -67,16 +67,11 @@ func (creator _EntityCreator) Build() (ec.Entity, error) {
 	}
 
 	entity := ec.UnsafeNewEntity(opts)
-	entityPt.AddComponents(entity)
+	entityPt.InstallComponents(entity)
 
 	if err := runtimeCtx.GetEntityMgr().AddEntity(entity); err != nil {
-		panic(err)
+		return nil, fmt.Errorf("runtime context add entity '%s-%d-%d' failed, %v", entity.GetPrototype(), entity.GetID(), entity.GetSerialNo(), err)
 	}
 
-	_, loaded, err := serviceCtx.GetEntityMgr().GetOrAddEntity(entity)
-	if loaded {
-
-	}
-
-	return entity
+	return entity, nil
 }
