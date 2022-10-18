@@ -21,25 +21,25 @@ type Runtime interface {
 }
 
 // NewRuntime 创建运行时
-func NewRuntime(runtimeCtx runtime.Context, optSetter ...RuntimeOptionSetter) Runtime {
+func NewRuntime(runtimeCtx runtime.Context, options ...RuntimeOptionSetter) Runtime {
 	opts := RuntimeOptions{}
 	RuntimeOption.Default()(&opts)
 
-	for i := range optSetter {
-		optSetter[i](&opts)
+	for i := range options {
+		options[i](&opts)
 	}
 
 	return UnsafeNewRuntime(runtimeCtx, opts)
 }
 
-func UnsafeNewRuntime(runtimeCtx runtime.Context, opts RuntimeOptions) Runtime {
-	if !opts.Inheritor.IsNil() {
-		opts.Inheritor.Iface.init(runtimeCtx, &opts)
-		return opts.Inheritor.Iface
+func UnsafeNewRuntime(runtimeCtx runtime.Context, options RuntimeOptions) Runtime {
+	if !options.Inheritor.IsNil() {
+		options.Inheritor.Iface.init(runtimeCtx, &options)
+		return options.Inheritor.Iface
 	}
 
 	runtime := &RuntimeBehavior{}
-	runtime.init(runtimeCtx, &opts)
+	runtime.init(runtimeCtx, &options)
 
 	return runtime.opts.Inheritor.Iface
 }

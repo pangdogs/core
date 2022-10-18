@@ -10,22 +10,22 @@ type ServiceOptions struct {
 }
 
 // ServiceOption 创建服务的选项
-var ServiceOption = &_ServiceOptionSetter{}
+var ServiceOption = &_ServiceOption{}
 
-// ServiceOptionSetterFunc 创建服务的选项设置器
-type ServiceOptionSetterFunc func(o *ServiceOptions)
+// ServiceOptionSetter 创建服务的选项设置器
+type ServiceOptionSetter func(o *ServiceOptions)
 
-type _ServiceOptionSetter struct{}
+type _ServiceOption struct{}
 
 // Default 默认值
-func (*_ServiceOptionSetter) Default() ServiceOptionSetterFunc {
+func (*_ServiceOption) Default() ServiceOptionSetter {
 	return func(o *ServiceOptions) {
 		o.Inheritor = util.Face[Service]{}
 	}
 }
 
 // Inheritor 继承者，需要拓展服务自身功能时需要使用
-func (*_ServiceOptionSetter) Inheritor(v util.Face[Service]) ServiceOptionSetterFunc {
+func (*_ServiceOption) Inheritor(v util.Face[Service]) ServiceOptionSetter {
 	return func(o *ServiceOptions) {
 		o.Inheritor = v
 	}

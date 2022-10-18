@@ -32,25 +32,25 @@ type Context interface {
 }
 
 // NewContext 创建服务上下文
-func NewContext(optSetter ...ContextOptionSetter) Context {
+func NewContext(options ...ContextOptionSetter) Context {
 	opts := ContextOptions{}
 	ContextOption.Default()(&opts)
 
-	for i := range optSetter {
-		optSetter[i](&opts)
+	for i := range options {
+		options[i](&opts)
 	}
 
 	return UnsafeNewContext(opts)
 }
 
-func UnsafeNewContext(opts ContextOptions) Context {
-	if !opts.Inheritor.IsNil() {
-		opts.Inheritor.Iface.init(&opts)
-		return opts.Inheritor.Iface
+func UnsafeNewContext(options ContextOptions) Context {
+	if !options.Inheritor.IsNil() {
+		options.Inheritor.Iface.init(&options)
+		return options.Inheritor.Iface
 	}
 
 	ctx := &ContextBehavior{}
-	ctx.init(&opts)
+	ctx.init(&options)
 
 	return ctx.opts.Inheritor.Iface
 }

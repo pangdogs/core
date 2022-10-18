@@ -65,25 +65,25 @@ type Entity interface {
 }
 
 // NewEntity 创建实体
-func NewEntity(optSetter ...EntityOptionSetter) Entity {
+func NewEntity(options ...EntityOptionSetter) Entity {
 	opts := EntityOptions{}
 	EntityOption.Default()(&opts)
 
-	for i := range optSetter {
-		optSetter[i](&opts)
+	for i := range options {
+		options[i](&opts)
 	}
 
 	return UnsafeNewEntity(opts)
 }
 
-func UnsafeNewEntity(opts EntityOptions) Entity {
-	if !opts.Inheritor.IsNil() {
-		opts.Inheritor.Iface.init(&opts)
-		return opts.Inheritor.Iface
+func UnsafeNewEntity(options EntityOptions) Entity {
+	if !options.Inheritor.IsNil() {
+		options.Inheritor.Iface.init(&options)
+		return options.Inheritor.Iface
 	}
 
 	e := &EntityBehavior{}
-	e.init(&opts)
+	e.init(&options)
 
 	return e.opts.Inheritor.Iface
 }

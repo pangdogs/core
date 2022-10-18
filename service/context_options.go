@@ -23,15 +23,15 @@ type ContextOptions struct {
 }
 
 // ContextOption 创建服务上下文的选项
-var ContextOption = &_ContextOptionSetter{}
+var ContextOption = &_ContextOption{}
 
 // ContextOptionSetter 创建服务上下文的选项设置器
 type ContextOptionSetter func(o *ContextOptions)
 
-type _ContextOptionSetter struct{}
+type _ContextOption struct{}
 
 // Default 默认值
-func (*_ContextOptionSetter) Default() ContextOptionSetter {
+func (*_ContextOption) Default() ContextOptionSetter {
 	return func(o *ContextOptions) {
 		o.Inheritor = util.Face[Context]{}
 		o.Context = nil
@@ -48,77 +48,77 @@ func (*_ContextOptionSetter) Default() ContextOptionSetter {
 }
 
 // Inheritor 继承者，需要拓展服务上下文自身能力时需要使用
-func (*_ContextOptionSetter) Inheritor(v util.Face[Context]) ContextOptionSetter {
+func (*_ContextOption) Inheritor(v util.Face[Context]) ContextOptionSetter {
 	return func(o *ContextOptions) {
 		o.Inheritor = v
 	}
 }
 
 // Context 父Context
-func (*_ContextOptionSetter) Context(v context.Context) ContextOptionSetter {
+func (*_ContextOption) Context(v context.Context) ContextOptionSetter {
 	return func(o *ContextOptions) {
 		o.Context = v
 	}
 }
 
 // AutoRecover 是否开启panic时自动恢复
-func (*_ContextOptionSetter) AutoRecover(v bool) ContextOptionSetter {
+func (*_ContextOption) AutoRecover(v bool) ContextOptionSetter {
 	return func(o *ContextOptions) {
 		o.AutoRecover = v
 	}
 }
 
 // ReportError panic时错误写入的error channel
-func (*_ContextOptionSetter) ReportError(v chan error) ContextOptionSetter {
+func (*_ContextOption) ReportError(v chan error) ContextOptionSetter {
 	return func(o *ContextOptions) {
 		o.ReportError = v
 	}
 }
 
 // Prototype 服务原型名称
-func (*_ContextOptionSetter) Prototype(v string) ContextOptionSetter {
+func (*_ContextOption) Prototype(v string) ContextOptionSetter {
 	return func(o *ContextOptions) {
 		o.Prototype = v
 	}
 }
 
 // NodeID 服务分布式节点ID，主要用于snowflake算法生成唯一ID，需要全局唯一
-func (*_ContextOptionSetter) NodeID(v int64) ContextOptionSetter {
+func (*_ContextOption) NodeID(v int64) ContextOptionSetter {
 	return func(o *ContextOptions) {
 		o.NodeID = v
 	}
 }
 
 // EntityLib 实体原型库
-func (*_ContextOptionSetter) EntityLib(v pt.EntityLib) ContextOptionSetter {
+func (*_ContextOption) EntityLib(v pt.EntityLib) ContextOptionSetter {
 	return func(o *ContextOptions) {
 		o.EntityLib = v
 	}
 }
 
 // PluginLib 插件库
-func (*_ContextOptionSetter) PluginLib(v plugin.PluginLib) ContextOptionSetter {
+func (*_ContextOption) PluginLib(v plugin.PluginLib) ContextOptionSetter {
 	return func(o *ContextOptions) {
 		o.PluginLib = v
 	}
 }
 
 // StartedCallback 启动运行时回调函数
-func (*_ContextOptionSetter) StartedCallback(v func(serviceCtx Context)) ContextOptionSetter {
+func (*_ContextOption) StartedCallback(v func(serviceCtx Context)) ContextOptionSetter {
 	return func(o *ContextOptions) {
 		o.StartedCallback = v
 	}
 }
 
 // StoppingCallback 开始停止运行时回调函数
-func (*_ContextOptionSetter) StoppingCallback(v func(serviceCtx Context)) ContextOptionSetter {
+func (*_ContextOption) StoppingCallback(v func(serviceCtx Context)) ContextOptionSetter {
 	return func(o *ContextOptions) {
 		o.StoppingCallback = v
 	}
 }
 
 // StoppedCallback 完全停止运行时回调函数
-func (*_ContextOptionSetter) StoppedCallback(v func(serviceCtx Context)) ContextOptionSetter {
+func (*_ContextOption) StoppedCallback(v func(serviceCtx Context)) ContextOptionSetter {
 	return func(o *ContextOptions) {
 		o.StoppedCallback = v
 	}

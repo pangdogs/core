@@ -19,25 +19,25 @@ type Service interface {
 }
 
 // NewService 创建服务
-func NewService(serviceCtx service.Context, optSetter ...ServiceOptionSetterFunc) Service {
+func NewService(serviceCtx service.Context, options ...ServiceOptionSetter) Service {
 	opts := ServiceOptions{}
 	ServiceOption.Default()(&opts)
 
-	for i := range optSetter {
-		optSetter[i](&opts)
+	for i := range options {
+		options[i](&opts)
 	}
 
 	return UnsafeNewService(serviceCtx, opts)
 }
 
-func UnsafeNewService(serviceCtx service.Context, opts ServiceOptions) Service {
-	if !opts.Inheritor.IsNil() {
-		opts.Inheritor.Iface.init(serviceCtx, &opts)
-		return opts.Inheritor.Iface
+func UnsafeNewService(serviceCtx service.Context, options ServiceOptions) Service {
+	if !options.Inheritor.IsNil() {
+		options.Inheritor.Iface.init(serviceCtx, &options)
+		return options.Inheritor.Iface
 	}
 
 	service := &ServiceBehavior{}
-	service.init(serviceCtx, &opts)
+	service.init(serviceCtx, &options)
 
 	return service.opts.Inheritor.Iface
 }

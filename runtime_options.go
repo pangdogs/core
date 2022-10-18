@@ -17,15 +17,15 @@ type RuntimeOptions struct {
 }
 
 // RuntimeOption 创建运行时的选项
-var RuntimeOption = &_RuntimeOptionSetter{}
+var RuntimeOption = &_RuntimeOption{}
 
 // RuntimeOptionSetter 创建运行时的选项设置器
 type RuntimeOptionSetter func(o *RuntimeOptions)
 
-type _RuntimeOptionSetter struct{}
+type _RuntimeOption struct{}
 
 // Default 默认值
-func (*_RuntimeOptionSetter) Default() RuntimeOptionSetter {
+func (*_RuntimeOption) Default() RuntimeOptionSetter {
 	return func(o *RuntimeOptions) {
 		o.Inheritor = util.Face[Runtime]{}
 		o.EnableAutoRun = false
@@ -37,21 +37,21 @@ func (*_RuntimeOptionSetter) Default() RuntimeOptionSetter {
 }
 
 // Inheritor 继承者，需要拓展运行时自身功能时需要使用
-func (*_RuntimeOptionSetter) Inheritor(v util.Face[Runtime]) RuntimeOptionSetter {
+func (*_RuntimeOption) Inheritor(v util.Face[Runtime]) RuntimeOptionSetter {
 	return func(o *RuntimeOptions) {
 		o.Inheritor = v
 	}
 }
 
 // EnableAutoRun 是否开启自动运行
-func (*_RuntimeOptionSetter) EnableAutoRun(v bool) RuntimeOptionSetter {
+func (*_RuntimeOption) EnableAutoRun(v bool) RuntimeOptionSetter {
 	return func(o *RuntimeOptions) {
 		o.EnableAutoRun = v
 	}
 }
 
 // ProcessQueueCapacity 任务处理流水线大小
-func (*_RuntimeOptionSetter) ProcessQueueCapacity(v int) RuntimeOptionSetter {
+func (*_RuntimeOption) ProcessQueueCapacity(v int) RuntimeOptionSetter {
 	return func(o *RuntimeOptions) {
 		if v <= 0 {
 			panic("ProcessQueueCapacity less equal 0 invalid")
@@ -61,7 +61,7 @@ func (*_RuntimeOptionSetter) ProcessQueueCapacity(v int) RuntimeOptionSetter {
 }
 
 // ProcessQueueTimeout 任务插入流水线超时时长
-func (*_RuntimeOptionSetter) ProcessQueueTimeout(v time.Duration) RuntimeOptionSetter {
+func (*_RuntimeOption) ProcessQueueTimeout(v time.Duration) RuntimeOptionSetter {
 	return func(o *RuntimeOptions) {
 		if v <= 0 {
 			panic("ProcessQueueTimeout less equal 0 invalid")
@@ -71,14 +71,14 @@ func (*_RuntimeOptionSetter) ProcessQueueTimeout(v time.Duration) RuntimeOptionS
 }
 
 // Frame 帧
-func (*_RuntimeOptionSetter) Frame(v runtime.Frame) RuntimeOptionSetter {
+func (*_RuntimeOption) Frame(v runtime.Frame) RuntimeOptionSetter {
 	return func(o *RuntimeOptions) {
 		o.Frame = v
 	}
 }
 
 // GCInterval GC间隔时长
-func (*_RuntimeOptionSetter) GCInterval(v time.Duration) RuntimeOptionSetter {
+func (*_RuntimeOption) GCInterval(v time.Duration) RuntimeOptionSetter {
 	return func(o *RuntimeOptions) {
 		if v <= 0 {
 			panic("GCInterval less equal 0 invalid")
