@@ -72,6 +72,19 @@ func (creator _EntityCreator) Build() (ec.Entity, error) {
 		return nil, fmt.Errorf("entity '%s' not registered", creator.prototype)
 	}
 
+	var addEntity func(entity ec.Entity) error
+
+	switch creator.accessibility {
+	case Local:
+		addEntity = runtimeCtx.GetEntityMgr().AddEntity
+	case Global:
+		addEntity = runtimeCtx.GetEntityMgr().AddGlobalEntity
+	case TryGlobal:
+		addEntity = runtimeCtx.GetEntityMgr().TryAddGlobalEntity
+	default:
+		return nil, errors.New("accessibility invalid")
+	}
+
 	opts := ec.EntityOptions{}
 	ec.EntityOption.Default()(&opts)
 
@@ -89,19 +102,6 @@ func (creator _EntityCreator) Build() (ec.Entity, error) {
 
 	entity := ec.UnsafeNewEntity(opts)
 	entityPt.InstallComponents(entity)
-
-	var addEntity func(entity ec.Entity) error
-
-	switch creator.accessibility {
-	case Local:
-		addEntity = runtimeCtx.GetEntityMgr().AddEntity
-	case Global:
-		addEntity = runtimeCtx.GetEntityMgr().AddGlobalEntity
-	case TryGlobal:
-		addEntity = runtimeCtx.GetEntityMgr().TryAddGlobalEntity
-	default:
-		return nil, errors.New("accessibility invalid")
-	}
 
 	if err := addEntity(entity); err != nil {
 		return nil, fmt.Errorf("runtime context add entity '%s:%d:%d' failed, %v", entity.GetPrototype(), entity.GetID(), entity.GetSerialNo(), err)
