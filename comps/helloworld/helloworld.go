@@ -17,5 +17,5 @@ func (comp *HelloWorld) Start() {
 }
 
 func (comp *HelloWorld) HelloWorld() {
-	fmt.Printf("[%s-%d-%d] Hello World\n", comp.GetEntity().GetPrototype(), comp.GetEntity().GetID(), comp.GetEntity().GetSerialNo())
+	fmt.Printf("I'm entity[%s:%d:%d], Hello World!\n", comp.GetEntity().GetPrototype(), comp.GetEntity().GetID(), comp.GetEntity().GetSerialNo())
 }

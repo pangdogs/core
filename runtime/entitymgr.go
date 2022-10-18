@@ -84,6 +84,7 @@ func (entityMgr *_EntityMgr) Init(runtimeCtx Context) {
 		panic("repeated init entity manager")
 	}
 
+	entityMgr.runtimeCtx = runtimeCtx
 	entityMgr.entityList.Init(runtimeCtx.GetFaceCache(), runtimeCtx)
 	entityMgr.entityMap = map[int64]_EntityInfo{}
 

@@ -70,7 +70,7 @@ func (creator _EntityCreator) Build() (ec.Entity, error) {
 	entityPt.InstallComponents(entity)
 
 	if err := runtimeCtx.GetEntityMgr().AddEntity(entity); err != nil {
-		return nil, fmt.Errorf("runtime context add entity '%s-%d-%d' failed, %v", entity.GetPrototype(), entity.GetID(), entity.GetSerialNo(), err)
+		return nil, fmt.Errorf("runtime context add entity '%s:%d:%d' failed, %v", entity.GetPrototype(), entity.GetID(), entity.GetSerialNo(), err)
 	}
 
 	return entity, nil

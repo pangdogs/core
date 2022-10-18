@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/pangdogs/galaxy"
-	"github.com/pangdogs/galaxy/pt"
-	"github.com/pangdogs/galaxy/service"
 	"github.com/pangdogs/galaxy/util"
 	"github.com/spf13/viper"
 	"os"
@@ -89,21 +87,22 @@ func (app *App) loadPtConfig(ptConfFile string) ServiceConfTab {
 }
 
 func (app *App) newService(ctx context.Context, servicePtName string, servicePtConf ServiceConf) galaxy.Service {
-	entityLib := pt.NewEntityLib()
-
-	for entityPtName, entityPtConf := range servicePtConf.EntityTab {
-		entityLib.Register(entityPtName, entityPtConf)
-	}
-
-	entityLib.Get("Daemon").New()
-
-	serviceCtx := service.NewContext(
-		service.ContextOption.Prototype(servicePtName),
-		service.ContextOption.NodeID(viper.GetInt64(fmt.Sprintf("%s.NodeID", servicePtName))),
-		service.ContextOption.Context(ctx),
-	)
-
-	return galaxy.NewService(serviceCtx)
+	//entityLib := pt.NewEntityLib()
+	//
+	//for entityPtName, entityPtConf := range servicePtConf.EntityTab {
+	//	entityLib.Register(entityPtName, entityPtConf)
+	//}
+	//
+	//entityLib.Get("Daemon").New()
+	//
+	//serviceCtx := service.NewContext(
+	//	service.ContextOption.Prototype(servicePtName),
+	//	service.ContextOption.NodeID(viper.GetInt64(fmt.Sprintf("%s.NodeID", servicePtName))),
+	//	service.ContextOption.Context(ctx),
+	//)
+	//
+	//return galaxy.NewService(serviceCtx)
+	return nil
 }
 
 //func (app *App) newSingleton(serviceCtx core.Runtime, servicePtName string, singleton []string) {
