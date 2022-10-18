@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	pt.RegisterComponent("", "demo组件", DemoComp{})
+	pt.RegisterComponent("DemoComp", "demo组件", DemoComp{})
 }
 
 type DemoComp struct {
@@ -17,17 +17,17 @@ type DemoComp struct {
 }
 
 func (comp *DemoComp) Awake() {
-	fmt.Printf("I'm entity[%s:%d:%d], DemoComp Awake.\n", comp.GetEntity().GetPrototype(), comp.GetEntity().GetID(), comp.GetEntity().GetSerialNo())
+	fmt.Printf("I'm entity[%s:%d:%d], %s Awake.\n", comp.GetEntity().GetPrototype(), comp.GetEntity().GetID(), comp.GetEntity().GetSerialNo(), comp.GetName())
 }
 
 func (comp *DemoComp) Start() {
-	fmt.Printf("I'm entity[%s:%d:%d], DemoComp Start.\n", comp.GetEntity().GetPrototype(), comp.GetEntity().GetID(), comp.GetEntity().GetSerialNo())
+	fmt.Printf("I'm entity[%s:%d:%d], %s Start.\n", comp.GetEntity().GetPrototype(), comp.GetEntity().GetID(), comp.GetEntity().GetSerialNo(), comp.GetName())
 }
 
 func (comp *DemoComp) Update() {
 	if comp.count%30 == 0 {
-		fmt.Printf("I'm entity[%s:%d:%d], DemoComp Update(%d).\n",
-			comp.GetEntity().GetPrototype(), comp.GetEntity().GetID(), comp.GetEntity().GetSerialNo(), comp.count)
+		fmt.Printf("I'm entity[%s:%d:%d], %s Update(%d).\n",
+			comp.GetEntity().GetPrototype(), comp.GetEntity().GetID(), comp.GetEntity().GetSerialNo(), comp.GetName(), comp.count)
 	}
 
 	if comp.count >= 300 {
@@ -37,12 +37,12 @@ func (comp *DemoComp) Update() {
 
 func (comp *DemoComp) LateUpdate() {
 	if comp.count%30 == 0 {
-		fmt.Printf("I'm entity[%s:%d:%d], DemoComp LateUpdate(%d).\n",
-			comp.GetEntity().GetPrototype(), comp.GetEntity().GetID(), comp.GetEntity().GetSerialNo(), comp.count)
+		fmt.Printf("I'm entity[%s:%d:%d], %s LateUpdate(%d).\n",
+			comp.GetEntity().GetPrototype(), comp.GetEntity().GetID(), comp.GetEntity().GetSerialNo(), comp.GetName(), comp.count)
 	}
 	comp.count++
 }
 
 func (comp *DemoComp) Shut() {
-	fmt.Printf("I'm entity[%s:%d:%d], DemoComp Shut.\n", comp.GetEntity().GetPrototype(), comp.GetEntity().GetID(), comp.GetEntity().GetSerialNo())
+	fmt.Printf("I'm entity[%s:%d:%d], %s Shut.\n", comp.GetEntity().GetPrototype(), comp.GetEntity().GetID(), comp.GetEntity().GetSerialNo(), comp.GetName())
 }
