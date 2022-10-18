@@ -1,4 +1,4 @@
-package compi
+package comp
 
 import (
 	"github.com/pangdogs/galaxy/util"

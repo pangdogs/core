@@ -35,14 +35,14 @@ func RegisterComponentCreator(compName, descr string, creator func() ec.Componen
 
 // UnregisterComponentPt 取消注册组件原型，线程安全。
 //
-//	@param compTag 组件标签，格式为组件所在包路径+组件名，例如：`github.com/pangdogs/galaxy/demo_ec/comps/helloworld/HelloWorldComp`。
+//	@param compTag 组件标签，格式为组件所在包路径+组件名，例如：`github.com/pangdogs/galaxy/demo_ec/comp/helloworld/HelloWorldComp`。
 func UnregisterComponentPt(compTag string) {
 	componentLib.UnregisterComponentPt(compTag)
 }
 
 // GetComponentPt 获取组件原型，线程安全。
 //
-//	@param compTag 组件标签，格式为组件所在包路径+组件名，例如：`github.com/pangdogs/galaxy/demo_ec/comps/helloworld/HelloWorldComp`。
+//	@param compTag 组件标签，格式为组件所在包路径+组件名，例如：`github.com/pangdogs/galaxy/demo_ec/comp/helloworld/HelloWorldComp`。
 //	@return 组件原型，可以用于创建组件。
 //	@return 是否存在。
 func GetComponentPt(compTag string) (ComponentPt, bool) {

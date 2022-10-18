@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/pangdogs/galaxy"
-	"github.com/pangdogs/galaxy/comps/helloworld"
+	"github.com/pangdogs/galaxy/comp/helloworld"
 	"github.com/pangdogs/galaxy/pt"
 	"github.com/pangdogs/galaxy/runtime"
 	"github.com/pangdogs/galaxy/service"
