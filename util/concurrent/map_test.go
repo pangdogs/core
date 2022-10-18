@@ -1,8 +1,6 @@
 package concurrent
 
 import (
-	"context"
-	"fmt"
 	"math/rand"
 	"reflect"
 	"runtime"
@@ -10,7 +8,6 @@ import (
 	"sync/atomic"
 	"testing"
 	"testing/quick"
-	"time"
 )
 
 type mapOp string
@@ -243,49 +240,4 @@ func TestMapRangeNestedCall(t *testing.T) { // Issue 46399
 	if length != 0 {
 		t.Fatalf("Unexpected sync.Map size, got %v want %v", length, 0)
 	}
-}
-
-func TestDeleteWithCompareValue(t *testing.T) {
-	m := Map[int, int]{}
-	ctx, cancel := context.WithCancel(context.Background())
-
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				break
-			}
-
-			for i := 0; i < 100; i++ {
-				m.Store(i, i*100)
-			}
-		}
-	}()
-
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				break
-			}
-
-			for i := 0; i < 100; i++ {
-				m.TryDelete(i, func(v int) bool {
-					return v == i*100
-				})
-			}
-		}
-	}()
-
-	time.Sleep(10 * time.Second)
-	cancel()
-
-	m.Range(func(k, v int) bool {
-		fmt.Printf("%v => %v\n", k, v)
-		return true
-	})
 }
