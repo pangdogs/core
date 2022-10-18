@@ -24,7 +24,7 @@ func (pt *EntityPt) New(optSetter ...ec.EntityOptionSetter) ec.Entity {
 	entity := ec.UnsafeNewEntity(opts)
 
 	for i := range pt.compPts {
-		entity.AddComponent(pt.compPts[i].Interface, pt.compPts[i].New())
+		entity.AddComponent(pt.compPts[i].Name, pt.compPts[i].New())
 	}
 
 	return entity
@@ -37,6 +37,6 @@ func (pt *EntityPt) InstallComponents(entity ec.Entity) {
 	}
 
 	for i := range pt.compPts {
-		entity.AddComponent(pt.compPts[i].Interface, pt.compPts[i].New())
+		entity.AddComponent(pt.compPts[i].Name, pt.compPts[i].New())
 	}
 }

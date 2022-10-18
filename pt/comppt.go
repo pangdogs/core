@@ -14,7 +14,7 @@ const (
 
 // ComponentPt 组件原型
 type ComponentPt struct {
-	Interface     string // 组件接口名称
+	Name          string // 组件名称
 	Tag           string // 组件标签
 	Description   string // 组件描述信息
 	constructType _CompConstructType
@@ -35,7 +35,7 @@ func (pt *ComponentPt) New() ec.Component {
 
 	case _CompConstructType_Creator:
 		return pt.creator()
-		
+
 	default:
 		panic("not support construct type")
 	}

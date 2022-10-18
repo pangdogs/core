@@ -16,7 +16,7 @@ func init() {
 // RegisterComponent 注册组件原型，共有RegisterComp()与RegisterCreator()两个注册方法，
 // 二者选其一使用即可。一般在init()函数中使用，线程安全。
 //
-//	@param compName 组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
+//	@param compName 组件名称，一般是组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
 //	@param descr 组件功能的描述说明。
 //	@param comp 组件对象。
 func RegisterComponent(compName, descr string, comp any) {
@@ -26,7 +26,7 @@ func RegisterComponent(compName, descr string, comp any) {
 // RegisterComponentCreator 注册组件构建函数，共有RegisterComp()与RegisterCreator()两个注册方法，
 // 二者选其一使用即可。一般在init()函数中使用，线程安全。
 //
-//	@param compName 组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
+//	@param compName 组件名称，一般是组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
 //	@param descr 组件功能的描述说明。
 //	@param creator 组件构建函数。
 func RegisterComponentCreator(compName, descr string, creator func() ec.Component) {
@@ -136,20 +136,20 @@ func (lib *_ComponentLib) register(compName, descr string, constructType _CompCo
 		panic("register anonymous component not allowed")
 	}
 
-	tag := _tfComp.PkgPath() + "/" + _tfComp.Name()
+	compTag := _tfComp.PkgPath() + "/" + _tfComp.Name()
 
 	if !reflect.PointerTo(_tfComp).Implements(reflect.TypeOf((*ec.Component)(nil)).Elem()) {
-		panic(fmt.Errorf("component '%s' not implement demo_ec.Component", tag))
+		panic(fmt.Errorf("component '%s' not implement demo_ec.Component", compTag))
 	}
 
-	_, ok := lib.compPtMap[tag]
+	_, ok := lib.compPtMap[compTag]
 	if ok {
-		panic(fmt.Errorf("component '%s' is already registered", tag))
+		panic(fmt.Errorf("component '%s' is already registered", compTag))
 	}
 
-	lib.compPtMap[tag] = ComponentPt{
-		Interface:     compName,
-		Tag:           tag,
+	lib.compPtMap[compTag] = ComponentPt{
+		Name:          compName,
+		Tag:           compTag,
 		Description:   descr,
 		constructType: constructType,
 		tfComp:        tfComp,
