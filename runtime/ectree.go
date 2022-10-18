@@ -132,7 +132,7 @@ func (ecTree *ECTree) AddChild(parentID, childID int64) error {
 		ecTree.ecTree[parentID] = node
 	}
 
-	element := node.Children.PushBack(util.NewFacePair[interface{}](child, child))
+	element := node.Children.PushBack(util.NewFacePair[any](child, child))
 
 	ecTree.ecTree[childID] = _ECNode{
 		Parent:          parent,

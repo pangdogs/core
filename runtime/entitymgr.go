@@ -56,6 +56,11 @@ type IEntityMgr interface {
 	eventEntityMgrNotifyECTreeRemoveEntity() localevent.IEvent
 }
 
+func entityExist(entity ec.Entity) bool {
+	_, ok := EntityContext(entity).GetEntityMgr().GetEntity(entity.GetID())
+	return ok
+}
+
 type _EntityInfo struct {
 	Element    *container.Element[util.FaceAny]
 	Hooks      [3]localevent.Hook
@@ -217,7 +222,7 @@ func (entityMgr *_EntityMgr) addEntity(entity ec.Entity, add2ServiceCtx func() e
 	defer _entity.SetAdding(false)
 
 	entityInfo := _EntityInfo{}
-	entityInfo.Element = entityMgr.entityList.PushBack(util.NewFacePair[interface{}](entity, entity))
+	entityInfo.Element = entityMgr.entityList.PushBack(util.NewFacePair[any](entity, entity))
 
 	entityInfo.Hooks[0] = localevent.BindEvent[ec.EventCompMgrAddComponents](entity.EventCompMgrAddComponents(), entityMgr)
 	entityInfo.Hooks[1] = localevent.BindEvent[ec.EventCompMgrRemoveComponent](entity.EventCompMgrRemoveComponent(), entityMgr)

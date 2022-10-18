@@ -56,7 +56,7 @@ func CallOuterNoRet(autoRecover bool, reportError chan error, fun func()) (excep
 	return
 }
 
-func errorAddStackTrace(info interface{}) error {
+func errorAddStackTrace(info any) error {
 	stackBuf := make([]byte, 4096)
 	n := runtime.Stack(stackBuf, false)
 	return fmt.Errorf("Error: %v\nStack: %s\n", info, stackBuf[:n])

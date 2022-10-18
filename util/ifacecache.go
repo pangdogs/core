@@ -53,5 +53,5 @@ func (f *Face[T]) IsNil() bool {
 	return Iface2Cache[T](f.Iface) == NilIfaceCache || f.Cache == NilIfaceCache
 }
 
-// FaceAny interface{}面
-type FaceAny = Face[interface{}]
+// FaceAny any面
+type FaceAny = Face[any]

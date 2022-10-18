@@ -19,7 +19,7 @@ func EntityContext(entity ec.Entity) Context {
 	return util.Cache2Iface[Context](ctx)
 }
 
-// ComponentContext 从组建上获取运行时上下文
+// ComponentContext 从组件上获取运行时上下文
 func ComponentContext(comp ec.Component) Context {
 	if comp == nil {
 		panic("nil comp")

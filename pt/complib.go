@@ -19,7 +19,7 @@ func init() {
 //	@param compName 组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
 //	@param descr 组件功能的描述说明。
 //	@param comp 组件对象。
-func RegisterComponent(compName, descr string, comp interface{}) {
+func RegisterComponent(compName, descr string, comp any) {
 	componentLib.RegisterComponent(compName, descr, comp)
 }
 
@@ -67,7 +67,7 @@ func (lib *_ComponentLib) init() {
 	}
 }
 
-func (lib *_ComponentLib) RegisterComponent(compName, descr string, comp interface{}) {
+func (lib *_ComponentLib) RegisterComponent(compName, descr string, comp any) {
 	if compName == "" {
 		panic("empty compName")
 	}

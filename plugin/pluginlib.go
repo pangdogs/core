@@ -41,7 +41,7 @@ func RegisterPlugin[T any](pluginLib PluginLib, pluginName string, plugin T) {
 	if pluginLib == nil {
 		panic("nil pluginLib")
 	}
-	pluginLib.Register(pluginName, util.NewFacePair[interface{}](plugin, plugin))
+	pluginLib.Register(pluginName, util.NewFacePair[any](plugin, plugin))
 }
 
 // GetPlugin 获取插件。

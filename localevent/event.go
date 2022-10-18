@@ -21,7 +21,7 @@ const (
 type IEvent interface {
 	emit(fun func(delegate util.IfaceCache) bool)
 	newHook(delegateFace util.FaceAny, priority int32) Hook
-	removeDelegate(delegate interface{})
+	removeDelegate(delegate any)
 	gc()
 }
 
@@ -174,7 +174,7 @@ func (event *Event) newHook(delegateFace util.FaceAny, priority int32) Hook {
 	return hook
 }
 
-func (event *Event) removeDelegate(delegate interface{}) {
+func (event *Event) removeDelegate(delegate any) {
 	event.subscribers.ReverseTraversal(func(other *container.Element[Hook]) bool {
 		if other.Value.delegateFace.Iface == delegate {
 			other.Escape()

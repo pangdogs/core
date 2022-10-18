@@ -20,7 +20,7 @@ func (ue _UnsafeEvent) NewHook(delegateFace util.FaceAny, priority int32) Hook {
 	return ue.newHook(delegateFace, priority)
 }
 
-func (ue _UnsafeEvent) RemoveDelegate(delegate interface{}) {
+func (ue _UnsafeEvent) RemoveDelegate(delegate any) {
 	ue.removeDelegate(delegate)
 }
 

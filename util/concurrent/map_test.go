@@ -170,7 +170,7 @@ func TestConcurrentRange(t *testing.T) {
 }
 
 func TestIssue40999(t *testing.T) {
-	var m Map[*int, interface{}]
+	var m Map[*int, any]
 
 	// Since the miss-counting in missLocked (via Delete)
 	// compares the miss count with len(m.dirty),
