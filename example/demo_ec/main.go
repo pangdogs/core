@@ -13,7 +13,7 @@ import (
 func main() {
 	// 创建实体库，注册实体原型
 	entityLib := pt.NewEntityLib()
-	entityLib.Register("Demo", []string{
+	entityLib.Register("ECDemo", []string{
 		util.TypeFullName[helloworld.HelloWorld](),
 		util.TypeFullName[DemoComp](),
 	})
@@ -33,7 +33,8 @@ func main() {
 	runtime.GetRuntimeCtx().SafeCallNoRetNoWait(func() {
 		entity, err := galaxy.EntityCreator().
 			RuntimeCtx(runtime.GetRuntimeCtx()).
-			Prototype("Demo").
+			Prototype("ECDemo").
+			Accessibility(galaxy.TryGlobal).
 			Build()
 		if err != nil {
 			panic(err)
