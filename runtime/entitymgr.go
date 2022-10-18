@@ -56,11 +56,6 @@ type IEntityMgr interface {
 	eventEntityMgrNotifyECTreeRemoveEntity() localevent.IEvent
 }
 
-func entityExist(entity ec.Entity) bool {
-	_, ok := EntityContext(entity).GetEntityMgr().GetEntity(entity.GetID())
-	return ok
-}
-
 type _EntityInfo struct {
 	Element    *container.Element[util.FaceAny]
 	Hooks      [3]localevent.Hook

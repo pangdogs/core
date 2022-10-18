@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"github.com/pangdogs/galaxy/ec"
+	"github.com/pangdogs/galaxy/service"
 	"github.com/pangdogs/galaxy/util"
 )
 
@@ -26,4 +27,12 @@ func ComponentContext(comp ec.Component) Context {
 	}
 
 	return EntityContext(comp.GetEntity())
+}
+
+func entityServiceContext(entity ec.Entity) service.Context {
+	return EntityContext(entity).GetServiceCtx()
+}
+
+func componentServiceContext(comp ec.Component) service.Context {
+	return ComponentContext(comp).GetServiceCtx()
 }
