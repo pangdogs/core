@@ -4,7 +4,7 @@ import (
 	"github.com/pangdogs/galaxy/util"
 )
 
-// HelloWorld HelloWorld组件接口名称
+// HelloWorld HelloWorld组件名称
 var HelloWorld = util.TypeFullName[IHelloWorld]()
 
 // IHelloWorld HelloWorld组件接口定义

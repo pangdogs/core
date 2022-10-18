@@ -38,9 +38,9 @@ func (_runtime *RuntimeBehavior) Stop() {
 func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
 	if pluginLib := runtime.UnsafeContext(_runtime.ctx).GetOptions().PluginLib; pluginLib != nil {
 		pluginLib.Range(func(pluginName string, pluginFace util.FaceAny) bool {
-			if pluginInit, ok := pluginFace.Iface.(_PluginInit); ok {
+			if pluginInit, ok := pluginFace.Iface.(_RuntimePluginInit); ok {
 				internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-					pluginInit.Init()
+					pluginInit.Init(_runtime.ctx)
 				})
 			}
 			return true

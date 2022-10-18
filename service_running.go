@@ -31,9 +31,9 @@ func (_service *ServiceBehavior) Stop() {
 func (_service *ServiceBehavior) running(shutChan chan struct{}) {
 	if pluginLib := service.UnsafeContext(_service.ctx).GetOptions().PluginLib; pluginLib != nil {
 		pluginLib.Range(func(pluginName string, pluginFace util.FaceAny) bool {
-			if pluginInit, ok := pluginFace.Iface.(_PluginInit); ok {
+			if pluginInit, ok := pluginFace.Iface.(_ServicePluginInit); ok {
 				internal.CallOuterNoRet(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
-					pluginInit.Init()
+					pluginInit.Init(_service.ctx)
 				})
 			}
 			return true
