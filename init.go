@@ -7,5 +7,5 @@ import (
 )
 
 func init() {
-	pt.RegisterComponent(compi.HelloWorld, "组件（Component）Start时，在控制台打印`Hello World`", helloworld.HelloWorld{})
+	pt.RegisterComponent(compi.HelloWorld, "组件Start时，在控制台打印`Hello World`", helloworld.HelloWorld{})
 }
