@@ -26,19 +26,21 @@ func (comp *DemoComp) Start() {
 
 func (comp *DemoComp) Update() {
 	if comp.count%30 == 0 {
-		fmt.Printf("I'm entity[%s:%d:%d], DemoComp Update.\n", comp.GetEntity().GetPrototype(), comp.GetEntity().GetID(), comp.GetEntity().GetSerialNo())
+		fmt.Printf("I'm entity[%s:%d:%d], DemoComp Update(%d).\n",
+			comp.GetEntity().GetPrototype(), comp.GetEntity().GetID(), comp.GetEntity().GetSerialNo(), comp.count)
 	}
 
 	if comp.count >= 300 {
 		service.EntityContext(comp.GetEntity()).GetCancelFunc()()
 	}
-	comp.count++
 }
 
 func (comp *DemoComp) LateUpdate() {
 	if comp.count%30 == 0 {
-		fmt.Printf("I'm entity[%s:%d:%d], DemoComp LateUpdate.\n", comp.GetEntity().GetPrototype(), comp.GetEntity().GetID(), comp.GetEntity().GetSerialNo())
+		fmt.Printf("I'm entity[%s:%d:%d], DemoComp LateUpdate(%d).\n",
+			comp.GetEntity().GetPrototype(), comp.GetEntity().GetID(), comp.GetEntity().GetSerialNo(), comp.count)
 	}
+	comp.count++
 }
 
 func (comp *DemoComp) Shut() {
