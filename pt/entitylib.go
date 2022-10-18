@@ -9,8 +9,8 @@ type EntityLib interface {
 	// Register 注册实体原型。
 	//
 	//	@param prototype 实体原型名称。
-	//	@param compTags 组件标签列表。
-	Register(prototype string, compTags []string)
+	//	@param compPaths 组件标签列表。
+	Register(prototype string, compPaths []string)
 
 	// Unregister 取消注册实体原型。
 	//
@@ -47,7 +47,7 @@ func (lib *_EntityLib) init() {
 	}
 }
 
-func (lib *_EntityLib) Register(prototype string, compTags []string) {
+func (lib *_EntityLib) Register(prototype string, compPaths []string) {
 	_, ok := lib.entityPtMap[prototype]
 	if ok {
 		panic(fmt.Errorf("entity '%s' is already registered", prototype))
@@ -57,10 +57,10 @@ func (lib *_EntityLib) Register(prototype string, compTags []string) {
 		Prototype: prototype,
 	}
 
-	for i := range compTags {
-		compPt, ok := GetComponentPt(compTags[i])
+	for i := range compPaths {
+		compPt, ok := GetComponentPt(compPaths[i])
 		if !ok {
-			panic(fmt.Errorf("entity '%s' component '%s' not registered", prototype, compTags[i]))
+			panic(fmt.Errorf("entity '%s' component '%s' not registered", prototype, compPaths[i]))
 		}
 		entityPt.compPts = append(entityPt.compPts, compPt)
 	}

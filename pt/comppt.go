@@ -15,7 +15,7 @@ const (
 // ComponentPt 组件原型
 type ComponentPt struct {
 	Name          string // 组件名称
-	Tag           string // 组件标签
+	Path          string // 组件路径
 	Description   string // 组件描述信息
 	constructType _CompConstructType
 	tfComp        reflect.Type

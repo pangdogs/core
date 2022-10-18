@@ -80,7 +80,7 @@ func (ecTree *ECTree) init(runtimeCtx Context, masterTree bool) {
 	}
 
 	if ecTree.inited {
-		panic("repeated init demo_ec-tree")
+		panic("repeated init ec-tree")
 	}
 
 	ecTree.runtimeCtx = runtimeCtx

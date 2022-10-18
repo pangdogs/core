@@ -17,7 +17,7 @@ func (app *App) printComp() {
 	})
 
 	sort.Slice(compPts, func(i, j int) bool {
-		return strings.Compare(compPts[i].Name+compPts[i].Tag, compPts[j].Name+compPts[j].Tag) < 0
+		return strings.Compare(compPts[i].Name+compPts[i].Path, compPts[j].Name+compPts[j].Path) < 0
 	})
 
 	compPtsData, err := json.MarshalIndent(compPts, "", "\t")

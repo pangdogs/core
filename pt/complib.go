@@ -35,18 +35,18 @@ func RegisterComponentCreator(compName, descr string, creator func() ec.Componen
 
 // UnregisterComponentPt 取消注册组件原型，线程安全。
 //
-//	@param compTag 组件标签，格式为组件所在包路径+组件名，例如：`github.com/pangdogs/galaxy/demo_ec/comp/helloworld/HelloWorldComp`。
-func UnregisterComponentPt(compTag string) {
-	componentLib.UnregisterComponentPt(compTag)
+//	@param compPath 组件路径，格式为组件所在包路径+组件名，例如：`github.com/pangdogs/galaxy/ec/comp/helloworld/HelloWorldComp`。
+func UnregisterComponentPt(compPath string) {
+	componentLib.UnregisterComponentPt(compPath)
 }
 
 // GetComponentPt 获取组件原型，线程安全。
 //
-//	@param compTag 组件标签，格式为组件所在包路径+组件名，例如：`github.com/pangdogs/galaxy/demo_ec/comp/helloworld/HelloWorldComp`。
+//	@param compPath 组件路径，格式为组件所在包路径+组件名，例如：`github.com/pangdogs/galaxy/ec/comp/helloworld/HelloWorldComp`。
 //	@return 组件原型，可以用于创建组件。
 //	@return 是否存在。
-func GetComponentPt(compTag string) (ComponentPt, bool) {
-	return componentLib.Get(compTag)
+func GetComponentPt(compPath string) (ComponentPt, bool) {
+	return componentLib.Get(compPath)
 }
 
 // RangeComponentPts 遍历所有已注册的组件原型，线程安全。
@@ -83,18 +83,18 @@ func (lib *_ComponentLib) RegisterCreator(compName, descr string, creator func()
 	lib.register(compName, descr, _CompConstructType_Creator, nil, creator)
 }
 
-func (lib *_ComponentLib) UnregisterComponentPt(compTag string) {
+func (lib *_ComponentLib) UnregisterComponentPt(compPath string) {
 	lib.mutex.Lock()
 	defer lib.mutex.Unlock()
 
-	delete(lib.compPtMap, compTag)
+	delete(lib.compPtMap, compPath)
 }
 
-func (lib *_ComponentLib) Get(compTag string) (ComponentPt, bool) {
+func (lib *_ComponentLib) Get(compPath string) (ComponentPt, bool) {
 	lib.mutex.RLock()
 	defer lib.mutex.RUnlock()
 
-	compPt, ok := lib.compPtMap[compTag]
+	compPt, ok := lib.compPtMap[compPath]
 	return compPt, ok
 }
 
@@ -136,20 +136,20 @@ func (lib *_ComponentLib) register(compName, descr string, constructType _CompCo
 		panic("register anonymous component not allowed")
 	}
 
-	compTag := _tfComp.PkgPath() + "/" + _tfComp.Name()
+	compPath := _tfComp.PkgPath() + "/" + _tfComp.Name()
 
 	if !reflect.PointerTo(_tfComp).Implements(reflect.TypeOf((*ec.Component)(nil)).Elem()) {
-		panic(fmt.Errorf("component '%s' not implement demo_ec.Component", compTag))
+		panic(fmt.Errorf("component '%s' not implement ec.Component", compPath))
 	}
 
-	_, ok := lib.compPtMap[compTag]
+	_, ok := lib.compPtMap[compPath]
 	if ok {
-		panic(fmt.Errorf("component '%s' is already registered", compTag))
+		panic(fmt.Errorf("component '%s' is already registered", compPath))
 	}
 
-	lib.compPtMap[compTag] = ComponentPt{
+	lib.compPtMap[compPath] = ComponentPt{
 		Name:          compName,
-		Tag:           compTag,
+		Path:          compPath,
 		Description:   descr,
 		constructType: constructType,
 		tfComp:        tfComp,
