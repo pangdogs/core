@@ -18,11 +18,11 @@ type EntityOptions struct {
 	HookCache                    *container.Cache[localevent.Hook] // HookCache用于提高性能，通常传入运行时上下文选项中的HookCache
 }
 
-// EntityOption 创建实体的选项
-var EntityOption = &_EntityOption{}
-
 // EntityOptionSetter 创建实体的选项设置器
 type EntityOptionSetter func(o *EntityOptions)
+
+// EntityOption 创建实体的选项
+var EntityOption = &_EntityOption{}
 
 type _EntityOption struct{}
 

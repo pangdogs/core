@@ -22,11 +22,11 @@ type ContextOptions struct {
 	StoppedCallback  func(serviceCtx Context) // 完全停止运行时回调函数
 }
 
-// ContextOption 创建服务上下文的选项
-var ContextOption = &_ContextOption{}
-
 // ContextOptionSetter 创建服务上下文的选项设置器
 type ContextOptionSetter func(o *ContextOptions)
+
+// ContextOption 创建服务上下文的选项
+var ContextOption = &_ContextOption{}
 
 type _ContextOption struct{}
 

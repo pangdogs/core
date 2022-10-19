@@ -22,11 +22,11 @@ type ContextOptions struct {
 	HookCache        *container.Cache[localevent.Hook] // Hook缓存，用于提高性能
 }
 
-// ContextOption 创建运行时上下文的选项
-var ContextOption = &_ContextOption{}
-
 // ContextOptionSetter 创建运行时上下文的选项设置器
 type ContextOptionSetter func(o *ContextOptions)
+
+// ContextOption 创建运行时上下文的选项
+var ContextOption = &_ContextOption{}
 
 type _ContextOption struct{}
 

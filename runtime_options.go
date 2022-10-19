@@ -16,11 +16,11 @@ type RuntimeOptions struct {
 	GCInterval           time.Duration      // GC间隔时长
 }
 
-// RuntimeOption 创建运行时的选项
-var RuntimeOption = &_RuntimeOption{}
-
 // RuntimeOptionSetter 创建运行时的选项设置器
 type RuntimeOptionSetter func(o *RuntimeOptions)
+
+// RuntimeOption 创建运行时的选项
+var RuntimeOption = &_RuntimeOption{}
 
 type _RuntimeOption struct{}
 
