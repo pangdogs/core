@@ -92,7 +92,6 @@ func (creator _EntityCreator) Build() (ec.Entity, error) {
 		creator.optSetters[i](&opts)
 	}
 
-	opts.Prototype = creator.prototype
 	if opts.FaceCache == nil {
 		opts.FaceCache = runtimeCtx.GetFaceCache()
 	}
@@ -100,8 +99,7 @@ func (creator _EntityCreator) Build() (ec.Entity, error) {
 		opts.HookCache = runtimeCtx.GetHookCache()
 	}
 
-	entity := ec.UnsafeNewEntity(opts)
-	entityPt.InstallComponents(entity)
+	entity := entityPt.UnsafeNew(opts)
 
 	if err := addEntity(entity); err != nil {
 		return nil, fmt.Errorf("runtime context add entity '%s:%d:%d' failed, %v", entity.GetPrototype(), entity.GetID(), entity.GetSerialNo(), err)
