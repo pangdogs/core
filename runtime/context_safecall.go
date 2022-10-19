@@ -9,6 +9,9 @@ import (
 // SafeRet 安全调用结果
 type SafeRet = internal.SafeRet
 
+// Callee 安全调用接收者
+type Callee = internal.Callee
+
 // _SafeCall 安全调用
 type _SafeCall interface {
 	internal.SafeCall

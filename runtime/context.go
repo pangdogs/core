@@ -74,7 +74,7 @@ type ContextBehavior struct {
 	frame      Frame
 	entityMgr  _EntityMgr
 	ecTree     ECTree
-	callee     Callee
+	callee     internal.Callee
 	gcList     []container.GC
 	innerGC    _ContextInnerGC
 }
