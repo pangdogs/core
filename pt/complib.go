@@ -33,11 +33,11 @@ func RegisterComponentCreator(compName, descr string, creator func() ec.Componen
 	componentLib.RegisterCreator(compName, descr, creator)
 }
 
-// UnregisterComponentPt 取消注册组件原型，线程安全。
+// DeregisterComponentPt 取消注册组件原型，线程安全。
 //
 //	@param compPath 组件路径，格式为组件所在包路径+组件名，例如：`github.com/pangdogs/galaxy/ec/comp/helloworld/HelloWorldComp`。
-func UnregisterComponentPt(compPath string) {
-	componentLib.UnregisterComponentPt(compPath)
+func DeregisterComponentPt(compPath string) {
+	componentLib.DeregisterComponentPt(compPath)
 }
 
 // GetComponentPt 获取组件原型，线程安全。
@@ -83,7 +83,7 @@ func (lib *_ComponentLib) RegisterCreator(compName, descr string, creator func()
 	lib.register(compName, descr, _CompConstructType_Creator, nil, creator)
 }
 
-func (lib *_ComponentLib) UnregisterComponentPt(compPath string) {
+func (lib *_ComponentLib) DeregisterComponentPt(compPath string) {
 	lib.mutex.Lock()
 	defer lib.mutex.Unlock()
 

@@ -14,10 +14,10 @@ type PluginLib interface {
 	//	@param pluginFace 插件Face。
 	Register(pluginName string, pluginFace util.FaceAny)
 
-	// Unregister 取消注册插件。
+	// Deregister 取消注册插件。
 	//
 	//	@param pluginName 插件名称。
-	Unregister(pluginName string)
+	Deregister(pluginName string)
 
 	// Get 获取插件。
 	//
@@ -91,7 +91,7 @@ func (lib *_PluginLib) Register(pluginName string, pluginFace util.FaceAny) {
 	lib.pluginMap[pluginName] = pluginFace
 }
 
-func (lib *_PluginLib) Unregister(pluginName string) {
+func (lib *_PluginLib) Deregister(pluginName string) {
 	delete(lib.pluginMap, pluginName)
 }
 

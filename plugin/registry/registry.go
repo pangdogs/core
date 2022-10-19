@@ -1,13 +1,17 @@
 package registry
 
-import "github.com/pangdogs/galaxy/service"
+import (
+	"context"
+	"time"
+)
 
+// Registry 分布式服务注册器
 type Registry interface {
-	Register(Service, ...RegisterOption) error
-	Deregister(Service, ...DeregisterOption) error
-	GetService(string, ...GetOption) ([]Service, error)
-	ListServices(...ListOption) ([]Service, error)
-	Watch(...WatchOption) (Watcher, error)
+	Register(ctx context.Context, service Service, ttl time.Duration) error
+	Deregister(ctx context.Context, service Service) error
+	GetService(ctx context.Context, serviceName string) ([]Service, error)
+	ListServices(ctx context.Context) ([]Service, error)
+	Watch(ctx context.Context, serviceName string) (Watcher, error)
 }
 
 type Service struct {
@@ -35,23 +39,4 @@ type Value struct {
 	Name   string   `json:"name"`
 	Type   string   `json:"type"`
 	Values []*Value `json:"values"`
-}
-
-type Option func(*Options)
-
-type RegisterOption func(*RegisterOptions)
-
-type WatchOption func(*WatchOptions)
-
-type DeregisterOption func(*DeregisterOptions)
-
-type GetOption func(*GetOptions)
-
-type ListOption func(*ListOptions)
-
-type EtcdRegistry struct {
-}
-
-func (r EtcdRegistry) Init(ctx service.Context) {
-
 }

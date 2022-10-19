@@ -12,10 +12,10 @@ type EntityLib interface {
 	//	@param compPaths 组件标签列表。
 	Register(prototype string, compPaths []string)
 
-	// Unregister 取消注册实体原型。
+	// Deregister 取消注册实体原型。
 	//
 	//	@param prototype 实体原型名称。
-	Unregister(prototype string)
+	Deregister(prototype string)
 
 	// Get 获取实体原型
 	//
@@ -68,7 +68,7 @@ func (lib *_EntityLib) Register(prototype string, compPaths []string) {
 	lib.entityPtMap[prototype] = entityPt
 }
 
-func (lib *_EntityLib) Unregister(prototype string) {
+func (lib *_EntityLib) Deregister(prototype string) {
 	delete(lib.entityPtMap, prototype)
 }
 
