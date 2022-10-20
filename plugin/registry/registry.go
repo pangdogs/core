@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-// Registry 分布式服务注册器
 type Registry interface {
 	Register(ctx context.Context, service Service, ttl time.Duration) error
 	Deregister(ctx context.Context, service Service) error
@@ -18,8 +17,8 @@ type Service struct {
 	Name      string            `json:"name"`
 	Version   string            `json:"version"`
 	Metadata  map[string]string `json:"metadata"`
-	Endpoints []*Endpoint       `json:"endpoints"`
-	Nodes     []*Node           `json:"nodes"`
+	Endpoints []Endpoint        `json:"endpoints"`
+	Nodes     []Node            `json:"nodes"`
 }
 
 type Node struct {
@@ -36,7 +35,7 @@ type Endpoint struct {
 }
 
 type Value struct {
-	Name   string   `json:"name"`
-	Type   string   `json:"type"`
-	Values []*Value `json:"values"`
+	Name   string  `json:"name"`
+	Type   string  `json:"type"`
+	Values []Value `json:"values"`
 }
