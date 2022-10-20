@@ -25,7 +25,9 @@ func main() {
 
 	// 创建运行时上下文与运行时
 	runtime := galaxy.NewRuntime(
-		runtime.NewContext(serviceCtx),
+		runtime.NewContext(serviceCtx, runtime.ContextOption.StoppedCallback(func(runtime.Context) {
+			serviceCtx.GetCancelFunc()()
+		})),
 		galaxy.RuntimeOption.Frame(runtime.NewFrame(30, 300, false)),
 		galaxy.RuntimeOption.EnableAutoRun(true),
 	)

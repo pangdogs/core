@@ -4,6 +4,7 @@ import (
 	"github.com/pangdogs/galaxy/internal"
 	"github.com/pangdogs/galaxy/service"
 	"github.com/pangdogs/galaxy/util"
+	"time"
 )
 
 // Run 运行，返回的channel用于线程同步，可以阻塞等待至运行结束
@@ -80,8 +81,12 @@ func (_service *ServiceBehavior) running(shutChan chan struct{}) {
 		})
 	}
 
-	select {
-	case <-_service.ctx.Done():
-		return
+	for {
+		select {
+		case <-_service.ctx.Done():
+			return
+		default:
+			time.Sleep(1 * time.Second)
+		}
 	}
 }
