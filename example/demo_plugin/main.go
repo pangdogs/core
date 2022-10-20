@@ -30,10 +30,7 @@ func main() {
 
 	// 创建运行时上下文与运行时
 	runtime := galaxy.NewRuntime(
-		runtime.NewContext(serviceCtx,
-			runtime.ContextOption.AutoRecover(true),
-			runtime.ContextOption.ReportError(make(chan error, 100)),
-		),
+		runtime.NewContext(serviceCtx),
 		galaxy.RuntimeOption.Frame(runtime.NewFrame(30, 0, false)),
 		galaxy.RuntimeOption.EnableAutoRun(true),
 	)
@@ -51,15 +48,6 @@ func main() {
 
 		fmt.Printf("create entity[%s:%d:%d] finish\n", entity.GetPrototype(), entity.GetID(), entity.GetSerialNo())
 	})
-
-	go func() {
-		for {
-			select {
-			case err := <-runtime.GetRuntimeCtx().GetReportError():
-				fmt.Println(err)
-			}
-		}
-	}()
 
 	service := galaxy.NewService(serviceCtx)
 

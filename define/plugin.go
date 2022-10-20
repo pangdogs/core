@@ -19,28 +19,28 @@ func (p _Plugin[PT, OPT]) Name() string {
 // Register 生成插件注册函数
 func (p _Plugin[PT, OPT]) Register(creator func(...OPT) PT) func(plugin.PluginLib, ...OPT) {
 	return func(lib plugin.PluginLib, options ...OPT) {
-		plugin.RegisterPlugin[PT](lib, p.name, creator(options...))
+		plugin.RegisterPlugin[PT](lib, p.Name(), creator(options...))
 	}
 }
 
 // Deregister 生成插件取消注册函数
 func (p _Plugin[PT, OPT]) Deregister() func(plugin.PluginLib) {
 	return func(lib plugin.PluginLib) {
-		lib.Deregister(p.name)
+		lib.Deregister(p.Name())
 	}
 }
 
 // ServiceGet 生成从服务上下文中获取插件函数
 func (p _Plugin[PT, OPT]) ServiceGet() func(service.Context) PT {
 	return func(ctx service.Context) PT {
-		return service.Plugin[PT](ctx, p.name)
+		return service.Plugin[PT](ctx, p.Name())
 	}
 }
 
 // RuntimeGet 生成从运行时上下文中获取插件函数
 func (p _Plugin[PT, OPT]) RuntimeGet() func(runtime.Context) PT {
 	return func(ctx runtime.Context) PT {
-		return runtime.Plugin[PT](ctx, p.name)
+		return runtime.Plugin[PT](ctx, p.Name())
 	}
 }
 
