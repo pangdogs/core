@@ -2,40 +2,40 @@ package main
 
 import (
 	"fmt"
+	"github.com/pangdogs/galaxy/define"
 	"github.com/pangdogs/galaxy/ec"
 	"github.com/pangdogs/galaxy/pt"
-	"github.com/pangdogs/galaxy/service"
 )
 
 func init() {
-	pt.RegisterComponent("DemoComp", "demo组件", DemoComp{})
+	pt.RegisterComponent(DemoComp, "demo组件", _DemoComp{})
 }
 
-type DemoComp struct {
+type IDemoComp interface{}
+
+var DemoComp = define.Component[IDemoComp]().Name()
+
+type _DemoComp struct {
 	ec.ComponentBehavior
 	count int
 }
 
-func (comp *DemoComp) Awake() {
+func (comp *_DemoComp) Awake() {
 	fmt.Printf("I'm entity[%s:%d:%d], %s Awake.\n", comp.GetEntity().GetPrototype(), comp.GetEntity().GetID(), comp.GetEntity().GetSerialNo(), comp.GetName())
 }
 
-func (comp *DemoComp) Start() {
+func (comp *_DemoComp) Start() {
 	fmt.Printf("I'm entity[%s:%d:%d], %s Start.\n", comp.GetEntity().GetPrototype(), comp.GetEntity().GetID(), comp.GetEntity().GetSerialNo(), comp.GetName())
 }
 
-func (comp *DemoComp) Update() {
+func (comp *_DemoComp) Update() {
 	if comp.count%30 == 0 {
 		fmt.Printf("I'm entity[%s:%d:%d], %s Update(%d).\n",
 			comp.GetEntity().GetPrototype(), comp.GetEntity().GetID(), comp.GetEntity().GetSerialNo(), comp.GetName(), comp.count)
 	}
-
-	if comp.count >= 300 {
-		service.EntityContext(comp.GetEntity()).GetCancelFunc()()
-	}
 }
 
-func (comp *DemoComp) LateUpdate() {
+func (comp *_DemoComp) LateUpdate() {
 	if comp.count%30 == 0 {
 		fmt.Printf("I'm entity[%s:%d:%d], %s LateUpdate(%d).\n",
 			comp.GetEntity().GetPrototype(), comp.GetEntity().GetID(), comp.GetEntity().GetSerialNo(), comp.GetName(), comp.count)
@@ -43,6 +43,6 @@ func (comp *DemoComp) LateUpdate() {
 	comp.count++
 }
 
-func (comp *DemoComp) Shut() {
+func (comp *_DemoComp) Shut() {
 	fmt.Printf("I'm entity[%s:%d:%d], %s Shut.\n", comp.GetEntity().GetPrototype(), comp.GetEntity().GetID(), comp.GetEntity().GetSerialNo(), comp.GetName())
 }

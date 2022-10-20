@@ -200,6 +200,7 @@ func (_runtime *RuntimeBehavior) loopWithFrame() {
 
 		for curFrames := uint64(1); ; {
 			if totalFrames > 0 && curFrames >= totalFrames {
+				_runtime.opts.Inheritor.Iface.Stop()
 				return
 			}
 

@@ -15,7 +15,7 @@ func main() {
 	entityLib := pt.NewEntityLib()
 	entityLib.Register("ECDemo", []string{
 		util.TypeFullName[helloworld.HelloWorld](),
-		util.TypeFullName[DemoComp](),
+		util.TypeFullName[_DemoComp](),
 	})
 
 	// 创建服务上下文
@@ -25,11 +25,8 @@ func main() {
 
 	// 创建运行时上下文与运行时
 	runtime := galaxy.NewRuntime(
-		runtime.NewContext(serviceCtx,
-			runtime.ContextOption.AutoRecover(true),
-			runtime.ContextOption.ReportError(make(chan error, 100)),
-		),
-		galaxy.RuntimeOption.Frame(runtime.NewFrame(30, 0, false)),
+		runtime.NewContext(serviceCtx),
+		galaxy.RuntimeOption.Frame(runtime.NewFrame(30, 300, false)),
 		galaxy.RuntimeOption.EnableAutoRun(true),
 	)
 
@@ -46,15 +43,6 @@ func main() {
 
 		fmt.Printf("create entity[%s:%d:%d] finish\n", entity.GetPrototype(), entity.GetID(), entity.GetSerialNo())
 	})
-
-	go func() {
-		for {
-			select {
-			case err := <-runtime.GetRuntimeCtx().GetReportError():
-				fmt.Println(err)
-			}
-		}
-	}()
 
 	service := galaxy.NewService(serviceCtx)
 

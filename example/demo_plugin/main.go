@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/pangdogs/galaxy"
 	"github.com/pangdogs/galaxy/comp/helloworld"
 	"github.com/pangdogs/galaxy/plugin"
@@ -16,11 +15,12 @@ func main() {
 	entityLib := pt.NewEntityLib()
 	entityLib.Register("PluginDemo", []string{
 		util.TypeFullName[helloworld.HelloWorld](),
-		util.TypeFullName[DemoComp](),
+		util.TypeFullName[_DemoComp](),
 	})
 
 	// 创建插件库，注册插件
 	pluginLib := plugin.NewPluginLib()
+	RegisterDemoPlugin(pluginLib)
 
 	// 创建服务上下文
 	serviceCtx := service.NewContext(
@@ -37,16 +37,7 @@ func main() {
 
 	// 在运行时线程环境中，创建实体
 	runtime.GetRuntimeCtx().SafeCallNoRetNoWait(func() {
-		entity, err := galaxy.EntityCreator().
-			RuntimeCtx(runtime.GetRuntimeCtx()).
-			Prototype("PluginDemo").
-			Accessibility(galaxy.TryGlobal).
-			Build()
-		if err != nil {
-			panic(err)
-		}
 
-		fmt.Printf("create entity[%s:%d:%d] finish\n", entity.GetPrototype(), entity.GetID(), entity.GetSerialNo())
 	})
 
 	service := galaxy.NewService(serviceCtx)
