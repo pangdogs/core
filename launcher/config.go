@@ -13,7 +13,7 @@ type EntityConfTab map[string]EntityConf
 
 // EntityConf 实体原型配置
 type EntityConf struct {
-	ComponentTab ComponentConfTab `json:"ComponentPt"`
+	ComponentTab ComponentConfTab `json:"Component"`
 	Singleton    bool             `json:"Singleton"`
 }
 

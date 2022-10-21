@@ -1,4 +1,4 @@
-// Package galaxy Galaxy服务器应用开发框架，基于Actor编程模型（Actor Model），使用EC组件框架（Entity ComponentPt）组织代码结构，可以像积木一样快速搭建游戏服务器应用。
+// Package galaxy Galaxy服务器应用开发框架，基于Actor编程模型（Actor Model），使用EC组件框架（Entity Component）组织代码结构，可以像积木一样快速搭建游戏服务器应用。
 //   - 框架使用EC组件框架组织代码结构。
 //   - 框架基于Actor编程模型，实体就是Actor，其中组件用于实现状态（state）与行为（behavior），运行时中的任务处理流水线就是邮箱（mailbox），
 //     实体的ID就是邮箱地址(mailbox address)，服务上下文提供的全局实体管理功能可以用于投递邮件（mail）给Actor。不同于传统Actor编程模型的地方是

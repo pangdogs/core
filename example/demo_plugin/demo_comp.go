@@ -16,7 +16,6 @@ type IDemoComp interface{}
 
 type _DemoComp struct {
 	ec.ComponentBehavior
-	count int
 }
 
 func (comp *_DemoComp) Start() {
