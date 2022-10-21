@@ -2,6 +2,7 @@ package ec
 
 import (
 	"github.com/pangdogs/galaxy/localevent"
+	"github.com/pangdogs/galaxy/util"
 	"github.com/pangdogs/galaxy/util/container"
 	"reflect"
 )
@@ -30,6 +31,10 @@ func (uc _UnsafeComponent) SetPrimary(v bool) {
 
 func (uc _UnsafeComponent) GetPrimary() bool {
 	return uc.getPrimary()
+}
+
+func (uc _UnsafeComponent) GetContext() util.IfaceCache {
+	return uc.getContext()
 }
 
 func (uc _UnsafeComponent) SetAwoke(v bool) {

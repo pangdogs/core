@@ -7,17 +7,22 @@ import (
 )
 
 func init() {
+	// 注册Demo组件
 	DemoCompPt.Register("demo组件", _DemoComp{})
 }
 
-var DemoCompPt = define.DefineComponentPt[IDemoComp]().ComponentPt()
+// DemoCompPt 定义Demo组件原型
+var DemoCompPt = define.DefineComponentPt[DemoComp]().ComponentPt()
 
-type IDemoComp interface{}
+// DemoComp Demo组件接口
+type DemoComp interface{}
 
+// _DemoComp Demo组件实现类
 type _DemoComp struct {
 	ec.ComponentBehavior
 }
 
+// Start 组件开始
 func (comp *_DemoComp) Start() {
-	DemoPlugin.Get(service.ComponentContext(comp)).Test()
+	DemoPlugin.Get(service.Get(comp)).Test()
 }

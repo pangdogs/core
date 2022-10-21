@@ -73,7 +73,7 @@ func (p _PluginInterface[PLUGIN]) PluginInterface() PluginInterface[PLUGIN] {
 	}
 }
 
-// DefinePluginInterface 定义插件接口，因为仅有接口没有实现，所以不能向插件库注册
+// DefinePluginInterface 定义插件接口，因为仅有接口没有实现，所以不能用于向插件库注册
 func DefinePluginInterface[PLUGIN any]() _PluginInterface[PLUGIN] {
 	return _PluginInterface[PLUGIN]{
 		name: util.TypeFullName[PLUGIN](),

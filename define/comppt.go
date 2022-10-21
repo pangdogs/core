@@ -15,14 +15,14 @@ func (c _ComponentPt[T]) Name() string {
 	return c.name
 }
 
-// Register 生成注册组件原型函数
+// Register 生成注册组件原型的函数
 func (c _ComponentPt[T]) Register() func(descr string, comp any) {
 	return func(descr string, comp any) {
 		pt.RegisterComponent(c.Name(), descr, comp)
 	}
 }
 
-// RegisterCreator 生成注册组件构件函数的函数
+// RegisterCreator 生成注册组件构造函数的函数
 func (c _ComponentPt[T]) RegisterCreator() func(descr string, creator func() ec.Component) {
 	return func(descr string, creator func() ec.Component) {
 		pt.RegisterComponentCreator(c.Name(), descr, creator)

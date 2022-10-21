@@ -100,7 +100,7 @@ func (p _Plugin[PLUGIN, OPTION]) Plugin(creator func(...OPTION) PLUGIN) Plugin[P
 	}
 }
 
-// DefinePlugin 定义插件，可以用于向插件库注册
+// DefinePlugin 定义插件，可以用于向插件库注册插件
 func DefinePlugin[PLUGIN, OPTION any]() _Plugin[PLUGIN, OPTION] {
 	return _Plugin[PLUGIN, OPTION]{
 		name: util.TypeFullName[PLUGIN](),

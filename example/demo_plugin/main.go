@@ -5,7 +5,6 @@ import (
 	"github.com/pangdogs/galaxy"
 	"github.com/pangdogs/galaxy/comp/helloworld"
 	"github.com/pangdogs/galaxy/plugin"
-	registry_etcd "github.com/pangdogs/galaxy/plugin/registry/etcd"
 	"github.com/pangdogs/galaxy/pt"
 	"github.com/pangdogs/galaxy/runtime"
 	"github.com/pangdogs/galaxy/service"
@@ -23,7 +22,6 @@ func main() {
 	// 创建插件库，注册插件
 	pluginLib := plugin.NewPluginLib()
 	DemoPlugin.Register(pluginLib)
-	registry_etcd.Plugin.Register(pluginLib)
 
 	// 创建服务上下文
 	serviceCtx := service.NewContext(
@@ -54,7 +52,9 @@ func main() {
 		fmt.Printf("create entity[%s:%d:%d] finish\n", entity.GetPrototype(), entity.GetID(), entity.GetSerialNo())
 	})
 
+	// 创建服务
 	service := galaxy.NewService(serviceCtx)
 
+	// 运行服务
 	<-service.Run()
 }

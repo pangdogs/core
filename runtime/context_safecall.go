@@ -19,11 +19,11 @@ type _SafeCall interface {
 }
 
 func entitySafeCall(entity ec.Entity) internal.SafeCall {
-	return EntityContext(entity)
+	return Get(entity)
 }
 
 func entityExist(entity ec.Entity) bool {
-	_, ok := EntityContext(entity).GetEntityMgr().GetEntity(entity.GetID())
+	_, ok := Get(entity).GetEntityMgr().GetEntity(entity.GetID())
 	return ok
 }
 

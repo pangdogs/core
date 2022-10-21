@@ -11,6 +11,7 @@ type Entity interface {
 	_InnerGC
 	_InnerGCCollector
 	_ComponentMgr
+	ContextHolder
 
 	init(opts *EntityOptions)
 
@@ -30,8 +31,6 @@ type Entity interface {
 	GetPrototype() string
 
 	setContext(ctx util.IfaceCache)
-
-	getContext() util.IfaceCache
 
 	setGCCollector(gcCollect container.GCCollector)
 

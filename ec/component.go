@@ -2,6 +2,7 @@ package ec
 
 import (
 	"github.com/pangdogs/galaxy/localevent"
+	"github.com/pangdogs/galaxy/util"
 	"github.com/pangdogs/galaxy/util/container"
 	"reflect"
 )
@@ -10,6 +11,7 @@ import (
 type Component interface {
 	_InnerGC
 	_InnerGCCollector
+	ContextHolder
 
 	init(name string, entity Entity, inheritor Component, hookCache *container.Cache[localevent.Hook])
 
@@ -84,6 +86,10 @@ func (comp *ComponentBehavior) GetName() string {
 // GetEntity 获取组件依附的实体
 func (comp *ComponentBehavior) GetEntity() Entity {
 	return comp.entity
+}
+
+func (comp *ComponentBehavior) getContext() util.IfaceCache {
+	return comp.entity.getContext()
 }
 
 func (comp *ComponentBehavior) setPrimary(v bool) {
