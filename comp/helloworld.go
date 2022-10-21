@@ -2,10 +2,10 @@ package comp
 
 import "github.com/pangdogs/galaxy/define"
 
-// IHelloWorld HelloWorld组件接口
-type IHelloWorld interface {
+// HelloWorld HelloWorld组件接口
+type HelloWorld interface {
 	HelloWorld()
 }
 
-// HelloWorld HelloWorld组件名称
-var HelloWorld = define.DefineComponentPt[IHelloWorld]().Name()
+// HelloWorldPt HelloWorld组件原型
+var HelloWorldPt = define.DefineComponentPt[HelloWorld]().ComponentPt()
