@@ -4,16 +4,15 @@ import (
 	"fmt"
 	"github.com/pangdogs/galaxy/define"
 	"github.com/pangdogs/galaxy/ec"
-	"github.com/pangdogs/galaxy/pt"
 )
 
 func init() {
-	pt.RegisterComponent(DemoComp, "demo组件", _DemoComp{})
+	DemoCompPt.Register("demo组件", _DemoComp{})
 }
 
-type IDemoComp interface{}
+var DemoCompPt = define.DefineComponentPt[IDemoComp]().ComponentPt()
 
-var DemoComp = define.DefineComponentPt[IDemoComp]().Name()
+type IDemoComp interface{}
 
 type _DemoComp struct {
 	ec.ComponentBehavior
