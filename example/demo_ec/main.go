@@ -46,7 +46,9 @@ func main() {
 		fmt.Printf("create entity[%s:%d:%d] finish\n", entity.GetPrototype(), entity.GetID(), entity.GetSerialNo())
 	})
 
+	// 创建服务
 	service := galaxy.NewService(serviceCtx)
 
+	// 运行服务
 	<-service.Run()
 }
