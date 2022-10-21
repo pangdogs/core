@@ -44,8 +44,44 @@ func (p _Plugin[PLUGIN, OPTION]) RuntimeGet() func(runtime.Context) PLUGIN {
 	}
 }
 
-// Plugin 用于定义插件
-func Plugin[PLUGIN, OPTION any]() _Plugin[PLUGIN, OPTION] {
+// ServicePlugin 服务类插件
+type ServicePlugin[PLUGIN, OPTION any] struct {
+	Name       string
+	Register   func(plugin.PluginLib, ...OPTION)
+	Deregister func(plugin.PluginLib)
+	Get        func(service.Context) PLUGIN
+}
+
+// ServicePlugin 生成服务类插件定义
+func (p _Plugin[PLUGIN, OPTION]) ServicePlugin(creator func(...OPTION) PLUGIN) ServicePlugin[PLUGIN, OPTION] {
+	return ServicePlugin[PLUGIN, OPTION]{
+		Name:       p.Name(),
+		Register:   p.Register(creator),
+		Deregister: p.Deregister(),
+		Get:        p.ServiceGet(),
+	}
+}
+
+// RuntimePlugin 运行时类插件
+type RuntimePlugin[PLUGIN, OPTION any] struct {
+	Name       string
+	Register   func(plugin.PluginLib, ...OPTION)
+	Deregister func(plugin.PluginLib)
+	Get        func(runtime.Context) PLUGIN
+}
+
+// RuntimePlugin 生成运行时类插件定义
+func (p _Plugin[PLUGIN, OPTION]) RuntimePlugin(creator func(...OPTION) PLUGIN) RuntimePlugin[PLUGIN, OPTION] {
+	return RuntimePlugin[PLUGIN, OPTION]{
+		Name:       p.Name(),
+		Register:   p.Register(creator),
+		Deregister: p.Deregister(),
+		Get:        p.RuntimeGet(),
+	}
+}
+
+// DefinePlugin 定义插件
+func DefinePlugin[PLUGIN, OPTION any]() _Plugin[PLUGIN, OPTION] {
 	return _Plugin[PLUGIN, OPTION]{
 		name: util.TypeFullName[PLUGIN](),
 	}

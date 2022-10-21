@@ -6,34 +6,30 @@ import (
 	"github.com/pangdogs/galaxy/service"
 )
 
-type DemoPlugin interface {
+var DemoPlugin = define.DefinePlugin[IDemoPlugin, any]().ServicePlugin(
+	func(options ...any) IDemoPlugin {
+		return &_DemoPlugin{
+			options: options,
+		}
+	},
+)
+
+type IDemoPlugin interface {
 	Test()
 }
-
-var DemoPluginName = define.Plugin[DemoPlugin, any]().Name()
-
-var RegisterDemoPlugin = define.Plugin[DemoPlugin, any]().Register(func(options ...any) DemoPlugin {
-	return &_DemoPlugin{
-		options: options,
-	}
-})
-
-var DeregisterDemoPlugin = define.Plugin[DemoPlugin, any]().Deregister()
-
-var GetDemoPlugin = define.Plugin[DemoPlugin, any]().ServiceGet()
 
 type _DemoPlugin struct {
 	options []any
 }
 
 func (d *_DemoPlugin) Init(ctx service.Context) {
-	fmt.Printf("%s Init.\n", DemoPluginName)
+	fmt.Printf("%s Init.\n", DemoPlugin.Name)
 }
 
 func (d *_DemoPlugin) Shut() {
-	fmt.Printf("%s Shut.\n", DemoPluginName)
+	fmt.Printf("%s Shut.\n", DemoPlugin.Name)
 }
 
 func (d *_DemoPlugin) Test() {
-	fmt.Printf("%s Test.\n", DemoPluginName)
+	fmt.Printf("%s Test.\n", DemoPlugin.Name)
 }

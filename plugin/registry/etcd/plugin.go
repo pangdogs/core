@@ -6,4 +6,4 @@ import (
 )
 
 // Register 注册本插件
-var Register = define.Plugin[registry.Registry, Option]().Register(newRegistry)
+var Register = define.DefinePlugin[registry.Registry, Option]().Register(newRegistry)

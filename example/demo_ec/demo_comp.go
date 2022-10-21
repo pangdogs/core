@@ -13,7 +13,7 @@ func init() {
 
 type IDemoComp interface{}
 
-var DemoComp = define.Component[IDemoComp]().Name()
+var DemoComp = define.DefineComponentPt[IDemoComp]().Name()
 
 type _DemoComp struct {
 	ec.ComponentBehavior

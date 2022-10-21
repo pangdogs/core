@@ -21,7 +21,7 @@ func main() {
 
 	// 创建插件库，注册插件
 	pluginLib := plugin.NewPluginLib()
-	RegisterDemoPlugin(pluginLib)
+	DemoPlugin.Register(pluginLib)
 
 	// 创建服务上下文
 	serviceCtx := service.NewContext(

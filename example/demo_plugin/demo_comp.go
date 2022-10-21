@@ -3,17 +3,16 @@ package main
 import (
 	"github.com/pangdogs/galaxy/define"
 	"github.com/pangdogs/galaxy/ec"
-	"github.com/pangdogs/galaxy/pt"
 	"github.com/pangdogs/galaxy/service"
 )
 
 func init() {
-	pt.RegisterComponent(DemoComp, "demo组件", _DemoComp{})
+	DemoCompPt.Register("demo组件", _DemoComp{})
 }
 
-type IDemoComp interface{}
+var DemoCompPt = define.DefineComponentPt[IDemoComp]().ComponentPt()
 
-var DemoComp = define.Component[IDemoComp]().Name()
+type IDemoComp interface{}
 
 type _DemoComp struct {
 	ec.ComponentBehavior
@@ -21,5 +20,5 @@ type _DemoComp struct {
 }
 
 func (comp *_DemoComp) Start() {
-	GetDemoPlugin(service.ComponentContext(comp)).Test()
+	DemoPlugin.Get(service.ComponentContext(comp)).Test()
 }

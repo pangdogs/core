@@ -139,7 +139,7 @@ func (lib *_ComponentLib) register(compName, descr string, constructType _CompCo
 	compPath := _tfComp.PkgPath() + "/" + _tfComp.Name()
 
 	if !reflect.PointerTo(_tfComp).Implements(reflect.TypeOf((*ec.Component)(nil)).Elem()) {
-		panic(fmt.Errorf("component '%s' not implement ec.Component", compPath))
+		panic(fmt.Errorf("component '%s' not implement ec.ComponentPt", compPath))
 	}
 
 	_, ok := lib.compPtMap[compPath]

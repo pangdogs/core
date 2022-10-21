@@ -8,4 +8,4 @@ type IHelloWorld interface {
 }
 
 // HelloWorld HelloWorld组件名称
-var HelloWorld = define.Component[IHelloWorld]().Name()
+var HelloWorld = define.DefineComponentPt[IHelloWorld]().Name()
