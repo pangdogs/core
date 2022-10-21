@@ -45,7 +45,7 @@ func (c _ComponentPt[T]) ComponentPt() ComponentPt {
 	}
 }
 
-// DefineComponentPt 定义组件原型
+// DefineComponentPt 定义组件原型，可以用于注册组件
 func DefineComponentPt[T any]() _ComponentPt[T] {
 	return _ComponentPt[T]{
 		name: util.TypeFullName[T](),
