@@ -1,6 +1,7 @@
 package define
 
 import (
+	"github.com/pangdogs/galaxy/ec"
 	"github.com/pangdogs/galaxy/runtime"
 	"github.com/pangdogs/galaxy/service"
 	"github.com/pangdogs/galaxy/util"
@@ -31,29 +32,35 @@ func (p _PluginInterface[PLUGIN]) RuntimeGet() func(runtime.Context) PLUGIN {
 
 // ServicePluginInterface 服务类插件接口
 type ServicePluginInterface[PLUGIN any] struct {
-	Name string
-	Get  func(service.Context) PLUGIN
+	Name  string
+	Get   func(service.Context) PLUGIN
+	ECGet func(ec.ContextHolder) PLUGIN
 }
 
 // ServicePluginInterface 生成服务类插件接口定义
 func (p _PluginInterface[PLUGIN]) ServicePluginInterface() ServicePluginInterface[PLUGIN] {
+	get := p.ServiceGet()
 	return ServicePluginInterface[PLUGIN]{
-		Name: p.Name(),
-		Get:  p.ServiceGet(),
+		Name:  p.Name(),
+		Get:   get,
+		ECGet: func(ctxHolder ec.ContextHolder) PLUGIN { return get(service.Get(ctxHolder)) },
 	}
 }
 
 // RuntimePluginInterface 运行时类插件接口
 type RuntimePluginInterface[PLUGIN any] struct {
-	Name string
-	Get  func(runtime.Context) PLUGIN
+	Name  string
+	Get   func(runtime.Context) PLUGIN
+	ECGet func(ec.ContextHolder) PLUGIN
 }
 
 // RuntimePluginInterface 生成运行时类插件接口定义
 func (p _PluginInterface[PLUGIN]) RuntimePluginInterface() RuntimePluginInterface[PLUGIN] {
+	get := p.RuntimeGet()
 	return RuntimePluginInterface[PLUGIN]{
-		Name: p.Name(),
-		Get:  p.RuntimeGet(),
+		Name:  p.Name(),
+		Get:   get,
+		ECGet: func(ctxHolder ec.ContextHolder) PLUGIN { return get(runtime.Get(ctxHolder)) },
 	}
 }
 
