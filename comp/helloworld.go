@@ -7,5 +7,5 @@ type HelloWorld interface {
 	HelloWorld()
 }
 
-// HelloWorldPt HelloWorld组件原型
+// HelloWorldPt 定义HelloWorld组件原型
 var HelloWorldPt = define.DefineComponentPt[HelloWorld]().ComponentPt()
