@@ -80,6 +80,26 @@ func (p _Plugin[PLUGIN, OPTION]) RuntimePlugin(creator func(...OPTION) PLUGIN) R
 	}
 }
 
+// Plugin 插件
+type Plugin[PLUGIN, OPTION any] struct {
+	Name       string
+	Register   func(plugin.PluginLib, ...OPTION)
+	Deregister func(plugin.PluginLib)
+	RuntimeGet func(runtime.Context) PLUGIN
+	ServiceGet func(service.Context) PLUGIN
+}
+
+// Plugin 生成插件定义
+func (p _Plugin[PLUGIN, OPTION]) Plugin(creator func(...OPTION) PLUGIN) Plugin[PLUGIN, OPTION] {
+	return Plugin[PLUGIN, OPTION]{
+		Name:       p.Name(),
+		Register:   p.Register(creator),
+		Deregister: p.Deregister(),
+		RuntimeGet: p.RuntimeGet(),
+		ServiceGet: p.ServiceGet(),
+	}
+}
+
 // DefinePlugin 定义插件
 func DefinePlugin[PLUGIN, OPTION any]() _Plugin[PLUGIN, OPTION] {
 	return _Plugin[PLUGIN, OPTION]{

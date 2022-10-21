@@ -5,5 +5,5 @@ import (
 	"github.com/pangdogs/galaxy/plugin/registry"
 )
 
-// Register 注册本插件
-var Register = define.DefinePlugin[registry.Registry, Option]().Register(newRegistry)
+// Plugin 定义本插件
+var Plugin = define.DefinePlugin[registry.Registry, Option]().ServicePlugin(newRegistry)
