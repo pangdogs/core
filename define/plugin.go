@@ -1,7 +1,6 @@
 package define
 
 import (
-	"github.com/pangdogs/galaxy/ec"
 	"github.com/pangdogs/galaxy/plugin"
 	"github.com/pangdogs/galaxy/runtime"
 	"github.com/pangdogs/galaxy/service"
@@ -51,18 +50,15 @@ type ServicePlugin[PLUGIN, OPTION any] struct {
 	Register   func(plugin.PluginLib, ...OPTION)
 	Deregister func(plugin.PluginLib)
 	Get        func(service.Context) PLUGIN
-	ECGet      func(ec.ContextHolder) PLUGIN
 }
 
 // ServicePlugin 生成服务类插件定义
 func (p _Plugin[PLUGIN, OPTION]) ServicePlugin(creator func(...OPTION) PLUGIN) ServicePlugin[PLUGIN, OPTION] {
-	get := p.ServiceGet()
 	return ServicePlugin[PLUGIN, OPTION]{
 		Name:       p.Name(),
 		Register:   p.Register(creator),
 		Deregister: p.Deregister(),
-		Get:        get,
-		ECGet:      func(ctxHolder ec.ContextHolder) PLUGIN { return get(service.Get(ctxHolder)) },
+		Get:        p.ServiceGet(),
 	}
 }
 
@@ -72,18 +68,15 @@ type RuntimePlugin[PLUGIN, OPTION any] struct {
 	Register   func(plugin.PluginLib, ...OPTION)
 	Deregister func(plugin.PluginLib)
 	Get        func(runtime.Context) PLUGIN
-	ECGet      func(ec.ContextHolder) PLUGIN
 }
 
 // RuntimePlugin 生成运行时类插件定义
 func (p _Plugin[PLUGIN, OPTION]) RuntimePlugin(creator func(...OPTION) PLUGIN) RuntimePlugin[PLUGIN, OPTION] {
-	get := p.RuntimeGet()
 	return RuntimePlugin[PLUGIN, OPTION]{
 		Name:       p.Name(),
 		Register:   p.Register(creator),
 		Deregister: p.Deregister(),
-		Get:        get,
-		ECGet:      func(ctxHolder ec.ContextHolder) PLUGIN { return get(runtime.Get(ctxHolder)) },
+		Get:        p.RuntimeGet(),
 	}
 }
 

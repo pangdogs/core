@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/pangdogs/galaxy/define"
 	"github.com/pangdogs/galaxy/ec"
+	"github.com/pangdogs/galaxy/service"
 )
 
 func init() {
@@ -23,5 +24,5 @@ type _DemoComp struct {
 
 // Start 组件开始
 func (comp *_DemoComp) Start() {
-	DemoPlugin.ECGet(comp).Test()
+	DemoPlugin.Get(service.Get(comp)).Test()
 }
