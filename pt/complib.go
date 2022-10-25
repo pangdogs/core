@@ -72,7 +72,11 @@ func (lib *_ComponentLib) RegisterComponent(compName, descr string, comp any) {
 		panic("nil comp")
 	}
 
-	lib.register(compName, descr, _CompConstructType_Reflect, reflect.TypeOf(comp), nil)
+	if tfComp, ok := comp.(reflect.Type); ok {
+		lib.register(compName, descr, _CompConstructType_Reflect, tfComp, nil)
+	} else {
+		lib.register(compName, descr, _CompConstructType_Reflect, reflect.TypeOf(comp), nil)
+	}
 }
 
 func (lib *_ComponentLib) RegisterCreator(compName, descr string, creator func() ec.Component) {
