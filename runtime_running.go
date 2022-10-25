@@ -275,7 +275,7 @@ func (_runtime *RuntimeBehavior) loopWithFrameEnd() {
 func (_runtime *RuntimeBehavior) frameUpdate() {
 	frame := runtime.UnsafeFrame(_runtime.opts.Frame)
 
-	if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().FrameUpdateEndCallback; callback != nil {
+	if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().FrameEndCallback; callback != nil {
 		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 			callback(_runtime.ctx)
 		})
@@ -293,7 +293,7 @@ func (_runtime *RuntimeBehavior) firstFrameUpdate() {
 
 	frame.FrameBegin()
 
-	if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().FrameUpdateBeginCallback; callback != nil {
+	if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().FrameBeginCallback; callback != nil {
 		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 			callback(_runtime.ctx)
 		})
@@ -353,14 +353,14 @@ func (_runtime *RuntimeBehavior) blinkFrameUpdate() bool {
 
 	frame.FrameBegin()
 
-	if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().FrameUpdateBeginCallback; callback != nil {
+	if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().FrameBeginCallback; callback != nil {
 		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 			callback(_runtime.ctx)
 		})
 	}
 
 	defer func() {
-		if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().FrameUpdateEndCallback; callback != nil {
+		if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().FrameEndCallback; callback != nil {
 			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 				callback(_runtime.ctx)
 			})
