@@ -10,16 +10,18 @@ import (
 
 // ContextOptions 创建运行时上下文的所有选项
 type ContextOptions struct {
-	Inheritor        util.Face[Context]                // 继承者，需要拓展运行时上下文自身能力时需要使用
-	Context          context.Context                   // 父Context
-	AutoRecover      bool                              // 是否开启panic时自动恢复
-	ReportError      chan error                        // panic时错误写入的error channel
-	PluginLib        plugin.PluginLib                  // 插件库
-	StartedCallback  func(runtimeCtx Context)          // 启动运行时回调函数
-	StoppingCallback func(runtimeCtx Context)          // 开始停止运行时回调函数
-	StoppedCallback  func(runtimeCtx Context)          // 完全停止运行时回调函数
-	FaceCache        *container.Cache[util.FaceAny]    // Face缓存，用于提高性能
-	HookCache        *container.Cache[localevent.Hook] // Hook缓存，用于提高性能
+	Inheritor                util.Face[Context]                // 继承者，需要拓展运行时上下文自身能力时需要使用
+	Context                  context.Context                   // 父Context
+	AutoRecover              bool                              // 是否开启panic时自动恢复
+	ReportError              chan error                        // panic时错误写入的error channel
+	PluginLib                plugin.PluginLib                  // 插件库
+	StartedCallback          func(runtimeCtx Context)          // 启动运行时回调函数
+	StoppingCallback         func(runtimeCtx Context)          // 开始停止运行时回调函数
+	StoppedCallback          func(runtimeCtx Context)          // 完全停止运行时回调函数
+	FrameUpdateBeginCallback func(runtimeCtx Context)          // 帧更新开始时的回调函数
+	FrameUpdateEndCallback   func(runtimeCtx Context)          // 帧更新结束时的回调函数
+	FaceCache                *container.Cache[util.FaceAny]    // Face缓存，用于提高性能
+	HookCache                *container.Cache[localevent.Hook] // Hook缓存，用于提高性能
 }
 
 // ContextOptionSetter 创建运行时上下文的选项设置器
@@ -98,6 +100,20 @@ func (*_ContextOption) StoppingCallback(v func(runtimeCtx Context)) ContextOptio
 func (*_ContextOption) StoppedCallback(v func(runtimeCtx Context)) ContextOptionSetter {
 	return func(o *ContextOptions) {
 		o.StoppedCallback = v
+	}
+}
+
+// FrameUpdateBeginCallback 帧更新开始时的回调函数
+func (*_ContextOption) FrameUpdateBeginCallback(v func(runtimeCtx Context)) ContextOptionSetter {
+	return func(o *ContextOptions) {
+		o.FrameUpdateBeginCallback = v
+	}
+}
+
+// FrameUpdateEndCallback 帧更新结束时的回调函数
+func (*_ContextOption) FrameUpdateEndCallback(v func(runtimeCtx Context)) ContextOptionSetter {
+	return func(o *ContextOptions) {
+		o.FrameUpdateEndCallback = v
 	}
 }
 

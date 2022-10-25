@@ -275,7 +275,14 @@ func (_runtime *RuntimeBehavior) loopWithFrameEnd() {
 func (_runtime *RuntimeBehavior) frameUpdate() {
 	frame := runtime.UnsafeFrame(_runtime.opts.Frame)
 
+	if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().FrameUpdateEndCallback; callback != nil {
+		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+			callback(_runtime.ctx)
+		})
+	}
+
 	frame.FrameEnd()
+
 	frame.SetCurFrames(frame.GetCurFrames() + 1)
 
 	_runtime.firstFrameUpdate()
@@ -285,6 +292,12 @@ func (_runtime *RuntimeBehavior) firstFrameUpdate() {
 	frame := runtime.UnsafeFrame(_runtime.opts.Frame)
 
 	frame.FrameBegin()
+
+	if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().FrameUpdateBeginCallback; callback != nil {
+		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+			callback(_runtime.ctx)
+		})
+	}
 
 	frame.UpdateBegin()
 	defer frame.UpdateEnd()
@@ -339,7 +352,22 @@ func (_runtime *RuntimeBehavior) blinkFrameUpdate() bool {
 	frame := runtime.UnsafeFrame(_runtime.opts.Frame)
 
 	frame.FrameBegin()
-	defer frame.FrameEnd()
+
+	if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().FrameUpdateBeginCallback; callback != nil {
+		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+			callback(_runtime.ctx)
+		})
+	}
+
+	defer func() {
+		if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().FrameUpdateEndCallback; callback != nil {
+			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+				callback(_runtime.ctx)
+			})
+		}
+
+		frame.FrameEnd()
+	}()
 
 	for {
 		select {
