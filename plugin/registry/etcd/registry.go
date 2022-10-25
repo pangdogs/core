@@ -12,6 +12,7 @@ import (
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	"go.etcd.io/etcd/client/v3"
 	"path"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -78,19 +79,114 @@ func (e *_EtcdRegistry) Register(ctx context.Context, service registry.Service, 
 }
 
 func (e *_EtcdRegistry) Deregister(ctx context.Context, service registry.Service) error {
+	if len(service.Nodes) <= 0 {
+		return errors.New("require at least one node")
+	}
+
+	for _, node := range service.Nodes {
+		e.Lock()
+		// delete our hash of the service
+		delete(e.register, service.Name+node.Id)
+		// delete our lease of the service
+		delete(e.leases, service.Name+node.Id)
+		e.Unlock()
+
+		ctx, cancel := context.WithTimeout(ctx, e.options.Timeout)
+		defer cancel()
+
+		logger.Tracef(e.serviceCtx, "Deregistering %service id %service", service.Name, node.Id)
+
+		_, err := e.client.Delete(ctx, nodePath(service.Name, node.Id))
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
 func (e *_EtcdRegistry) GetService(ctx context.Context, serviceName string) ([]registry.Service, error) {
-	return nil, nil
+	ctx, cancel := context.WithTimeout(ctx, e.options.Timeout)
+	defer cancel()
+
+	rsp, err := e.client.Get(ctx, servicePath(serviceName)+"/", clientv3.WithPrefix(), clientv3.WithSerializable())
+	if err != nil {
+		return nil, err
+	}
+
+	if len(rsp.Kvs) <= 0 {
+		return nil, registry.ErrNotFound
+	}
+
+	serviceMap := map[string]registry.Service{}
+
+	for _, n := range rsp.Kvs {
+		if sn := decode(n.Value); sn != nil {
+			s, ok := serviceMap[sn.Version]
+			if !ok {
+				s = registry.Service{
+					Name:      sn.Name,
+					Version:   sn.Version,
+					Metadata:  sn.Metadata,
+					Endpoints: sn.Endpoints,
+				}
+				serviceMap[s.Version] = s
+			}
+
+			s.Nodes = append(s.Nodes, sn.Nodes...)
+		}
+	}
+
+	services := make([]registry.Service, 0, len(serviceMap))
+	for _, service := range serviceMap {
+		services = append(services, service)
+	}
+
+	return services, nil
 }
 
 func (e *_EtcdRegistry) ListServices(ctx context.Context) ([]registry.Service, error) {
-	return nil, nil
+	versions := make(map[string]registry.Service)
+
+	ctx, cancel := context.WithTimeout(ctx, e.options.Timeout)
+	defer cancel()
+
+	rsp, err := e.client.Get(ctx, prefix, clientv3.WithPrefix(), clientv3.WithSerializable())
+	if err != nil {
+		return nil, err
+	}
+
+	if len(rsp.Kvs) <= 0 {
+		return []registry.Service{}, nil
+	}
+
+	for _, n := range rsp.Kvs {
+		sn := decode(n.Value)
+		if sn == nil {
+			continue
+		}
+		v, ok := versions[sn.Name+sn.Version]
+		if !ok {
+			versions[sn.Name+sn.Version] = *sn
+			continue
+		}
+		// append to service:version nodes
+		v.Nodes = append(v.Nodes, sn.Nodes...)
+	}
+
+	services := make([]registry.Service, 0, len(versions))
+	for _, service := range versions {
+		services = append(services, service)
+	}
+
+	// sort the services
+	sort.Slice(services, func(i, j int) bool { return services[i].Name < services[j].Name })
+
+	return services, nil
 }
 
 func (e *_EtcdRegistry) Watch(ctx context.Context, serviceName string) (registry.Watcher, error) {
-	return nil, nil
+	return newEtcdWatcher(ctx, e, e.options.Timeout, serviceName)
 }
 
 func (e *_EtcdRegistry) configure() clientv3.Config {
