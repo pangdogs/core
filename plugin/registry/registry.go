@@ -6,13 +6,6 @@ import (
 	"time"
 )
 
-var (
-	// ErrNotFound Not found error when GetService is called
-	ErrNotFound = errors.New("service not found")
-	// ErrWatcherStopped Watcher stopped error when watcher is stopped
-	ErrWatcherStopped = errors.New("watcher stopped")
-)
-
 // The Registry provides an interface for service discovery
 // and an abstraction over varying implementations
 // {consul, etcd, zookeeper, ...}
@@ -23,6 +16,13 @@ type Registry interface {
 	ListServices(ctx context.Context) ([]Service, error)
 	Watch(ctx context.Context, serviceName string) (Watcher, error)
 }
+
+var (
+	// ErrNotFound Not found error when GetService is called
+	ErrNotFound = errors.New("service not found")
+	// ErrWatcherStopped Watcher stopped error when watcher is stopped
+	ErrWatcherStopped = errors.New("watcher stopped")
+)
 
 type Service struct {
 	Name      string            `json:"name"`
