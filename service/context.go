@@ -13,20 +13,14 @@ type Context interface {
 	internal.Context
 	internal.RunningMark
 	_SafeCall
-
 	init(opts *ContextOptions)
-
 	getOptions() *ContextOptions
-
 	// GetPrototype 获取服务原型
 	GetPrototype() string
-
 	// GenUID 生成运行时唯一ID，向负方向增长，非全局唯一，重启服务后也会生成相同ID，不能使用此ID持久化，性能较好，值小于0
 	GenUID() int64
-
 	// GenPersistID 生成持久化ID，向正方向增长，全局唯一，必须使用此ID持久化，使用snowflake算法，性能较差，默认情况下单个服务每毫秒仅能生成4096个，值大于0
 	GenPersistID() int64
-
 	// GetEntityMgr 获取实体管理器
 	GetEntityMgr() IEntityMgr
 }

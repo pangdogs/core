@@ -12,54 +12,32 @@ type Entity interface {
 	_InnerGCCollector
 	_ComponentMgr
 	ContextHolder
-
 	init(opts *EntityOptions)
-
 	getOptions() *EntityOptions
-
 	setID(id int64)
-
 	// GetID 获取实体全局唯一ID
 	GetID() int64
-
 	setSerialNo(sn int64)
-
 	// GetSerialNo 获取序列号
 	GetSerialNo() int64
-
 	// GetPrototype 获取实体原型
 	GetPrototype() string
-
 	setContext(ctx util.IfaceCache)
-
 	setGCCollector(gcCollect container.GCCollector)
-
 	getGCCollector() container.GCCollector
-
 	setParent(parent Entity)
-
 	// GetParent 获取在运行时上下文的主EC树上的父实体
 	GetParent() (Entity, bool)
-
 	setInitialing(v bool)
-
 	getInitialing() bool
-
 	setShutting(v bool)
-
 	getShutting() bool
-
 	setAdding(v bool)
-
 	getAdding() bool
-
 	setRemoving(v bool)
-
 	getRemoving() bool
-
 	// DestroySelf 销毁自身，注意在生命周期[Init,InitFin,Shut,ShutFin]中调用无效
 	DestroySelf()
-
 	eventEntityDestroySelf() localevent.IEvent
 }
 

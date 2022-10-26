@@ -4,7 +4,6 @@ package container
 type GC interface {
 	// GC GC
 	GC()
-
 	// NeedGC 是否需要GC
 	NeedGC() bool
 }

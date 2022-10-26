@@ -13,46 +13,32 @@ import (
 type IEntityMgr interface {
 	// GetRuntimeCtx 获取运行时上下文
 	GetRuntimeCtx() Context
-
 	// GetEntity 查询实体
 	GetEntity(id int64) (ec.Entity, bool)
-
 	// RangeEntities 遍历所有实体
 	RangeEntities(func(entity ec.Entity) bool)
-
 	// ReverseRangeEntities 反向遍历所有实体
 	ReverseRangeEntities(func(entity ec.Entity) bool)
-
 	// GetEntityCount 获取实体数量
 	GetEntityCount() int
-
 	// AddEntity 添加实体
 	AddEntity(entity ec.Entity) error
-
 	// AddGlobalEntity 添加全局实体
 	AddGlobalEntity(entity ec.Entity) error
-
 	// TryAddGlobalEntity 尝试添加全局实体
 	TryAddGlobalEntity(entity ec.Entity) error
-
 	// RemoveEntity 删除实体
 	RemoveEntity(id int64)
-
 	// EventEntityMgrAddEntity 事件：实体管理器中添加实体
 	EventEntityMgrAddEntity() localevent.IEvent
-
 	// EventEntityMgrRemoveEntity 事件：实体管理器中删除实体
 	EventEntityMgrRemoveEntity() localevent.IEvent
-
 	// EventEntityMgrEntityAddComponents 事件：实体管理器中的实体添加组件
 	EventEntityMgrEntityAddComponents() localevent.IEvent
-
 	// EventEntityMgrEntityRemoveComponent 事件：实体管理器中的实体删除组件
 	EventEntityMgrEntityRemoveComponent() localevent.IEvent
-
 	// EventEntityMgrEntityFirstAccessComponent 事件：实体管理器中的实体首次访问组件
 	EventEntityMgrEntityFirstAccessComponent() localevent.IEvent
-
 	eventEntityMgrNotifyECTreeRemoveEntity() localevent.IEvent
 }
 

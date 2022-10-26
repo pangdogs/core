@@ -8,49 +8,32 @@ import (
 type Frame interface {
 	// GetTargetFPS 获取目标FPS
 	GetTargetFPS() float32
-
 	// GetCurFPS 获取当前FPS
 	GetCurFPS() float32
-
 	// GetTotalFrames 获取运行帧数上限
 	GetTotalFrames() uint64
-
 	// GetCurFrames 获取当前帧数
 	GetCurFrames() uint64
-
 	setCurFrames(v uint64)
-
 	// Blink 是否是瞬时运行
 	Blink() bool
-
 	// GetRunningBeginTime 获取运行开始时间
 	GetRunningBeginTime() time.Time
-
 	// GetRunningElapseTime 获取运行持续时间
 	GetRunningElapseTime() time.Duration
-
 	// GetFrameBeginTime 获取当前帧开始时间
 	GetFrameBeginTime() time.Time
-
 	// GetLastFrameElapseTime 获取上一帧耗时
 	GetLastFrameElapseTime() time.Duration
-
 	// GetUpdateBeginTime 获取当前帧更新开始时间
 	GetUpdateBeginTime() time.Time
-
 	// GetLastUpdateElapseTime 获取上一次帧更新耗时
 	GetLastUpdateElapseTime() time.Duration
-
 	runningBegin()
-
 	runningEnd()
-
 	frameBegin()
-
 	frameEnd()
-
 	updateBegin()
-
 	updateEnd()
 }
 

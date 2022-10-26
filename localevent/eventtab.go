@@ -6,16 +6,12 @@ import "github.com/pangdogs/galaxy/util/container"
 type IEventTab interface {
 	// Init 初始化事件表
 	Init(autoRecover bool, reportError chan error, hookCache *container.Cache[Hook], gcCollector container.GCCollector)
-
 	// Get 获取事件
 	Get(id int) IEvent
-
 	// Open 打开事件表中所有事件
 	Open()
-
 	// Close 关闭事件表中所有事件
 	Close()
-
 	// Clean 事件表中的所有事件清除全部订阅者
 	Clean()
 }

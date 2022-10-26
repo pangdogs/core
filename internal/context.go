@@ -8,19 +8,14 @@ import (
 // Context 上下文
 type Context interface {
 	context.Context
-
 	// GetParentContext 获取父上下文
 	GetParentContext() context.Context
-
 	// GetAutoRecover panic时是否自动恢复
 	GetAutoRecover() bool
-
 	// GetReportError 在开启panic时自动恢复时，将会恢复并将错误写入此error channel
 	GetReportError() chan error
-
 	// GetWaitGroup 获取等待组
 	GetWaitGroup() *sync.WaitGroup
-
 	// GetCancelFunc 获取取消运行函数
 	GetCancelFunc() context.CancelFunc
 }

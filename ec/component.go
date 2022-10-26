@@ -12,39 +12,24 @@ type Component interface {
 	_InnerGC
 	_InnerGCCollector
 	ContextHolder
-
 	init(name string, entity Entity, inheritor Component, hookCache *container.Cache[localevent.Hook])
-
 	setID(id int64)
-
 	// GetID 获取组件全局唯一ID
 	GetID() int64
-
 	// GetName 获取组件名称
 	GetName() string
-
 	// GetEntity 获取组件依附的实体
 	GetEntity() Entity
-
 	setPrimary(v bool)
-
 	getPrimary() bool
-
 	setAwoke(v bool)
-
 	getAwoke() bool
-
 	setStarted(v bool)
-
 	getStarted() bool
-
 	setReflectValue(v reflect.Value)
-
 	getReflectValue() reflect.Value
-
 	// DestroySelf 销毁自身，注意在生命周期[Awake,Start,Shut]中调用无效
 	DestroySelf()
-
 	eventComponentDestroySelf() localevent.IEvent
 }
 

@@ -11,28 +11,20 @@ import (
 type IEntityMgr interface {
 	// GetServiceCtx 获取服务上下文
 	GetServiceCtx() Context
-
 	// GetEntity 查询实体
 	GetEntity(id int64) (ec.Entity, bool)
-
 	// GetEntityWithSerialNo 使用ID与序列号查询实体
 	GetEntityWithSerialNo(id, serialNo int64) (ec.Entity, bool)
-
 	// GetOrAddEntity 查询或添加实体
 	GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, error)
-
 	// AddEntity 添加实体
 	AddEntity(entity ec.Entity) error
-
 	// GetAndRemoveEntity 查询并删除实体
 	GetAndRemoveEntity(id int64) (ec.Entity, bool)
-
 	// GetAndRemoveEntityWithSerialNo 使用ID与序列号查询并删除实体
 	GetAndRemoveEntityWithSerialNo(id, serialNo int64) (ec.Entity, bool)
-
 	// RemoveEntity 删除实体
 	RemoveEntity(id int64)
-
 	// RemoveEntityWithSerialNo 使用ID与序列号删除实体
 	RemoveEntityWithSerialNo(id, serialNo int64)
 }

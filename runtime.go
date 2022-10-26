@@ -11,11 +11,8 @@ import (
 // Runtime 运行时接口
 type Runtime interface {
 	internal.Running
-
 	init(runtimeCtx runtime.Context, opts *RuntimeOptions)
-
 	getOptions() *RuntimeOptions
-
 	// GetRuntimeCtx 获取运行时上下文
 	GetRuntimeCtx() runtime.Context
 }

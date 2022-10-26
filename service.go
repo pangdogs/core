@@ -9,11 +9,8 @@ import (
 // Service 服务
 type Service interface {
 	internal.Running
-
 	init(ctx service.Context, opts *ServiceOptions)
-
 	getOptions() *ServiceOptions
-
 	// GetContext 获取服务上下文
 	GetContext() service.Context
 }

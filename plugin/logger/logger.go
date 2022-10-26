@@ -4,6 +4,14 @@ import (
 	"fmt"
 )
 
+// Logger is a generic logging interface
+type Logger interface {
+	// Log writes a log entry
+	Log(level Level, v ...interface{})
+	// Logf writes a formatted log entry
+	Logf(level Level, format string, v ...interface{})
+}
+
 type Level int8
 
 const (
@@ -63,11 +71,4 @@ func GetLevel(levelStr string) (Level, error) {
 		return FatalLevel, nil
 	}
 	return InfoLevel, fmt.Errorf("Unknown Level String: '%s', defaulting to InfoLevel", levelStr)
-}
-
-type Logger interface {
-	// Log writes a log entry
-	Log(level Level, v ...interface{})
-	// Logf writes a formatted log entry
-	Logf(level Level, format string, v ...interface{})
 }

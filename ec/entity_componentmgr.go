@@ -11,34 +11,24 @@ import (
 type _ComponentMgr interface {
 	// GetComponent 使用名称查询组件，一般情况下名称指组件接口名称，也可以自定义名称，同个名称指向多个组件时，返回首个组件
 	GetComponent(name string) Component
-
 	// GetComponentByID 使用组件唯一ID查询组件
 	GetComponentByID(id int64) Component
-
 	// GetComponents 使用名称查询所有指向的组件
 	GetComponents(name string) []Component
-
 	// RangeComponents 遍历所有组件
 	RangeComponents(fun func(component Component) bool)
-
 	// AddComponents 使用同个名称添加多个组件，一般情况下名称指组件接口名称，也可以自定义名称
 	AddComponents(name string, components []Component) error
-
 	// AddComponent 添加单个组件，因为同个名称可以指向多个组件，所以名称指向的组件已存在时，不会返回错误
 	AddComponent(name string, component Component) error
-
 	// RemoveComponent 删除名称指向的组件，会删除同个名称指向的多个组件
 	RemoveComponent(name string)
-
 	// RemoveComponentByID 使用组件唯一ID删除组件
 	RemoveComponentByID(id int64)
-
 	// EventCompMgrAddComponents 事件：实体的组件管理器加入一些组件
 	EventCompMgrAddComponents() localevent.IEvent
-
 	// EventCompMgrRemoveComponent 事件：实体的组件管理器删除组件
 	EventCompMgrRemoveComponent() localevent.IEvent
-
 	// EventCompMgrFirstAccessComponent 事件：实体的组件管理器首次访问组件
 	EventCompMgrFirstAccessComponent() localevent.IEvent
 }

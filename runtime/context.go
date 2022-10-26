@@ -15,28 +15,19 @@ type Context interface {
 	internal.Context
 	internal.RunningMark
 	_SafeCall
-
 	init(serviceCtx service.Context, opts *ContextOptions)
-
 	getOptions() *ContextOptions
-
 	// GetServiceCtx 获取服务上下文
 	GetServiceCtx() service.Context
-
 	setFrame(frame Frame)
-
 	// GetFrame 获取帧
 	GetFrame() Frame
-
 	// GetEntityMgr 获取实体管理器
 	GetEntityMgr() IEntityMgr
-
 	// GetECTree 获取主EC树
 	GetECTree() IECTree
-
 	// GetFaceCache 获取Face缓存
 	GetFaceCache() *container.Cache[util.FaceAny]
-
 	// GetHookCache 获取Hook缓存
 	GetHookCache() *container.Cache[localevent.Hook]
 }

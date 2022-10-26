@@ -12,30 +12,20 @@ import (
 type IECTree interface {
 	// GetRuntimeCtx 获取运行时上下文
 	GetRuntimeCtx() Context
-
-	// AddChild 子实体加入父实体，在实体加入运行时上下文后调用，
-	// 切换父实体时，先调用RemoveChild()离开旧父实体，再调用AddChild()加入新父实体
+	// AddChild 子实体加入父实体，在实体加入运行时上下文后调用，切换父实体时，先调用RemoveChild()离开旧父实体，再调用AddChild()加入新父实体
 	AddChild(parentID, childID int64) error
-
-	// RemoveChild 子实体离开父实体，在实体从运行时上下文中删除前调用，
-	// 切换父实体时，先调用RemoveChild()离开旧父实体，再调用AddChild()加入新父实体
+	// RemoveChild 子实体离开父实体，在实体从运行时上下文中删除前调用，切换父实体时，先调用RemoveChild()离开旧父实体，再调用AddChild()加入新父实体
 	RemoveChild(childID int64)
-
 	// RangeChildren 遍历子实体
 	RangeChildren(parentID int64, fun func(child ec.Entity) bool)
-
 	// ReverseRangeChildren 反向遍历子实体
 	ReverseRangeChildren(parentID int64, fun func(child ec.Entity) bool)
-
 	// GetChildCount 获取子实体数量
 	GetChildCount(parentID int64) int
-
 	// GetParent 获取子实体的父实体
 	GetParent(childID int64) (ec.Entity, bool)
-
 	// EventECTreeAddChild 事件：EC树中子实体加入父实体
 	EventECTreeAddChild() localevent.IEvent
-
 	// EventECTreeRemoveChild 事件：EC树中子实体离开父实体
 	EventECTreeRemoveChild() localevent.IEvent
 }
@@ -105,8 +95,7 @@ func (ecTree *ECTree) GetRuntimeCtx() Context {
 	return ecTree.runtimeCtx
 }
 
-// AddChild 子实体加入父实体，在实体加入运行时上下文后调用，
-// 切换父实体时，先调用RemoveChild()离开旧父实体，在调用AddChild()加入新父实体
+// AddChild 子实体加入父实体，在实体加入运行时上下文后调用，切换父实体时，先调用RemoveChild()离开旧父实体，在调用AddChild()加入新父实体
 func (ecTree *ECTree) AddChild(parentID, childID int64) error {
 	if parentID == childID {
 		return errors.New("parentID equal childID invalid")
@@ -148,8 +137,7 @@ func (ecTree *ECTree) AddChild(parentID, childID int64) error {
 	return nil
 }
 
-// RemoveChild 子实体离开父实体，在实体从运行时上下文中删除前调用，
-// 切换父实体时，先调用RemoveChild()离开旧父实体，在调用AddChild()加入新父实体
+// RemoveChild 子实体离开父实体，在实体从运行时上下文中删除前调用，切换父实体时，先调用RemoveChild()离开旧父实体，在调用AddChild()加入新父实体
 func (ecTree *ECTree) RemoveChild(childID int64) {
 	node, ok := ecTree.ecTree[childID]
 	if !ok {
