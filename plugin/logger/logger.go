@@ -70,5 +70,5 @@ func GetLevel(levelStr string) (Level, error) {
 	case FatalLevel.String():
 		return FatalLevel, nil
 	}
-	return InfoLevel, fmt.Errorf("Unknown Level String: '%s', defaulting to InfoLevel", levelStr)
+	return InfoLevel, fmt.Errorf("unknown Level String: '%s', defaulting to InfoLevel", levelStr)
 }
