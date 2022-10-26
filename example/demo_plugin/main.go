@@ -46,7 +46,7 @@ func main() {
 			RuntimeCtx(runtime.GetRuntimeCtx()).
 			Prototype("PluginDemo").
 			Accessibility(galaxy.TryGlobal).
-			Build()
+			Spawn()
 		if err != nil {
 			panic(err)
 		}

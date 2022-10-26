@@ -38,7 +38,7 @@ func main() {
 			RuntimeCtx(runtime.GetRuntimeCtx()).
 			Prototype("ECDemo").
 			Accessibility(galaxy.TryGlobal).
-			Build()
+			Spawn()
 		if err != nil {
 			panic(err)
 		}

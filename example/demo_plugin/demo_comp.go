@@ -28,11 +28,14 @@ type _DemoComp struct {
 // Start 组件开始
 func (comp *_DemoComp) Start() {
 	DemoPlugin.Get(service.Get(comp)).Test()
-	registry.Register(service.Get(comp), context.Background(), registry.Service{
-		Name:      "demo",
-		Version:   "1.0.0",
-		Metadata:  nil,
-		Endpoints: nil,
-		Nodes:     nil,
-	}, 5*time.Second)
+	registry.Register(
+		service.Get(comp),
+		context.Background(),
+		registry.Service{
+			Name:      "demo",
+			Version:   "1.0.0",
+			Metadata:  nil,
+			Endpoints: nil,
+			Nodes:     nil,
+		}, 5*time.Second)
 }

@@ -53,8 +53,17 @@ func (creator _EntityCreator) Accessibility(accessibility Accessibility) _Entity
 	return creator
 }
 
-// Build 构建实体
-func (creator _EntityCreator) Build() (ec.Entity, error) {
+// Spawn 创建实体
+func (creator _EntityCreator) Spawn() ec.Entity {
+	entity, err := creator.TrySpawn()
+	if err != nil {
+		panic(err)
+	}
+	return entity
+}
+
+// TrySpawn 尝试创建实体
+func (creator _EntityCreator) TrySpawn() (ec.Entity, error) {
 	if creator.runtimeCtx == nil {
 		return nil, errors.New("nil runtimeCtx")
 	}
