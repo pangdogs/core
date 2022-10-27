@@ -8,16 +8,16 @@ import (
 
 // PluginLib 插件库
 type PluginLib interface {
-	// Register 注册插件。
+	// Install 安装插件。
 	//
 	//	@param pluginName 插件名称。
 	//	@param pluginFace 插件Face。
-	Register(pluginName string, pluginFace util.FaceAny)
+	Install(pluginName string, pluginFace util.FaceAny)
 
-	// Deregister 取消注册插件。
+	// Uninstall 卸载插件。
 	//
 	//	@param pluginName 插件名称。
-	Deregister(pluginName string)
+	Uninstall(pluginName string)
 
 	// Get 获取插件。
 	//
@@ -32,16 +32,16 @@ type PluginLib interface {
 	Range(fun func(pluginName string, pluginFace util.FaceAny) bool)
 }
 
-// RegisterPlugin 注册插件。
+// InstallPlugin 安装插件。
 //
 //	@param pluginLib 插件库。
 //	@param pluginName 插件名称。
 //	@param plugin 插件。
-func RegisterPlugin[T any](pluginLib PluginLib, pluginName string, plugin T) {
+func InstallPlugin[T any](pluginLib PluginLib, pluginName string, plugin T) {
 	if pluginLib == nil {
 		panic("nil pluginLib")
 	}
-	pluginLib.Register(pluginName, util.NewFacePair[any](plugin, plugin))
+	pluginLib.Install(pluginName, util.NewFacePair[any](plugin, plugin))
 }
 
 // GetPlugin 获取插件。
@@ -78,20 +78,20 @@ func (lib *_PluginLib) init() {
 	lib.pluginMap = map[string]util.FaceAny{}
 }
 
-func (lib *_PluginLib) Register(pluginName string, pluginFace util.FaceAny) {
+func (lib *_PluginLib) Install(pluginName string, pluginFace util.FaceAny) {
 	if pluginFace.IsNil() {
 		panic("nil pluginFace")
 	}
 
 	_, ok := lib.pluginMap[pluginName]
 	if ok {
-		panic(fmt.Errorf("plugin '%s' is already registered", pluginName))
+		panic(fmt.Errorf("plugin '%s' is already installed", pluginName))
 	}
 
 	lib.pluginMap[pluginName] = pluginFace
 }
 
-func (lib *_PluginLib) Deregister(pluginName string) {
+func (lib *_PluginLib) Uninstall(pluginName string) {
 	delete(lib.pluginMap, pluginName)
 }
 

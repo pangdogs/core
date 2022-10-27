@@ -20,10 +20,10 @@ func main() {
 		util.TypeFullName[_DemoComp](),
 	})
 
-	// 创建插件库，注册插件
+	// 创建插件库，安装插件
 	pluginLib := plugin.NewPluginLib()
-	DemoPlugin.Register(pluginLib)
-	registry_etcd.Plugin.Register(pluginLib)
+	DemoPlugin.Install(pluginLib)
+	registry_etcd.Plugin.Install(pluginLib)
 
 	// 创建服务上下文
 	serviceCtx := service.NewContext(

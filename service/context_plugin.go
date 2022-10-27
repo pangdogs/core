@@ -19,7 +19,7 @@ func GetPlugin[T any](ctx Context, pluginName string) T {
 
 	plugin, ok := plugin.GetPlugin[T](pluginLib, pluginName)
 	if !ok {
-		panic(fmt.Errorf("plugin '%s' not registered", pluginName))
+		panic(fmt.Errorf("plugin '%s' not installed", pluginName))
 	}
 
 	return plugin
