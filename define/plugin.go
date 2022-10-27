@@ -16,15 +16,15 @@ func (p _Plugin[PLUGIN, OPTION]) Name() string {
 	return p.name
 }
 
-// Install 生成插件安装函数
-func (p _Plugin[PLUGIN, OPTION]) Install(creator func(...OPTION) PLUGIN) func(plugin.PluginLib, ...OPTION) {
+// InstallTo 生成插件安装函数
+func (p _Plugin[PLUGIN, OPTION]) InstallTo(creator func(...OPTION) PLUGIN) func(plugin.PluginLib, ...OPTION) {
 	return func(lib plugin.PluginLib, options ...OPTION) {
 		plugin.InstallPlugin[PLUGIN](lib, p.Name(), creator(options...))
 	}
 }
 
-// Uninstall 生成插件卸载函数
-func (p _Plugin[PLUGIN, OPTION]) Uninstall() func(plugin.PluginLib) {
+// UninstallFrom 生成插件卸载函数
+func (p _Plugin[PLUGIN, OPTION]) UninstallFrom() func(plugin.PluginLib) {
 	return func(lib plugin.PluginLib) {
 		lib.Uninstall(p.Name())
 	}
@@ -60,49 +60,49 @@ func (p _Plugin[PLUGIN, OPTION]) RuntimeTryGet() func(runtime.Context) (PLUGIN, 
 
 // ServicePlugin 服务类插件
 type ServicePlugin[PLUGIN, OPTION any] struct {
-	Name      string
-	Install   func(plugin.PluginLib, ...OPTION)
-	Uninstall func(plugin.PluginLib)
-	Get       func(service.Context) PLUGIN
-	TryGet    func(service.Context) (PLUGIN, bool)
+	Name          string
+	InstallTo     func(plugin.PluginLib, ...OPTION)
+	UninstallFrom func(plugin.PluginLib)
+	Get           func(service.Context) PLUGIN
+	TryGet        func(service.Context) (PLUGIN, bool)
 }
 
 // ServicePlugin 生成服务类插件定义
 func (p _Plugin[PLUGIN, OPTION]) ServicePlugin(creator func(...OPTION) PLUGIN) ServicePlugin[PLUGIN, OPTION] {
 	return ServicePlugin[PLUGIN, OPTION]{
-		Name:      p.Name(),
-		Install:   p.Install(creator),
-		Uninstall: p.Uninstall(),
-		Get:       p.ServiceGet(),
-		TryGet:    p.ServiceTryGet(),
+		Name:          p.Name(),
+		InstallTo:     p.InstallTo(creator),
+		UninstallFrom: p.UninstallFrom(),
+		Get:           p.ServiceGet(),
+		TryGet:        p.ServiceTryGet(),
 	}
 }
 
 // RuntimePlugin 运行时类插件
 type RuntimePlugin[PLUGIN, OPTION any] struct {
-	Name      string
-	Install   func(plugin.PluginLib, ...OPTION)
-	Uninstall func(plugin.PluginLib)
-	Get       func(runtime.Context) PLUGIN
-	TryGet    func(runtime.Context) (PLUGIN, bool)
+	Name          string
+	InstallTo     func(plugin.PluginLib, ...OPTION)
+	UninstallFrom func(plugin.PluginLib)
+	Get           func(runtime.Context) PLUGIN
+	TryGet        func(runtime.Context) (PLUGIN, bool)
 }
 
 // RuntimePlugin 生成运行时类插件定义
 func (p _Plugin[PLUGIN, OPTION]) RuntimePlugin(creator func(...OPTION) PLUGIN) RuntimePlugin[PLUGIN, OPTION] {
 	return RuntimePlugin[PLUGIN, OPTION]{
-		Name:      p.Name(),
-		Install:   p.Install(creator),
-		Uninstall: p.Uninstall(),
-		Get:       p.RuntimeGet(),
-		TryGet:    p.RuntimeTryGet(),
+		Name:          p.Name(),
+		InstallTo:     p.InstallTo(creator),
+		UninstallFrom: p.UninstallFrom(),
+		Get:           p.RuntimeGet(),
+		TryGet:        p.RuntimeTryGet(),
 	}
 }
 
 // Plugin 插件
 type Plugin[PLUGIN, OPTION any] struct {
 	Name          string
-	Install       func(plugin.PluginLib, ...OPTION)
-	Uninstall     func(plugin.PluginLib)
+	InstallTo     func(plugin.PluginLib, ...OPTION)
+	UninstallFrom func(plugin.PluginLib)
 	ServiceGet    func(service.Context) PLUGIN
 	ServiceTryGet func(service.Context) (PLUGIN, bool)
 	RuntimeGet    func(runtime.Context) PLUGIN
@@ -113,8 +113,8 @@ type Plugin[PLUGIN, OPTION any] struct {
 func (p _Plugin[PLUGIN, OPTION]) Plugin(creator func(...OPTION) PLUGIN) Plugin[PLUGIN, OPTION] {
 	return Plugin[PLUGIN, OPTION]{
 		Name:          p.Name(),
-		Install:       p.Install(creator),
-		Uninstall:     p.Uninstall(),
+		InstallTo:     p.InstallTo(creator),
+		UninstallFrom: p.UninstallFrom(),
 		ServiceGet:    p.ServiceGet(),
 		ServiceTryGet: p.ServiceTryGet(),
 		RuntimeGet:    p.RuntimeGet(),
