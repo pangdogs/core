@@ -25,11 +25,11 @@ func (pt *EntityPt) New(options ...ec.EntityOptionSetter) ec.Entity {
 // UnsafeNew 不安全的创建实体，需要自己初始化所有选项
 func (pt *EntityPt) UnsafeNew(options ec.EntityOptions) ec.Entity {
 	options.Prototype = pt.Prototype
-	return pt.InstallComponents(ec.UnsafeNewEntity(options))
+	return pt.InstallTo(ec.UnsafeNewEntity(options))
 }
 
-// InstallComponents 向实体安装组件
-func (pt *EntityPt) InstallComponents(entity ec.Entity) ec.Entity {
+// InstallTo 向实体安装组件
+func (pt *EntityPt) InstallTo(entity ec.Entity) ec.Entity {
 	if entity == nil {
 		return nil
 	}
