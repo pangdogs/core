@@ -83,6 +83,8 @@ func (e *_EtcdRegistry) Deregister(ctx context.Context, service registry.Service
 		return errors.New("require at least one node")
 	}
 
+	var anyErr error
+
 	for _, node := range service.Nodes {
 		np := nodePath(service.Name, node.Id)
 
@@ -96,15 +98,15 @@ func (e *_EtcdRegistry) Deregister(ctx context.Context, service registry.Service
 		ctx, cancel := context.WithTimeout(ctx, e.options.Timeout)
 		defer cancel()
 
-		logger.Tracef(e.serviceCtx, "deregistering %s", np)
+		logger.Tracef(e.serviceCtx, "deregistering %s id %s", service.Name, node.Id)
 
 		_, err := e.client.Delete(ctx, np)
 		if err != nil {
-			return err
+			anyErr = err
 		}
 	}
 
-	return nil
+	return anyErr
 }
 
 func (e *_EtcdRegistry) GetService(ctx context.Context, serviceName string) ([]registry.Service, error) {
@@ -120,36 +122,35 @@ func (e *_EtcdRegistry) GetService(ctx context.Context, serviceName string) ([]r
 		return nil, registry.ErrNotFound
 	}
 
-	serviceMap := map[string]registry.Service{}
+	serviceMap := map[string]*registry.Service{}
 
 	for _, n := range rsp.Kvs {
-		if sn := decode(n.Value); sn != nil {
-			s, ok := serviceMap[sn.Version]
-			if !ok {
-				s = registry.Service{
-					Name:      sn.Name,
-					Version:   sn.Version,
-					Metadata:  sn.Metadata,
-					Endpoints: sn.Endpoints,
-				}
-				serviceMap[s.Version] = s
-			}
-
-			s.Nodes = append(s.Nodes, sn.Nodes...)
+		sn := decode(n.Value)
+		if sn == nil {
+			continue
 		}
+
+		s, ok := serviceMap[sn.Version]
+		if !ok {
+			serviceMap[s.Version] = sn
+			continue
+		}
+
+		s.Nodes = append(s.Nodes, sn.Nodes...)
 	}
 
 	services := make([]registry.Service, 0, len(serviceMap))
 	for _, service := range serviceMap {
-		services = append(services, service)
+		services = append(services, *service)
 	}
+
+	// sort the services
+	sort.Slice(services, func(i, j int) bool { return services[i].Version < services[j].Version })
 
 	return services, nil
 }
 
 func (e *_EtcdRegistry) ListServices(ctx context.Context) ([]registry.Service, error) {
-	versions := make(map[string]registry.Service)
-
 	ctx, cancel := context.WithTimeout(ctx, e.options.Timeout)
 	defer cancel()
 
@@ -162,23 +163,27 @@ func (e *_EtcdRegistry) ListServices(ctx context.Context) ([]registry.Service, e
 		return []registry.Service{}, nil
 	}
 
+	versions := make(map[string]*registry.Service)
+
 	for _, n := range rsp.Kvs {
 		sn := decode(n.Value)
 		if sn == nil {
 			continue
 		}
+
 		v, ok := versions[sn.Name+sn.Version]
 		if !ok {
-			versions[sn.Name+sn.Version] = *sn
+			versions[sn.Name+sn.Version] = sn
 			continue
 		}
+
 		// append to service:version nodes
 		v.Nodes = append(v.Nodes, sn.Nodes...)
 	}
 
 	services := make([]registry.Service, 0, len(versions))
 	for _, service := range versions {
-		services = append(services, service)
+		services = append(services, *service)
 	}
 
 	// sort the services
@@ -293,7 +298,7 @@ func (e *_EtcdRegistry) registerNode(ctx context.Context, s registry.Service, no
 
 	// get existing hash for the service node
 	e.Lock()
-	v, ok := e.register[s.Name+node.Id]
+	v, ok := e.register[np]
 	e.Unlock()
 
 	// the service is unchanged, skip registering
