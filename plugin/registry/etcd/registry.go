@@ -22,7 +22,7 @@ var (
 	prefix = "/galaxy/registry/"
 )
 
-func newRegistry(options ...Option) registry.Registry {
+func newRegistry(options ...WithOption) registry.Registry {
 	opts := Options{}
 	Default()(&opts)
 

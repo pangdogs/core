@@ -16,7 +16,7 @@ type Service interface {
 }
 
 // NewService 创建服务
-func NewService(serviceCtx service.Context, options ...ServiceOptionSetter) Service {
+func NewService(serviceCtx service.Context, options ...WithServiceOption) Service {
 	opts := ServiceOptions{}
 	ServiceOption.Default()(&opts)
 

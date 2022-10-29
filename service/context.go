@@ -26,7 +26,7 @@ type Context interface {
 }
 
 // NewContext 创建服务上下文
-func NewContext(options ...ContextOptionSetter) Context {
+func NewContext(options ...WithContextOption) Context {
 	opts := ContextOptions{}
 	ContextOption.Default()(&opts)
 

@@ -19,9 +19,9 @@ type Options struct {
 	EtcdConfig *clientv3.Config
 }
 
-type Option func(options *Options)
+type WithOption func(options *Options)
 
-func Default() Option {
+func Default() WithOption {
 	return func(options *Options) {
 		Auth("", "")(options)
 		Endpoints("127.0.0.1:2379")(options)
@@ -33,14 +33,14 @@ func Default() Option {
 	}
 }
 
-func Auth(username, password string) Option {
+func Auth(username, password string) WithOption {
 	return func(options *Options) {
 		options.Username = username
 		options.Password = password
 	}
 }
 
-func Endpoints(endpoints ...string) Option {
+func Endpoints(endpoints ...string) WithOption {
 	return func(options *Options) {
 		for _, endpoint := range endpoints {
 			if _, _, err := net.SplitHostPort(endpoint); err != nil {
@@ -51,31 +51,31 @@ func Endpoints(endpoints ...string) Option {
 	}
 }
 
-func Timeout(dur time.Duration) Option {
+func Timeout(dur time.Duration) WithOption {
 	return func(options *Options) {
 		options.Timeout = dur
 	}
 }
 
-func Secure(secure bool) Option {
+func Secure(secure bool) WithOption {
 	return func(o *Options) {
 		o.Secure = secure
 	}
 }
 
-func TLSConfig(config *tls.Config) Option {
+func TLSConfig(config *tls.Config) WithOption {
 	return func(o *Options) {
 		o.TLSConfig = config
 	}
 }
 
-func ZapConfig(config *zap.Config) Option {
+func ZapConfig(config *zap.Config) WithOption {
 	return func(o *Options) {
 		o.ZapConfig = config
 	}
 }
 
-func EtcdConfig(config *clientv3.Config) Option {
+func EtcdConfig(config *clientv3.Config) WithOption {
 	return func(o *Options) {
 		o.EtcdConfig = config
 	}

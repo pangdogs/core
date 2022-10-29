@@ -42,7 +42,7 @@ type Entity interface {
 }
 
 // NewEntity 创建实体
-func NewEntity(options ...EntityOptionSetter) Entity {
+func NewEntity(options ...WithEntityOption) Entity {
 	opts := EntityOptions{}
 	EntityOption.Default()(&opts)
 

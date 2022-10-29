@@ -45,8 +45,9 @@ func (ew *_EtcdWatcher) Next() (*registry.Result, error) {
 		if watchRsp.Canceled {
 			return nil, errors.New("could not get next")
 		}
+
 		for _, ev := range watchRsp.Events {
-			service := decode(ev.Kv.Value)
+			var service *registry.Service
 			var action string
 
 			switch ev.Type {
@@ -56,6 +57,10 @@ func (ew *_EtcdWatcher) Next() (*registry.Result, error) {
 				} else if ev.IsModify() {
 					action = "update"
 				}
+
+				// get service from Kv
+				service = decode(ev.Kv.Value)
+
 			case clientv3.EventTypeDelete:
 				action = "delete"
 
@@ -63,15 +68,17 @@ func (ew *_EtcdWatcher) Next() (*registry.Result, error) {
 				service = decode(ev.PrevKv.Value)
 			}
 
-			if service == nil {
+			if service == nil || action == "" {
 				continue
 			}
+
 			return &registry.Result{
 				Action:  action,
 				Service: service,
 			}, nil
 		}
 	}
+
 	return nil, errors.New("could not get next")
 }
 

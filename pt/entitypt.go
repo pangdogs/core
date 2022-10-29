@@ -11,7 +11,7 @@ type EntityPt struct {
 }
 
 // New 创建实体
-func (pt *EntityPt) New(options ...ec.EntityOptionSetter) ec.Entity {
+func (pt *EntityPt) New(options ...ec.WithEntityOption) ec.Entity {
 	opts := ec.EntityOptions{}
 	ec.EntityOption.Default()(&opts)
 

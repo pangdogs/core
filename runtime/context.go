@@ -33,7 +33,7 @@ type Context interface {
 }
 
 // NewContext 创建运行时上下文
-func NewContext(serviceCtx service.Context, options ...ContextOptionSetter) Context {
+func NewContext(serviceCtx service.Context, options ...WithContextOption) Context {
 	opts := ContextOptions{}
 	ContextOption.Default()(&opts)
 

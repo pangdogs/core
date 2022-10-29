@@ -6,4 +6,4 @@ import (
 )
 
 // Plugin 定义本插件
-var Plugin = define.DefinePlugin[registry.Registry, Option]().ServicePlugin(newRegistry)
+var Plugin = define.DefinePlugin[registry.Registry, WithOption]().ServicePlugin(newRegistry)

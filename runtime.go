@@ -18,7 +18,7 @@ type Runtime interface {
 }
 
 // NewRuntime 创建运行时
-func NewRuntime(runtimeCtx runtime.Context, options ...RuntimeOptionSetter) Runtime {
+func NewRuntime(runtimeCtx runtime.Context, options ...WithRuntimeOption) Runtime {
 	opts := RuntimeOptions{}
 	RuntimeOption.Default()(&opts)
 
