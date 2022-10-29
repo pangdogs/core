@@ -5,7 +5,6 @@ import (
 	"github.com/pangdogs/galaxy"
 	"github.com/pangdogs/galaxy/comp/helloworld"
 	"github.com/pangdogs/galaxy/plugin"
-	registry_etcd "github.com/pangdogs/galaxy/plugin/registry/etcd"
 	"github.com/pangdogs/galaxy/pt"
 	"github.com/pangdogs/galaxy/runtime"
 	"github.com/pangdogs/galaxy/service"
@@ -23,7 +22,6 @@ func main() {
 	// 创建插件库，安装插件
 	pluginLib := plugin.NewPluginLib()
 	DemoPlugin.InstallTo(pluginLib)
-	registry_etcd.Plugin.InstallTo(pluginLib, registry_etcd.Endpoints("127.0.0.1:2379"))
 
 	// 创建服务上下文
 	serviceCtx := service.NewContext(
