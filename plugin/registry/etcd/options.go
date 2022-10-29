@@ -23,13 +23,13 @@ type Option func(options *Options)
 
 func Default() Option {
 	return func(options *Options) {
-		Auth("", "")
-		Endpoints("127.0.0.1:2379")
-		Timeout(5 * time.Second)
-		Secure(false)
-		TLSConfig(nil)
-		ZapConfig(nil)
-		EtcdConfig(nil)
+		Auth("", "")(options)
+		Endpoints("127.0.0.1:2379")(options)
+		Timeout(5 * time.Second)(options)
+		Secure(false)(options)
+		TLSConfig(nil)(options)
+		ZapConfig(nil)(options)
+		EtcdConfig(nil)(options)
 	}
 }
 

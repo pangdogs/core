@@ -84,19 +84,21 @@ func (e *_EtcdRegistry) Deregister(ctx context.Context, service registry.Service
 	}
 
 	for _, node := range service.Nodes {
+		np := nodePath(service.Name, node.Id)
+
 		e.Lock()
 		// delete our hash of the service
-		delete(e.register, service.Name+node.Id)
+		delete(e.register, np)
 		// delete our lease of the service
-		delete(e.leases, service.Name+node.Id)
+		delete(e.leases, np)
 		e.Unlock()
 
 		ctx, cancel := context.WithTimeout(ctx, e.options.Timeout)
 		defer cancel()
 
-		logger.Tracef(e.serviceCtx, "Deregistering %service id %service", service.Name, node.Id)
+		logger.Tracef(e.serviceCtx, "deregistering %s", np)
 
-		_, err := e.client.Delete(ctx, nodePath(service.Name, node.Id))
+		_, err := e.client.Delete(ctx, np)
 		if err != nil {
 			return err
 		}
@@ -220,9 +222,11 @@ func (e *_EtcdRegistry) registerNode(ctx context.Context, s registry.Service, no
 		return errors.New("require at least one node")
 	}
 
+	np := nodePath(s.Name, node.Id)
+
 	// check existing lease cache
 	e.RLock()
-	leaseID, ok := e.leases[s.Name+node.Id]
+	leaseID, ok := e.leases[np]
 	e.RUnlock()
 
 	if !ok {
@@ -231,7 +235,7 @@ func (e *_EtcdRegistry) registerNode(ctx context.Context, s registry.Service, no
 		defer cancel()
 
 		// look for the existing key
-		rsp, err := e.client.Get(ctx, nodePath(s.Name, node.Id), clientv3.WithSerializable())
+		rsp, err := e.client.Get(ctx, np, clientv3.WithSerializable())
 		if err != nil {
 			return err
 		}
@@ -255,8 +259,8 @@ func (e *_EtcdRegistry) registerNode(ctx context.Context, s registry.Service, no
 
 				// save the info
 				e.Lock()
-				e.leases[s.Name+node.Id] = leaseID
-				e.register[s.Name+node.Id] = h
+				e.leases[np] = leaseID
+				e.register[np] = h
 				e.Unlock()
 
 				break
@@ -268,14 +272,14 @@ func (e *_EtcdRegistry) registerNode(ctx context.Context, s registry.Service, no
 
 	// renew the lease if it exists
 	if leaseID > 0 {
-		logger.Tracef(e.serviceCtx, "Renewing existing lease for %s %d", s.Name, leaseID)
+		logger.Tracef(e.serviceCtx, "renewing existing lease for %s %d", s.Name, leaseID)
 
-		if _, err := e.client.KeepAliveOnce(context.TODO(), leaseID); err != nil {
+		if _, err := e.client.KeepAliveOnce(ctx, leaseID); err != nil {
 			if err != rpctypes.ErrLeaseNotFound {
 				return err
 			}
 
-			logger.Tracef(e.serviceCtx, "Lease not found for %s %d", s.Name, leaseID)
+			logger.Tracef(e.serviceCtx, "lease not found for %s %d", s.Name, leaseID)
 			// lease not found do register
 			leaseNotFound = true
 		}
@@ -294,7 +298,7 @@ func (e *_EtcdRegistry) registerNode(ctx context.Context, s registry.Service, no
 
 	// the service is unchanged, skip registering
 	if ok && v == h && !leaseNotFound {
-		logger.Tracef(e.serviceCtx, "Service %s node %s unchanged skipping registration", s.Name, node.Id)
+		logger.Tracef(e.serviceCtx, "service %s node %s unchanged skipping registration", s.Name, node.Id)
 		return nil
 	}
 
@@ -318,12 +322,12 @@ func (e *_EtcdRegistry) registerNode(ctx context.Context, s registry.Service, no
 		}
 	}
 
-	logger.Tracef(e.serviceCtx, "Registering %s id %s with lease %v and leaseID %v and ttl %v", service.Name, node.Id, lgr, lgr.ID, ttl)
+	logger.Tracef(e.serviceCtx, "registering %s id %s with lease %v and leaseID %v and ttl %v", service.Name, node.Id, lgr, lgr.ID, ttl)
 	// create an entry for the node
 	if lgr != nil {
-		_, err = e.client.Put(ctx, nodePath(service.Name, node.Id), encode(service), clientv3.WithLease(lgr.ID))
+		_, err = e.client.Put(ctx, np, encode(service), clientv3.WithLease(lgr.ID))
 	} else {
-		_, err = e.client.Put(ctx, nodePath(service.Name, node.Id), encode(service))
+		_, err = e.client.Put(ctx, np, encode(service))
 	}
 	if err != nil {
 		return err
@@ -331,10 +335,10 @@ func (e *_EtcdRegistry) registerNode(ctx context.Context, s registry.Service, no
 
 	e.Lock()
 	// save our hash of the service
-	e.register[s.Name+node.Id] = h
+	e.register[np] = h
 	// save our leaseID of the service
 	if lgr != nil {
-		e.leases[s.Name+node.Id] = lgr.ID
+		e.leases[np] = lgr.ID
 	}
 	e.Unlock()
 
