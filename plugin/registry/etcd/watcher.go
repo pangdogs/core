@@ -38,14 +38,14 @@ func newEtcdWatcher(ctx context.Context, r *_EtcdRegistry, timeout time.Duration
 }
 
 func (ew *_EtcdWatcher) Next() (*registry.Result, error) {
-	for wresp := range ew.watchChan {
-		if wresp.Err() != nil {
-			return nil, wresp.Err()
+	for watchRsp := range ew.watchChan {
+		if watchRsp.Err() != nil {
+			return nil, watchRsp.Err()
 		}
-		if wresp.Canceled {
+		if watchRsp.Canceled {
 			return nil, errors.New("could not get next")
 		}
-		for _, ev := range wresp.Events {
+		for _, ev := range watchRsp.Events {
 			service := decode(ev.Kv.Value)
 			var action string
 

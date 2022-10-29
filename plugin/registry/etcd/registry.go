@@ -46,23 +46,23 @@ type _EtcdRegistry struct {
 	sync.RWMutex
 }
 
-func (e *_EtcdRegistry) Init(ctx service.Context) {
-	e.serviceCtx = ctx
+func (r *_EtcdRegistry) Init(ctx service.Context) {
+	r.serviceCtx = ctx
 
-	client, err := clientv3.New(e.configure())
+	client, err := clientv3.New(r.configure())
 	if err != nil {
 		panic(err)
 	}
-	e.client = client
+	r.client = client
 }
 
-func (e *_EtcdRegistry) Shut() {
-	if e.client != nil {
-		e.client.Close()
+func (r *_EtcdRegistry) Shut() {
+	if r.client != nil {
+		r.client.Close()
 	}
 }
 
-func (e *_EtcdRegistry) Register(ctx context.Context, service registry.Service, ttl time.Duration) error {
+func (r *_EtcdRegistry) Register(ctx context.Context, service registry.Service, ttl time.Duration) error {
 	if len(service.Nodes) <= 0 {
 		return errors.New("require at least one node")
 	}
@@ -70,7 +70,7 @@ func (e *_EtcdRegistry) Register(ctx context.Context, service registry.Service, 
 	var anyErr error
 
 	for _, node := range service.Nodes {
-		if err := e.registerNode(ctx, service, node, ttl); err != nil {
+		if err := r.registerNode(ctx, service, node, ttl); err != nil {
 			anyErr = err
 		}
 	}
@@ -78,7 +78,7 @@ func (e *_EtcdRegistry) Register(ctx context.Context, service registry.Service, 
 	return anyErr
 }
 
-func (e *_EtcdRegistry) Deregister(ctx context.Context, service registry.Service) error {
+func (r *_EtcdRegistry) Deregister(ctx context.Context, service registry.Service) error {
 	if len(service.Nodes) <= 0 {
 		return errors.New("require at least one node")
 	}
@@ -88,19 +88,19 @@ func (e *_EtcdRegistry) Deregister(ctx context.Context, service registry.Service
 	for _, node := range service.Nodes {
 		np := nodePath(service.Name, node.Id)
 
-		e.Lock()
+		r.Lock()
 		// delete our hash of the service
-		delete(e.register, np)
+		delete(r.register, np)
 		// delete our lease of the service
-		delete(e.leases, np)
-		e.Unlock()
+		delete(r.leases, np)
+		r.Unlock()
 
-		ctx, cancel := context.WithTimeout(ctx, e.options.Timeout)
+		ctx, cancel := context.WithTimeout(ctx, r.options.Timeout)
 		defer cancel()
 
-		logger.Tracef(e.serviceCtx, "deregistering %s id %s", service.Name, node.Id)
+		logger.Tracef(r.serviceCtx, "deregistering %s id %s", service.Name, node.Id)
 
-		_, err := e.client.Delete(ctx, np)
+		_, err := r.client.Delete(ctx, np)
 		if err != nil {
 			anyErr = err
 		}
@@ -109,11 +109,11 @@ func (e *_EtcdRegistry) Deregister(ctx context.Context, service registry.Service
 	return anyErr
 }
 
-func (e *_EtcdRegistry) GetService(ctx context.Context, serviceName string) ([]registry.Service, error) {
-	ctx, cancel := context.WithTimeout(ctx, e.options.Timeout)
+func (r *_EtcdRegistry) GetService(ctx context.Context, serviceName string) ([]registry.Service, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.options.Timeout)
 	defer cancel()
 
-	rsp, err := e.client.Get(ctx, servicePath(serviceName)+"/", clientv3.WithPrefix(), clientv3.WithSerializable())
+	rsp, err := r.client.Get(ctx, servicePath(serviceName)+"/", clientv3.WithPrefix(), clientv3.WithSerializable())
 	if err != nil {
 		return nil, err
 	}
@@ -150,11 +150,11 @@ func (e *_EtcdRegistry) GetService(ctx context.Context, serviceName string) ([]r
 	return services, nil
 }
 
-func (e *_EtcdRegistry) ListServices(ctx context.Context) ([]registry.Service, error) {
-	ctx, cancel := context.WithTimeout(ctx, e.options.Timeout)
+func (r *_EtcdRegistry) ListServices(ctx context.Context) ([]registry.Service, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.options.Timeout)
 	defer cancel()
 
-	rsp, err := e.client.Get(ctx, prefix, clientv3.WithPrefix(), clientv3.WithSerializable())
+	rsp, err := r.client.Get(ctx, prefix, clientv3.WithPrefix(), clientv3.WithSerializable())
 	if err != nil {
 		return nil, err
 	}
@@ -171,9 +171,11 @@ func (e *_EtcdRegistry) ListServices(ctx context.Context) ([]registry.Service, e
 			continue
 		}
 
-		v, ok := versions[sn.Name+sn.Version]
+		sv := sn.Name + "/" + sn.Version
+
+		v, ok := versions[sv]
 		if !ok {
-			versions[sn.Name+sn.Version] = sn
+			versions[sv] = sn
 			continue
 		}
 
@@ -192,25 +194,25 @@ func (e *_EtcdRegistry) ListServices(ctx context.Context) ([]registry.Service, e
 	return services, nil
 }
 
-func (e *_EtcdRegistry) Watch(ctx context.Context, serviceName string) (registry.Watcher, error) {
-	return newEtcdWatcher(ctx, e, e.options.Timeout, serviceName)
+func (r *_EtcdRegistry) Watch(ctx context.Context, serviceName string) (registry.Watcher, error) {
+	return newEtcdWatcher(ctx, r, r.options.Timeout, serviceName)
 }
 
-func (e *_EtcdRegistry) configure() clientv3.Config {
-	if e.options.EtcdConfig != nil {
-		return *e.options.EtcdConfig
+func (r *_EtcdRegistry) configure() clientv3.Config {
+	if r.options.EtcdConfig != nil {
+		return *r.options.EtcdConfig
 	}
 
 	config := clientv3.Config{
-		Endpoints:   e.options.Endpoints,
-		DialTimeout: e.options.Timeout,
-		Username:    e.options.Username,
-		Password:    e.options.Password,
-		LogConfig:   e.options.ZapConfig,
+		Endpoints:   r.options.Endpoints,
+		DialTimeout: r.options.Timeout,
+		Username:    r.options.Username,
+		Password:    r.options.Password,
+		LogConfig:   r.options.ZapConfig,
 	}
 
-	if e.options.Secure || e.options.TLSConfig != nil {
-		tlsConfig := e.options.TLSConfig
+	if r.options.Secure || r.options.TLSConfig != nil {
+		tlsConfig := r.options.TLSConfig
 		if tlsConfig == nil {
 			tlsConfig = &tls.Config{
 				InsecureSkipVerify: true,
@@ -222,7 +224,7 @@ func (e *_EtcdRegistry) configure() clientv3.Config {
 	return config
 }
 
-func (e *_EtcdRegistry) registerNode(ctx context.Context, s registry.Service, node registry.Node, ttl time.Duration) error {
+func (r *_EtcdRegistry) registerNode(ctx context.Context, s registry.Service, node registry.Node, ttl time.Duration) error {
 	if len(s.Nodes) <= 0 {
 		return errors.New("require at least one node")
 	}
@@ -230,17 +232,17 @@ func (e *_EtcdRegistry) registerNode(ctx context.Context, s registry.Service, no
 	np := nodePath(s.Name, node.Id)
 
 	// check existing lease cache
-	e.RLock()
-	leaseID, ok := e.leases[np]
-	e.RUnlock()
+	r.RLock()
+	leaseID, ok := r.leases[np]
+	r.RUnlock()
 
 	if !ok {
 		// missing lease, check if the key exists
-		ctx, cancel := context.WithTimeout(ctx, e.options.Timeout)
+		ctx, cancel := context.WithTimeout(ctx, r.options.Timeout)
 		defer cancel()
 
 		// look for the existing key
-		rsp, err := e.client.Get(ctx, np, clientv3.WithSerializable())
+		rsp, err := r.client.Get(ctx, np, clientv3.WithSerializable())
 		if err != nil {
 			return err
 		}
@@ -263,10 +265,10 @@ func (e *_EtcdRegistry) registerNode(ctx context.Context, s registry.Service, no
 				}
 
 				// save the info
-				e.Lock()
-				e.leases[np] = leaseID
-				e.register[np] = h
-				e.Unlock()
+				r.Lock()
+				r.leases[np] = leaseID
+				r.register[np] = h
+				r.Unlock()
 
 				break
 			}
@@ -277,14 +279,14 @@ func (e *_EtcdRegistry) registerNode(ctx context.Context, s registry.Service, no
 
 	// renew the lease if it exists
 	if leaseID > 0 {
-		logger.Tracef(e.serviceCtx, "renewing existing lease for %s %d", s.Name, leaseID)
+		logger.Tracef(r.serviceCtx, "renewing existing lease for %s %d", s.Name, leaseID)
 
-		if _, err := e.client.KeepAliveOnce(ctx, leaseID); err != nil {
+		if _, err := r.client.KeepAliveOnce(ctx, leaseID); err != nil {
 			if err != rpctypes.ErrLeaseNotFound {
 				return err
 			}
 
-			logger.Tracef(e.serviceCtx, "lease not found for %s %d", s.Name, leaseID)
+			logger.Tracef(r.serviceCtx, "lease not found for %s %d", s.Name, leaseID)
 			// lease not found do register
 			leaseNotFound = true
 		}
@@ -297,13 +299,13 @@ func (e *_EtcdRegistry) registerNode(ctx context.Context, s registry.Service, no
 	}
 
 	// get existing hash for the service node
-	e.Lock()
-	v, ok := e.register[np]
-	e.Unlock()
+	r.Lock()
+	v, ok := r.register[np]
+	r.Unlock()
 
 	// the service is unchanged, skip registering
 	if ok && v == h && !leaseNotFound {
-		logger.Tracef(e.serviceCtx, "service %s node %s unchanged skipping registration", s.Name, node.Id)
+		logger.Tracef(r.serviceCtx, "service %s node %s unchanged skipping registration", s.Name, node.Id)
 		return nil
 	}
 
@@ -315,37 +317,37 @@ func (e *_EtcdRegistry) registerNode(ctx context.Context, s registry.Service, no
 		Nodes:     []registry.Node{node},
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), e.options.Timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), r.options.Timeout)
 	defer cancel()
 
 	var lgr *clientv3.LeaseGrantResponse
 	if ttl.Seconds() > 0 {
 		// get a lease used to expire keys since we have a ttl
-		lgr, err = e.client.Grant(ctx, int64(ttl.Seconds()))
+		lgr, err = r.client.Grant(ctx, int64(ttl.Seconds()))
 		if err != nil {
 			return err
 		}
 	}
 
-	logger.Tracef(e.serviceCtx, "registering %s id %s with lease %v and leaseID %v and ttl %v", service.Name, node.Id, lgr, lgr.ID, ttl)
+	logger.Tracef(r.serviceCtx, "registering %s id %s with lease %v and leaseID %v and ttl %v", service.Name, node.Id, lgr, lgr.ID, ttl)
 	// create an entry for the node
 	if lgr != nil {
-		_, err = e.client.Put(ctx, np, encode(service), clientv3.WithLease(lgr.ID))
+		_, err = r.client.Put(ctx, np, encode(service), clientv3.WithLease(lgr.ID))
 	} else {
-		_, err = e.client.Put(ctx, np, encode(service))
+		_, err = r.client.Put(ctx, np, encode(service))
 	}
 	if err != nil {
 		return err
 	}
 
-	e.Lock()
+	r.Lock()
 	// save our hash of the service
-	e.register[np] = h
+	r.register[np] = h
 	// save our leaseID of the service
 	if lgr != nil {
-		e.leases[np] = lgr.ID
+		r.leases[np] = lgr.ID
 	}
-	e.Unlock()
+	r.Unlock()
 
 	return nil
 }
