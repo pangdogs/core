@@ -15,6 +15,7 @@ type Options struct {
 	Timeout    time.Duration
 	Secure     bool
 	TLSConfig  *tls.Config
+	ZapLogger  *zap.Logger
 	ZapConfig  *zap.Config
 	EtcdConfig *clientv3.Config
 }
@@ -28,6 +29,7 @@ func Default() WithOption {
 		Timeout(5 * time.Second)(options)
 		Secure(false)(options)
 		TLSConfig(nil)(options)
+		ZapLogger(nil)(options)
 		ZapConfig(nil)(options)
 		EtcdConfig(nil)(options)
 	}
@@ -66,6 +68,12 @@ func Secure(secure bool) WithOption {
 func TLSConfig(config *tls.Config) WithOption {
 	return func(o *Options) {
 		o.TLSConfig = config
+	}
+}
+
+func ZapLogger(zapLogger *zap.Logger) WithOption {
+	return func(o *Options) {
+		o.ZapLogger = zapLogger
 	}
 }
 

@@ -25,7 +25,7 @@ const (
 	Create EventType = iota
 	// Delete is emitted when an existing service is deregsitered
 	Delete
-	// Update is emitted when an existing servicec is updated
+	// Update is emitted when an existing service is updated
 	Update
 )
 

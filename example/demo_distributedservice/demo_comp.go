@@ -32,6 +32,7 @@ func (comp *_DemoComp) Start() {
 
 // Update 组件更新
 func (comp *_DemoComp) Update() {
+	// 服务上下文
 	serviceCtx := service.Get(comp)
 
 	// 注册服务
@@ -49,5 +50,5 @@ func (comp *_DemoComp) Update() {
 				},
 			},
 		},
-		10*time.Second)
+		registry.TTL(10*time.Second))
 }

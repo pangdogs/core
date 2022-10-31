@@ -53,16 +53,16 @@ func (ew *_EtcdWatcher) Next() (*registry.Result, error) {
 			switch ev.Type {
 			case clientv3.EventTypePut:
 				if ev.IsCreate() {
-					action = "create"
+					action = registry.Create.String()
 				} else if ev.IsModify() {
-					action = "update"
+					action = registry.Update.String()
 				}
 
 				// get service from Kv
 				service = decode(ev.Kv.Value)
 
 			case clientv3.EventTypeDelete:
-				action = "delete"
+				action = registry.Delete.String()
 
 				// get service from prevKv
 				service = decode(ev.PrevKv.Value)

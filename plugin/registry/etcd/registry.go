@@ -62,15 +62,21 @@ func (r *_EtcdRegistry) Shut() {
 	}
 }
 
-func (r *_EtcdRegistry) Register(ctx context.Context, service registry.Service, ttl time.Duration) error {
+func (r *_EtcdRegistry) Register(ctx context.Context, service registry.Service, options ...registry.WithRegisterOption) error {
 	if len(service.Nodes) <= 0 {
 		return errors.New("require at least one node")
+	}
+
+	var opts registry.RegisterOptions
+
+	for i := range options {
+		options[i](&opts)
 	}
 
 	var anyErr error
 
 	for _, node := range service.Nodes {
-		if err := r.registerNode(ctx, service, node, ttl); err != nil {
+		if err := r.registerNode(ctx, service, node, opts.TTL); err != nil {
 			anyErr = err
 		}
 	}
@@ -224,12 +230,12 @@ func (r *_EtcdRegistry) configure() clientv3.Config {
 	return config
 }
 
-func (r *_EtcdRegistry) registerNode(ctx context.Context, s registry.Service, node registry.Node, ttl time.Duration) error {
-	if len(s.Nodes) <= 0 {
+func (r *_EtcdRegistry) registerNode(ctx context.Context, service registry.Service, node registry.Node, ttl time.Duration) error {
+	if len(service.Nodes) <= 0 {
 		return errors.New("require at least one node")
 	}
 
-	np := nodePath(s.Name, node.Id)
+	np := nodePath(service.Name, node.Id)
 
 	// check existing lease cache
 	r.RLock()
@@ -279,14 +285,14 @@ func (r *_EtcdRegistry) registerNode(ctx context.Context, s registry.Service, no
 
 	// renew the lease if it exists
 	if leaseID > 0 {
-		logger.Tracef(r.serviceCtx, "renewing existing lease for %s %d", s.Name, leaseID)
+		logger.Tracef(r.serviceCtx, "renewing existing lease for %s %d", service.Name, leaseID)
 
-		if _, err := r.client.KeepAliveOnce(ctx, leaseID); err != nil {
+		if _, err := r.client.KeepAliveOnce(context.Background(), leaseID); err != nil {
 			if err != rpctypes.ErrLeaseNotFound {
 				return err
 			}
 
-			logger.Tracef(r.serviceCtx, "lease not found for %s %d", s.Name, leaseID)
+			logger.Tracef(r.serviceCtx, "lease not found for %s %d", service.Name, leaseID)
 			// lease not found do register
 			leaseNotFound = true
 		}
@@ -305,15 +311,15 @@ func (r *_EtcdRegistry) registerNode(ctx context.Context, s registry.Service, no
 
 	// the service is unchanged, skip registering
 	if ok && v == h && !leaseNotFound {
-		logger.Tracef(r.serviceCtx, "service %s node %s unchanged skipping registration", s.Name, node.Id)
+		logger.Tracef(r.serviceCtx, "service %s node %s unchanged skipping registration", service.Name, node.Id)
 		return nil
 	}
 
-	service := &registry.Service{
-		Name:      s.Name,
-		Version:   s.Version,
-		Metadata:  s.Metadata,
-		Endpoints: s.Endpoints,
+	nodeService := &registry.Service{
+		Name:      service.Name,
+		Version:   service.Version,
+		Metadata:  service.Metadata,
+		Endpoints: service.Endpoints,
 		Nodes:     []registry.Node{node},
 	}
 
@@ -329,12 +335,12 @@ func (r *_EtcdRegistry) registerNode(ctx context.Context, s registry.Service, no
 		}
 	}
 
-	logger.Tracef(r.serviceCtx, "registering %s id %s with lease %v and leaseID %v and ttl %v", service.Name, node.Id, lgr, lgr.ID, ttl)
+	logger.Tracef(r.serviceCtx, "registering %s id %s with lease %v and leaseID %v and ttl %v", nodeService.Name, node.Id, lgr, lgr.ID, ttl)
 	// create an entry for the node
 	if lgr != nil {
-		_, err = r.client.Put(ctx, np, encode(service), clientv3.WithLease(lgr.ID))
+		_, err = r.client.Put(ctx, np, encode(nodeService), clientv3.WithLease(lgr.ID))
 	} else {
-		_, err = r.client.Put(ctx, np, encode(service))
+		_, err = r.client.Put(ctx, np, encode(nodeService))
 	}
 	if err != nil {
 		return err

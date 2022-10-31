@@ -3,11 +3,10 @@ package registry
 import (
 	"context"
 	"github.com/pangdogs/galaxy/service"
-	"time"
 )
 
-func Register(serviceCtx service.Context, ctx context.Context, service Service, ttl time.Duration) error {
-	return Plugin.Get(serviceCtx).Register(ctx, service, ttl)
+func Register(serviceCtx service.Context, ctx context.Context, service Service, options ...WithRegisterOption) error {
+	return Plugin.Get(serviceCtx).Register(ctx, service, options...)
 }
 
 func Deregister(serviceCtx service.Context, ctx context.Context, service Service) error {
