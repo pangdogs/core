@@ -22,7 +22,7 @@ func main() {
 
 	// 创建插件库，安装插件
 	pluginLib := plugin.NewPluginLib()
-	registry_etcd.Plugin.InstallTo(pluginLib, registry_etcd.Endpoints("127.0.0.1:3379"))
+	registry_etcd.Plugin.InstallTo(pluginLib, registry_etcd.EtcdOption.Endpoints("127.0.0.1:3379"))
 
 	// 创建服务上下文
 	serviceCtx := service.NewContext(

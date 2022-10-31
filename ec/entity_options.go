@@ -22,12 +22,12 @@ type EntityOptions struct {
 type WithEntityOption func(o *EntityOptions)
 
 // EntityOption 创建实体的选项
-var EntityOption = &_EntityOption{}
+var EntityOption = _EntityOption{}
 
 type _EntityOption struct{}
 
 // Default 默认值
-func (*_EntityOption) Default() WithEntityOption {
+func (_EntityOption) Default() WithEntityOption {
 	return func(o *EntityOptions) {
 		o.Inheritor = util.Face[Entity]{}
 		o.Prototype = ""
@@ -41,21 +41,21 @@ func (*_EntityOption) Default() WithEntityOption {
 }
 
 // Inheritor 继承者，在拓展实体自身能力时使用
-func (*_EntityOption) Inheritor(v util.Face[Entity]) WithEntityOption {
+func (_EntityOption) Inheritor(v util.Face[Entity]) WithEntityOption {
 	return func(o *EntityOptions) {
 		o.Inheritor = v
 	}
 }
 
 // Prototype 实体原型名称
-func (*_EntityOption) Prototype(v string) WithEntityOption {
+func (_EntityOption) Prototype(v string) WithEntityOption {
 	return func(o *EntityOptions) {
 		o.Prototype = v
 	}
 }
 
 // PersistID 实体持久化ID
-func (*_EntityOption) PersistID(v int64) WithEntityOption {
+func (_EntityOption) PersistID(v int64) WithEntityOption {
 	return func(o *EntityOptions) {
 		if v < 0 {
 			panic("persistID less 0 invalid")
@@ -65,35 +65,35 @@ func (*_EntityOption) PersistID(v int64) WithEntityOption {
 }
 
 // ComponentPersistID 组件持久化ID
-func (*_EntityOption) ComponentPersistID(v func(comp Component) int64) WithEntityOption {
+func (_EntityOption) ComponentPersistID(v func(comp Component) int64) WithEntityOption {
 	return func(o *EntityOptions) {
 		o.ComponentPersistID = v
 	}
 }
 
 // EnableRemovePrimaryComponent 开启主要组件可以被删除，主要组件是指实体加入运行时上下文前添加的组件
-func (*_EntityOption) EnableRemovePrimaryComponent(v bool) WithEntityOption {
+func (_EntityOption) EnableRemovePrimaryComponent(v bool) WithEntityOption {
 	return func(o *EntityOptions) {
 		o.EnableRemovePrimaryComponent = v
 	}
 }
 
 // EnableComponentAwakeByAccess 开启组件被访问时，检测并调用Awake()
-func (*_EntityOption) EnableComponentAwakeByAccess(v bool) WithEntityOption {
+func (_EntityOption) EnableComponentAwakeByAccess(v bool) WithEntityOption {
 	return func(o *EntityOptions) {
 		o.EnableComponentAwakeByAccess = v
 	}
 }
 
 // FaceCache FaceCache用于提高性能，通常传入运行时上下文选项中的FaceCache
-func (*_EntityOption) FaceCache(v *container.Cache[util.FaceAny]) WithEntityOption {
+func (_EntityOption) FaceCache(v *container.Cache[util.FaceAny]) WithEntityOption {
 	return func(o *EntityOptions) {
 		o.FaceCache = v
 	}
 }
 
 // HookCache HookCache用于提高性能，通常传入运行时上下文选项中的HookCache
-func (*_EntityOption) HookCache(v *container.Cache[localevent.Hook]) WithEntityOption {
+func (_EntityOption) HookCache(v *container.Cache[localevent.Hook]) WithEntityOption {
 	return func(o *EntityOptions) {
 		o.HookCache = v
 	}

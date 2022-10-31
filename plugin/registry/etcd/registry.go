@@ -22,9 +22,9 @@ var (
 	prefix = "/galaxy/registry/"
 )
 
-func newRegistry(options ...WithOption) registry.Registry {
-	opts := Options{}
-	Default()(&opts)
+func newRegistry(options ...WithEtcdOption) registry.Registry {
+	opts := EtcdOptions{}
+	EtcdOption.Default()(&opts)
 
 	for i := range options {
 		options[i](&opts)
@@ -38,7 +38,7 @@ func newRegistry(options ...WithOption) registry.Registry {
 }
 
 type _EtcdRegistry struct {
-	options    Options
+	options    EtcdOptions
 	serviceCtx service.Context
 	client     *clientv3.Client
 	register   map[string]uint64

@@ -50,5 +50,5 @@ func (comp *_DemoComp) Update() {
 				},
 			},
 		},
-		registry.TTL(10*time.Second))
+		registry.RegisterOption.TTL(10*time.Second))
 }
