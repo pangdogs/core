@@ -2,8 +2,8 @@ package runtime
 
 import (
 	"fmt"
-	"github.com/galaxy-kit/galaxy/plugin"
-	"github.com/galaxy-kit/galaxy/util"
+	"github.com/galaxy-kit/galaxy-go/plugin"
+	"github.com/galaxy-kit/galaxy-go/util"
 )
 
 // GetPlugin 从运行时上下文上获取插件

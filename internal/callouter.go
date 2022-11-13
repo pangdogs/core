@@ -2,7 +2,7 @@ package internal
 
 import (
 	"fmt"
-	"github.com/galaxy-kit/galaxy/util"
+	"github.com/galaxy-kit/galaxy-go/util"
 	"runtime"
 )
 

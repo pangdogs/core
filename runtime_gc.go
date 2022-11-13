@@ -1,9 +1,9 @@
 package galaxy
 
 import (
-	"github.com/galaxy-kit/galaxy/localevent"
-	"github.com/galaxy-kit/galaxy/runtime"
-	"github.com/galaxy-kit/galaxy/util/container"
+	"github.com/galaxy-kit/galaxy-go/localevent"
+	"github.com/galaxy-kit/galaxy-go/runtime"
+	"github.com/galaxy-kit/galaxy-go/util/container"
 )
 
 func (_runtime *RuntimeBehavior) gc() {

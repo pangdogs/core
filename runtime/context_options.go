@@ -2,10 +2,10 @@ package runtime
 
 import (
 	"context"
-	"github.com/galaxy-kit/galaxy/localevent"
-	"github.com/galaxy-kit/galaxy/plugin"
-	"github.com/galaxy-kit/galaxy/util"
-	"github.com/galaxy-kit/galaxy/util/container"
+	"github.com/galaxy-kit/galaxy-go/localevent"
+	"github.com/galaxy-kit/galaxy-go/plugin"
+	"github.com/galaxy-kit/galaxy-go/util"
+	"github.com/galaxy-kit/galaxy-go/util/container"
 )
 
 // ContextOptions 创建运行时上下文的所有选项

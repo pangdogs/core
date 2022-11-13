@@ -1,6 +1,6 @@
 package ec
 
-import "github.com/galaxy-kit/galaxy/util/container"
+import "github.com/galaxy-kit/galaxy-go/util/container"
 
 type _InnerGC interface {
 	getInnerGC() container.GC

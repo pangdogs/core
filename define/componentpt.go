@@ -1,9 +1,9 @@
 package define
 
 import (
-	"github.com/galaxy-kit/galaxy/ec"
-	"github.com/galaxy-kit/galaxy/pt"
-	"github.com/galaxy-kit/galaxy/util"
+	"github.com/galaxy-kit/galaxy-go/ec"
+	"github.com/galaxy-kit/galaxy-go/pt"
+	"github.com/galaxy-kit/galaxy-go/util"
 )
 
 type _ComponentPt[T any] struct {

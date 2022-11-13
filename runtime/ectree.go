@@ -2,10 +2,10 @@ package runtime
 
 import (
 	"errors"
-	"github.com/galaxy-kit/galaxy/ec"
-	"github.com/galaxy-kit/galaxy/localevent"
-	"github.com/galaxy-kit/galaxy/util"
-	"github.com/galaxy-kit/galaxy/util/container"
+	"github.com/galaxy-kit/galaxy-go/ec"
+	"github.com/galaxy-kit/galaxy-go/localevent"
+	"github.com/galaxy-kit/galaxy-go/util"
+	"github.com/galaxy-kit/galaxy-go/util/container"
 )
 
 // IECTree EC树接口

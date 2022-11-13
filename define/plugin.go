@@ -1,10 +1,10 @@
 package define
 
 import (
-	"github.com/galaxy-kit/galaxy/plugin"
-	"github.com/galaxy-kit/galaxy/runtime"
-	"github.com/galaxy-kit/galaxy/service"
-	"github.com/galaxy-kit/galaxy/util"
+	"github.com/galaxy-kit/galaxy-go/plugin"
+	"github.com/galaxy-kit/galaxy-go/runtime"
+	"github.com/galaxy-kit/galaxy-go/service"
+	"github.com/galaxy-kit/galaxy-go/util"
 )
 
 type _Plugin[PLUGIN, OPTION any] struct {

@@ -1,6 +1,6 @@
 package localevent
 
-import "github.com/galaxy-kit/galaxy/util"
+import "github.com/galaxy-kit/galaxy-go/util"
 
 func UnsafeEvent(v IEvent) _UnsafeEvent {
 	return _UnsafeEvent{

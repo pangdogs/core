@@ -1,7 +1,7 @@
 package galaxy
 
 import (
-	"github.com/galaxy-kit/galaxy/util"
+	"github.com/galaxy-kit/galaxy-go/util"
 )
 
 // ServiceOptions 创建服务的所有选项

@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	"github.com/galaxy-kit/galaxy/plugin"
-	"github.com/galaxy-kit/galaxy/pt"
-	"github.com/galaxy-kit/galaxy/util"
+	"github.com/galaxy-kit/galaxy-go/plugin"
+	"github.com/galaxy-kit/galaxy-go/pt"
+	"github.com/galaxy-kit/galaxy-go/util"
 )
 
 // ContextOptions 创建服务上下文的所有选项

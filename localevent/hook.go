@@ -1,8 +1,8 @@
 package localevent
 
 import (
-	"github.com/galaxy-kit/galaxy/util"
-	"github.com/galaxy-kit/galaxy/util/container"
+	"github.com/galaxy-kit/galaxy-go/util"
+	"github.com/galaxy-kit/galaxy-go/util/container"
 )
 
 // Hook 事件绑定句柄，主要用于重新绑定或解除绑定事件，由BindEvent()或BindEventWithPriority()创建并返回，请勿自己创建

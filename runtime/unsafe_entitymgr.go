@@ -1,6 +1,6 @@
 package runtime
 
-import "github.com/galaxy-kit/galaxy/localevent"
+import "github.com/galaxy-kit/galaxy-go/localevent"
 
 func UnsafeEntityMgr(entityMgr IEntityMgr) _UnsafeEntityMgr {
 	return _UnsafeEntityMgr{

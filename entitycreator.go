@@ -3,9 +3,9 @@ package galaxy
 import (
 	"errors"
 	"fmt"
-	"github.com/galaxy-kit/galaxy/ec"
-	"github.com/galaxy-kit/galaxy/runtime"
-	"github.com/galaxy-kit/galaxy/service"
+	"github.com/galaxy-kit/galaxy-go/ec"
+	"github.com/galaxy-kit/galaxy-go/runtime"
+	"github.com/galaxy-kit/galaxy-go/service"
 )
 
 // EntityCreator 实体构建器

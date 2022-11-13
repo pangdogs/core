@@ -1,4 +1,4 @@
-module github.com/galaxy-kit/galaxy
+module github.com/galaxy-kit/galaxy-go
 
 go 1.18
 

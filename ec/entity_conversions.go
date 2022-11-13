@@ -1,7 +1,7 @@
 package ec
 
 import (
-	"github.com/galaxy-kit/galaxy/util"
+	"github.com/galaxy-kit/galaxy-go/util"
 	"reflect"
 	"strings"
 )

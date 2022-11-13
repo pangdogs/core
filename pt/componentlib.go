@@ -2,7 +2,7 @@ package pt
 
 import (
 	"fmt"
-	"github.com/galaxy-kit/galaxy/ec"
+	"github.com/galaxy-kit/galaxy-go/ec"
 	"reflect"
 	"sync"
 )
@@ -35,14 +35,14 @@ func RegisterComponentCreator(compName, descr string, creator func() ec.Componen
 
 // DeregisterComponentPt 取消注册组件原型，线程安全。
 //
-//	@param compPath 组件路径，格式为组件所在包路径+组件名，例如：`github.com/galaxy-kit/galaxy/ec/comp/helloworld/HelloWorldComp`。
+//	@param compPath 组件路径，格式为组件所在包路径+组件名，例如：`github.com/galaxy-kit/galaxy-go/ec/comp/helloworld/HelloWorldComp`。
 func DeregisterComponentPt(compPath string) {
 	componentLib.DeregisterComponentPt(compPath)
 }
 
 // GetComponentPt 获取组件原型，线程安全。
 //
-//	@param compPath 组件路径，格式为组件所在包路径+组件名，例如：`github.com/galaxy-kit/galaxy/ec/comp/helloworld/HelloWorldComp`。
+//	@param compPath 组件路径，格式为组件所在包路径+组件名，例如：`github.com/galaxy-kit/galaxy-go/ec/comp/helloworld/HelloWorldComp`。
 //	@return 组件原型，可以用于创建组件。
 //	@return 是否存在。
 func GetComponentPt(compPath string) (ComponentPt, bool) {

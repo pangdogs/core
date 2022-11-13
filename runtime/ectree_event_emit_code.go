@@ -3,9 +3,9 @@
 package runtime
 
 import (
-	localevent "github.com/galaxy-kit/galaxy/localevent"
-	"github.com/galaxy-kit/galaxy/ec"
-	"github.com/galaxy-kit/galaxy/util"
+	localevent "github.com/galaxy-kit/galaxy-go/localevent"
+	"github.com/galaxy-kit/galaxy-go/ec"
+	"github.com/galaxy-kit/galaxy-go/util"
 )
 
 func emitEventECTreeAddChild(event localevent.IEvent, ecTree IECTree, parent, child ec.Entity) {

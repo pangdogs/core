@@ -2,9 +2,9 @@ package ec
 
 import (
 	"errors"
-	"github.com/galaxy-kit/galaxy/localevent"
-	"github.com/galaxy-kit/galaxy/util"
-	"github.com/galaxy-kit/galaxy/util/container"
+	"github.com/galaxy-kit/galaxy-go/localevent"
+	"github.com/galaxy-kit/galaxy-go/util"
+	"github.com/galaxy-kit/galaxy-go/util/container"
 )
 
 // _ComponentMgr 组件管理器接口

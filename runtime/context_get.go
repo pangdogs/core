@@ -1,9 +1,9 @@
 package runtime
 
 import (
-	"github.com/galaxy-kit/galaxy/ec"
-	"github.com/galaxy-kit/galaxy/service"
-	"github.com/galaxy-kit/galaxy/util"
+	"github.com/galaxy-kit/galaxy-go/ec"
+	"github.com/galaxy-kit/galaxy-go/service"
+	"github.com/galaxy-kit/galaxy-go/util"
 )
 
 // Get 获取运行时上下文

@@ -2,7 +2,7 @@ package pt
 
 import (
 	"fmt"
-	"github.com/galaxy-kit/galaxy/ec"
+	"github.com/galaxy-kit/galaxy-go/ec"
 	"reflect"
 	"sync"
 )
@@ -24,14 +24,14 @@ func RegisterPlugin(pluginName, descr string, plugin any) {
 
 // DeregisterPluginPt 取消注册插件原型，线程安全。
 //
-//	@param pluginPath 插件路径，格式为插件所在包路径+插件名，例如：`github.com/galaxy-kit/galaxy/ec/plugin/helloworld/HelloWorldComp`。
+//	@param pluginPath 插件路径，格式为插件所在包路径+插件名，例如：`github.com/galaxy-kit/galaxy-go/ec/plugin/helloworld/HelloWorldComp`。
 func DeregisterPluginPt(pluginPath string) {
 	pluginLib.DeregisterPluginPt(pluginPath)
 }
 
 // GetPluginPt 获取插件原型，线程安全。
 //
-//	@param pluginPath 插件路径，格式为插件所在包路径+插件名，例如：`github.com/galaxy-kit/galaxy/ec/plugin/helloworld/HelloWorldComp`。
+//	@param pluginPath 插件路径，格式为插件所在包路径+插件名，例如：`github.com/galaxy-kit/galaxy-go/ec/plugin/helloworld/HelloWorldComp`。
 //	@return 插件原型，可以用于创建插件。
 //	@return 是否存在。
 func GetPluginPt(pluginPath string) (PluginPt, bool) {

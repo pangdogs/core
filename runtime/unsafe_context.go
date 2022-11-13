@@ -1,9 +1,9 @@
 package runtime
 
 import (
-	"github.com/galaxy-kit/galaxy/internal"
-	"github.com/galaxy-kit/galaxy/service"
-	"github.com/galaxy-kit/galaxy/util/container"
+	"github.com/galaxy-kit/galaxy-go/internal"
+	"github.com/galaxy-kit/galaxy-go/service"
+	"github.com/galaxy-kit/galaxy-go/util/container"
 )
 
 func UnsafeContext(ctx Context) _UnsafeContext {

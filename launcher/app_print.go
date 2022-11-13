@@ -3,7 +3,7 @@ package launcher
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/galaxy-kit/galaxy/pt"
+	"github.com/galaxy-kit/galaxy-go/pt"
 	"sort"
 	"strings"
 )

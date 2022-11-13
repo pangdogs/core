@@ -1,6 +1,6 @@
 package galaxy
 
-import "github.com/galaxy-kit/galaxy/runtime"
+import "github.com/galaxy-kit/galaxy-go/runtime"
 
 func UnsafeRuntime(runtime Runtime) _UnsafeRuntime {
 	return _UnsafeRuntime{

@@ -2,8 +2,8 @@ package service
 
 import (
 	"errors"
-	"github.com/galaxy-kit/galaxy/ec"
-	"github.com/galaxy-kit/galaxy/internal"
+	"github.com/galaxy-kit/galaxy-go/ec"
+	"github.com/galaxy-kit/galaxy-go/internal"
 	_ "unsafe"
 )
 
@@ -43,10 +43,10 @@ type _SafeCall interface {
 	SafeCallNoRetNoWait(entityID int64, segment func(entity ec.Entity))
 }
 
-//go:linkname entitySafeCall github.com/galaxy-kit/galaxy/runtime.entitySafeCall
+//go:linkname entitySafeCall github.com/galaxy-kit/galaxy-go/runtime.entitySafeCall
 func entitySafeCall(entity ec.Entity) internal.SafeCall
 
-//go:linkname entityExist github.com/galaxy-kit/galaxy/runtime.entityExist
+//go:linkname entityExist github.com/galaxy-kit/galaxy-go/runtime.entityExist
 func entityExist(entity ec.Entity) bool
 
 // SafeCall 在运行时中，将代码片段压入任务流水线，串行化的进行调用，返回result channel，可以选择阻塞并等待返回结果。

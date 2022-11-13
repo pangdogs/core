@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 	"github.com/bwmarrin/snowflake"
-	"github.com/galaxy-kit/galaxy/internal"
-	"github.com/galaxy-kit/galaxy/util"
+	"github.com/galaxy-kit/galaxy-go/internal"
+	"github.com/galaxy-kit/galaxy-go/util"
 	"sync/atomic"
 )
 

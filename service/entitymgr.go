@@ -2,9 +2,9 @@ package service
 
 import (
 	"errors"
-	"github.com/galaxy-kit/galaxy/ec"
-	"github.com/galaxy-kit/galaxy/util"
-	"github.com/galaxy-kit/galaxy/util/concurrent"
+	"github.com/galaxy-kit/galaxy-go/ec"
+	"github.com/galaxy-kit/galaxy-go/util"
+	"github.com/galaxy-kit/galaxy-go/util/concurrent"
 )
 
 // IEntityMgr 实体管理器接口

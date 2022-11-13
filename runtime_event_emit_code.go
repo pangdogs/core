@@ -3,8 +3,8 @@
 package galaxy
 
 import (
-	localevent "github.com/galaxy-kit/galaxy/localevent"
-	"github.com/galaxy-kit/galaxy/util"
+	localevent "github.com/galaxy-kit/galaxy-go/localevent"
+	"github.com/galaxy-kit/galaxy-go/util"
 )
 
 func emitEventUpdate(event localevent.IEvent) {
