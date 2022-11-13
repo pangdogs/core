@@ -3,10 +3,10 @@
 //   - 可以生成发送事件（emit event）与事件表（event table）辅助代码。
 //
 //   - 用于生成发送事件辅助代码时，在事件定义代码源文件（*.go）头部，添加以下注释：
-//     `go:generate go run github.com/pangdogs/galaxy/localevent/eventcode --decl_file=$GOFILE gen_emit --package=$GOPACKAGE`
+//     `go:generate go run github.com/galaxy-kit/galaxy/localevent/eventcode --decl_file=$GOFILE gen_emit --package=$GOPACKAGE`
 //
 //   - 用于生成事件表辅助代码时，在事件定义代码源文件（*.go）头部，添加以下注释：
-//     `go:generate go run github.com/pangdogs/galaxy/localevent/eventcode --decl_file=$GOFILE gen_eventtab --package=$GOPACKAGE --name=XXXEventTab`
+//     `go:generate go run github.com/galaxy-kit/galaxy/localevent/eventcode --decl_file=$GOFILE gen_eventtab --package=$GOPACKAGE --name=XXXEventTab`
 //
 //   - 需要生成事件辅助代码时，在Cmd控制台中，定位到事件定义代码源文件（*.go）的路径下，输入`go generate`指令即可，也可以使用IDE提供的go generate功能。
 //
@@ -49,7 +49,7 @@ func main() {
 	// 基础选项
 	declFile := kingpin.Flag("decl_file", "定义事件的源文件（*.go）。").ExistingFile()
 	eventRegexp := kingpin.Flag("event_regexp", "匹配事件定义时使用的正则表达式。").Default("^[eE]vent.+").String()
-	eventPackageAlias := kingpin.Flag("event_package_alias", "导入Galaxy框架的`github.com/pangdogs/galaxy/localevent`包时使用的别名。").Default("localevent").String()
+	eventPackageAlias := kingpin.Flag("event_package_alias", "导入Galaxy框架的`github.com/galaxy-kit/galaxy/localevent`包时使用的别名。").Default("localevent").String()
 
 	// 生成发送事件代码相关选项
 	emitCmd := kingpin.Command("gen_emit", "通过定义的事件生成发送事件代码。")

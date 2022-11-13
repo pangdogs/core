@@ -2,8 +2,8 @@ package runtime
 
 import (
 	"fmt"
-	"github.com/pangdogs/galaxy/ec"
-	"github.com/pangdogs/galaxy/internal"
+	"github.com/galaxy-kit/galaxy/ec"
+	"github.com/galaxy-kit/galaxy/internal"
 )
 
 // SafeRet 安全调用结果

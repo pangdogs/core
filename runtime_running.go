@@ -1,11 +1,11 @@
 package galaxy
 
 import (
-	"github.com/pangdogs/galaxy/ec"
-	"github.com/pangdogs/galaxy/internal"
-	"github.com/pangdogs/galaxy/localevent"
-	"github.com/pangdogs/galaxy/runtime"
-	"github.com/pangdogs/galaxy/util"
+	"github.com/galaxy-kit/galaxy/ec"
+	"github.com/galaxy-kit/galaxy/internal"
+	"github.com/galaxy-kit/galaxy/localevent"
+	"github.com/galaxy-kit/galaxy/runtime"
+	"github.com/galaxy-kit/galaxy/util"
 	"time"
 )
 

@@ -2,10 +2,10 @@ package runtime
 
 import (
 	"context"
-	"github.com/pangdogs/galaxy/localevent"
-	"github.com/pangdogs/galaxy/plugin"
-	"github.com/pangdogs/galaxy/util"
-	"github.com/pangdogs/galaxy/util/container"
+	"github.com/galaxy-kit/galaxy/localevent"
+	"github.com/galaxy-kit/galaxy/plugin"
+	"github.com/galaxy-kit/galaxy/util"
+	"github.com/galaxy-kit/galaxy/util/container"
 )
 
 // ContextOptions 创建运行时上下文的所有选项
@@ -14,7 +14,7 @@ type ContextOptions struct {
 	Context            context.Context                   // 父Context
 	AutoRecover        bool                              // 是否开启panic时自动恢复
 	ReportError        chan error                        // panic时错误写入的error channel
-	PluginLib          plugin.PluginLib                  // 插件库
+	PluginLib          plugin.PluginBundle               // 插件库
 	StartedCallback    func(runtimeCtx Context)          // 启动运行时回调函数
 	StoppingCallback   func(runtimeCtx Context)          // 开始停止运行时回调函数
 	StoppedCallback    func(runtimeCtx Context)          // 完全停止运行时回调函数
@@ -76,7 +76,7 @@ func (_ContextOption) ReportError(v chan error) WithContextOption {
 }
 
 // PluginLib 插件库
-func (_ContextOption) PluginLib(v plugin.PluginLib) WithContextOption {
+func (_ContextOption) PluginLib(v plugin.PluginBundle) WithContextOption {
 	return func(o *ContextOptions) {
 		o.PluginLib = v
 	}

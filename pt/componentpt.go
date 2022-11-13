@@ -1,7 +1,7 @@
 package pt
 
 import (
-	"github.com/pangdogs/galaxy/ec"
+	"github.com/galaxy-kit/galaxy/ec"
 	"reflect"
 )
 

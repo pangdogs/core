@@ -1,9 +1,9 @@
 package define
 
 import (
-	"github.com/pangdogs/galaxy/runtime"
-	"github.com/pangdogs/galaxy/service"
-	"github.com/pangdogs/galaxy/util"
+	"github.com/galaxy-kit/galaxy/runtime"
+	"github.com/galaxy-kit/galaxy/service"
+	"github.com/galaxy-kit/galaxy/util"
 )
 
 type _PluginInterface[PLUGIN any] struct {

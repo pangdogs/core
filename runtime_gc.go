@@ -1,9 +1,9 @@
 package galaxy
 
 import (
-	"github.com/pangdogs/galaxy/localevent"
-	"github.com/pangdogs/galaxy/runtime"
-	"github.com/pangdogs/galaxy/util/container"
+	"github.com/galaxy-kit/galaxy/localevent"
+	"github.com/galaxy-kit/galaxy/runtime"
+	"github.com/galaxy-kit/galaxy/util/container"
 )
 
 func (_runtime *RuntimeBehavior) gc() {

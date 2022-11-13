@@ -1,10 +1,10 @@
 package define
 
 import (
-	"github.com/pangdogs/galaxy/plugin"
-	"github.com/pangdogs/galaxy/runtime"
-	"github.com/pangdogs/galaxy/service"
-	"github.com/pangdogs/galaxy/util"
+	"github.com/galaxy-kit/galaxy/plugin"
+	"github.com/galaxy-kit/galaxy/runtime"
+	"github.com/galaxy-kit/galaxy/service"
+	"github.com/galaxy-kit/galaxy/util"
 )
 
 type _Plugin[PLUGIN, OPTION any] struct {
@@ -17,15 +17,15 @@ func (p _Plugin[PLUGIN, OPTION]) Name() string {
 }
 
 // InstallTo 生成插件安装函数
-func (p _Plugin[PLUGIN, OPTION]) InstallTo(creator func(...OPTION) PLUGIN) func(plugin.PluginLib, ...OPTION) {
-	return func(lib plugin.PluginLib, options ...OPTION) {
+func (p _Plugin[PLUGIN, OPTION]) InstallTo(creator func(...OPTION) PLUGIN) func(plugin.PluginBundle, ...OPTION) {
+	return func(lib plugin.PluginBundle, options ...OPTION) {
 		plugin.InstallPlugin[PLUGIN](lib, p.Name(), creator(options...))
 	}
 }
 
 // UninstallFrom 生成插件卸载函数
-func (p _Plugin[PLUGIN, OPTION]) UninstallFrom() func(plugin.PluginLib) {
-	return func(lib plugin.PluginLib) {
+func (p _Plugin[PLUGIN, OPTION]) UninstallFrom() func(plugin.PluginBundle) {
+	return func(lib plugin.PluginBundle) {
 		lib.Uninstall(p.Name())
 	}
 }
@@ -61,8 +61,8 @@ func (p _Plugin[PLUGIN, OPTION]) RuntimeTryGet() func(runtime.Context) (PLUGIN, 
 // ServicePlugin 服务类插件
 type ServicePlugin[PLUGIN, OPTION any] struct {
 	Name          string
-	InstallTo     func(plugin.PluginLib, ...OPTION)
-	UninstallFrom func(plugin.PluginLib)
+	InstallTo     func(plugin.PluginBundle, ...OPTION)
+	UninstallFrom func(plugin.PluginBundle)
 	Get           func(service.Context) PLUGIN
 	TryGet        func(service.Context) (PLUGIN, bool)
 }
@@ -81,8 +81,8 @@ func (p _Plugin[PLUGIN, OPTION]) ServicePlugin(creator func(...OPTION) PLUGIN) S
 // RuntimePlugin 运行时类插件
 type RuntimePlugin[PLUGIN, OPTION any] struct {
 	Name          string
-	InstallTo     func(plugin.PluginLib, ...OPTION)
-	UninstallFrom func(plugin.PluginLib)
+	InstallTo     func(plugin.PluginBundle, ...OPTION)
+	UninstallFrom func(plugin.PluginBundle)
 	Get           func(runtime.Context) PLUGIN
 	TryGet        func(runtime.Context) (PLUGIN, bool)
 }
@@ -101,8 +101,8 @@ func (p _Plugin[PLUGIN, OPTION]) RuntimePlugin(creator func(...OPTION) PLUGIN) R
 // Plugin 插件
 type Plugin[PLUGIN, OPTION any] struct {
 	Name          string
-	InstallTo     func(plugin.PluginLib, ...OPTION)
-	UninstallFrom func(plugin.PluginLib)
+	InstallTo     func(plugin.PluginBundle, ...OPTION)
+	UninstallFrom func(plugin.PluginBundle)
 	ServiceGet    func(service.Context) PLUGIN
 	ServiceTryGet func(service.Context) (PLUGIN, bool)
 	RuntimeGet    func(runtime.Context) PLUGIN

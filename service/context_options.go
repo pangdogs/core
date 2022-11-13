@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	"github.com/pangdogs/galaxy/plugin"
-	"github.com/pangdogs/galaxy/pt"
-	"github.com/pangdogs/galaxy/util"
+	"github.com/galaxy-kit/galaxy/plugin"
+	"github.com/galaxy-kit/galaxy/pt"
+	"github.com/galaxy-kit/galaxy/util"
 )
 
 // ContextOptions 创建服务上下文的所有选项
@@ -16,7 +16,7 @@ type ContextOptions struct {
 	Prototype        string                   // 服务原型名称
 	NodeID           int64                    // 服务分布式节点ID，主要用于snowflake算法生成唯一ID，需要全局唯一
 	EntityLib        pt.EntityLib             // 实体原型库
-	PluginLib        plugin.PluginLib         // 插件库
+	PluginLib        plugin.PluginBundle      // 插件库
 	StartedCallback  func(serviceCtx Context) // 启动运行时回调函数
 	StoppingCallback func(serviceCtx Context) // 开始停止运行时回调函数
 	StoppedCallback  func(serviceCtx Context) // 完全停止运行时回调函数
@@ -97,7 +97,7 @@ func (_ContextOption) EntityLib(v pt.EntityLib) WithContextOption {
 }
 
 // PluginLib 插件库
-func (_ContextOption) PluginLib(v plugin.PluginLib) WithContextOption {
+func (_ContextOption) PluginLib(v plugin.PluginBundle) WithContextOption {
 	return func(o *ContextOptions) {
 		o.PluginLib = v
 	}

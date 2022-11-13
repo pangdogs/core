@@ -1,7 +1,7 @@
 package galaxy
 
 import (
-	"github.com/pangdogs/galaxy/util"
+	"github.com/galaxy-kit/galaxy/util"
 )
 
 // GetServiceInheritor 获取服务的继承者

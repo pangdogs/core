@@ -1,13 +1,13 @@
-// Package plugin 插件。
+// Package plugin 插件，用于开发一些需要用到单例模式的功能，例如服务发现、消息队列与日志等，服务与运行时均支持安装插件，。
 package plugin
 
 import (
 	"fmt"
-	"github.com/pangdogs/galaxy/util"
+	"github.com/galaxy-kit/galaxy/util"
 )
 
-// PluginLib 插件库
-type PluginLib interface {
+// PluginBundle 插件库
+type PluginBundle interface {
 	// Install 安装插件。
 	//
 	//	@param pluginName 插件名称。
@@ -37,7 +37,7 @@ type PluginLib interface {
 //	@param pluginLib 插件库。
 //	@param pluginName 插件名称。
 //	@param plugin 插件。
-func InstallPlugin[T any](pluginLib PluginLib, pluginName string, plugin T) {
+func InstallPlugin[T any](pluginLib PluginBundle, pluginName string, plugin T) {
 	if pluginLib == nil {
 		panic("nil pluginLib")
 	}
@@ -50,7 +50,7 @@ func InstallPlugin[T any](pluginLib PluginLib, pluginName string, plugin T) {
 //	@param pluginName 插件名称。
 //	@return 插件。
 //	@return 是否存在。
-func GetPlugin[T any](pluginLib PluginLib, pluginName string) (T, bool) {
+func GetPlugin[T any](pluginLib PluginBundle, pluginName string) (T, bool) {
 	if pluginLib == nil {
 		panic("nil pluginLib")
 	}
@@ -64,7 +64,7 @@ func GetPlugin[T any](pluginLib PluginLib, pluginName string) (T, bool) {
 }
 
 // NewPluginLib 创建插件库
-func NewPluginLib() PluginLib {
+func NewPluginLib() PluginBundle {
 	lib := &_PluginLib{}
 	lib.init()
 	return lib

@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/pangdogs/galaxy/ec"
+	"github.com/galaxy-kit/galaxy/ec"
 	_ "unsafe"
 )
 
@@ -19,8 +19,8 @@ func TryGet(ctxHolder ec.ContextHolder) (Context, bool) {
 	return serviceCtx, true
 }
 
-//go:linkname getServiceContext github.com/pangdogs/galaxy/runtime.getServiceContext
+//go:linkname getServiceContext github.com/galaxy-kit/galaxy/runtime.getServiceContext
 func getServiceContext(ctxHolder ec.ContextHolder) Context
 
-//go:linkname tryGetServiceContext github.com/pangdogs/galaxy/runtime.tryGetServiceContext
+//go:linkname tryGetServiceContext github.com/galaxy-kit/galaxy/runtime.tryGetServiceContext
 func tryGetServiceContext(ctxHolder ec.ContextHolder) (Context, bool)

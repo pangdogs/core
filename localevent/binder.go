@@ -1,6 +1,6 @@
 package localevent
 
-import "github.com/pangdogs/galaxy/util"
+import "github.com/galaxy-kit/galaxy/util"
 
 // BindEvent 绑定事件与订阅者
 func BindEvent[T any](event IEvent, delegate T) Hook {

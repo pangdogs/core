@@ -2,7 +2,7 @@ package internal
 
 import (
 	"fmt"
-	"github.com/pangdogs/galaxy/util"
+	"github.com/galaxy-kit/galaxy/util"
 	"runtime"
 )
 

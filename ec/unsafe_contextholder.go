@@ -1,7 +1,7 @@
 package ec
 
 import (
-	"github.com/pangdogs/galaxy/util"
+	"github.com/galaxy-kit/galaxy/util"
 )
 
 func UnsafeContextHolder(ctxHolder ContextHolder) _UnsafeContextHolder {

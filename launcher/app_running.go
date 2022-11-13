@@ -3,8 +3,8 @@ package launcher
 import (
 	"context"
 	"fmt"
-	"github.com/pangdogs/galaxy"
-	"github.com/pangdogs/galaxy/util"
+	"github.com/galaxy-kit/galaxy"
+	"github.com/galaxy-kit/galaxy/util"
 	"github.com/spf13/viper"
 	"os"
 	"os/signal"

@@ -1,7 +1,7 @@
 package galaxy
 
 import (
-	"github.com/pangdogs/galaxy/util"
+	"github.com/galaxy-kit/galaxy/util"
 )
 
 // ServiceOptions 创建服务的所有选项

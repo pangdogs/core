@@ -3,7 +3,7 @@ package launcher
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pangdogs/galaxy/pt"
+	"github.com/galaxy-kit/galaxy/pt"
 	"sort"
 	"strings"
 )

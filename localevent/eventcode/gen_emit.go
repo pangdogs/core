@@ -45,7 +45,7 @@ package %s
 		fmt.Fprintf(importCode, "\nimport (")
 
 		fmt.Fprintf(importCode, `
-	%s "github.com/pangdogs/galaxy/localevent"`, ctx.EventPackageAlias)
+	%s "github.com/galaxy-kit/galaxy/localevent"`, ctx.EventPackageAlias)
 
 		for _, imp := range ctx.FileAst.Imports {
 			begin := ctx.FileSet.Position(imp.Pos())
@@ -54,7 +54,7 @@ package %s
 			impStr := string(ctx.FileData[begin.Offset:end.Offset])
 
 			switch imp.Path.Value {
-			case `"github.com/pangdogs/galaxy/localevent"`:
+			case `"github.com/galaxy-kit/galaxy/localevent"`:
 				if imp.Name == nil {
 					if ctx.EventPackageAlias == "localevent" {
 						continue
@@ -64,7 +64,7 @@ package %s
 						continue
 					}
 				}
-			case `"github.com/pangdogs/galaxy/util"`:
+			case `"github.com/galaxy-kit/galaxy/util"`:
 				if imp.Name == nil {
 					continue
 				}
@@ -74,7 +74,7 @@ package %s
 		}
 
 		fmt.Fprintf(importCode, `
-	"github.com/pangdogs/galaxy/util"`)
+	"github.com/galaxy-kit/galaxy/util"`)
 
 		fmt.Fprintf(importCode, "\n)\n")
 

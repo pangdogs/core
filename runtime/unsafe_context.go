@@ -1,9 +1,9 @@
 package runtime
 
 import (
-	"github.com/pangdogs/galaxy/internal"
-	"github.com/pangdogs/galaxy/service"
-	"github.com/pangdogs/galaxy/util/container"
+	"github.com/galaxy-kit/galaxy/internal"
+	"github.com/galaxy-kit/galaxy/service"
+	"github.com/galaxy-kit/galaxy/util/container"
 )
 
 func UnsafeContext(ctx Context) _UnsafeContext {

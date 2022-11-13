@@ -2,9 +2,9 @@ package service
 
 import (
 	"errors"
-	"github.com/pangdogs/galaxy/ec"
-	"github.com/pangdogs/galaxy/util"
-	"github.com/pangdogs/galaxy/util/concurrent"
+	"github.com/galaxy-kit/galaxy/ec"
+	"github.com/galaxy-kit/galaxy/util"
+	"github.com/galaxy-kit/galaxy/util/concurrent"
 )
 
 // IEntityMgr 实体管理器接口

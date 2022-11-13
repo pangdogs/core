@@ -1,7 +1,7 @@
 package ec
 
 import (
-	"github.com/pangdogs/galaxy/util"
+	"github.com/galaxy-kit/galaxy/util"
 )
 
 // ContextHolder 上下文持有者，用于从实体或组件上获取上下文

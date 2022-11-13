@@ -2,8 +2,8 @@ package runtime
 
 import (
 	"fmt"
-	"github.com/pangdogs/galaxy/plugin"
-	"github.com/pangdogs/galaxy/util"
+	"github.com/galaxy-kit/galaxy/plugin"
+	"github.com/galaxy-kit/galaxy/util"
 )
 
 // GetPlugin 从运行时上下文上获取插件

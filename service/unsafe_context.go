@@ -1,6 +1,6 @@
 package service
 
-import "github.com/pangdogs/galaxy/internal"
+import "github.com/galaxy-kit/galaxy/internal"
 
 func UnsafeContext(ctx Context) _UnsafeContext {
 	return _UnsafeContext{

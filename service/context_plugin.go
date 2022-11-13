@@ -2,8 +2,8 @@ package service
 
 import (
 	"fmt"
-	"github.com/pangdogs/galaxy/plugin"
-	"github.com/pangdogs/galaxy/util"
+	"github.com/galaxy-kit/galaxy/plugin"
+	"github.com/galaxy-kit/galaxy/util"
 )
 
 // GetPlugin 从服务上下文上获取插件

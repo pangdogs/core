@@ -1,9 +1,9 @@
 package runtime
 
 import (
-	"github.com/pangdogs/galaxy/ec"
-	"github.com/pangdogs/galaxy/service"
-	"github.com/pangdogs/galaxy/util"
+	"github.com/galaxy-kit/galaxy/ec"
+	"github.com/galaxy-kit/galaxy/service"
+	"github.com/galaxy-kit/galaxy/util"
 )
 
 // Get 获取运行时上下文
