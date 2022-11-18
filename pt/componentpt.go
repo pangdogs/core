@@ -11,7 +11,6 @@ type ComponentPt struct {
 	Path        string // 组件路径
 	Description string // 组件描述信息
 	tfComp      reflect.Type
-	creator     func() ec.Component
 }
 
 // New 创建组件

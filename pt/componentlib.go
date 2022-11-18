@@ -3,7 +3,6 @@ package pt
 import (
 	"fmt"
 	"github.com/galaxy-kit/galaxy-go/ec"
-	"github.com/galaxy-kit/galaxy-go/util"
 	"reflect"
 	"sync"
 )
@@ -16,15 +15,15 @@ func init() {
 
 // RegisterComponent 注册组件原型，一般在init()函数中使用，线程安全。
 //
-//	@type_param COMP 组件类型。
 //	@param compName 组件名称，一般是组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
+//	@param COMP 组件对象。
 //	@param descr 组件功能的描述说明。
-func RegisterComponent[COMP any](compName string, descr ...string) {
+func RegisterComponent(compName string, comp any, descr ...string) {
 	var _descr string
 	if len(descr) > 0 {
 		_descr = descr[0]
 	}
-	componentLib.RegisterComponent(compName, util.Zero[COMP](), _descr)
+	componentLib.RegisterComponent(compName, comp, _descr)
 }
 
 // DeregisterComponent 取消注册组件原型，线程安全。
@@ -66,7 +65,11 @@ func (lib *_ComponentLib) RegisterComponent(compName string, comp any, descr str
 		panic("nil comp")
 	}
 
-	lib.register(compName, reflect.TypeOf(comp), descr)
+	if tfComp, ok := comp.(reflect.Type); ok {
+		lib.register(compName, tfComp, descr)
+	} else {
+		lib.register(compName, reflect.TypeOf(comp), descr)
+	}
 }
 
 func (lib *_ComponentLib) DeregisterComponent(compPath string) {
