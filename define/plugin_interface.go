@@ -6,98 +6,93 @@ import (
 	"github.com/galaxy-kit/galaxy-go/util"
 )
 
-type _PluginInterface[PLUGIN any] struct {
-	name string
+type _PluginInterface[PLUGIN_IFACE any] struct {
+	_name string
 }
 
-// Name 生成插件名称
-func (p _PluginInterface[PLUGIN]) Name() string {
-	return p.name
+func (p _PluginInterface[PLUGIN_IFACE]) name() string {
+	return p._name
 }
 
-// ServiceGet 生成从服务上下文中获取插件函数
-func (p _PluginInterface[PLUGIN]) ServiceGet() func(service.Context) PLUGIN {
-	return func(ctx service.Context) PLUGIN {
-		return service.GetPlugin[PLUGIN](ctx, p.Name())
+func (p _PluginInterface[PLUGIN_IFACE]) serviceGet() func(service.Context) PLUGIN_IFACE {
+	return func(ctx service.Context) PLUGIN_IFACE {
+		return service.GetPlugin[PLUGIN_IFACE](ctx, p.name())
 	}
 }
 
-// RuntimeGet 生成从运行时上下文中获取插件函数
-func (p _PluginInterface[PLUGIN]) RuntimeGet() func(runtime.Context) PLUGIN {
-	return func(ctx runtime.Context) PLUGIN {
-		return runtime.GetPlugin[PLUGIN](ctx, p.Name())
+func (p _PluginInterface[PLUGIN_IFACE]) serviceTryGet() func(service.Context) (PLUGIN_IFACE, bool) {
+	return func(ctx service.Context) (PLUGIN_IFACE, bool) {
+		return service.TryGetPlugin[PLUGIN_IFACE](ctx, p.name())
 	}
 }
 
-// ServiceTryGet 生成尝试从服务上下文中获取插件函数
-func (p _PluginInterface[PLUGIN]) ServiceTryGet() func(service.Context) (PLUGIN, bool) {
-	return func(ctx service.Context) (PLUGIN, bool) {
-		return service.TryGetPlugin[PLUGIN](ctx, p.Name())
+func (p _PluginInterface[PLUGIN_IFACE]) runtimeGet() func(runtime.Context) PLUGIN_IFACE {
+	return func(ctx runtime.Context) PLUGIN_IFACE {
+		return runtime.GetPlugin[PLUGIN_IFACE](ctx, p.name())
 	}
 }
 
-// RuntimeTryGet 生成尝试从运行时上下文中获取插件函数
-func (p _PluginInterface[PLUGIN]) RuntimeTryGet() func(runtime.Context) (PLUGIN, bool) {
-	return func(ctx runtime.Context) (PLUGIN, bool) {
-		return runtime.TryGetPlugin[PLUGIN](ctx, p.Name())
+func (p _PluginInterface[PLUGIN_IFACE]) runtimeTryGet() func(runtime.Context) (PLUGIN_IFACE, bool) {
+	return func(ctx runtime.Context) (PLUGIN_IFACE, bool) {
+		return runtime.TryGetPlugin[PLUGIN_IFACE](ctx, p.name())
 	}
 }
 
 // ServicePluginInterface 服务类插件接口
-type ServicePluginInterface[PLUGIN any] struct {
-	Name   string
-	Get    func(service.Context) PLUGIN
-	TryGet func(service.Context) (PLUGIN, bool)
+type ServicePluginInterface[PLUGIN_IFACE any] struct {
+	Name   string                                     // 插件名称
+	Get    func(service.Context) PLUGIN_IFACE         // 从服务上下文获取
+	TryGet func(service.Context) (PLUGIN_IFACE, bool) // 从服务上下文尝试获取
 }
 
 // ServicePluginInterface 生成服务类插件接口定义
-func (p _PluginInterface[PLUGIN]) ServicePluginInterface() ServicePluginInterface[PLUGIN] {
-	return ServicePluginInterface[PLUGIN]{
-		Name:   p.Name(),
-		Get:    p.ServiceGet(),
-		TryGet: p.ServiceTryGet(),
+func (p _PluginInterface[PLUGIN_IFACE]) ServicePluginInterface() ServicePluginInterface[PLUGIN_IFACE] {
+	return ServicePluginInterface[PLUGIN_IFACE]{
+		Name:   p.name(),
+		Get:    p.serviceGet(),
+		TryGet: p.serviceTryGet(),
 	}
 }
 
 // RuntimePluginInterface 运行时类插件接口
-type RuntimePluginInterface[PLUGIN any] struct {
-	Name   string
-	Get    func(runtime.Context) PLUGIN
-	TryGet func(runtime.Context) (PLUGIN, bool)
+type RuntimePluginInterface[PLUGIN_IFACE any] struct {
+	Name   string                                     // 插件名称
+	Get    func(runtime.Context) PLUGIN_IFACE         // 从运行时上下文获取
+	TryGet func(runtime.Context) (PLUGIN_IFACE, bool) // 从运行时上下文尝试获取
 }
 
 // RuntimePluginInterface 生成运行时类插件接口定义
-func (p _PluginInterface[PLUGIN]) RuntimePluginInterface() RuntimePluginInterface[PLUGIN] {
-	return RuntimePluginInterface[PLUGIN]{
-		Name:   p.Name(),
-		Get:    p.RuntimeGet(),
-		TryGet: p.RuntimeTryGet(),
+func (p _PluginInterface[PLUGIN_IFACE]) RuntimePluginInterface() RuntimePluginInterface[PLUGIN_IFACE] {
+	return RuntimePluginInterface[PLUGIN_IFACE]{
+		Name:   p.name(),
+		Get:    p.runtimeGet(),
+		TryGet: p.runtimeTryGet(),
 	}
 }
 
 // PluginInterface 插件接口
-type PluginInterface[PLUGIN any] struct {
-	Name          string
-	RuntimeGet    func(runtime.Context) PLUGIN
-	RuntimeTryGet func(runtime.Context) (PLUGIN, bool)
-	ServiceGet    func(service.Context) PLUGIN
-	ServiceTryGet func(service.Context) (PLUGIN, bool)
+type PluginInterface[PLUGIN_IFACE any] struct {
+	Name          string                                     // 插件名称
+	RuntimeGet    func(runtime.Context) PLUGIN_IFACE         // 从运行时上下文获取
+	RuntimeTryGet func(runtime.Context) (PLUGIN_IFACE, bool) // 从运行时上下文尝试获取
+	ServiceGet    func(service.Context) PLUGIN_IFACE         // 从服务上下文获取
+	ServiceTryGet func(service.Context) (PLUGIN_IFACE, bool) // 从服务上下文尝试获取
 }
 
 // PluginInterface 生成插件接口定义
-func (p _PluginInterface[PLUGIN]) PluginInterface() PluginInterface[PLUGIN] {
-	return PluginInterface[PLUGIN]{
-		Name:          p.Name(),
-		RuntimeGet:    p.RuntimeGet(),
-		RuntimeTryGet: p.RuntimeTryGet(),
-		ServiceGet:    p.ServiceGet(),
-		ServiceTryGet: p.ServiceTryGet(),
+func (p _PluginInterface[PLUGIN_IFACE]) PluginInterface() PluginInterface[PLUGIN_IFACE] {
+	return PluginInterface[PLUGIN_IFACE]{
+		Name:          p.name(),
+		RuntimeGet:    p.runtimeGet(),
+		RuntimeTryGet: p.runtimeTryGet(),
+		ServiceGet:    p.serviceGet(),
+		ServiceTryGet: p.serviceTryGet(),
 	}
 }
 
-// DefinePluginInterface 定义插件接口，因为仅有接口没有实现，所以不能用于向插件库注册
-func DefinePluginInterface[PLUGIN any]() _PluginInterface[PLUGIN] {
-	return _PluginInterface[PLUGIN]{
-		name: util.TypeFullName[PLUGIN](),
+// DefinePluginInterface 定义插件接口，因为仅有接口没有实现，所以不能用于向插件包安装插件
+func DefinePluginInterface[PLUGIN_IFACE any]() _PluginInterface[PLUGIN_IFACE] {
+	return _PluginInterface[PLUGIN_IFACE]{
+		_name: util.TypeFullName[PLUGIN_IFACE](),
 	}
 }

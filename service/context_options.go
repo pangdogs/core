@@ -16,7 +16,7 @@ type ContextOptions struct {
 	Prototype        string                   // 服务原型名称
 	NodeID           int64                    // 服务分布式节点ID，主要用于snowflake算法生成唯一ID，需要全局唯一
 	EntityLib        pt.EntityLib             // 实体原型库
-	PluginLib        plugin.PluginBundle      // 插件库
+	PluginBundle     plugin.PluginBundle      // 插件包
 	StartedCallback  func(serviceCtx Context) // 启动运行时回调函数
 	StoppingCallback func(serviceCtx Context) // 开始停止运行时回调函数
 	StoppedCallback  func(serviceCtx Context) // 完全停止运行时回调函数
@@ -40,7 +40,7 @@ func (_ContextOption) Default() WithContextOption {
 		o.Prototype = ""
 		o.NodeID = 0
 		o.EntityLib = nil
-		o.PluginLib = nil
+		o.PluginBundle = nil
 		o.StartedCallback = nil
 		o.StoppingCallback = nil
 		o.StoppedCallback = nil
@@ -96,10 +96,10 @@ func (_ContextOption) EntityLib(v pt.EntityLib) WithContextOption {
 	}
 }
 
-// PluginLib 插件库
-func (_ContextOption) PluginLib(v plugin.PluginBundle) WithContextOption {
+// PluginBundle 插件包
+func (_ContextOption) PluginBundle(v plugin.PluginBundle) WithContextOption {
 	return func(o *ContextOptions) {
-		o.PluginLib = v
+		o.PluginBundle = v
 	}
 }
 

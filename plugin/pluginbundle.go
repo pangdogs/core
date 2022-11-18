@@ -1,4 +1,4 @@
-// Package plugin 插件，用于开发一些需要用到单例模式的功能，例如服务发现、消息队列与日志等，服务与运行时均支持安装插件，。
+// Package plugin 插件，用于开发一些需要使用单例模式设计的功能，例如服务发现、消息队列与日志等，服务与运行时上下文均支持安装插件，注意服务类插件需要支持多线程访问，运行时类插件仅支持单线程访问即可。
 package plugin
 
 import (
@@ -6,7 +6,7 @@ import (
 	"github.com/galaxy-kit/galaxy-go/util"
 )
 
-// PluginBundle 插件库
+// PluginBundle 插件包
 type PluginBundle interface {
 	// Install 安装插件。
 	//
@@ -34,28 +34,28 @@ type PluginBundle interface {
 
 // InstallPlugin 安装插件。
 //
-//	@param pluginLib 插件库。
+//	@param pluginBundle 插件包。
 //	@param pluginName 插件名称。
 //	@param plugin 插件。
-func InstallPlugin[T any](pluginLib PluginBundle, pluginName string, plugin T) {
-	if pluginLib == nil {
-		panic("nil pluginLib")
+func InstallPlugin[T any](pluginBundle PluginBundle, pluginName string, plugin T) {
+	if pluginBundle == nil {
+		panic("nil pluginBundle")
 	}
-	pluginLib.Install(pluginName, util.NewFacePair[any](plugin, plugin))
+	pluginBundle.Install(pluginName, util.NewFacePair[any](plugin, plugin))
 }
 
 // GetPlugin 获取插件。
 //
-//	@param pluginLib 插件库。
+//	@param pluginBundle 插件包。
 //	@param pluginName 插件名称。
 //	@return 插件。
 //	@return 是否存在。
-func GetPlugin[T any](pluginLib PluginBundle, pluginName string) (T, bool) {
-	if pluginLib == nil {
-		panic("nil pluginLib")
+func GetPlugin[T any](pluginBundle PluginBundle, pluginName string) (T, bool) {
+	if pluginBundle == nil {
+		panic("nil pluginBundle")
 	}
 
-	pluginFace, ok := pluginLib.Get(pluginName)
+	pluginFace, ok := pluginBundle.Get(pluginName)
 	if !ok {
 		return util.Zero[T](), false
 	}
@@ -63,49 +63,49 @@ func GetPlugin[T any](pluginLib PluginBundle, pluginName string) (T, bool) {
 	return util.Cache2Iface[T](pluginFace.Cache), true
 }
 
-// NewPluginLib 创建插件库
-func NewPluginLib() PluginBundle {
-	lib := &_PluginLib{}
-	lib.init()
-	return lib
+// NewPluginBundle 创建插件包
+func NewPluginBundle() PluginBundle {
+	pluginBundle := &_PluginBundle{}
+	pluginBundle.init()
+	return pluginBundle
 }
 
-type _PluginLib struct {
+type _PluginBundle struct {
 	pluginMap map[string]util.FaceAny
 }
 
-func (lib *_PluginLib) init() {
-	lib.pluginMap = map[string]util.FaceAny{}
+func (bundle *_PluginBundle) init() {
+	bundle.pluginMap = map[string]util.FaceAny{}
 }
 
-func (lib *_PluginLib) Install(pluginName string, pluginFace util.FaceAny) {
+func (bundle *_PluginBundle) Install(pluginName string, pluginFace util.FaceAny) {
 	if pluginFace.IsNil() {
 		panic("nil pluginFace")
 	}
 
-	_, ok := lib.pluginMap[pluginName]
+	_, ok := bundle.pluginMap[pluginName]
 	if ok {
 		panic(fmt.Errorf("plugin '%s' is already installed", pluginName))
 	}
 
-	lib.pluginMap[pluginName] = pluginFace
+	bundle.pluginMap[pluginName] = pluginFace
 }
 
-func (lib *_PluginLib) Uninstall(pluginName string) {
-	delete(lib.pluginMap, pluginName)
+func (bundle *_PluginBundle) Uninstall(pluginName string) {
+	delete(bundle.pluginMap, pluginName)
 }
 
-func (lib *_PluginLib) Get(pluginName string) (util.FaceAny, bool) {
-	pluginFace, ok := lib.pluginMap[pluginName]
+func (bundle *_PluginBundle) Get(pluginName string) (util.FaceAny, bool) {
+	pluginFace, ok := bundle.pluginMap[pluginName]
 	return pluginFace, ok
 }
 
-func (lib *_PluginLib) Range(fun func(pluginName string, pluginFace util.FaceAny) bool) {
+func (bundle *_PluginBundle) Range(fun func(pluginName string, pluginFace util.FaceAny) bool) {
 	if fun == nil {
 		return
 	}
 
-	for pluginName, pluginFace := range lib.pluginMap {
+	for pluginName, pluginFace := range bundle.pluginMap {
 		if !fun(pluginName, pluginFace) {
 			return
 		}

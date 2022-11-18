@@ -3,6 +3,7 @@ package pt
 import (
 	"fmt"
 	"github.com/galaxy-kit/galaxy-go/ec"
+	"github.com/galaxy-kit/galaxy-go/util"
 	"reflect"
 	"sync"
 )
@@ -13,46 +14,39 @@ func init() {
 	componentLib.init()
 }
 
-// RegisterComponent 注册组件原型，共有RegisterComp()与RegisterCreator()两个注册方法，
-// 二者选其一使用即可。一般在init()函数中使用，线程安全。
+// RegisterComponent 注册组件原型，一般在init()函数中使用，线程安全。
 //
+//	@type_param COMP 组件类型。
 //	@param compName 组件名称，一般是组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
 //	@param descr 组件功能的描述说明。
-//	@param comp 组件对象。
-func RegisterComponent(compName, descr string, comp any) {
-	componentLib.RegisterComponent(compName, descr, comp)
+func RegisterComponent[COMP any](compName string, descr ...string) {
+	var _descr string
+	if len(descr) > 0 {
+		_descr = descr[0]
+	}
+	componentLib.RegisterComponent(compName, util.Zero[COMP](), _descr)
 }
 
-// RegisterComponentCreator 注册组件构建函数，共有RegisterComp()与RegisterCreator()两个注册方法，
-// 二者选其一使用即可。一般在init()函数中使用，线程安全。
+// DeregisterComponent 取消注册组件原型，线程安全。
 //
-//	@param compName 组件名称，一般是组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
-//	@param descr 组件功能的描述说明。
-//	@param creator 组件构建函数。
-func RegisterComponentCreator(compName, descr string, creator func() ec.Component) {
-	componentLib.RegisterCreator(compName, descr, creator)
+//	@param compPath 组件路径，格式为组件所在包路径+组件名，例如：`github.com/galaxy-kit/components-go/helloworld/HelloWorldComp`。
+func DeregisterComponent(compPath string) {
+	componentLib.DeregisterComponent(compPath)
 }
 
-// DeregisterComponentPt 取消注册组件原型，线程安全。
+// GetComponent 获取组件原型，线程安全。
 //
-//	@param compPath 组件路径，格式为组件所在包路径+组件名，例如：`github.com/galaxy-kit/galaxy-go/ec/comp/helloworld/HelloWorldComp`。
-func DeregisterComponentPt(compPath string) {
-	componentLib.DeregisterComponentPt(compPath)
-}
-
-// GetComponentPt 获取组件原型，线程安全。
-//
-//	@param compPath 组件路径，格式为组件所在包路径+组件名，例如：`github.com/galaxy-kit/galaxy-go/ec/comp/helloworld/HelloWorldComp`。
+//	@param compPath 组件路径，格式为组件所在包路径+组件名，例如：`github.com/galaxy-kit/components-go/helloworld/HelloWorldComp`。
 //	@return 组件原型，可以用于创建组件。
 //	@return 是否存在。
-func GetComponentPt(compPath string) (ComponentPt, bool) {
+func GetComponent(compPath string) (ComponentPt, bool) {
 	return componentLib.Get(compPath)
 }
 
-// RangeComponentPts 遍历所有已注册的组件原型，线程安全。
+// RangeComponent 遍历所有已注册的组件原型，线程安全。
 //
 //	@param fun 遍历函数。
-func RangeComponentPts(fun func(compPt ComponentPt) bool) {
+func RangeComponent(fun func(compPt ComponentPt) bool) {
 	componentLib.Range(fun)
 }
 
@@ -67,27 +61,15 @@ func (lib *_ComponentLib) init() {
 	}
 }
 
-func (lib *_ComponentLib) RegisterComponent(compName, descr string, comp any) {
+func (lib *_ComponentLib) RegisterComponent(compName string, comp any, descr string) {
 	if comp == nil {
 		panic("nil comp")
 	}
 
-	if tfComp, ok := comp.(reflect.Type); ok {
-		lib.register(compName, descr, _CompConstructType_Reflect, tfComp, nil)
-	} else {
-		lib.register(compName, descr, _CompConstructType_Reflect, reflect.TypeOf(comp), nil)
-	}
+	lib.register(compName, reflect.TypeOf(comp), descr)
 }
 
-func (lib *_ComponentLib) RegisterCreator(compName, descr string, creator func() ec.Component) {
-	if creator == nil {
-		panic("nil creator")
-	}
-
-	lib.register(compName, descr, _CompConstructType_Creator, nil, creator)
-}
-
-func (lib *_ComponentLib) DeregisterComponentPt(compPath string) {
+func (lib *_ComponentLib) DeregisterComponent(compPath string) {
 	lib.mutex.Lock()
 	defer lib.mutex.Unlock()
 
@@ -117,32 +99,21 @@ func (lib *_ComponentLib) Range(fun func(compPt ComponentPt) bool) {
 	}
 }
 
-func (lib *_ComponentLib) register(compName, descr string, constructType _CompConstructType, tfComp reflect.Type, creator func() ec.Component) {
+func (lib *_ComponentLib) register(compName string, tfComp reflect.Type, descr string) {
 	lib.mutex.Lock()
 	defer lib.mutex.Unlock()
 
-	var _tfComp reflect.Type
-
-	switch constructType {
-	case _CompConstructType_Reflect:
-		_tfComp = tfComp
-	case _CompConstructType_Creator:
-		_tfComp = reflect.TypeOf(creator())
-	default:
-		panic("not support construct type")
+	for tfComp.Kind() == reflect.Pointer || tfComp.Kind() == reflect.Interface {
+		tfComp = tfComp.Elem()
 	}
 
-	for _tfComp.Kind() == reflect.Pointer || _tfComp.Kind() == reflect.Interface {
-		_tfComp = _tfComp.Elem()
-	}
-
-	if _tfComp.Name() == "" {
+	if tfComp.Name() == "" {
 		panic("register anonymous component not allowed")
 	}
 
-	compPath := _tfComp.PkgPath() + "/" + _tfComp.Name()
+	compPath := tfComp.PkgPath() + "/" + tfComp.Name()
 
-	if !reflect.PointerTo(_tfComp).Implements(reflect.TypeOf((*ec.Component)(nil)).Elem()) {
+	if !reflect.PointerTo(tfComp).Implements(reflect.TypeOf((*ec.Component)(nil)).Elem()) {
 		panic(fmt.Errorf("component '%s' not implement ec.Component", compPath))
 	}
 
@@ -152,11 +123,9 @@ func (lib *_ComponentLib) register(compName, descr string, constructType _CompCo
 	}
 
 	lib.compPtMap[compPath] = ComponentPt{
-		Name:          compName,
-		Path:          compPath,
-		Description:   descr,
-		constructType: constructType,
-		tfComp:        tfComp,
-		creator:       creator,
+		Name:        compName,
+		Path:        compPath,
+		Description: descr,
+		tfComp:      tfComp,
 	}
 }

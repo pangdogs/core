@@ -7,124 +7,117 @@ import (
 	"github.com/galaxy-kit/galaxy-go/util"
 )
 
-type _Plugin[PLUGIN, OPTION any] struct {
-	name string
+type _Plugin[PLUGIN_IFACE, OPTION any] struct {
+	_name string
 }
 
-// Name 生成插件名称
-func (p _Plugin[PLUGIN, OPTION]) Name() string {
-	return p.name
+func (p _Plugin[PLUGIN_IFACE, OPTION]) name() string {
+	return p._name
 }
 
-// InstallTo 生成插件安装函数
-func (p _Plugin[PLUGIN, OPTION]) InstallTo(creator func(...OPTION) PLUGIN) func(plugin.PluginBundle, ...OPTION) {
-	return func(lib plugin.PluginBundle, options ...OPTION) {
-		plugin.InstallPlugin[PLUGIN](lib, p.Name(), creator(options...))
+func (p _Plugin[PLUGIN_IFACE, OPTION]) installTo(creator func(...OPTION) PLUGIN_IFACE) func(plugin.PluginBundle, ...OPTION) {
+	return func(pluginBundle plugin.PluginBundle, options ...OPTION) {
+		plugin.InstallPlugin[PLUGIN_IFACE](pluginBundle, p.name(), creator(options...))
 	}
 }
 
-// UninstallFrom 生成插件卸载函数
-func (p _Plugin[PLUGIN, OPTION]) UninstallFrom() func(plugin.PluginBundle) {
-	return func(lib plugin.PluginBundle) {
-		lib.Uninstall(p.Name())
+func (p _Plugin[PLUGIN_IFACE, OPTION]) uninstallFrom() func(plugin.PluginBundle) {
+	return func(pluginBundle plugin.PluginBundle) {
+		pluginBundle.Uninstall(p.name())
 	}
 }
 
-// ServiceGet 生成从服务上下文中获取插件函数
-func (p _Plugin[PLUGIN, OPTION]) ServiceGet() func(service.Context) PLUGIN {
-	return func(ctx service.Context) PLUGIN {
-		return service.GetPlugin[PLUGIN](ctx, p.Name())
+func (p _Plugin[PLUGIN_IFACE, OPTION]) serviceGet() func(service.Context) PLUGIN_IFACE {
+	return func(ctx service.Context) PLUGIN_IFACE {
+		return service.GetPlugin[PLUGIN_IFACE](ctx, p.name())
 	}
 }
 
-// RuntimeGet 生成从运行时上下文中获取插件函数
-func (p _Plugin[PLUGIN, OPTION]) RuntimeGet() func(runtime.Context) PLUGIN {
-	return func(ctx runtime.Context) PLUGIN {
-		return runtime.GetPlugin[PLUGIN](ctx, p.Name())
+func (p _Plugin[PLUGIN_IFACE, OPTION]) serviceTryGet() func(service.Context) (PLUGIN_IFACE, bool) {
+	return func(ctx service.Context) (PLUGIN_IFACE, bool) {
+		return service.TryGetPlugin[PLUGIN_IFACE](ctx, p.name())
 	}
 }
 
-// ServiceTryGet 生成尝试从服务上下文中获取插件函数
-func (p _Plugin[PLUGIN, OPTION]) ServiceTryGet() func(service.Context) (PLUGIN, bool) {
-	return func(ctx service.Context) (PLUGIN, bool) {
-		return service.TryGetPlugin[PLUGIN](ctx, p.Name())
+func (p _Plugin[PLUGIN_IFACE, OPTION]) runtimeGet() func(runtime.Context) PLUGIN_IFACE {
+	return func(ctx runtime.Context) PLUGIN_IFACE {
+		return runtime.GetPlugin[PLUGIN_IFACE](ctx, p.name())
 	}
 }
 
-// RuntimeTryGet 生成尝试从运行时上下文中获取插件函数
-func (p _Plugin[PLUGIN, OPTION]) RuntimeTryGet() func(runtime.Context) (PLUGIN, bool) {
-	return func(ctx runtime.Context) (PLUGIN, bool) {
-		return runtime.TryGetPlugin[PLUGIN](ctx, p.Name())
+func (p _Plugin[PLUGIN_IFACE, OPTION]) runtimeTryGet() func(runtime.Context) (PLUGIN_IFACE, bool) {
+	return func(ctx runtime.Context) (PLUGIN_IFACE, bool) {
+		return runtime.TryGetPlugin[PLUGIN_IFACE](ctx, p.name())
 	}
 }
 
 // ServicePlugin 服务类插件
-type ServicePlugin[PLUGIN, OPTION any] struct {
-	Name          string
-	InstallTo     func(plugin.PluginBundle, ...OPTION)
-	UninstallFrom func(plugin.PluginBundle)
-	Get           func(service.Context) PLUGIN
-	TryGet        func(service.Context) (PLUGIN, bool)
+type ServicePlugin[PLUGIN_IFACE, OPTION any] struct {
+	Name          string                                     // 插件名称
+	InstallTo     func(plugin.PluginBundle, ...OPTION)       // 向插件包安装
+	UninstallFrom func(plugin.PluginBundle)                  // 从插件包卸载
+	Get           func(service.Context) PLUGIN_IFACE         // 从服务上下文获取
+	TryGet        func(service.Context) (PLUGIN_IFACE, bool) // 从服务上下文尝试获取
 }
 
 // ServicePlugin 生成服务类插件定义
-func (p _Plugin[PLUGIN, OPTION]) ServicePlugin(creator func(...OPTION) PLUGIN) ServicePlugin[PLUGIN, OPTION] {
-	return ServicePlugin[PLUGIN, OPTION]{
-		Name:          p.Name(),
-		InstallTo:     p.InstallTo(creator),
-		UninstallFrom: p.UninstallFrom(),
-		Get:           p.ServiceGet(),
-		TryGet:        p.ServiceTryGet(),
+func (p _Plugin[PLUGIN_IFACE, OPTION]) ServicePlugin(creator func(...OPTION) PLUGIN_IFACE) ServicePlugin[PLUGIN_IFACE, OPTION] {
+	return ServicePlugin[PLUGIN_IFACE, OPTION]{
+		Name:          p.name(),
+		InstallTo:     p.installTo(creator),
+		UninstallFrom: p.uninstallFrom(),
+		Get:           p.serviceGet(),
+		TryGet:        p.serviceTryGet(),
 	}
 }
 
 // RuntimePlugin 运行时类插件
-type RuntimePlugin[PLUGIN, OPTION any] struct {
-	Name          string
-	InstallTo     func(plugin.PluginBundle, ...OPTION)
-	UninstallFrom func(plugin.PluginBundle)
-	Get           func(runtime.Context) PLUGIN
-	TryGet        func(runtime.Context) (PLUGIN, bool)
+type RuntimePlugin[PLUGIN_IFACE, OPTION any] struct {
+	Name          string                                     // 插件名称
+	InstallTo     func(plugin.PluginBundle, ...OPTION)       // 向插件包安装
+	UninstallFrom func(plugin.PluginBundle)                  // 从插件包卸载
+	Get           func(runtime.Context) PLUGIN_IFACE         // 从运行时上下文获取
+	TryGet        func(runtime.Context) (PLUGIN_IFACE, bool) // 从运行时上下文尝试获取
 }
 
 // RuntimePlugin 生成运行时类插件定义
-func (p _Plugin[PLUGIN, OPTION]) RuntimePlugin(creator func(...OPTION) PLUGIN) RuntimePlugin[PLUGIN, OPTION] {
-	return RuntimePlugin[PLUGIN, OPTION]{
-		Name:          p.Name(),
-		InstallTo:     p.InstallTo(creator),
-		UninstallFrom: p.UninstallFrom(),
-		Get:           p.RuntimeGet(),
-		TryGet:        p.RuntimeTryGet(),
+func (p _Plugin[PLUGIN_IFACE, OPTION]) RuntimePlugin(creator func(...OPTION) PLUGIN_IFACE) RuntimePlugin[PLUGIN_IFACE, OPTION] {
+	return RuntimePlugin[PLUGIN_IFACE, OPTION]{
+		Name:          p.name(),
+		InstallTo:     p.installTo(creator),
+		UninstallFrom: p.uninstallFrom(),
+		Get:           p.runtimeGet(),
+		TryGet:        p.runtimeTryGet(),
 	}
 }
 
 // Plugin 插件
-type Plugin[PLUGIN, OPTION any] struct {
-	Name          string
-	InstallTo     func(plugin.PluginBundle, ...OPTION)
-	UninstallFrom func(plugin.PluginBundle)
-	ServiceGet    func(service.Context) PLUGIN
-	ServiceTryGet func(service.Context) (PLUGIN, bool)
-	RuntimeGet    func(runtime.Context) PLUGIN
-	RuntimeTryGet func(runtime.Context) (PLUGIN, bool)
+type Plugin[PLUGIN_IFACE, OPTION any] struct {
+	Name          string                                     // 插件名称
+	InstallTo     func(plugin.PluginBundle, ...OPTION)       // 向插件包安装
+	UninstallFrom func(plugin.PluginBundle)                  // 从插件包卸载
+	ServiceGet    func(service.Context) PLUGIN_IFACE         // 从服务上下文获取
+	ServiceTryGet func(service.Context) (PLUGIN_IFACE, bool) // 从服务上下文尝试获取
+	RuntimeGet    func(runtime.Context) PLUGIN_IFACE         // 从运行时上下文获取
+	RuntimeTryGet func(runtime.Context) (PLUGIN_IFACE, bool) // 从运行时上下文尝试获取
 }
 
 // Plugin 生成插件定义
-func (p _Plugin[PLUGIN, OPTION]) Plugin(creator func(...OPTION) PLUGIN) Plugin[PLUGIN, OPTION] {
-	return Plugin[PLUGIN, OPTION]{
-		Name:          p.Name(),
-		InstallTo:     p.InstallTo(creator),
-		UninstallFrom: p.UninstallFrom(),
-		ServiceGet:    p.ServiceGet(),
-		ServiceTryGet: p.ServiceTryGet(),
-		RuntimeGet:    p.RuntimeGet(),
-		RuntimeTryGet: p.RuntimeTryGet(),
+func (p _Plugin[PLUGIN_IFACE, OPTION]) Plugin(creator func(...OPTION) PLUGIN_IFACE) Plugin[PLUGIN_IFACE, OPTION] {
+	return Plugin[PLUGIN_IFACE, OPTION]{
+		Name:          p.name(),
+		InstallTo:     p.installTo(creator),
+		UninstallFrom: p.uninstallFrom(),
+		ServiceGet:    p.serviceGet(),
+		ServiceTryGet: p.serviceTryGet(),
+		RuntimeGet:    p.runtimeGet(),
+		RuntimeTryGet: p.runtimeTryGet(),
 	}
 }
 
-// DefinePlugin 定义插件，可以用于向插件库安装插件
-func DefinePlugin[PLUGIN, OPTION any]() _Plugin[PLUGIN, OPTION] {
-	return _Plugin[PLUGIN, OPTION]{
-		name: util.TypeFullName[PLUGIN](),
+// DefinePlugin 定义插件，可以用于向插件包安装插件
+func DefinePlugin[PLUGIN_IFACE, OPTION any]() _Plugin[PLUGIN_IFACE, OPTION] {
+	return _Plugin[PLUGIN_IFACE, OPTION]{
+		_name: util.TypeFullName[PLUGIN_IFACE](),
 	}
 }

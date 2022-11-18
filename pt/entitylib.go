@@ -58,7 +58,7 @@ func (lib *_EntityLib) Register(prototype string, compPaths []string) {
 	}
 
 	for i := range compPaths {
-		compPt, ok := GetComponentPt(compPaths[i])
+		compPt, ok := GetComponent(compPaths[i])
 		if !ok {
 			panic(fmt.Errorf("entity '%s' component '%s' not registered", prototype, compPaths[i]))
 		}

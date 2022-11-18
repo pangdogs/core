@@ -12,12 +12,12 @@ func GetPlugin[T any](ctx Context, pluginName string) T {
 		panic("nil ctx")
 	}
 
-	pluginLib := UnsafeContext(ctx).getOptions().PluginLib
-	if pluginLib == nil {
-		panic("nil pluginLib")
+	pluginBundle := UnsafeContext(ctx).getOptions().PluginBundle
+	if pluginBundle == nil {
+		panic("nil pluginBundle")
 	}
 
-	plugin, ok := plugin.GetPlugin[T](pluginLib, pluginName)
+	plugin, ok := plugin.GetPlugin[T](pluginBundle, pluginName)
 	if !ok {
 		panic(fmt.Errorf("plugin '%s' not installed", pluginName))
 	}
@@ -31,12 +31,12 @@ func TryGetPlugin[T any](ctx Context, pluginName string) (T, bool) {
 		return util.Zero[T](), false
 	}
 
-	pluginLib := UnsafeContext(ctx).getOptions().PluginLib
-	if pluginLib == nil {
+	pluginBundle := UnsafeContext(ctx).getOptions().PluginBundle
+	if pluginBundle == nil {
 		return util.Zero[T](), false
 	}
 
-	plugin, ok := plugin.GetPlugin[T](pluginLib, pluginName)
+	plugin, ok := plugin.GetPlugin[T](pluginBundle, pluginName)
 	if !ok {
 		return util.Zero[T](), false
 	}
