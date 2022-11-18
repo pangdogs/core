@@ -22,7 +22,7 @@ func (c _ComponentInterface) register() func(comp any, descr ...string) {
 // ComponentInterface 组件接口
 type ComponentInterface struct {
 	Name     string                          // 组件名
-	Register func(comp any, descr ...string) // 注册组件函数
+	Register func(comp any, descr ...string) // 注册组件原型
 }
 
 // ComponentInterface 生成组件接口定义
