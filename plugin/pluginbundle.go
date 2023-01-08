@@ -3,7 +3,7 @@ package plugin
 
 import (
 	"fmt"
-	"github.com/galaxy-kit/galaxy-go/util"
+	"github.com/golaxy-kit/golaxy/util"
 )
 
 // PluginBundle 插件包

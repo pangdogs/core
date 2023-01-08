@@ -1,9 +1,9 @@
 package galaxy
 
 import (
-	"github.com/galaxy-kit/galaxy-go/internal"
-	"github.com/galaxy-kit/galaxy-go/service"
-	"github.com/galaxy-kit/galaxy-go/util"
+	"github.com/golaxy-kit/golaxy/internal"
+	"github.com/golaxy-kit/golaxy/service"
+	"github.com/golaxy-kit/golaxy/util"
 	"time"
 )
 

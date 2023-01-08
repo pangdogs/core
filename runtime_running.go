@@ -1,11 +1,11 @@
 package galaxy
 
 import (
-	"github.com/galaxy-kit/galaxy-go/ec"
-	"github.com/galaxy-kit/galaxy-go/internal"
-	"github.com/galaxy-kit/galaxy-go/localevent"
-	"github.com/galaxy-kit/galaxy-go/runtime"
-	"github.com/galaxy-kit/galaxy-go/util"
+	"github.com/golaxy-kit/golaxy/ec"
+	"github.com/golaxy-kit/golaxy/internal"
+	"github.com/golaxy-kit/golaxy/localevent"
+	"github.com/golaxy-kit/golaxy/runtime"
+	"github.com/golaxy-kit/golaxy/util"
 	"time"
 )
 

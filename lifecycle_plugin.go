@@ -1,8 +1,8 @@
 package galaxy
 
 import (
-	"github.com/galaxy-kit/galaxy-go/runtime"
-	"github.com/galaxy-kit/galaxy-go/service"
+	"github.com/golaxy-kit/golaxy/runtime"
+	"github.com/golaxy-kit/golaxy/service"
 )
 
 type _ServicePluginInit interface {

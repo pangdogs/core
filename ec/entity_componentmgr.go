@@ -2,17 +2,17 @@ package ec
 
 import (
 	"errors"
-	"github.com/galaxy-kit/galaxy-go/localevent"
-	"github.com/galaxy-kit/galaxy-go/util"
-	"github.com/galaxy-kit/galaxy-go/util/container"
+	"github.com/golaxy-kit/golaxy/localevent"
+	"github.com/golaxy-kit/golaxy/util"
+	"github.com/golaxy-kit/golaxy/util/container"
 )
 
 // _ComponentMgr 组件管理器接口
 type _ComponentMgr interface {
 	// GetComponent 使用名称查询组件，一般情况下名称指组件接口名称，也可以自定义名称，同个名称指向多个组件时，返回首个组件
 	GetComponent(name string) Component
-	// GetComponentByID 使用组件唯一ID查询组件
-	GetComponentByID(id int64) Component
+	// GetComponentByID 使用组件ID查询组件
+	GetComponentByID(id ID) Component
 	// GetComponents 使用名称查询所有指向的组件
 	GetComponents(name string) []Component
 	// RangeComponents 遍历所有组件
@@ -23,8 +23,8 @@ type _ComponentMgr interface {
 	AddComponent(name string, component Component) error
 	// RemoveComponent 删除名称指向的组件，会删除同个名称指向的多个组件
 	RemoveComponent(name string)
-	// RemoveComponentByID 使用组件唯一ID删除组件
-	RemoveComponentByID(id int64)
+	// RemoveComponentByID 使用组件ID删除组件
+	RemoveComponentByID(id ID)
 	// EventCompMgrAddComponents 事件：实体的组件管理器加入一些组件
 	EventCompMgrAddComponents() localevent.IEvent
 	// EventCompMgrRemoveComponent 事件：实体的组件管理器删除组件
@@ -38,7 +38,7 @@ func (entity *EntityBehavior) GetComponent(name string) Component {
 	if e, ok := entity.getComponentElement(name); ok {
 		comp := util.Cache2Iface[Component](e.Value.Cache)
 
-		if entity.opts.EnableComponentAwakeByAccess && !comp.getAwoke() {
+		if entity.opts.EnableComponentAwakeByAccess && comp.GetState() < ComponentState_Awake {
 			emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, comp)
 		}
 
@@ -48,12 +48,12 @@ func (entity *EntityBehavior) GetComponent(name string) Component {
 	return nil
 }
 
-// GetComponentByID 使用组件唯一ID查询组件
-func (entity *EntityBehavior) GetComponentByID(id int64) Component {
+// GetComponentByID 使用组件ID查询组件
+func (entity *EntityBehavior) GetComponentByID(id ID) Component {
 	if e, ok := entity.getComponentElementByID(id); ok {
 		comp := util.Cache2Iface[Component](e.Value.Cache)
 
-		if entity.opts.EnableComponentAwakeByAccess && !comp.getAwoke() {
+		if entity.opts.EnableComponentAwakeByAccess && comp.GetState() < ComponentState_Awake {
 			emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, comp)
 		}
 
@@ -79,7 +79,7 @@ func (entity *EntityBehavior) GetComponents(name string) []Component {
 
 		if entity.opts.EnableComponentAwakeByAccess {
 			for i := range components {
-				if !components[i].getAwoke() {
+				if components[i].GetState() < ComponentState_Awake {
 					emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, components[i])
 				}
 			}
@@ -100,7 +100,7 @@ func (entity *EntityBehavior) RangeComponents(fun func(component Component) bool
 	entity.componentList.Traversal(func(e *container.Element[util.FaceAny]) bool {
 		comp := util.Cache2Iface[Component](e.Value.Cache)
 
-		if entity.opts.EnableComponentAwakeByAccess && !comp.getAwoke() {
+		if entity.opts.EnableComponentAwakeByAccess && comp.GetState() < ComponentState_Awake {
 			emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, comp)
 		}
 
@@ -143,11 +143,11 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 			return false
 		}
 
-		if !entity.opts.EnableRemovePrimaryComponent {
-			if comp.getPrimary() {
-				return true
-			}
+		if comp.getFixed() {
+			return true
 		}
+
+		comp.setState(ComponentState_Detach)
 
 		other.Escape()
 		emitEventCompMgrRemoveComponent(&entity.eventCompMgrRemoveComponent, entity.opts.Inheritor.Iface, comp)
@@ -156,8 +156,8 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 	}, e)
 }
 
-// RemoveComponentByID 使用组件唯一ID删除组件
-func (entity *EntityBehavior) RemoveComponentByID(id int64) {
+// RemoveComponentByID 使用组件ID删除组件
+func (entity *EntityBehavior) RemoveComponentByID(id ID) {
 	e, ok := entity.getComponentElementByID(id)
 	if !ok {
 		return
@@ -165,11 +165,11 @@ func (entity *EntityBehavior) RemoveComponentByID(id int64) {
 
 	comp := util.Cache2Iface[Component](e.Value.Cache)
 
-	if !entity.opts.EnableRemovePrimaryComponent {
-		if comp.getPrimary() {
-			return
-		}
+	if comp.getFixed() {
+		return
 	}
+
+	comp.setState(ComponentState_Detach)
 
 	e.Escape()
 	emitEventCompMgrRemoveComponent(&entity.eventCompMgrRemoveComponent, entity.opts.Inheritor.Iface, comp)
@@ -195,19 +195,11 @@ func (entity *EntityBehavior) addSingleComponent(name string, component Componen
 		return errors.New("nil component")
 	}
 
-	if component.GetEntity() != nil {
-		return errors.New("component already added in entity")
+	if component.GetState() != ComponentState_Birth {
+		return errors.New("component state not birth invalid")
 	}
 
 	component.init(name, entity.opts.Inheritor.Iface, component, entity.opts.HookCache)
-
-	if entity.opts.ComponentPersistID != nil {
-		compID := entity.opts.ComponentPersistID(component)
-		if compID < 0 {
-			panic("component persistID less 0 invalid")
-		}
-		component.setID(compID)
-	}
 
 	face := util.NewFacePair[any](component, component)
 
@@ -226,6 +218,7 @@ func (entity *EntityBehavior) addSingleComponent(name string, component Componen
 		e = entity.componentList.PushBack(face)
 	}
 
+	component.setState(ComponentState_Attach)
 	entity.getInnerGCCollector().CollectGC(component.getInnerGC())
 
 	return nil
@@ -245,7 +238,7 @@ func (entity *EntityBehavior) getComponentElement(name string) (*container.Eleme
 	return e, e != nil
 }
 
-func (entity *EntityBehavior) getComponentElementByID(id int64) (*container.Element[util.FaceAny], bool) {
+func (entity *EntityBehavior) getComponentElementByID(id ID) (*container.Element[util.FaceAny], bool) {
 	var e *container.Element[util.FaceAny]
 
 	entity.componentList.Traversal(func(other *container.Element[util.FaceAny]) bool {

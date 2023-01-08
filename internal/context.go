@@ -18,6 +18,8 @@ type Context interface {
 	GetWaitGroup() *sync.WaitGroup
 	// GetCancelFunc 获取取消运行函数
 	GetCancelFunc() context.CancelFunc
+
+	init(parentCtx context.Context, autoRecover bool, reportError chan error)
 }
 
 // ContextBehavior 上下文行为
@@ -28,20 +30,6 @@ type ContextBehavior struct {
 	reportError chan error
 	cancel      context.CancelFunc
 	wg          sync.WaitGroup
-}
-
-// Init 初始化
-func (ctx *ContextBehavior) Init(parentCtx context.Context, autoRecover bool, reportError chan error) {
-	if parentCtx == nil {
-		ctx.parentCtx = context.Background()
-	} else {
-		ctx.parentCtx = parentCtx
-	}
-
-	ctx.autoRecover = autoRecover
-	ctx.reportError = reportError
-
-	ctx.Context, ctx.cancel = context.WithCancel(ctx.parentCtx)
 }
 
 // GetParentContext 获取父上下文
@@ -67,4 +55,17 @@ func (ctx *ContextBehavior) GetWaitGroup() *sync.WaitGroup {
 // GetCancelFunc 获取取消运行函数
 func (ctx *ContextBehavior) GetCancelFunc() context.CancelFunc {
 	return ctx.cancel
+}
+
+func (ctx *ContextBehavior) init(parentCtx context.Context, autoRecover bool, reportError chan error) {
+	if parentCtx == nil {
+		ctx.parentCtx = context.Background()
+	} else {
+		ctx.parentCtx = parentCtx
+	}
+
+	ctx.autoRecover = autoRecover
+	ctx.reportError = reportError
+
+	ctx.Context, ctx.cancel = context.WithCancel(ctx.parentCtx)
 }

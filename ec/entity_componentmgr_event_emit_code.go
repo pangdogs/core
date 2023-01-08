@@ -3,8 +3,8 @@
 package ec
 
 import (
-	localevent "github.com/galaxy-kit/galaxy-go/localevent"
-	"github.com/galaxy-kit/galaxy-go/util"
+	localevent "github.com/golaxy-kit/golaxy/localevent"
+	"github.com/golaxy-kit/golaxy/util"
 )
 
 func emitEventCompMgrAddComponents(event localevent.IEvent, entity Entity, components []Component) {

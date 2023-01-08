@@ -3,9 +3,9 @@ package galaxy
 import (
 	"errors"
 	"fmt"
-	"github.com/galaxy-kit/galaxy-go/ec"
-	"github.com/galaxy-kit/galaxy-go/runtime"
-	"github.com/galaxy-kit/galaxy-go/service"
+	"github.com/golaxy-kit/golaxy/ec"
+	"github.com/golaxy-kit/golaxy/runtime"
+	"github.com/golaxy-kit/golaxy/service"
 )
 
 // EntityCreator 实体构建器
@@ -25,7 +25,7 @@ const (
 type _EntityCreator struct {
 	runtimeCtx    runtime.Context
 	prototype     string
-	withOptions   []ec.WithEntityOption
+	withOptions   []ec.EntityOption
 	accessibility Accessibility
 }
 
@@ -42,7 +42,7 @@ func (creator _EntityCreator) Prototype(prototype string) _EntityCreator {
 }
 
 // Options 设置创建实体的选项
-func (creator _EntityCreator) Options(options ...ec.WithEntityOption) _EntityCreator {
+func (creator _EntityCreator) Options(options ...ec.EntityOption) _EntityCreator {
 	creator.withOptions = options
 	return creator
 }

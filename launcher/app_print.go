@@ -3,7 +3,7 @@ package launcher
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/galaxy-kit/galaxy-go/pt"
+	"github.com/golaxy-kit/golaxy/pt"
 	"sort"
 	"strings"
 )
@@ -11,19 +11,19 @@ import (
 func (app *App) printComp() {
 	var compPts []pt.ComponentPt
 
-	pt.RangeComponentPts(func(compPt pt.ComponentPt) bool {
+	pt.RangeComponent(func(compPt pt.ComponentPt) bool {
 		compPts = append(compPts, compPt)
 		return true
 	})
 
 	sort.Slice(compPts, func(i, j int) bool {
-		return strings.Compare(compPts[i].Name+compPts[i].Path, compPts[j].Name+compPts[j].Path) < 0
+		return strings.Compare(compPts[i].Name, compPts[j].Name) < 0
 	})
 
-	compPtsData, err := json.MarshalIndent(compPts, "", "\t")
+	compPtsDs, err := json.MarshalIndent(compPts, "", "\t")
 	if err != nil {
 		panic(fmt.Errorf("marshal components prototype info failed, %v", err))
 	}
 
-	fmt.Printf("%s", compPtsData)
+	fmt.Printf("%s", compPtsDs)
 }

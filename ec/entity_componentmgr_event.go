@@ -1,4 +1,4 @@
-//go:generate go run github.com/galaxy-kit/galaxy-go/localevent/eventcode --decl_file=$GOFILE gen_emit --package=$GOPACKAGE
+//go:generate go run github.com/golaxy-kit/golaxy/localevent/eventcode --decl_file=$GOFILE gen_emit --package=$GOPACKAGE
 package ec
 
 // EventCompMgrAddComponents [EmitUnExport] 事件定义：实体的组件管理器加入一些组件

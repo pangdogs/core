@@ -1,8 +1,8 @@
 package ec
 
 import (
-	"github.com/galaxy-kit/galaxy-go/localevent"
-	"github.com/galaxy-kit/galaxy-go/util/container"
+	"github.com/golaxy-kit/golaxy/localevent"
+	"github.com/golaxy-kit/golaxy/util/container"
 )
 
 type _ComponentInnerGC struct {

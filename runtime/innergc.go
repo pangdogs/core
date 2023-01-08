@@ -1,6 +1,6 @@
 package runtime
 
-import "github.com/galaxy-kit/galaxy-go/util/container"
+import "github.com/golaxy-kit/golaxy/util/container"
 
 type _InnerGC interface {
 	getInnerGC() container.GC

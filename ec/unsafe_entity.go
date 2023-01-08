@@ -1,9 +1,9 @@
 package ec
 
 import (
-	"github.com/galaxy-kit/galaxy-go/localevent"
-	"github.com/galaxy-kit/galaxy-go/util"
-	"github.com/galaxy-kit/galaxy-go/util/container"
+	"github.com/golaxy-kit/golaxy/localevent"
+	"github.com/golaxy-kit/golaxy/util"
+	"github.com/golaxy-kit/golaxy/util/container"
 )
 
 func UnsafeEntity(entity Entity) _UnsafeEntity {
@@ -24,7 +24,7 @@ func (ue _UnsafeEntity) GetOptions() *EntityOptions {
 	return ue.getOptions()
 }
 
-func (ue _UnsafeEntity) SetID(id int64) {
+func (ue _UnsafeEntity) SetID(id ID) {
 	ue.setID(id)
 }
 
@@ -52,36 +52,8 @@ func (ue _UnsafeEntity) SetParent(parent Entity) {
 	ue.setParent(parent)
 }
 
-func (ue _UnsafeEntity) SetAdding(v bool) {
-	ue.setAdding(v)
-}
-
-func (ue _UnsafeEntity) GetAdding() bool {
-	return ue.getAdding()
-}
-
-func (ue _UnsafeEntity) SetRemoving(v bool) {
-	ue.setRemoving(v)
-}
-
-func (ue _UnsafeEntity) GetRemoving() bool {
-	return ue.getRemoving()
-}
-
-func (ue _UnsafeEntity) SetInitialing(v bool) {
-	ue.setInitialing(v)
-}
-
-func (ue _UnsafeEntity) GetInitialing() bool {
-	return ue.getInitialing()
-}
-
-func (ue _UnsafeEntity) SetShutting(v bool) {
-	ue.setShutting(v)
-}
-
-func (ue _UnsafeEntity) GetShutting() bool {
-	return ue.getShutting()
+func (ue _UnsafeEntity) SetState(state EntityState) {
+	ue.setState(state)
 }
 
 func (ue _UnsafeEntity) EventEntityDestroySelf() localevent.IEvent {

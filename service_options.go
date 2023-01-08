@@ -1,31 +1,31 @@
 package galaxy
 
 import (
-	"github.com/galaxy-kit/galaxy-go/util"
+	"github.com/golaxy-kit/golaxy/util"
 )
 
 // ServiceOptions 创建服务的所有选项
 type ServiceOptions struct {
-	Inheritor util.Face[Service] // 继承者，需要拓展服务自身功能时需要使用
+	Inheritor util.Face[Service] // 继承者，需要扩展服务自身功能时需要使用
 }
 
-// WithServiceOption 创建服务的选项设置器
-type WithServiceOption func(o *ServiceOptions)
+// ServiceOption 创建服务的选项设置器
+type ServiceOption func(o *ServiceOptions)
 
-// ServiceOption 创建服务的选项
-var ServiceOption = _ServiceOption{}
+// WithServiceOption 创建服务的选项
+var WithServiceOption = _WithServiceOption{}
 
-type _ServiceOption struct{}
+type _WithServiceOption struct{}
 
 // Default 默认值
-func (_ServiceOption) Default() WithServiceOption {
+func (_WithServiceOption) Default() ServiceOption {
 	return func(o *ServiceOptions) {
 		o.Inheritor = util.Face[Service]{}
 	}
 }
 
-// Inheritor 继承者，需要拓展服务自身功能时需要使用
-func (_ServiceOption) Inheritor(v util.Face[Service]) WithServiceOption {
+// Inheritor 继承者，需要扩展服务自身功能时需要使用
+func (_WithServiceOption) Inheritor(v util.Face[Service]) ServiceOption {
 	return func(o *ServiceOptions) {
 		o.Inheritor = v
 	}

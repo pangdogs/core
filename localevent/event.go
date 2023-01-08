@@ -1,9 +1,9 @@
 package localevent
 
 import (
-	"github.com/galaxy-kit/galaxy-go/internal"
-	"github.com/galaxy-kit/galaxy-go/util"
-	"github.com/galaxy-kit/galaxy-go/util/container"
+	"github.com/golaxy-kit/golaxy/internal"
+	"github.com/golaxy-kit/golaxy/util"
+	"github.com/golaxy-kit/golaxy/util/container"
 )
 
 // EventRecursion 发生事件递归的处理方式，事件递归是指在一个事件的订阅者中再次发送这个事件

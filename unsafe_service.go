@@ -1,6 +1,6 @@
 package galaxy
 
-import "github.com/galaxy-kit/galaxy-go/service"
+import "github.com/golaxy-kit/golaxy/service"
 
 func UnsafeService(service Service) _UnsafeService {
 	return _UnsafeService{

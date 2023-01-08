@@ -1,7 +1,7 @@
 package pt
 
 import (
-	"github.com/galaxy-kit/galaxy-go/ec"
+	"github.com/golaxy-kit/golaxy/ec"
 )
 
 // EntityPt 实体原型

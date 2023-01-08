@@ -1,6 +1,6 @@
 package service
 
-import "github.com/galaxy-kit/galaxy-go/internal"
+import "github.com/golaxy-kit/golaxy/internal"
 
 func UnsafeContext(ctx Context) _UnsafeContext {
 	return _UnsafeContext{
@@ -13,7 +13,7 @@ type _UnsafeContext struct {
 }
 
 func (uc _UnsafeContext) Init(opts *ContextOptions) {
-	uc.init(opts)
+	uc.Context.init(opts)
 }
 
 func (uc _UnsafeContext) GetOptions() *ContextOptions {

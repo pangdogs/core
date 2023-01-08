@@ -1,9 +1,9 @@
 package runtime
 
 import (
-	"github.com/galaxy-kit/galaxy-go/internal"
-	"github.com/galaxy-kit/galaxy-go/service"
-	"github.com/galaxy-kit/galaxy-go/util/container"
+	"github.com/golaxy-kit/golaxy/internal"
+	"github.com/golaxy-kit/golaxy/service"
+	"github.com/golaxy-kit/golaxy/util/container"
 )
 
 func UnsafeContext(ctx Context) _UnsafeContext {
@@ -17,7 +17,7 @@ type _UnsafeContext struct {
 }
 
 func (uc _UnsafeContext) Init(serviceCtx service.Context, opts *ContextOptions) {
-	uc.init(serviceCtx, opts)
+	uc.Context.init(serviceCtx, opts)
 }
 
 func (uc _UnsafeContext) GetOptions() *ContextOptions {

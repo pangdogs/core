@@ -1,8 +1,8 @@
 package define
 
 import (
-	"github.com/galaxy-kit/galaxy-go/pt"
-	"github.com/galaxy-kit/galaxy-go/util"
+	"github.com/golaxy-kit/golaxy/pt"
+	"github.com/golaxy-kit/golaxy/util"
 )
 
 type _ComponentInterface struct {

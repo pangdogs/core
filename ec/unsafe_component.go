@@ -1,9 +1,9 @@
 package ec
 
 import (
-	"github.com/galaxy-kit/galaxy-go/localevent"
-	"github.com/galaxy-kit/galaxy-go/util"
-	"github.com/galaxy-kit/galaxy-go/util/container"
+	"github.com/golaxy-kit/golaxy/localevent"
+	"github.com/golaxy-kit/golaxy/util"
+	"github.com/golaxy-kit/golaxy/util/container"
 	"reflect"
 )
 
@@ -21,36 +21,28 @@ func (uc _UnsafeComponent) Init(name string, entity Entity, inheritor Component,
 	uc.init(name, entity, inheritor, hookCache)
 }
 
-func (uc _UnsafeComponent) SetID(id int64) {
+func (uc _UnsafeComponent) SetID(id ID) {
 	uc.setID(id)
 }
 
-func (uc _UnsafeComponent) SetPrimary(v bool) {
-	uc.setPrimary(v)
+func (uc _UnsafeComponent) SetSerialNo(sn int64) {
+	uc.setSerialNo(sn)
 }
 
-func (uc _UnsafeComponent) GetPrimary() bool {
-	return uc.getPrimary()
+func (uc _UnsafeComponent) SetFixed(v bool) {
+	uc.setFixed(v)
+}
+
+func (uc _UnsafeComponent) GetFixed() bool {
+	return uc.getFixed()
 }
 
 func (uc _UnsafeComponent) GetContext() util.IfaceCache {
 	return uc.getContext()
 }
 
-func (uc _UnsafeComponent) SetAwoke(v bool) {
-	uc.setAwoke(v)
-}
-
-func (uc _UnsafeComponent) GetAwoke() bool {
-	return uc.getAwoke()
-}
-
-func (uc _UnsafeComponent) SetStarted(v bool) {
-	uc.setStarted(v)
-}
-
-func (uc _UnsafeComponent) GetStarted() bool {
-	return uc.getStarted()
+func (uc _UnsafeComponent) SetState(state ComponentState) {
+	uc.setState(state)
 }
 
 func (uc _UnsafeComponent) SetReflectValue(v reflect.Value) {

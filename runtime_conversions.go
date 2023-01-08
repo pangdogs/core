@@ -1,6 +1,6 @@
 package galaxy
 
-import "github.com/galaxy-kit/galaxy-go/util"
+import "github.com/golaxy-kit/golaxy/util"
 
 // GetRuntimeInheritor 获取运行时的继承者
 func GetRuntimeInheritor[T any](runtime Runtime) T {

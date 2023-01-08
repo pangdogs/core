@@ -2,8 +2,8 @@ package service
 
 import (
 	"fmt"
-	"github.com/galaxy-kit/galaxy-go/plugin"
-	"github.com/galaxy-kit/galaxy-go/util"
+	"github.com/golaxy-kit/golaxy/plugin"
+	"github.com/golaxy-kit/golaxy/util"
 )
 
 // GetPlugin 从服务上下文上获取插件

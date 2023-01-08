@@ -3,8 +3,9 @@ package launcher
 import (
 	"context"
 	"fmt"
-	"github.com/galaxy-kit/galaxy-go"
-	"github.com/galaxy-kit/galaxy-go/util"
+	"github.com/golaxy-kit/golaxy/pt"
+	"github.com/golaxy-kit/golaxy/service"
+	"github.com/golaxy-kit/golaxy/util"
 	"github.com/spf13/viper"
 	"os"
 	"os/signal"
@@ -12,14 +13,15 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 )
 
 func (app *App) runApp() {
 	serviceConfTab := app.loadPtConfig(app.ptConfig)
 
 	if len(app.services) <= 0 {
-		for servicePtName, _ := range serviceConfTab {
-			app.services = append(app.services, servicePtName)
+		for service, _ := range serviceConfTab {
+			app.services = append(app.services, service)
 		}
 	}
 
@@ -41,23 +43,23 @@ func (app *App) runApp() {
 		}
 	}()
 
-	for _, servicePtName := range app.services {
-		servicePtConf, ok := serviceConfTab[servicePtName]
+	for _, service := range app.services {
+		serviceConf, ok := serviceConfTab[service]
 		if !ok {
-			panic(fmt.Errorf("service '%s' prototype config not found", servicePtName))
+			panic(fmt.Errorf("service '%s' prototype config not found", service))
 		}
 
 		wg.Add(1)
-		go app.runService(ctx, &wg, servicePtName, servicePtConf)
+		go app.runService(ctx, &wg, service, serviceConf)
 	}
 
 	wg.Wait()
 }
 
-func (app *App) runService(ctx context.Context, wg *sync.WaitGroup, servicePtName string, servicePtConf ServiceConf) {
+func (app *App) runService(ctx context.Context, wg *sync.WaitGroup, serviceName string, serviceConf ServiceConf) {
 	defer wg.Done()
 
-	app.newService(ctx, servicePtName, servicePtConf)
+	app.newService(ctx, serviceName, serviceConf)
 
 }
 
@@ -87,42 +89,42 @@ func (app *App) loadPtConfig(ptConfFile string) ServiceConfTab {
 }
 
 func (app *App) newService(ctx context.Context, servicePtName string, servicePtConf ServiceConf) galaxy.Service {
-	//entityLib := pt.NewEntityLib()
-	//
-	//for entityPtName, entityPtConf := range servicePtConf.EntityTab {
-	//	entityLib.Register(entityPtName, entityPtConf)
-	//}
-	//
-	//entityLib.Get("Daemon").New()
-	//
-	//serviceCtx := service.NewContext(
-	//	service.ContextOption.Prototype(servicePtName),
-	//	service.ContextOption.NodeID(viper.GetInt64(fmt.Sprintf("%s.NodeID", servicePtName))),
-	//	service.ContextOption.Context(ctx),
-	//)
-	//
-	//return galaxy.NewService(serviceCtx)
+	entityLib := pt.NewEntityLib()
+
+	for entityPtName, entityPtConf := range servicePtConf.EntityTab {
+		entityLib.Register(entityPtName, entityPtConf)
+	}
+
+	entityLib.Get("Daemon").New()
+
+	serviceCtx := service.NewContext(
+		service.WithContextOption.Prototype(servicePtName),
+		service.WithContextOption.NodeID(viper.GetInt64(fmt.Sprintf("%s.NodeID", servicePtName))),
+		service.WithContextOption.Context(ctx),
+	)
+
+	return galaxy.NewService(serviceCtx)
 	return nil
 }
 
-//func (app *App) newSingleton(serviceCtx core.Runtime, servicePtName string, singleton []string) {
-//	singletonContext, singletonCancel := context.WithCancel(context.Background())
-//
-//	singletonRuntimeCtx := core.NewRuntimeContext(serviceCtx,
-//		core.RuntimeContextOptionSetter.ReportError(make(chan error, 100)),
-//		core.RuntimeContextOptionSetter.Context(singletonContext),
-//	)
-//
-//	singletonRuntime := core.NewRuntime(singletonRuntimeCtx,
-//		core.WithRuntimeOption.AutoRecover(viper.GetBool(fmt.Sprintf("%s.Singleton.AutoRecover", servicePtName))),
-//		core.WithRuntimeOption.ProcessQueueCapacity(viper.GetInt(fmt.Sprintf("%s.Singleton.ProcessQueueCapacity", servicePtName))),
-//		core.WithRuntimeOption.ProcessQueueTimeout(time.Duration(viper.GetInt64(fmt.Sprintf("%s.Singleton.ProcessQueueTimeout", servicePtName)))),
-//		core.WithRuntimeOption.GCInterval(time.Duration(viper.GetInt64(fmt.Sprintf("%s.Singleton.GCInterval", servicePtName)))),
-//	)
-//
-//	for _, entityPtName := range servicePtConf.Singleton {
-//		entityLib.Get(entityPtName).New()
-//	}
-//
-//	singletonShutChan := singletonRuntime.Run()
-//}
+func (app *App) newSingleton(serviceCtx core.Runtime, servicePtName string, singleton []string) {
+	singletonContext, singletonCancel := context.WithCancel(context.Background())
+
+	singletonRuntimeCtx := core.NewRuntimeContext(serviceCtx,
+		core.RuntimeContextOptionSetter.ReportError(make(chan error, 100)),
+		core.RuntimeContextOptionSetter.Context(singletonContext),
+	)
+
+	singletonRuntime := core.NewRuntime(singletonRuntimeCtx,
+		core.WithRuntimeOption.AutoRecover(viper.GetBool(fmt.Sprintf("%s.Singleton.AutoRecover", servicePtName))),
+		core.WithRuntimeOption.ProcessQueueCapacity(viper.GetInt(fmt.Sprintf("%s.Singleton.ProcessQueueCapacity", servicePtName))),
+		core.WithRuntimeOption.ProcessQueueTimeout(time.Duration(viper.GetInt64(fmt.Sprintf("%s.Singleton.ProcessQueueTimeout", servicePtName)))),
+		core.WithRuntimeOption.GCInterval(time.Duration(viper.GetInt64(fmt.Sprintf("%s.Singleton.GCInterval", servicePtName)))),
+	)
+
+	for _, entityPtName := range servicePtConf.Singleton {
+		entityLib.Get(entityPtName).New()
+	}
+
+	singletonShutChan := singletonRuntime.Run()
+}

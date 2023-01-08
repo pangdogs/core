@@ -1,9 +1,9 @@
 package define
 
 import (
-	"github.com/galaxy-kit/galaxy-go/runtime"
-	"github.com/galaxy-kit/galaxy-go/service"
-	"github.com/galaxy-kit/galaxy-go/util"
+	"github.com/golaxy-kit/golaxy/runtime"
+	"github.com/golaxy-kit/golaxy/service"
+	"github.com/golaxy-kit/golaxy/util"
 )
 
 type _PluginInterface[PLUGIN_IFACE any] struct {

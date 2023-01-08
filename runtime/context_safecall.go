@@ -2,8 +2,8 @@ package runtime
 
 import (
 	"fmt"
-	"github.com/galaxy-kit/galaxy-go/ec"
-	"github.com/galaxy-kit/galaxy-go/internal"
+	"github.com/golaxy-kit/golaxy/ec"
+	"github.com/golaxy-kit/golaxy/internal"
 )
 
 // SafeRet 安全调用结果
