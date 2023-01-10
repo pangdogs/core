@@ -25,8 +25,8 @@ const (
 type _EntityCreator struct {
 	runtimeCtx    runtime.Context
 	prototype     string
-	withOptions   []ec.EntityOption
 	accessibility Accessibility
+	withOptions   []ec.EntityOption
 }
 
 // RuntimeCtx 设置运行时上下文
@@ -41,15 +41,15 @@ func (creator _EntityCreator) Prototype(prototype string) _EntityCreator {
 	return creator
 }
 
-// Options 设置创建实体的选项
-func (creator _EntityCreator) Options(options ...ec.EntityOption) _EntityCreator {
-	creator.withOptions = options
-	return creator
-}
-
 // Accessibility 设置实体的可访问性
 func (creator _EntityCreator) Accessibility(accessibility Accessibility) _EntityCreator {
 	creator.accessibility = accessibility
+	return creator
+}
+
+// Options 设置创建实体的选项
+func (creator _EntityCreator) Options(options ...ec.EntityOption) _EntityCreator {
+	creator.withOptions = options
 	return creator
 }
 
@@ -95,7 +95,7 @@ func (creator _EntityCreator) TrySpawn() (ec.Entity, error) {
 	}
 
 	opts := ec.EntityOptions{}
-	ec.EntityOption.Default()(&opts)
+	ec.WithEntityOption.Default()(&opts)
 
 	for i := range creator.withOptions {
 		creator.withOptions[i](&opts)
