@@ -59,16 +59,11 @@ type _EntityMgr struct {
 	eventEntityMgrEntityRemoveComponent      localevent.Event
 	eventEntityMgrEntityFirstAccessComponent localevent.Event
 	_eventEntityMgrNotifyECTreeRemoveEntity  localevent.Event
-	inited                                   bool
 }
 
 func (entityMgr *_EntityMgr) Init(runtimeCtx Context) {
 	if runtimeCtx == nil {
 		panic("nil runtimeCtx")
-	}
-
-	if entityMgr.inited {
-		panic("repeated init entity manager")
 	}
 
 	entityMgr.runtimeCtx = runtimeCtx
@@ -81,8 +76,6 @@ func (entityMgr *_EntityMgr) Init(runtimeCtx Context) {
 	entityMgr.eventEntityMgrEntityRemoveComponent.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Discard, runtimeCtx.GetHookCache(), runtimeCtx)
 	entityMgr.eventEntityMgrEntityFirstAccessComponent.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Discard, runtimeCtx.GetHookCache(), runtimeCtx)
 	entityMgr._eventEntityMgrNotifyECTreeRemoveEntity.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Discard, runtimeCtx.GetHookCache(), runtimeCtx)
-
-	entityMgr.inited = true
 }
 
 // GetRuntimeCtx 获取运行时上下文

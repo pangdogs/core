@@ -6,12 +6,12 @@ import (
 )
 
 // Get 获取服务上下文
-func Get(ctxHolder ec.ContextHolder) Context {
+func Get(ctxHolder ec.ContextResolver) Context {
 	return getServiceContext(ctxHolder)
 }
 
 // TryGet  尝试获取服务上下文
-func TryGet(ctxHolder ec.ContextHolder) (Context, bool) {
+func TryGet(ctxHolder ec.ContextResolver) (Context, bool) {
 	serviceCtx, ok := tryGetServiceContext(ctxHolder)
 	if !ok {
 		return nil, false
@@ -20,7 +20,7 @@ func TryGet(ctxHolder ec.ContextHolder) (Context, bool) {
 }
 
 //go:linkname getServiceContext github.com/golaxy-kit/golaxy/runtime.getServiceContext
-func getServiceContext(ctxHolder ec.ContextHolder) Context
+func getServiceContext(ctxHolder ec.ContextResolver) Context
 
 //go:linkname tryGetServiceContext github.com/golaxy-kit/golaxy/runtime.tryGetServiceContext
-func tryGetServiceContext(ctxHolder ec.ContextHolder) (Context, bool)
+func tryGetServiceContext(ctxHolder ec.ContextResolver) (Context, bool)

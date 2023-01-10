@@ -3,7 +3,6 @@ module github.com/golaxy-kit/golaxy
 go 1.18
 
 require (
-	github.com/bwmarrin/snowflake v0.3.0
 	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/viper v1.14.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6

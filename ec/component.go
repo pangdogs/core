@@ -11,7 +11,7 @@ import (
 type Component interface {
 	_InnerGC
 	_InnerGCCollector
-	ContextHolder
+	ContextResolver
 
 	// GetID 获取组件ID
 	GetID() ID

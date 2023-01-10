@@ -53,9 +53,6 @@ func (_WithEntityOption) Prototype(v string) EntityOption {
 // PersistID 实体持久化ID
 func (_WithEntityOption) PersistID(v ID) EntityOption {
 	return func(o *EntityOptions) {
-		if v == util.Zero[ID]() {
-			panic("persistID equal 0 invalid")
-		}
 		o.PersistID = v
 	}
 }

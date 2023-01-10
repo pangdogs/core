@@ -73,6 +73,8 @@ func (ecTree *ECTree) init(runtimeCtx Context, masterTree bool) {
 		panic("repeated init ec-tree")
 	}
 
+	ecTree.inited = true
+
 	ecTree.runtimeCtx = runtimeCtx
 	ecTree.masterTree = masterTree
 	ecTree.ecTree = map[ec.ID]_ECNode{}
@@ -82,8 +84,6 @@ func (ecTree *ECTree) init(runtimeCtx Context, masterTree bool) {
 	if !ecTree.masterTree {
 		ecTree.hook = localevent.BindEvent[eventEntityMgrNotifyECTreeRemoveEntity](ecTree.runtimeCtx.GetEntityMgr().eventEntityMgrNotifyECTreeRemoveEntity(), ecTree)
 	}
-
-	ecTree.inited = true
 }
 
 func (ecTree *ECTree) onEntityMgrNotifyECTreeRemoveEntity(entityMgr IEntityMgr, entity ec.Entity) {

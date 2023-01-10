@@ -147,9 +147,9 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 			return true
 		}
 
+		other.Escape()
 		comp.setState(ComponentState_Detach)
 
-		other.Escape()
 		emitEventCompMgrRemoveComponent(&entity.eventCompMgrRemoveComponent, entity.opts.Inheritor.Iface, comp)
 
 		return true
@@ -169,9 +169,9 @@ func (entity *EntityBehavior) RemoveComponentByID(id ID) {
 		return
 	}
 
+	e.Escape()
 	comp.setState(ComponentState_Detach)
 
-	e.Escape()
 	emitEventCompMgrRemoveComponent(&entity.eventCompMgrRemoveComponent, entity.opts.Inheritor.Iface, comp)
 }
 

@@ -7,12 +7,12 @@ import (
 )
 
 // Get 获取运行时上下文
-func Get(ctxHolder ec.ContextHolder) Context {
+func Get(ctxHolder ec.ContextResolver) Context {
 	if ctxHolder == nil {
 		panic("nil ctxHolder")
 	}
 
-	ctx := ec.UnsafeContextHolder(ctxHolder).GetContext()
+	ctx := ec.UnsafeContextResolver(ctxHolder).GetContext()
 	if ctx == util.NilIfaceCache {
 		panic("nil context")
 	}
@@ -21,12 +21,12 @@ func Get(ctxHolder ec.ContextHolder) Context {
 }
 
 // TryGet 尝试获取运行时上下文
-func TryGet(ctxHolder ec.ContextHolder) (Context, bool) {
+func TryGet(ctxHolder ec.ContextResolver) (Context, bool) {
 	if ctxHolder == nil {
 		return nil, false
 	}
 
-	ctx := ec.UnsafeContextHolder(ctxHolder).GetContext()
+	ctx := ec.UnsafeContextResolver(ctxHolder).GetContext()
 	if ctx == util.NilIfaceCache {
 		return nil, false
 	}
@@ -34,11 +34,11 @@ func TryGet(ctxHolder ec.ContextHolder) (Context, bool) {
 	return util.Cache2Iface[Context](ctx), true
 }
 
-func getServiceContext(ctxHolder ec.ContextHolder) service.Context {
+func getServiceContext(ctxHolder ec.ContextResolver) service.Context {
 	return Get(ctxHolder).GetServiceCtx()
 }
 
-func tryGetServiceContext(ctxHolder ec.ContextHolder) (service.Context, bool) {
+func tryGetServiceContext(ctxHolder ec.ContextResolver) (service.Context, bool) {
 	runtimeCtx, ok := TryGet(ctxHolder)
 	if !ok {
 		return nil, false

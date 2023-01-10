@@ -2,7 +2,7 @@ package util
 
 import (
 	"encoding/xml"
-	"io/ioutil"
+	"os"
 )
 
 // XmlLoader XML格式配置加载器
@@ -22,7 +22,7 @@ func (loader *XmlLoader[T]) SetBytes(content []byte) error {
 
 // SetFile 输入XML格式文件路径
 func (loader *XmlLoader[T]) SetFile(file string) error {
-	bytes, err := ioutil.ReadFile(file)
+	bytes, err := os.ReadFile(file)
 	if err != nil {
 		return err
 	}

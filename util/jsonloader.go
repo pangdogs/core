@@ -2,7 +2,7 @@ package util
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 )
 
 // JsonLoader Json格式配置加载器
@@ -22,7 +22,7 @@ func (loader *JsonLoader[T]) SetBytes(content []byte) error {
 
 // SetFile 输入Json格式文件路径
 func (loader *JsonLoader[T]) SetFile(file string) error {
-	bytes, err := ioutil.ReadFile(file)
+	bytes, err := os.ReadFile(file)
 	if err != nil {
 		return err
 	}

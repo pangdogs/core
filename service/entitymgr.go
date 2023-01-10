@@ -32,7 +32,6 @@ type IEntityMgr interface {
 type _EntityMgr struct {
 	serviceCtx Context
 	entityMap  concurrent.Map[ec.ID, ec.Entity]
-	inited     bool
 }
 
 func (entityMgr *_EntityMgr) init(serviceCtx Context) {
@@ -40,12 +39,7 @@ func (entityMgr *_EntityMgr) init(serviceCtx Context) {
 		panic("nil serviceCtx")
 	}
 
-	if entityMgr.inited {
-		panic("repeated init entity manager")
-	}
-
 	entityMgr.serviceCtx = serviceCtx
-	entityMgr.inited = true
 }
 
 // GetServiceCtx 获取服务上下文

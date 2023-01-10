@@ -35,7 +35,7 @@ type Entity interface {
 	_InnerGC
 	_InnerGCCollector
 	_ComponentMgr
-	ContextHolder
+	ContextResolver
 
 	// GetID 获取实体ID
 	GetID() ID
