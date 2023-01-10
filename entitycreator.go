@@ -108,7 +108,7 @@ func (creator _EntityCreator) TrySpawn() (ec.Entity, error) {
 		opts.HookCache = runtimeCtx.GetHookCache()
 	}
 
-	entity := entityPt.UnsafeNew(opts)
+	entity := entityPt.UnsafeConstruct(opts)
 
 	if err := addEntity(entity); err != nil {
 		return nil, fmt.Errorf("runtime context add entity '%s:%d:%d' failed, %v", entity.GetPrototype(), entity.GetID(), entity.GetSerialNo(), err)

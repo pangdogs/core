@@ -10,8 +10,8 @@ type EntityPt struct {
 	compPts   []ComponentPt
 }
 
-// New 创建实体
-func (pt *EntityPt) New(options ...ec.EntityOption) ec.Entity {
+// Construct 创建实体
+func (pt *EntityPt) Construct(options ...ec.EntityOption) ec.Entity {
 	opts := ec.EntityOptions{}
 	ec.WithEntityOption.Default()(&opts)
 
@@ -19,23 +19,23 @@ func (pt *EntityPt) New(options ...ec.EntityOption) ec.Entity {
 		options[i](&opts)
 	}
 
-	return pt.UnsafeNew(opts)
+	return pt.UnsafeConstruct(opts)
 }
 
-// UnsafeNew 不安全的创建实体，需要自己初始化所有选项
-func (pt *EntityPt) UnsafeNew(options ec.EntityOptions) ec.Entity {
+// UnsafeConstruct 不安全的创建实体，需要自己初始化所有选项
+func (pt *EntityPt) UnsafeConstruct(options ec.EntityOptions) ec.Entity {
 	options.Prototype = pt.Prototype
-	return pt.AddTo(ec.UnsafeNewEntity(options))
+	return pt.Setup(ec.UnsafeNewEntity(options))
 }
 
-// AddTo 向实体安装组件
-func (pt *EntityPt) AddTo(entity ec.Entity) ec.Entity {
+// Setup 向实体安装组件
+func (pt *EntityPt) Setup(entity ec.Entity) ec.Entity {
 	if entity == nil {
 		return nil
 	}
 
 	for i := range pt.compPts {
-		entity.AddComponent(pt.compPts[i].Name, pt.compPts[i].New())
+		entity.AddComponent(pt.compPts[i].Name, pt.compPts[i].Construct())
 	}
 
 	return entity

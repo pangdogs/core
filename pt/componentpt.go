@@ -13,8 +13,8 @@ type ComponentPt struct {
 	tfComp      reflect.Type
 }
 
-// New 创建组件
-func (pt *ComponentPt) New() ec.Component {
+// Construct 创建组件
+func (pt *ComponentPt) Construct() ec.Component {
 	vfComp := reflect.New(pt.tfComp)
 
 	comp := vfComp.Interface().(ec.Component)
