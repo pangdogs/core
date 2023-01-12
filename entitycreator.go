@@ -1,4 +1,4 @@
-package galaxy
+package golaxy
 
 import (
 	"errors"

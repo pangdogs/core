@@ -1,4 +1,4 @@
-package galaxy
+package golaxy
 
 type _EntityInit interface {
 	Init()

@@ -1,4 +1,4 @@
-package galaxy
+package golaxy
 
 import "github.com/golaxy-kit/golaxy/runtime"
 
