@@ -9,14 +9,6 @@ import (
 	"github.com/golaxy-kit/golaxy/service"
 )
 
-// EntityCreator 实体构建器接口
-type EntityCreator interface {
-	// Spawn 创建实体
-	Spawn() (ec.Entity, error)
-	// SpawnWithID 使用指定ID创建实体
-	SpawnWithID(id ec.ID) (ec.Entity, error)
-}
-
 // NewEntityCreator 创建实体构建器
 func NewEntityCreator(ctx runtime.Context, options ...pt.EntityOption) EntityCreator {
 	if ctx == nil {
@@ -37,30 +29,30 @@ func NewEntityCreator(ctx runtime.Context, options ...pt.EntityOption) EntityCre
 		opts.HookCache = ctx.GetHookCache()
 	}
 
-	return _EntityCreator{
+	return EntityCreator{
 		runtimeCtx: ctx,
 		options:    opts,
 	}
 }
 
-type _EntityCreator struct {
+type EntityCreator struct {
 	runtimeCtx runtime.Context
 	options    pt.EntityOptions
 }
 
 // Spawn 创建实体
-func (creator _EntityCreator) Spawn() (ec.Entity, error) {
+func (creator EntityCreator) Spawn() (ec.Entity, error) {
 	return creator.spawn(nil)
 }
 
 // SpawnWithID 使用指定ID创建实体
-func (creator _EntityCreator) SpawnWithID(id ec.ID) (ec.Entity, error) {
+func (creator EntityCreator) SpawnWithID(id ec.ID) (ec.Entity, error) {
 	return creator.spawn(func(options *pt.EntityOptions) {
 		options.PersistID = id
 	})
 }
 
-func (creator _EntityCreator) spawn(modifyOptions func(options *pt.EntityOptions)) (ec.Entity, error) {
+func (creator EntityCreator) spawn(modifyOptions func(options *pt.EntityOptions)) (ec.Entity, error) {
 	runtimeCtx := creator.runtimeCtx
 	serviceCtx := runtimeCtx.GetServiceCtx()
 
