@@ -95,7 +95,7 @@ func (creator _EntityCreator) TrySpawn() (ec.Entity, error) {
 	}
 
 	opts := ec.EntityOptions{}
-	ec.WithEntityOption.Default()(&opts)
+	ec.WithEntityOption{}.Default()(&opts)
 
 	for i := range creator.withOptions {
 		creator.withOptions[i](&opts)

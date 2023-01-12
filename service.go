@@ -9,7 +9,7 @@ import (
 // NewService 创建服务
 func NewService(serviceCtx service.Context, options ...ServiceOption) Service {
 	opts := ServiceOptions{}
-	WithServiceOption.Default()(&opts)
+	WithServiceOption{}.Default()(&opts)
 
 	for i := range options {
 		options[i](&opts)

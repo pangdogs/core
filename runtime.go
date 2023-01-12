@@ -11,7 +11,7 @@ import (
 // NewRuntime 创建运行时
 func NewRuntime(runtimeCtx runtime.Context, options ...RuntimeOption) Runtime {
 	opts := RuntimeOptions{}
-	WithRuntimeOption.Default()(&opts)
+	WithRuntimeOption{}.Default()(&opts)
 
 	for i := range options {
 		options[i](&opts)
