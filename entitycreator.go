@@ -69,20 +69,18 @@ func (creator _EntityCreator) spawn(modifyOptions func(options *pt.EntityOptions
 		return nil, errors.New("nil entityLib")
 	}
 
-	options := creator.options
-
-	entityPt, ok := entityLib.Get(options.Prototype)
+	entityPt, ok := entityLib.Get(creator.options.Prototype)
 	if !ok {
-		return nil, fmt.Errorf("entity '%s' not registered", options.Prototype)
+		return nil, fmt.Errorf("entity '%s' not registered", creator.options.Prototype)
 	}
 
 	if modifyOptions != nil {
-		modifyOptions(&options)
+		modifyOptions(&creator.options)
 	}
 
-	entity := entityPt.UnsafeConstruct(options)
+	entity := entityPt.UnsafeConstruct(creator.options)
 
-	if err := runtimeCtx.GetEntityMgr().AddEntity(entity, options.Accessibility); err != nil {
+	if err := runtimeCtx.GetEntityMgr().AddEntity(entity, creator.options.Accessibility); err != nil {
 		return nil, fmt.Errorf("add entity to runtime context failed, %v", err)
 	}
 
