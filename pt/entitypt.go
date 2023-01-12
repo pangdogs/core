@@ -23,7 +23,7 @@ type WithEntityOption struct {
 // Default 默认值
 func (w WithEntityOption) Default() EntityOption {
 	return func(o *EntityOptions) {
-		w.WithEntityOption.Default()
+		w.WithEntityOption.Default()(&o.EntityOptions)
 		o.GenCompID = nil
 		o.Accessibility = runtime.Local
 	}
