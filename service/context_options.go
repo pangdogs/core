@@ -26,13 +26,11 @@ type ContextOptions struct {
 // ContextOption 创建服务上下文的选项设置器
 type ContextOption func(o *ContextOptions)
 
-// WithContextOption 创建服务上下文的选项
-var WithContextOption = _WithContextOption{}
-
-type _WithContextOption struct{}
+// WithContextOption 创建服务上下文的所有选项设置器
+type WithContextOption struct{}
 
 // Default 默认值
-func (_WithContextOption) Default() ContextOption {
+func (WithContextOption) Default() ContextOption {
 	return func(o *ContextOptions) {
 		o.Inheritor = util.Face[Context]{}
 		o.Context = nil
@@ -48,35 +46,35 @@ func (_WithContextOption) Default() ContextOption {
 }
 
 // Inheritor 继承者，需要扩展服务上下文自身能力时需要使用
-func (_WithContextOption) Inheritor(v util.Face[Context]) ContextOption {
+func (WithContextOption) Inheritor(v util.Face[Context]) ContextOption {
 	return func(o *ContextOptions) {
 		o.Inheritor = v
 	}
 }
 
 // Context 父Context
-func (_WithContextOption) Context(v context.Context) ContextOption {
+func (WithContextOption) Context(v context.Context) ContextOption {
 	return func(o *ContextOptions) {
 		o.Context = v
 	}
 }
 
 // AutoRecover 是否开启panic时自动恢复
-func (_WithContextOption) AutoRecover(v bool) ContextOption {
+func (WithContextOption) AutoRecover(v bool) ContextOption {
 	return func(o *ContextOptions) {
 		o.AutoRecover = v
 	}
 }
 
 // ReportError panic时错误写入的error channel
-func (_WithContextOption) ReportError(v chan error) ContextOption {
+func (WithContextOption) ReportError(v chan error) ContextOption {
 	return func(o *ContextOptions) {
 		o.ReportError = v
 	}
 }
 
 // GenPersistID 生成持久化ID的函数
-func (_WithContextOption) GenPersistID(v func() ec.ID) ContextOption {
+func (WithContextOption) GenPersistID(v func() ec.ID) ContextOption {
 	return func(o *ContextOptions) {
 		if v == nil {
 			panic("GenPersistID nil invalid")
@@ -86,35 +84,35 @@ func (_WithContextOption) GenPersistID(v func() ec.ID) ContextOption {
 }
 
 // EntityLib 实体原型库
-func (_WithContextOption) EntityLib(v pt.EntityLib) ContextOption {
+func (WithContextOption) EntityLib(v pt.EntityLib) ContextOption {
 	return func(o *ContextOptions) {
 		o.EntityLib = v
 	}
 }
 
 // PluginBundle 插件包
-func (_WithContextOption) PluginBundle(v plugin.PluginBundle) ContextOption {
+func (WithContextOption) PluginBundle(v plugin.PluginBundle) ContextOption {
 	return func(o *ContextOptions) {
 		o.PluginBundle = v
 	}
 }
 
 // StartedCallback 启动运行时回调函数
-func (_WithContextOption) StartedCallback(v func(serviceCtx Context)) ContextOption {
+func (WithContextOption) StartedCallback(v func(serviceCtx Context)) ContextOption {
 	return func(o *ContextOptions) {
 		o.StartedCallback = v
 	}
 }
 
 // StoppingCallback 开始停止运行时回调函数
-func (_WithContextOption) StoppingCallback(v func(serviceCtx Context)) ContextOption {
+func (WithContextOption) StoppingCallback(v func(serviceCtx Context)) ContextOption {
 	return func(o *ContextOptions) {
 		o.StoppingCallback = v
 	}
 }
 
 // StoppedCallback 完全停止运行时回调函数
-func (_WithContextOption) StoppedCallback(v func(serviceCtx Context)) ContextOption {
+func (WithContextOption) StoppedCallback(v func(serviceCtx Context)) ContextOption {
 	return func(o *ContextOptions) {
 		o.StoppedCallback = v
 	}

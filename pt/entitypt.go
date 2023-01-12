@@ -4,6 +4,35 @@ import (
 	"github.com/golaxy-kit/golaxy/ec"
 )
 
+// EntityOptions 创建实体的所有选项
+type EntityOptions struct {
+	ec.EntityOptions
+	GenCompID func(compPt ComponentPt) ec.ID // 生成组件ID
+}
+
+// EntityOption 创建实体的选项设置器
+type EntityOption func(o *EntityOptions)
+
+// WithEntityOption 创建实体的所有选项设置器
+type WithEntityOption struct {
+	ec.WithEntityOption
+}
+
+// Default 默认值
+func (w WithEntityOption) Default() EntityOption {
+	return func(o *EntityOptions) {
+		w.WithEntityOption.Default()
+		o.GenCompID = nil
+	}
+}
+
+// GenCompID 生成组件ID
+func (WithEntityOption) GenCompID(v func(compPt ComponentPt) ec.ID) EntityOption {
+	return func(o *EntityOptions) {
+		o.GenCompID = v
+	}
+}
+
 // EntityPt 实体原型
 type EntityPt struct {
 	Prototype string // 实体原型名称
@@ -11,9 +40,9 @@ type EntityPt struct {
 }
 
 // Construct 创建实体
-func (pt *EntityPt) Construct(options ...ec.EntityOption) ec.Entity {
-	opts := ec.EntityOptions{}
-	ec.WithEntityOption.Default()(&opts)
+func (pt *EntityPt) Construct(options ...EntityOption) ec.Entity {
+	opts := EntityOptions{}
+	WithEntityOption{}.Default()(&opts)
 
 	for i := range options {
 		options[i](&opts)
@@ -23,19 +52,25 @@ func (pt *EntityPt) Construct(options ...ec.EntityOption) ec.Entity {
 }
 
 // UnsafeConstruct 不安全的创建实体，需要自己初始化所有选项
-func (pt *EntityPt) UnsafeConstruct(options ec.EntityOptions) ec.Entity {
+func (pt *EntityPt) UnsafeConstruct(options EntityOptions) ec.Entity {
 	options.Prototype = pt.Prototype
-	return pt.Setup(ec.UnsafeNewEntity(options))
+	return pt.Assemble(ec.UnsafeNewEntity(options.EntityOptions), options.GenCompID)
 }
 
-// Setup 向实体安装组件
-func (pt *EntityPt) Setup(entity ec.Entity) ec.Entity {
+// Assemble 向实体安装组件
+func (pt *EntityPt) Assemble(entity ec.Entity, GenCompID func(compPt ComponentPt) ec.ID) ec.Entity {
 	if entity == nil {
 		return nil
 	}
 
 	for i := range pt.compPts {
-		entity.AddComponent(pt.compPts[i].Name, pt.compPts[i].Construct())
+		var id ec.ID
+
+		if GenCompID != nil {
+			id = GenCompID(pt.compPts[i])
+		}
+
+		entity.AddComponent(pt.compPts[i].Name, pt.compPts[i].Construct(id))
 	}
 
 	return entity

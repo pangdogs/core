@@ -14,11 +14,12 @@ type ComponentPt struct {
 }
 
 // Construct 创建组件
-func (pt *ComponentPt) Construct() ec.Component {
+func (pt *ComponentPt) Construct(id ec.ID) ec.Component {
 	vfComp := reflect.New(pt.tfComp)
 
 	comp := vfComp.Interface().(ec.Component)
 	ec.UnsafeComponent(comp).SetReflectValue(vfComp)
+	ec.UnsafeComponent(comp).SetID(id)
 
 	return comp
 }

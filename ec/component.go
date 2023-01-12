@@ -44,7 +44,7 @@ type ComponentBehavior struct {
 	name                       string
 	entity                     Entity
 	inheritor                  Component
-	primary                    bool
+	fixed                      bool
 	state                      ComponentState
 	reflectValue               reflect.Value
 	_eventComponentDestroySelf localevent.Event
@@ -105,11 +105,11 @@ func (comp *ComponentBehavior) getContext() util.IfaceCache {
 }
 
 func (comp *ComponentBehavior) setFixed(v bool) {
-	comp.primary = v
+	comp.fixed = v
 }
 
 func (comp *ComponentBehavior) getFixed() bool {
-	return comp.primary
+	return comp.fixed
 }
 
 func (comp *ComponentBehavior) setState(state ComponentState) {

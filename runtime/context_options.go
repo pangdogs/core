@@ -27,13 +27,11 @@ type ContextOptions struct {
 // ContextOption 创建运行时上下文的选项设置器
 type ContextOption func(o *ContextOptions)
 
-// WithContextOption 创建运行时上下文的选项
-var WithContextOption = _WithContextOption{}
-
-type _WithContextOption struct{}
+// WithContextOption 创建运行时上下文的所有选项设置器
+type WithContextOption struct{}
 
 // Default 默认值
-func (_WithContextOption) Default() ContextOption {
+func (WithContextOption) Default() ContextOption {
 	return func(o *ContextOptions) {
 		o.Inheritor = util.Face[Context]{}
 		o.Context = nil
@@ -51,84 +49,84 @@ func (_WithContextOption) Default() ContextOption {
 }
 
 // Inheritor 继承者，需要扩展运行时上下文自身功能时需要使用
-func (_WithContextOption) Inheritor(v util.Face[Context]) ContextOption {
+func (WithContextOption) Inheritor(v util.Face[Context]) ContextOption {
 	return func(o *ContextOptions) {
 		o.Inheritor = v
 	}
 }
 
 // Context 父Context
-func (_WithContextOption) Context(v context.Context) ContextOption {
+func (WithContextOption) Context(v context.Context) ContextOption {
 	return func(o *ContextOptions) {
 		o.Context = v
 	}
 }
 
 // AutoRecover 是否开启panic时自动恢复
-func (_WithContextOption) AutoRecover(v bool) ContextOption {
+func (WithContextOption) AutoRecover(v bool) ContextOption {
 	return func(o *ContextOptions) {
 		o.AutoRecover = v
 	}
 }
 
 // ReportError panic时错误写入的error channel
-func (_WithContextOption) ReportError(v chan error) ContextOption {
+func (WithContextOption) ReportError(v chan error) ContextOption {
 	return func(o *ContextOptions) {
 		o.ReportError = v
 	}
 }
 
 // PluginBundle 插件包
-func (_WithContextOption) PluginBundle(v plugin.PluginBundle) ContextOption {
+func (WithContextOption) PluginBundle(v plugin.PluginBundle) ContextOption {
 	return func(o *ContextOptions) {
 		o.PluginBundle = v
 	}
 }
 
 // StartedCallback 启动运行时回调函数
-func (_WithContextOption) StartedCallback(v func(runtimeCtx Context)) ContextOption {
+func (WithContextOption) StartedCallback(v func(runtimeCtx Context)) ContextOption {
 	return func(o *ContextOptions) {
 		o.StartedCallback = v
 	}
 }
 
 // StoppingCallback 开始停止运行时回调函数
-func (_WithContextOption) StoppingCallback(v func(runtimeCtx Context)) ContextOption {
+func (WithContextOption) StoppingCallback(v func(runtimeCtx Context)) ContextOption {
 	return func(o *ContextOptions) {
 		o.StoppingCallback = v
 	}
 }
 
 // StoppedCallback 完全停止运行时回调函数
-func (_WithContextOption) StoppedCallback(v func(runtimeCtx Context)) ContextOption {
+func (WithContextOption) StoppedCallback(v func(runtimeCtx Context)) ContextOption {
 	return func(o *ContextOptions) {
 		o.StoppedCallback = v
 	}
 }
 
 // FrameBeginCallback 帧更新开始时的回调函数
-func (_WithContextOption) FrameBeginCallback(v func(runtimeCtx Context)) ContextOption {
+func (WithContextOption) FrameBeginCallback(v func(runtimeCtx Context)) ContextOption {
 	return func(o *ContextOptions) {
 		o.FrameBeginCallback = v
 	}
 }
 
 // FrameEndCallback 帧更新结束时的回调函数
-func (_WithContextOption) FrameEndCallback(v func(runtimeCtx Context)) ContextOption {
+func (WithContextOption) FrameEndCallback(v func(runtimeCtx Context)) ContextOption {
 	return func(o *ContextOptions) {
 		o.FrameEndCallback = v
 	}
 }
 
 // FaceCache Face缓存，用于提高性能
-func (_WithContextOption) FaceCache(v *container.Cache[util.FaceAny]) ContextOption {
+func (WithContextOption) FaceCache(v *container.Cache[util.FaceAny]) ContextOption {
 	return func(o *ContextOptions) {
 		o.FaceCache = v
 	}
 }
 
 // HookCache Hook缓存，用于提高性能
-func (_WithContextOption) HookCache(v *container.Cache[localevent.Hook]) ContextOption {
+func (WithContextOption) HookCache(v *container.Cache[localevent.Hook]) ContextOption {
 	return func(o *ContextOptions) {
 		o.HookCache = v
 	}

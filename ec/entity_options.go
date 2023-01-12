@@ -19,13 +19,11 @@ type EntityOptions struct {
 // EntityOption 创建实体的选项设置器
 type EntityOption func(o *EntityOptions)
 
-// WithEntityOption 创建实体的选项
-var WithEntityOption = _WithEntityOption{}
-
-type _WithEntityOption struct{}
+// WithEntityOption 创建实体的所有选项设置器
+type WithEntityOption struct{}
 
 // Default 默认值
-func (_WithEntityOption) Default() EntityOption {
+func (WithEntityOption) Default() EntityOption {
 	return func(o *EntityOptions) {
 		o.Inheritor = util.Face[Entity]{}
 		o.Prototype = ""
@@ -37,42 +35,42 @@ func (_WithEntityOption) Default() EntityOption {
 }
 
 // Inheritor 继承者，在扩展实体自身能力时使用
-func (_WithEntityOption) Inheritor(v util.Face[Entity]) EntityOption {
+func (WithEntityOption) Inheritor(v util.Face[Entity]) EntityOption {
 	return func(o *EntityOptions) {
 		o.Inheritor = v
 	}
 }
 
 // Prototype 实体原型名称
-func (_WithEntityOption) Prototype(v string) EntityOption {
+func (WithEntityOption) Prototype(v string) EntityOption {
 	return func(o *EntityOptions) {
 		o.Prototype = v
 	}
 }
 
 // PersistID 实体持久化ID
-func (_WithEntityOption) PersistID(v ID) EntityOption {
+func (WithEntityOption) PersistID(v ID) EntityOption {
 	return func(o *EntityOptions) {
 		o.PersistID = v
 	}
 }
 
 // EnableComponentAwakeByAccess 开启组件被访问时，检测并调用Awake()
-func (_WithEntityOption) EnableComponentAwakeByAccess(v bool) EntityOption {
+func (WithEntityOption) EnableComponentAwakeByAccess(v bool) EntityOption {
 	return func(o *EntityOptions) {
 		o.EnableComponentAwakeByAccess = v
 	}
 }
 
 // FaceCache FaceCache用于提高性能，通常传入运行时上下文选项中的FaceCache
-func (_WithEntityOption) FaceCache(v *container.Cache[util.FaceAny]) EntityOption {
+func (WithEntityOption) FaceCache(v *container.Cache[util.FaceAny]) EntityOption {
 	return func(o *EntityOptions) {
 		o.FaceCache = v
 	}
 }
 
 // HookCache HookCache用于提高性能，通常传入运行时上下文选项中的HookCache
-func (_WithEntityOption) HookCache(v *container.Cache[localevent.Hook]) EntityOption {
+func (WithEntityOption) HookCache(v *container.Cache[localevent.Hook]) EntityOption {
 	return func(o *EntityOptions) {
 		o.HookCache = v
 	}
