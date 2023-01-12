@@ -37,7 +37,7 @@ func NewEntityCreator(ctx runtime.Context, options ...pt.EntityOption) EntityCre
 		opts.HookCache = ctx.GetHookCache()
 	}
 
-	return &_EntityCreator{
+	return _EntityCreator{
 		runtimeCtx: ctx,
 		options:    opts,
 	}
@@ -49,18 +49,18 @@ type _EntityCreator struct {
 }
 
 // Spawn 创建实体
-func (creator *_EntityCreator) Spawn() (ec.Entity, error) {
+func (creator _EntityCreator) Spawn() (ec.Entity, error) {
 	return creator.spawn(nil)
 }
 
 // SpawnWithID 使用指定ID创建实体
-func (creator *_EntityCreator) SpawnWithID(id ec.ID) (ec.Entity, error) {
+func (creator _EntityCreator) SpawnWithID(id ec.ID) (ec.Entity, error) {
 	return creator.spawn(func(options *pt.EntityOptions) {
 		options.PersistID = id
 	})
 }
 
-func (creator *_EntityCreator) spawn(modifyOptions func(options *pt.EntityOptions)) (ec.Entity, error) {
+func (creator _EntityCreator) spawn(modifyOptions func(options *pt.EntityOptions)) (ec.Entity, error) {
 	runtimeCtx := creator.runtimeCtx
 	serviceCtx := runtimeCtx.GetServiceCtx()
 
