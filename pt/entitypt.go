@@ -2,12 +2,14 @@ package pt
 
 import (
 	"github.com/golaxy-kit/golaxy/ec"
+	"github.com/golaxy-kit/golaxy/runtime"
 )
 
 // EntityOptions 创建实体的所有选项
 type EntityOptions struct {
 	ec.EntityOptions
-	GenCompID func(compPt ComponentPt) ec.ID // 生成组件ID
+	GenCompID     func(entity ec.Entity, compPt ComponentPt) ec.ID // 生成组件ID函数
+	Accessibility runtime.Accessibility                            // 实体的可访问性
 }
 
 // EntityOption 创建实体的选项设置器
@@ -23,13 +25,21 @@ func (w WithEntityOption) Default() EntityOption {
 	return func(o *EntityOptions) {
 		w.WithEntityOption.Default()
 		o.GenCompID = nil
+		o.Accessibility = runtime.Local
 	}
 }
 
-// GenCompID 生成组件ID
-func (WithEntityOption) GenCompID(v func(compPt ComponentPt) ec.ID) EntityOption {
+// GenCompID 生成组件ID函数
+func (WithEntityOption) GenCompID(v func(entity ec.Entity, compPt ComponentPt) ec.ID) EntityOption {
 	return func(o *EntityOptions) {
 		o.GenCompID = v
+	}
+}
+
+// Accessibility 实体的可访问性
+func (WithEntityOption) Accessibility(v runtime.Accessibility) EntityOption {
+	return func(o *EntityOptions) {
+		o.Accessibility = v
 	}
 }
 
@@ -58,7 +68,7 @@ func (pt *EntityPt) UnsafeConstruct(options EntityOptions) ec.Entity {
 }
 
 // Assemble 向实体安装组件
-func (pt *EntityPt) Assemble(entity ec.Entity, GenCompID func(compPt ComponentPt) ec.ID) ec.Entity {
+func (pt *EntityPt) Assemble(entity ec.Entity, GenCompID func(entity ec.Entity, compPt ComponentPt) ec.ID) ec.Entity {
 	if entity == nil {
 		return nil
 	}
@@ -67,7 +77,7 @@ func (pt *EntityPt) Assemble(entity ec.Entity, GenCompID func(compPt ComponentPt
 		var id ec.ID
 
 		if GenCompID != nil {
-			id = GenCompID(pt.compPts[i])
+			id = GenCompID(entity, pt.compPts[i])
 		}
 
 		entity.AddComponent(pt.compPts[i].Name, pt.compPts[i].Construct(id))

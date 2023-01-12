@@ -4,66 +4,51 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golaxy-kit/golaxy/ec"
+	"github.com/golaxy-kit/golaxy/pt"
 	"github.com/golaxy-kit/golaxy/runtime"
 	"github.com/golaxy-kit/golaxy/service"
 )
 
-// EntityCreator 实体构建器
-func EntityCreator() _EntityCreator {
-	return _EntityCreator{}
+// EntityCreator 创建实体构建器
+func EntityCreator(ctx runtime.Context, options ...pt.EntityOption) _EntityCreator {
+	opts := pt.EntityOptions{}
+	pt.WithEntityOption{}.Default()(&opts)
+
+	for i := range options {
+		options[i](&opts)
+	}
+
+	if opts.FaceCache == nil {
+		opts.FaceCache = ctx.GetFaceCache()
+	}
+	if opts.HookCache == nil {
+		opts.HookCache = ctx.GetHookCache()
+	}
+
+	return _EntityCreator{
+		runtimeCtx: ctx,
+		options:    opts,
+	}
 }
-
-// Accessibility 可访问性
-type Accessibility int32
-
-const (
-	Local     Accessibility = iota // 本地可以访问
-	Global                         // 全局可以访问
-	TryGlobal                      // 尝试全局可以访问
-)
 
 type _EntityCreator struct {
-	runtimeCtx    runtime.Context
-	prototype     string
-	accessibility Accessibility
-	withOptions   []ec.EntityOption
-}
-
-// RuntimeCtx 设置运行时上下文
-func (creator _EntityCreator) RuntimeCtx(ctx runtime.Context) _EntityCreator {
-	creator.runtimeCtx = ctx
-	return creator
-}
-
-// Prototype 设置实体原型
-func (creator _EntityCreator) Prototype(prototype string) _EntityCreator {
-	creator.prototype = prototype
-	return creator
-}
-
-// Accessibility 设置实体的可访问性
-func (creator _EntityCreator) Accessibility(accessibility Accessibility) _EntityCreator {
-	creator.accessibility = accessibility
-	return creator
-}
-
-// Options 设置创建实体的选项
-func (creator _EntityCreator) Options(options ...ec.EntityOption) _EntityCreator {
-	creator.withOptions = options
-	return creator
+	runtimeCtx runtime.Context
+	options    pt.EntityOptions
 }
 
 // Spawn 创建实体
-func (creator _EntityCreator) Spawn() ec.Entity {
-	entity, err := creator.TrySpawn()
-	if err != nil {
-		panic(err)
-	}
-	return entity
+func (creator _EntityCreator) Spawn() (ec.Entity, error) {
+	return creator.spawn(nil)
 }
 
-// TrySpawn 尝试创建实体
-func (creator _EntityCreator) TrySpawn() (ec.Entity, error) {
+// SpawnWithID 使用指定ID创建实体
+func (creator _EntityCreator) SpawnWithID(id ec.ID) (ec.Entity, error) {
+	return creator.spawn(func(options *pt.EntityOptions) {
+		options.PersistID = id
+	})
+}
+
+func (creator _EntityCreator) spawn(modifyOptions func(options *pt.EntityOptions)) (ec.Entity, error) {
 	if creator.runtimeCtx == nil {
 		return nil, errors.New("nil runtimeCtx")
 	}
@@ -76,42 +61,21 @@ func (creator _EntityCreator) TrySpawn() (ec.Entity, error) {
 		return nil, errors.New("nil entityLib")
 	}
 
-	entityPt, ok := entityLib.Get(creator.prototype)
+	options := creator.options
+
+	entityPt, ok := entityLib.Get(options.Prototype)
 	if !ok {
-		return nil, fmt.Errorf("entity '%s' not registered", creator.prototype)
+		return nil, fmt.Errorf("entity '%s' not registered", options.Prototype)
 	}
 
-	var addEntity func(entity ec.Entity) error
-
-	switch creator.accessibility {
-	case Local:
-		addEntity = runtimeCtx.GetEntityMgr().AddEntity
-	case Global:
-		addEntity = runtimeCtx.GetEntityMgr().AddGlobalEntity
-	case TryGlobal:
-		addEntity = runtimeCtx.GetEntityMgr().TryAddGlobalEntity
-	default:
-		return nil, errors.New("accessibility invalid")
+	if modifyOptions != nil {
+		modifyOptions(&options)
 	}
 
-	opts := ec.EntityOptions{}
-	ec.WithEntityOption{}.Default()(&opts)
+	entity := entityPt.UnsafeConstruct(options)
 
-	for i := range creator.withOptions {
-		creator.withOptions[i](&opts)
-	}
-
-	if opts.FaceCache == nil {
-		opts.FaceCache = runtimeCtx.GetFaceCache()
-	}
-	if opts.HookCache == nil {
-		opts.HookCache = runtimeCtx.GetHookCache()
-	}
-
-	entity := entityPt.UnsafeConstruct(opts)
-
-	if err := addEntity(entity); err != nil {
-		return nil, fmt.Errorf("runtime context add entity '%s:%d:%d' failed, %v", entity.GetPrototype(), entity.GetID(), entity.GetSerialNo(), err)
+	if err := runtimeCtx.GetEntityMgr().AddEntity(entity, options.Accessibility); err != nil {
+		return nil, fmt.Errorf("add entity to runtime context failed, %v", err)
 	}
 
 	return entity, nil

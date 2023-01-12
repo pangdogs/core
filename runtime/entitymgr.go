@@ -9,6 +9,14 @@ import (
 	"github.com/golaxy-kit/golaxy/util/container"
 )
 
+// Accessibility 可访问性
+type Accessibility int32
+
+const (
+	Local  Accessibility = iota // 本地可以访问
+	Global                      // 全局可以访问
+)
+
 // IEntityMgr 实体管理器接口
 type IEntityMgr interface {
 	// GetRuntimeCtx 获取运行时上下文
@@ -22,11 +30,7 @@ type IEntityMgr interface {
 	// GetEntityCount 获取实体数量
 	GetEntityCount() int
 	// AddEntity 添加实体
-	AddEntity(entity ec.Entity) error
-	// AddGlobalEntity 添加全局实体
-	AddGlobalEntity(entity ec.Entity) error
-	// TryAddGlobalEntity 尝试添加全局实体
-	TryAddGlobalEntity(entity ec.Entity) error
+	AddEntity(entity ec.Entity, accessibility Accessibility) error
 	// RemoveEntity 删除实体
 	RemoveEntity(id ec.ID)
 	// EventEntityMgrAddEntity 事件：实体管理器中添加实体
@@ -125,34 +129,15 @@ func (entityMgr *_EntityMgr) GetEntityCount() int {
 }
 
 // AddEntity 添加实体
-func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity) error {
-	return entityMgr.addEntity(entity, nil)
-}
-
-// AddGlobalEntity 添加全局实体
-func (entityMgr *_EntityMgr) AddGlobalEntity(entity ec.Entity) error {
-	return entityMgr.addEntity(entity, func() error {
-		return entityMgr.GetRuntimeCtx().GetServiceCtx().GetEntityMgr().AddEntity(entity)
-	})
-}
-
-// TryAddGlobalEntity 尝试添加全局实体
-func (entityMgr *_EntityMgr) TryAddGlobalEntity(entity ec.Entity) error {
-	return entityMgr.addEntity(entity, func() error {
-		_, loaded, err := entityMgr.GetRuntimeCtx().GetServiceCtx().GetEntityMgr().GetOrAddEntity(entity)
-		if err != nil {
-			return err
-		}
-		if loaded {
-			return errors.New("entity id already existed")
-		}
-		return nil
-	})
-}
-
-func (entityMgr *_EntityMgr) addEntity(entity ec.Entity, add2ServiceCtx func() error) error {
+func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, accessibility Accessibility) error {
 	if entity == nil {
 		return errors.New("nil entity")
+	}
+
+	switch accessibility {
+	case Local, Global:
+	default:
+		return errors.New("accessibility invalid")
 	}
 
 	if entity.GetState() != ec.EntityState_Birth {
@@ -186,9 +171,13 @@ func (entityMgr *_EntityMgr) addEntity(entity ec.Entity, add2ServiceCtx func() e
 		return true
 	})
 
-	if add2ServiceCtx != nil {
-		if err := add2ServiceCtx(); err != nil {
-			return fmt.Errorf("add entity to service context failed, %v", err)
+	if accessibility == Global {
+		_, loaded, err := entityMgr.GetRuntimeCtx().GetServiceCtx().GetEntityMgr().GetOrAddEntity(entity)
+		if err != nil {
+			return err
+		}
+		if loaded {
+			return errors.New("add entity to service context failed, entity id already existed")
 		}
 	}
 
@@ -201,7 +190,7 @@ func (entityMgr *_EntityMgr) addEntity(entity ec.Entity, add2ServiceCtx func() e
 		entityInfo.Hooks[2] = localevent.BindEvent[ec.EventCompMgrFirstAccessComponent](entity.EventCompMgrFirstAccessComponent(), entityMgr)
 	}
 
-	entityInfo.GlobalMark = add2ServiceCtx != nil
+	entityInfo.GlobalMark = accessibility == Global
 
 	entityMgr.entityMap[entity.GetID()] = entityInfo
 
