@@ -7,12 +7,12 @@ import (
 )
 
 // Get 获取运行时上下文
-func Get(ctxHolder ec.ContextResolver) Context {
-	if ctxHolder == nil {
-		panic("nil ctxHolder")
+func Get(ctxResolver ec.ContextResolver) Context {
+	if ctxResolver == nil {
+		panic("nil ctxResolver")
 	}
 
-	ctx := ec.UnsafeContextResolver(ctxHolder).GetContext()
+	ctx := ec.UnsafeContextResolver(ctxResolver).GetContext()
 	if ctx == util.NilIfaceCache {
 		panic("nil context")
 	}
@@ -38,8 +38,8 @@ func getServiceContext(ctxResolver ec.ContextResolver) service.Context {
 	return Get(ctxResolver).GetServiceCtx()
 }
 
-func tryGetServiceContext(ctxHolder ec.ContextResolver) (service.Context, bool) {
-	runtimeCtx, ok := TryGet(ctxHolder)
+func tryGetServiceContext(ctxResolver ec.ContextResolver) (service.Context, bool) {
+	runtimeCtx, ok := TryGet(ctxResolver)
 	if !ok {
 		return nil, false
 	}

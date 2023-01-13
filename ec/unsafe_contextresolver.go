@@ -4,9 +4,9 @@ import (
 	"github.com/golaxy-kit/golaxy/util"
 )
 
-func UnsafeContextResolver(ctxHolder ContextResolver) _UnsafeContextResolver {
+func UnsafeContextResolver(ctxResolver ContextResolver) _UnsafeContextResolver {
 	return _UnsafeContextResolver{
-		ContextResolver: ctxHolder,
+		ContextResolver: ctxResolver,
 	}
 }
 
