@@ -71,8 +71,22 @@ func (p _PluginInterface[PLUGIN_IFACE]) PluginInterface() PluginInterface[PLUGIN
 }
 
 // DefinePluginInterface 定义插件接口，因为仅有接口没有实现，所以不能用于向插件包安装插件
-func DefinePluginInterface[PLUGIN_IFACE any]() _PluginInterface[PLUGIN_IFACE] {
+func DefinePluginInterface[PLUGIN_IFACE any]() PluginInterface[PLUGIN_IFACE] {
 	return _PluginInterface[PLUGIN_IFACE]{
 		_name: util.TypeFullName[PLUGIN_IFACE](),
-	}
+	}.PluginInterface()
+}
+
+// DefineRuntimePluginInterface 定义运行时插件接口，因为仅有接口没有实现，所以不能用于向插件包安装插件
+func DefineRuntimePluginInterface[PLUGIN_IFACE any]() RuntimePluginInterface[PLUGIN_IFACE] {
+	return _PluginInterface[PLUGIN_IFACE]{
+		_name: util.TypeFullName[PLUGIN_IFACE](),
+	}.RuntimePluginInterface()
+}
+
+// DefineServicePluginInterface 定义服务插件接口，因为仅有接口没有实现，所以不能用于向插件包安装插件
+func DefineServicePluginInterface[PLUGIN_IFACE any]() ServicePluginInterface[PLUGIN_IFACE] {
+	return _PluginInterface[PLUGIN_IFACE]{
+		_name: util.TypeFullName[PLUGIN_IFACE](),
+	}.ServicePluginInterface()
 }

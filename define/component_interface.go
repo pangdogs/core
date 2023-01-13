@@ -21,7 +21,7 @@ func (c _ComponentInterface) register() func(comp any, descr ...string) {
 
 // ComponentInterface 组件接口
 type ComponentInterface struct {
-	Name     string                          // 组件名
+	Name     string                          // 组件接口名
 	Register func(comp any, descr ...string) // 注册组件原型
 }
 
@@ -34,8 +34,8 @@ func (c _ComponentInterface) ComponentInterface() ComponentInterface {
 }
 
 // DefineComponentInterface 定义组件接口
-func DefineComponentInterface[COMP_IFACE any]() _ComponentInterface {
+func DefineComponentInterface[COMP_IFACE any]() ComponentInterface {
 	return _ComponentInterface{
 		_name: util.TypeFullName[COMP_IFACE](),
-	}
+	}.ComponentInterface()
 }
