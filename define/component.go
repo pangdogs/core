@@ -5,7 +5,11 @@ import (
 )
 
 type _Component struct {
-	_name string
+	_ifaceName, _name string
+}
+
+func (c _Component) ifaceName() string {
+	return c._ifaceName
 }
 
 func (c _Component) name() string {
@@ -14,13 +18,15 @@ func (c _Component) name() string {
 
 // Component 组件
 type Component struct {
-	Name string // 组件名
+	IfaceName string // 组件接口名
+	Name      string // 组件名
 }
 
 // Component 生成组件定义
 func (c _Component) Component() Component {
 	return Component{
-		Name: c.name(),
+		IfaceName: c.ifaceName(),
+		Name:      c.name(),
 	}
 }
 
@@ -28,6 +34,7 @@ func (c _Component) Component() Component {
 func DefineComponent[COMP_IFACE, COMP any](descr ...string) Component {
 	DefineComponentInterface[COMP_IFACE]().Register(util.Zero[COMP](), descr...)
 	return _Component{
-		_name: util.TypeFullName[COMP](),
+		_ifaceName: util.TypeFullName[COMP_IFACE](),
+		_name:      util.TypeFullName[COMP](),
 	}.Component()
 }
