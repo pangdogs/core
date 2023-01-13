@@ -32,37 +32,6 @@ type PluginBundle interface {
 	Range(fun func(pluginName string, pluginFace util.FaceAny) bool)
 }
 
-// InstallPlugin 安装插件。
-//
-//	@param pluginBundle 插件包。
-//	@param pluginName 插件名称。
-//	@param plugin 插件。
-func InstallPlugin[T any](pluginBundle PluginBundle, pluginName string, plugin T) {
-	if pluginBundle == nil {
-		panic("nil pluginBundle")
-	}
-	pluginBundle.Install(pluginName, util.NewFacePair[any](plugin, plugin))
-}
-
-// GetPlugin 获取插件。
-//
-//	@param pluginBundle 插件包。
-//	@param pluginName 插件名称。
-//	@return 插件。
-//	@return 是否存在。
-func GetPlugin[T any](pluginBundle PluginBundle, pluginName string) (T, bool) {
-	if pluginBundle == nil {
-		panic("nil pluginBundle")
-	}
-
-	pluginFace, ok := pluginBundle.Get(pluginName)
-	if !ok {
-		return util.Zero[T](), false
-	}
-
-	return util.Cache2Iface[T](pluginFace.Cache), true
-}
-
 // NewPluginBundle 创建插件包
 func NewPluginBundle() PluginBundle {
 	pluginBundle := &_PluginBundle{}

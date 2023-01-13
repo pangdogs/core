@@ -3,6 +3,7 @@ package runtime
 import (
 	"github.com/golaxy-kit/golaxy/internal"
 	"github.com/golaxy-kit/golaxy/localevent"
+	"github.com/golaxy-kit/golaxy/plugin"
 	"github.com/golaxy-kit/golaxy/service"
 	"github.com/golaxy-kit/golaxy/util"
 	"github.com/golaxy-kit/golaxy/util/container"
@@ -38,6 +39,7 @@ type Context interface {
 	container.GCCollector
 	internal.Context
 	internal.RunningMark
+	plugin.PluginResolver
 	_SafeCall
 
 	// GetServiceCtx 获取服务上下文

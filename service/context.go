@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/golaxy-kit/golaxy/ec"
 	"github.com/golaxy-kit/golaxy/internal"
+	"github.com/golaxy-kit/golaxy/plugin"
 	"github.com/golaxy-kit/golaxy/util"
 	"sync/atomic"
 )
@@ -36,6 +37,7 @@ func UnsafeNewContext(options ContextOptions) Context {
 type Context interface {
 	internal.Context
 	internal.RunningMark
+	plugin.PluginResolver
 	_SafeCall
 
 	// GenSerialNo 生成流水号（运行时唯一）

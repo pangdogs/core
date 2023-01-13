@@ -1,45 +1,20 @@
 package runtime
 
 import (
-	"fmt"
-	"github.com/golaxy-kit/golaxy/plugin"
 	"github.com/golaxy-kit/golaxy/util"
 )
 
-// GetPlugin 从运行时上下文上获取插件
-func GetPlugin[T any](ctx Context, pluginName string) T {
-	if ctx == nil {
-		panic("nil ctx")
-	}
-
+// GetPlugin 获取插件
+func (ctx *ContextBehavior) GetPlugin(pluginName string) (util.FaceAny, bool) {
 	pluginBundle := UnsafeContext(ctx).getOptions().PluginBundle
 	if pluginBundle == nil {
-		panic("nil pluginBundle")
+		return util.Zero[util.FaceAny](), false
 	}
 
-	plugin, ok := plugin.GetPlugin[T](pluginBundle, pluginName)
+	pluginFace, ok := pluginBundle.Get(pluginName)
 	if !ok {
-		panic(fmt.Errorf("plugin '%s' not installed", pluginName))
+		return util.Zero[util.FaceAny](), false
 	}
 
-	return plugin
-}
-
-// TryGetPlugin 尝试从运行时上下文上获取插件
-func TryGetPlugin[T any](ctx Context, pluginName string) (T, bool) {
-	if ctx == nil {
-		return util.Zero[T](), false
-	}
-
-	pluginBundle := UnsafeContext(ctx).getOptions().PluginBundle
-	if pluginBundle == nil {
-		return util.Zero[T](), false
-	}
-
-	plugin, ok := plugin.GetPlugin[T](pluginBundle, pluginName)
-	if !ok {
-		return util.Zero[T](), false
-	}
-
-	return plugin, true
+	return pluginFace, true
 }

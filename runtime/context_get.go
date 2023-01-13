@@ -21,12 +21,12 @@ func Get(ctxHolder ec.ContextResolver) Context {
 }
 
 // TryGet 尝试获取运行时上下文
-func TryGet(ctxHolder ec.ContextResolver) (Context, bool) {
-	if ctxHolder == nil {
+func TryGet(ctxResolver ec.ContextResolver) (Context, bool) {
+	if ctxResolver == nil {
 		return nil, false
 	}
 
-	ctx := ec.UnsafeContextResolver(ctxHolder).GetContext()
+	ctx := ec.UnsafeContextResolver(ctxResolver).GetContext()
 	if ctx == util.NilIfaceCache {
 		return nil, false
 	}
@@ -34,8 +34,8 @@ func TryGet(ctxHolder ec.ContextResolver) (Context, bool) {
 	return util.Cache2Iface[Context](ctx), true
 }
 
-func getServiceContext(ctxHolder ec.ContextResolver) service.Context {
-	return Get(ctxHolder).GetServiceCtx()
+func getServiceContext(ctxResolver ec.ContextResolver) service.Context {
+	return Get(ctxResolver).GetServiceCtx()
 }
 
 func tryGetServiceContext(ctxHolder ec.ContextResolver) (service.Context, bool) {
