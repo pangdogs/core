@@ -38,6 +38,7 @@ func NewEntityCreator(ctx runtime.Context, options ...pt.EntityOption) EntityCre
 type EntityCreator struct {
 	runtimeCtx runtime.Context
 	options    pt.EntityOptions
+	inited     bool
 }
 
 // Spawn 创建实体
@@ -53,6 +54,10 @@ func (creator EntityCreator) SpawnWithID(id ec.ID) (ec.Entity, error) {
 }
 
 func (creator EntityCreator) spawn(modifyOptions func(options *pt.EntityOptions)) (ec.Entity, error) {
+	if !creator.inited {
+		return nil, errors.New("not inited")
+	}
+
 	runtimeCtx := creator.runtimeCtx
 	serviceCtx := runtimeCtx.GetServiceCtx()
 

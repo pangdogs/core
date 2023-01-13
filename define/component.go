@@ -32,9 +32,10 @@ func (c _Component) Component() Component {
 
 // DefineComponent 定义组件
 func DefineComponent[COMP_IFACE, COMP any](descr ...string) Component {
-	DefineComponentInterface[COMP_IFACE]().Register(util.Zero[COMP](), descr...)
+	compIface := DefineComponentInterface[COMP_IFACE]()
+	compIface.Register(util.Zero[COMP](), descr...)
 	return _Component{
-		_ifaceName: util.TypeFullName[COMP_IFACE](),
+		_ifaceName: compIface.Name,
 		_name:      util.TypeFullName[COMP](),
 	}.Component()
 }

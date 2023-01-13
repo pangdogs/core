@@ -33,7 +33,7 @@ func (p _Plugin[PLUGIN_IFACE, OPTION]) get() func(pluginResolver plugin.PluginRe
 	}
 }
 
-// ServicePlugin 服务类插件
+// ServicePlugin 服务插件
 type ServicePlugin[PLUGIN_IFACE, OPTION any] struct {
 	Name      string                               // 插件名称
 	Install   func(plugin.PluginBundle, ...OPTION) // 向插件包安装
@@ -41,7 +41,7 @@ type ServicePlugin[PLUGIN_IFACE, OPTION any] struct {
 	Get       func(service.Context) PLUGIN_IFACE   // 从服务上下文获取插件
 }
 
-// ServicePlugin 生成服务类插件定义
+// ServicePlugin 生成服务插件定义
 func (p _Plugin[PLUGIN_IFACE, OPTION]) ServicePlugin(creator func(...OPTION) PLUGIN_IFACE) ServicePlugin[PLUGIN_IFACE, OPTION] {
 	return ServicePlugin[PLUGIN_IFACE, OPTION]{
 		Name:      p.name(),
@@ -51,7 +51,7 @@ func (p _Plugin[PLUGIN_IFACE, OPTION]) ServicePlugin(creator func(...OPTION) PLU
 	}
 }
 
-// RuntimePlugin 运行时类插件
+// RuntimePlugin 运行时插件
 type RuntimePlugin[PLUGIN_IFACE, OPTION any] struct {
 	Name      string                               // 插件名称
 	Install   func(plugin.PluginBundle, ...OPTION) // 向插件包安装
@@ -59,7 +59,7 @@ type RuntimePlugin[PLUGIN_IFACE, OPTION any] struct {
 	Get       func(runtime.Context) PLUGIN_IFACE   // 从运行时上下文获取插件
 }
 
-// RuntimePlugin 生成运行时类插件定义
+// RuntimePlugin 生成运行时插件定义
 func (p _Plugin[PLUGIN_IFACE, OPTION]) RuntimePlugin(creator func(...OPTION) PLUGIN_IFACE) RuntimePlugin[PLUGIN_IFACE, OPTION] {
 	return RuntimePlugin[PLUGIN_IFACE, OPTION]{
 		Name:      p.name(),
@@ -101,7 +101,7 @@ func DefineRuntimePlugin[PLUGIN_IFACE, OPTION any](creator func(...OPTION) PLUGI
 	}.RuntimePlugin(creator)
 }
 
-// DefineServicePlugin 定义插件，可以用于向插件包安装插件
+// DefineServicePlugin 定义服务插件，可以用于向插件包安装插件
 func DefineServicePlugin[PLUGIN_IFACE, OPTION any](creator func(...OPTION) PLUGIN_IFACE) ServicePlugin[PLUGIN_IFACE, OPTION] {
 	return _Plugin[PLUGIN_IFACE, OPTION]{
 		_name: util.TypeFullName[PLUGIN_IFACE](),

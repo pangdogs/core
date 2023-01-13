@@ -21,13 +21,13 @@ func (p _PluginInterface[PLUGIN_IFACE]) get() func(pluginResolver plugin.PluginR
 	}
 }
 
-// ServicePluginInterface 服务类插件接口
+// ServicePluginInterface 服务插件接口
 type ServicePluginInterface[PLUGIN_IFACE any] struct {
 	Name string                             // 插件名称
 	Get  func(service.Context) PLUGIN_IFACE // 从服务上下文获取插件
 }
 
-// ServicePluginInterface 生成服务类插件接口定义
+// ServicePluginInterface 生成服务插件接口定义
 func (p _PluginInterface[PLUGIN_IFACE]) ServicePluginInterface() ServicePluginInterface[PLUGIN_IFACE] {
 	return ServicePluginInterface[PLUGIN_IFACE]{
 		Name: p.name(),
@@ -35,13 +35,13 @@ func (p _PluginInterface[PLUGIN_IFACE]) ServicePluginInterface() ServicePluginIn
 	}
 }
 
-// RuntimePluginInterface 运行时类插件接口
+// RuntimePluginInterface 运行时插件接口
 type RuntimePluginInterface[PLUGIN_IFACE any] struct {
 	Name string                             // 插件名称
 	Get  func(runtime.Context) PLUGIN_IFACE // 从运行时上下文获取插件
 }
 
-// RuntimePluginInterface 生成运行时类插件接口定义
+// RuntimePluginInterface 生成运行时插件接口定义
 func (p _PluginInterface[PLUGIN_IFACE]) RuntimePluginInterface() RuntimePluginInterface[PLUGIN_IFACE] {
 	return RuntimePluginInterface[PLUGIN_IFACE]{
 		Name: p.name(),
