@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func (app *App) printComp() {
+func (app *_App) printComp() {
 	var compPts []pt.ComponentPt
 
 	pt.RangeComponent(func(compPt pt.ComponentPt) bool {
@@ -22,8 +22,19 @@ func (app *App) printComp() {
 
 	compPtsDs, err := json.MarshalIndent(compPts, "", "\t")
 	if err != nil {
-		panic(fmt.Errorf("marshal components prototype info failed, %v", err))
+		panic(fmt.Errorf("marshal components info failed, %v", err))
 	}
 
 	fmt.Printf("%s", compPtsDs)
+}
+
+func (app *_App) printPt(ptPath string) {
+	servicePt := app.loadPtConfig(ptPath)
+
+	servicePtDs, err := json.MarshalIndent(servicePt, "", "\t")
+	if err != nil {
+		panic(fmt.Errorf("marshal service pt info failed, %v", err))
+	}
+
+	fmt.Printf("%s", servicePtDs)
 }

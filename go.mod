@@ -1,6 +1,6 @@
 module github.com/golaxy-kit/golaxy
 
-go 1.18
+go 1.19
 
 require (
 	github.com/segmentio/ksuid v1.0.4
