@@ -28,14 +28,14 @@ func RegisterComponent(compName string, comp any, descr ...string) {
 
 // DeregisterComponent 取消注册组件原型，线程安全。
 //
-//	@param compPath 组件路径，格式为组件所在包路径+组件名，例如：`github.com/galaxy-kit/components-go/helloworld/HelloWorldComp`。
+//	@param compPath 组件路径，格式为组件所在包路径+组件名，例如：`github.com/golaxy-kit/components/helloworld/HelloWorld`。
 func DeregisterComponent(compPath string) {
 	componentLib.DeregisterComponent(compPath)
 }
 
 // GetComponent 获取组件原型，线程安全。
 //
-//	@param compPath 组件路径，格式为组件所在包路径+组件名，例如：`github.com/galaxy-kit/components-go/helloworld/HelloWorldComp`。
+//	@param compPath 组件路径，格式为组件所在包路径+组件名，例如：`github.com/golaxy-kit/components/helloworld/HelloWorld`。
 //	@return 组件原型，可以用于创建组件。
 //	@return 是否存在。
 func GetComponent(compPath string) (ComponentPt, bool) {

@@ -49,7 +49,7 @@ func main() {
 	// 基础选项
 	declFile := kingpin.Flag("decl_file", "定义事件的源文件（*.go）。").ExistingFile()
 	eventRegexp := kingpin.Flag("event_regexp", "匹配事件定义时使用的正则表达式。").Default("^[eE]vent.+").String()
-	eventPackageAlias := kingpin.Flag("event_package_alias", "导入Galaxy框架的`github.com/golaxy-kit/golaxy/localevent`包时使用的别名。").Default("localevent").String()
+	eventPackageAlias := kingpin.Flag("event_package_alias", "导入GOLAXY框架的`github.com/golaxy-kit/golaxy/localevent`包时使用的别名。").Default("localevent").String()
 
 	// 生成发送事件代码相关选项
 	emitCmd := kingpin.Command("gen_emit", "通过定义的事件生成发送事件代码。")
