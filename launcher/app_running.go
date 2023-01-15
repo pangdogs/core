@@ -88,25 +88,25 @@ func (app *_App) runService(ctx context.Context, serviceName string, serviceConf
 
 	pluginBundle := plugin.NewPluginBundle()
 
-	if app.opts.ServiceInstallPlugin != nil {
-		app.opts.ServiceInstallPlugin(serviceName, pluginBundle)
+	if app.options.ServiceInstallPlugin != nil {
+		app.options.ServiceInstallPlugin(serviceName, pluginBundle)
 	}
 
 	var autoRecover bool
 	var reportError chan error
-	if app.opts.ServiceSetupRecover != nil {
-		autoRecover, reportError = app.opts.ServiceSetupRecover(serviceName)
+	if app.options.ServiceSetupRecover != nil {
+		autoRecover, reportError = app.options.ServiceSetupRecover(serviceName)
 	}
 
 	var startedCallback, stoppingCallback, stoppedCallback func(serviceCtx service.Context)
-	if app.opts.ServiceSetupStartedCallback != nil {
-		startedCallback = app.opts.ServiceSetupStartedCallback(serviceName)
+	if app.options.ServiceSetupStartedCallback != nil {
+		startedCallback = app.options.ServiceSetupStartedCallback(serviceName)
 	}
-	if app.opts.ServiceSetupStoppingCallback != nil {
-		stoppingCallback = app.opts.ServiceSetupStoppingCallback(serviceName)
+	if app.options.ServiceSetupStoppingCallback != nil {
+		stoppingCallback = app.options.ServiceSetupStoppingCallback(serviceName)
 	}
-	if app.opts.ServiceSetupStoppedCallback != nil {
-		stoppedCallback = app.opts.ServiceSetupStoppedCallback(serviceName)
+	if app.options.ServiceSetupStoppedCallback != nil {
+		stoppedCallback = app.options.ServiceSetupStoppedCallback(serviceName)
 	}
 
 	service := golaxy.NewService(service.NewContext(

@@ -14,7 +14,7 @@ func NewApp(options ...AppOption) App {
 	}
 
 	app := &_App{
-		opts: opts,
+		options: opts,
 	}
 	return app
 }
@@ -26,7 +26,7 @@ type App interface {
 }
 
 type _App struct {
-	opts AppOptions
+	options AppOptions
 }
 
 // Run 运行
@@ -41,8 +41,8 @@ func (app *_App) Run() {
 	var printComp = printInfo.Command("comp", "打印所有组件。")
 
 	var customCmds []Cmd
-	if app.opts.SetupCommands != nil {
-		customCmds = app.opts.SetupCommands()
+	if app.options.SetupCommands != nil {
+		customCmds = app.options.SetupCommands()
 	}
 
 	cmd := kingpin.Parse()
