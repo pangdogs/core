@@ -33,17 +33,17 @@ type WithContextOption struct{}
 // Default 默认值
 func (WithContextOption) Default() ContextOption {
 	return func(o *ContextOptions) {
-		o.Inheritor = util.Face[Context]{}
-		o.Context = nil
-		o.AutoRecover = false
-		o.ReportError = nil
-		o.Name = ""
-		o.GenPersistID = func() ec.ID { return ksuid.New() }
-		o.EntityLib = nil
-		o.PluginBundle = nil
-		o.StartedCallback = nil
-		o.StoppingCallback = nil
-		o.StoppedCallback = nil
+		WithContextOption{}.Inheritor(util.Face[Context]{})(o)
+		WithContextOption{}.Context(nil)(o)
+		WithContextOption{}.AutoRecover(false)(o)
+		WithContextOption{}.ReportError(nil)(o)
+		WithContextOption{}.Name("")(o)
+		WithContextOption{}.GenPersistID(func() ec.ID { return ksuid.New() })(o)
+		WithContextOption{}.EntityLib(nil)(o)
+		WithContextOption{}.PluginBundle(nil)(o)
+		WithContextOption{}.StartedCallback(nil)(o)
+		WithContextOption{}.StoppingCallback(nil)(o)
+		WithContextOption{}.StoppedCallback(nil)(o)
 	}
 }
 

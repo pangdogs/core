@@ -25,12 +25,12 @@ type WithEntityOption struct{}
 // Default 默认值
 func (WithEntityOption) Default() EntityOption {
 	return func(o *EntityOptions) {
-		o.Inheritor = util.Face[Entity]{}
-		o.Prototype = ""
-		o.PersistID = util.Zero[ID]()
-		o.EnableComponentAwakeByAccess = true
-		o.FaceCache = nil
-		o.HookCache = nil
+		WithEntityOption{}.Inheritor(util.Face[Entity]{})(o)
+		WithEntityOption{}.Prototype("")(o)
+		WithEntityOption{}.PersistID(util.Zero[ID]())(o)
+		WithEntityOption{}.EnableComponentAwakeByAccess(true)(o)
+		WithEntityOption{}.FaceCache(nil)(o)
+		WithEntityOption{}.HookCache(nil)(o)
 	}
 }
 

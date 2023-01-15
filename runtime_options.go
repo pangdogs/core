@@ -25,12 +25,12 @@ type WithRuntimeOption struct{}
 // Default 默认值
 func (WithRuntimeOption) Default() RuntimeOption {
 	return func(o *RuntimeOptions) {
-		o.Inheritor = util.Face[Runtime]{}
-		o.EnableAutoRun = false
-		o.ProcessQueueCapacity = 128
-		o.ProcessQueueTimeout = 5 * time.Second
-		o.Frame = nil
-		o.GCInterval = 10 * time.Second
+		WithRuntimeOption{}.Inheritor(util.Face[Runtime]{})(o)
+		WithRuntimeOption{}.EnableAutoRun(false)(o)
+		WithRuntimeOption{}.ProcessQueueCapacity(128)(o)
+		WithRuntimeOption{}.ProcessQueueTimeout(3 * time.Second)(o)
+		WithRuntimeOption{}.Frame(nil)(o)
+		WithRuntimeOption{}.GCInterval(10 * time.Second)(o)
 	}
 }
 

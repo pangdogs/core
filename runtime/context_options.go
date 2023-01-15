@@ -34,19 +34,19 @@ type WithContextOption struct{}
 // Default 默认值
 func (WithContextOption) Default() ContextOption {
 	return func(o *ContextOptions) {
-		o.Inheritor = util.Face[Context]{}
-		o.Context = nil
-		o.AutoRecover = false
-		o.ReportError = nil
-		o.Name = ""
-		o.PluginBundle = nil
-		o.StartedCallback = nil
-		o.StoppingCallback = nil
-		o.StoppedCallback = nil
-		o.FrameBeginCallback = nil
-		o.FrameEndCallback = nil
-		o.FaceCache = nil
-		o.HookCache = nil
+		WithContextOption{}.Inheritor(util.Face[Context]{})(o)
+		WithContextOption{}.Context(nil)(o)
+		WithContextOption{}.AutoRecover(false)(o)
+		WithContextOption{}.ReportError(nil)(o)
+		WithContextOption{}.Name("")(o)
+		WithContextOption{}.PluginBundle(nil)(o)
+		WithContextOption{}.StartedCallback(nil)(o)
+		WithContextOption{}.StoppingCallback(nil)(o)
+		WithContextOption{}.StoppedCallback(nil)(o)
+		WithContextOption{}.FrameBeginCallback(nil)(o)
+		WithContextOption{}.FrameEndCallback(nil)(o)
+		WithContextOption{}.FaceCache(nil)(o)
+		WithContextOption{}.HookCache(nil)(o)
 	}
 }
 

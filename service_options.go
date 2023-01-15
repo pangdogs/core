@@ -18,7 +18,7 @@ type WithServiceOption struct{}
 // Default 默认值
 func (WithServiceOption) Default() ServiceOption {
 	return func(o *ServiceOptions) {
-		o.Inheritor = util.Face[Service]{}
+		WithServiceOption{}.Inheritor(util.Face[Service]{})(o)
 	}
 }
 
