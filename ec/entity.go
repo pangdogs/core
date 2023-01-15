@@ -121,8 +121,6 @@ func (entity *EntityBehavior) String() string {
 	var parentID string
 	if parent, ok := entity.GetParent(); ok {
 		parentID = ksuid.KSUID(parent.GetID()).String()
-	} else {
-		parentID = "0"
 	}
 
 	return fmt.Sprintf("[ID:%s SerialNo:%d Prototype:%s Parent:%s State:%v]",
