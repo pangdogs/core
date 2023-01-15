@@ -1,9 +1,11 @@
 package ec
 
 import (
+	"fmt"
 	"github.com/golaxy-kit/golaxy/localevent"
 	"github.com/golaxy-kit/golaxy/util"
 	"github.com/golaxy-kit/golaxy/util/container"
+	"github.com/segmentio/ksuid"
 )
 
 // NewEntity 创建实体
@@ -49,6 +51,8 @@ type Entity interface {
 	GetState() EntityState
 	// DestroySelf 销毁自身
 	DestroySelf()
+	// String 字符串化
+	String() string
 
 	init(opts *EntityOptions)
 	getOptions() *EntityOptions
@@ -110,6 +114,23 @@ func (entity *EntityBehavior) DestroySelf() {
 	case EntityState_Init, EntityState_Living:
 		emitEventEntityDestroySelf(&entity._eventEntityDestroySelf, entity.opts.Inheritor.Iface)
 	}
+}
+
+// String 字符串化
+func (entity *EntityBehavior) String() string {
+	var parentID string
+	if parent, ok := entity.GetParent(); ok {
+		parentID = ksuid.KSUID(parent.GetID()).String()
+	} else {
+		parentID = "0"
+	}
+
+	return fmt.Sprintf("[ID:%s SerialNo:%d Prototype:%s Parent:%s State:%v]",
+		ksuid.KSUID(entity.GetID()).String(),
+		entity.GetSerialNo(),
+		entity.GetPrototype(),
+		parentID,
+		entity.GetState())
 }
 
 func (entity *EntityBehavior) init(opts *EntityOptions) {

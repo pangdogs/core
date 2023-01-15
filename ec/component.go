@@ -1,9 +1,11 @@
 package ec
 
 import (
+	"fmt"
 	"github.com/golaxy-kit/golaxy/localevent"
 	"github.com/golaxy-kit/golaxy/util"
 	"github.com/golaxy-kit/golaxy/util/container"
+	"github.com/segmentio/ksuid"
 	"reflect"
 )
 
@@ -25,6 +27,8 @@ type Component interface {
 	GetState() ComponentState
 	// DestroySelf 销毁自身
 	DestroySelf()
+	// String 字符串化
+	String() string
 
 	init(name string, entity Entity, inheritor Component, hookCache *container.Cache[localevent.Hook])
 	setID(id ID)
@@ -82,6 +86,21 @@ func (comp *ComponentBehavior) DestroySelf() {
 	case ComponentState_Awake, ComponentState_Start, ComponentState_Living:
 		emitEventComponentDestroySelf(&comp._eventComponentDestroySelf, comp.inheritor)
 	}
+}
+
+// String 字符串化
+func (comp *ComponentBehavior) String() string {
+	var entityID string
+	if entity := comp.GetEntity(); entity != nil {
+		entityID = ksuid.KSUID(entity.GetID()).String()
+	}
+
+	return fmt.Sprintf("[ID:%s SerialNo:%d Name:%s Entity:%s State:%v]",
+		ksuid.KSUID(comp.GetID()).String(),
+		comp.GetSerialNo(),
+		comp.GetName(),
+		entityID,
+		comp.GetState())
 }
 
 func (comp *ComponentBehavior) init(name string, entity Entity, inheritor Component, hookCache *container.Cache[localevent.Hook]) {
