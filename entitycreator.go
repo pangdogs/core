@@ -32,6 +32,7 @@ func NewEntityCreator(ctx runtime.Context, options ...pt.EntityOption) EntityCre
 	return EntityCreator{
 		runtimeCtx: ctx,
 		options:    opts,
+		inited:     true,
 	}
 }
 
