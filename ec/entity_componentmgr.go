@@ -38,8 +38,11 @@ func (entity *EntityBehavior) GetComponent(name string) Component {
 	if e, ok := entity.getComponentElement(name); ok {
 		comp := util.Cache2Iface[Component](e.Value.Cache)
 
-		if entity.opts.EnableComponentAwakeByAccess && comp.GetState() < ComponentState_Awake {
-			emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, comp)
+		if entity.opts.EnableComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
+			switch entity.GetState() {
+			case EntityState_Init, EntityState_Living:
+				emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, comp)
+			}
 		}
 
 		return comp
@@ -53,8 +56,11 @@ func (entity *EntityBehavior) GetComponentByID(id ID) Component {
 	if e, ok := entity.getComponentElementByID(id); ok {
 		comp := util.Cache2Iface[Component](e.Value.Cache)
 
-		if entity.opts.EnableComponentAwakeByAccess && comp.GetState() < ComponentState_Awake {
-			emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, comp)
+		if entity.opts.EnableComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
+			switch entity.GetState() {
+			case EntityState_Init, EntityState_Living:
+				emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, comp)
+			}
 		}
 
 		return comp
@@ -79,8 +85,11 @@ func (entity *EntityBehavior) GetComponents(name string) []Component {
 
 		if entity.opts.EnableComponentAwakeByAccess {
 			for i := range components {
-				if components[i].GetState() < ComponentState_Awake {
-					emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, components[i])
+				if components[i].GetState() == ComponentState_Attach {
+					switch entity.GetState() {
+					case EntityState_Init, EntityState_Living:
+						emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, components[i])
+					}
 				}
 			}
 		}
@@ -100,8 +109,11 @@ func (entity *EntityBehavior) RangeComponents(fun func(component Component) bool
 	entity.componentList.Traversal(func(e *container.Element[util.FaceAny]) bool {
 		comp := util.Cache2Iface[Component](e.Value.Cache)
 
-		if entity.opts.EnableComponentAwakeByAccess && comp.GetState() < ComponentState_Awake {
-			emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, comp)
+		if entity.opts.EnableComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
+			switch entity.GetState() {
+			case EntityState_Init, EntityState_Living:
+				emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, comp)
+			}
 		}
 
 		return fun(comp)

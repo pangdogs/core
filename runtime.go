@@ -226,12 +226,12 @@ func (_runtime *RuntimeBehavior) connectEntity(entity ec.Entity) {
 		SN: entity.GetSerialNo(),
 	}] = hooks
 
-	ec.UnsafeEntity(entity).SetState(ec.EntityState_Init)
-
 	entity.RangeComponents(func(comp ec.Component) bool {
 		_runtime.connectComponent(comp)
 		return true
 	})
+
+	ec.UnsafeEntity(entity).SetState(ec.EntityState_Init)
 }
 
 func (_runtime *RuntimeBehavior) disconnectEntity(entity ec.Entity) {

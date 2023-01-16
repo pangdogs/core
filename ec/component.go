@@ -95,7 +95,7 @@ func (comp *ComponentBehavior) String() string {
 		entityID = ksuid.KSUID(entity.GetID()).String()
 	}
 
-	return fmt.Sprintf("[ID:%s SerialNo:%d Name:%s Entity:%s State:%v]",
+	return fmt.Sprintf("[ID:%s SerialNo:%d Name:%s Entity:%s State:%+v]",
 		ksuid.KSUID(comp.GetID()).String(),
 		comp.GetSerialNo(),
 		comp.GetName(),
