@@ -34,42 +34,42 @@ func (WithEntityOption) Default() EntityOption {
 // Inheritor 继承者，在扩展实体自身能力时使用
 func (WithEntityOption) Inheritor(v util.Face[ec.Entity]) EntityOption {
 	return func(o *EntityOptions) {
-		o.Inheritor = v
+		ec.WithEntityOption{}.Inheritor(v)(&o.EntityOptions)
 	}
 }
 
 // Prototype 实体原型名称
 func (WithEntityOption) Prototype(v string) EntityOption {
 	return func(o *EntityOptions) {
-		ec.WithEntityOption{}.Prototype(v)
+		ec.WithEntityOption{}.Prototype(v)(&o.EntityOptions)
 	}
 }
 
 // PersistID 实体持久化ID
 func (WithEntityOption) PersistID(v ec.ID) EntityOption {
 	return func(o *EntityOptions) {
-		ec.WithEntityOption{}.PersistID(v)
+		ec.WithEntityOption{}.PersistID(v)(&o.EntityOptions)
 	}
 }
 
 // EnableComponentAwakeByAccess 开启组件被访问时，检测并调用Awake()
 func (WithEntityOption) EnableComponentAwakeByAccess(v bool) EntityOption {
 	return func(o *EntityOptions) {
-		ec.WithEntityOption{}.EnableComponentAwakeByAccess(v)
+		ec.WithEntityOption{}.EnableComponentAwakeByAccess(v)(&o.EntityOptions)
 	}
 }
 
 // FaceCache FaceCache用于提高性能，通常传入运行时上下文选项中的FaceCache
 func (WithEntityOption) FaceCache(v *container.Cache[util.FaceAny]) EntityOption {
 	return func(o *EntityOptions) {
-		ec.WithEntityOption{}.FaceCache(v)
+		ec.WithEntityOption{}.FaceCache(v)(&o.EntityOptions)
 	}
 }
 
 // HookCache HookCache用于提高性能，通常传入运行时上下文选项中的HookCache
 func (WithEntityOption) HookCache(v *container.Cache[localevent.Hook]) EntityOption {
 	return func(o *EntityOptions) {
-		ec.WithEntityOption{}.HookCache(v)
+		ec.WithEntityOption{}.HookCache(v)(&o.EntityOptions)
 	}
 }
 
