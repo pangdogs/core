@@ -6,7 +6,7 @@ import (
 
 // GetPlugin 获取插件
 func (ctx *ContextBehavior) GetPlugin(pluginName string) (util.FaceAny, bool) {
-	pluginBundle := UnsafeContext(ctx).getOptions().PluginBundle
+	pluginBundle := ctx.getOptions().PluginBundle
 	if pluginBundle == nil {
 		return util.Zero[util.FaceAny](), false
 	}

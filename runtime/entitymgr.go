@@ -9,14 +9,6 @@ import (
 	"github.com/golaxy-kit/golaxy/util/container"
 )
 
-// Accessibility 可访问性
-type Accessibility int32
-
-const (
-	Local  Accessibility = iota // 本地可以访问
-	Global                      // 全局可以访问
-)
-
 // IEntityMgr 实体管理器接口
 type IEntityMgr interface {
 	// GetRuntimeCtx 获取运行时上下文
@@ -30,7 +22,7 @@ type IEntityMgr interface {
 	// GetEntityCount 获取实体数量
 	GetEntityCount() int
 	// AddEntity 添加实体
-	AddEntity(entity ec.Entity, accessibility Accessibility) error
+	AddEntity(entity ec.Entity, accessibility ec.Accessibility) error
 	// RemoveEntity 删除实体
 	RemoveEntity(id ec.ID)
 	// EventEntityMgrAddEntity 事件：实体管理器中添加实体
@@ -129,13 +121,13 @@ func (entityMgr *_EntityMgr) GetEntityCount() int {
 }
 
 // AddEntity 添加实体
-func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, accessibility Accessibility) error {
+func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, accessibility ec.Accessibility) error {
 	if entity == nil {
 		return errors.New("nil entity")
 	}
 
 	switch accessibility {
-	case Local, Global:
+	case ec.Local, ec.Global:
 	default:
 		return errors.New("accessibility invalid")
 	}
@@ -171,7 +163,7 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, accessibility Accessibi
 		return true
 	})
 
-	if accessibility == Global {
+	if accessibility == ec.Global {
 		_, loaded, err := entityMgr.GetRuntimeCtx().GetServiceCtx().GetEntityMgr().GetOrAddEntity(entity)
 		if err != nil {
 			return err
@@ -190,7 +182,7 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, accessibility Accessibi
 		entityInfo.Hooks[2] = localevent.BindEvent[ec.EventCompMgrFirstAccessComponent](entity.EventCompMgrFirstAccessComponent(), entityMgr)
 	}
 
-	entityInfo.GlobalMark = accessibility == Global
+	entityInfo.GlobalMark = accessibility == ec.Global
 
 	entityMgr.entityMap[entity.GetID()] = entityInfo
 

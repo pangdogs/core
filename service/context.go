@@ -5,6 +5,7 @@ import (
 	"github.com/golaxy-kit/golaxy/ec"
 	"github.com/golaxy-kit/golaxy/internal"
 	"github.com/golaxy-kit/golaxy/plugin"
+	"github.com/golaxy-kit/golaxy/pt"
 	"github.com/golaxy-kit/golaxy/util"
 	"sync/atomic"
 )
@@ -38,6 +39,7 @@ type Context interface {
 	internal.Context
 	internal.RunningMark
 	plugin.PluginResolver
+	pt.PtResolver
 	_SafeCall
 
 	// GenSerialNo 生成流水号（运行时唯一）

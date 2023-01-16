@@ -3,7 +3,6 @@ package pt
 import (
 	"github.com/golaxy-kit/golaxy/ec"
 	"github.com/golaxy-kit/golaxy/localevent"
-	"github.com/golaxy-kit/golaxy/runtime"
 	"github.com/golaxy-kit/golaxy/util"
 	"github.com/golaxy-kit/golaxy/util/container"
 )
@@ -12,7 +11,7 @@ import (
 type EntityOptions struct {
 	ec.EntityOptions
 	GenCompID     func(entity ec.Entity, compPt ComponentPt) ec.ID // 生成组件ID函数
-	Accessibility runtime.Accessibility                            // 实体的可访问性
+	Accessibility ec.Accessibility                                 // 实体的可访问性
 }
 
 // EntityOption 创建实体的选项设置器
@@ -28,7 +27,7 @@ func (WithEntityOption) Default() EntityOption {
 	return func(o *EntityOptions) {
 		ec.WithEntityOption{}.Default()(&o.EntityOptions)
 		WithEntityOption{}.GenCompID(nil)(o)
-		WithEntityOption{}.Accessibility(runtime.Local)(o)
+		WithEntityOption{}.Accessibility(ec.Local)(o)
 	}
 }
 
@@ -82,7 +81,7 @@ func (WithEntityOption) GenCompID(v func(entity ec.Entity, compPt ComponentPt) e
 }
 
 // Accessibility 实体的可访问性
-func (WithEntityOption) Accessibility(v runtime.Accessibility) EntityOption {
+func (WithEntityOption) Accessibility(v ec.Accessibility) EntityOption {
 	return func(o *EntityOptions) {
 		o.Accessibility = v
 	}
