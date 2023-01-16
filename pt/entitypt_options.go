@@ -2,7 +2,10 @@ package pt
 
 import (
 	"github.com/golaxy-kit/golaxy/ec"
+	"github.com/golaxy-kit/golaxy/localevent"
 	"github.com/golaxy-kit/golaxy/runtime"
+	"github.com/golaxy-kit/golaxy/util"
+	"github.com/golaxy-kit/golaxy/util/container"
 )
 
 // EntityOptions 创建实体的所有选项
@@ -26,6 +29,48 @@ func (WithEntityOption) Default() EntityOption {
 		ec.WithEntityOption{}.Default()(&o.EntityOptions)
 		WithEntityOption{}.GenCompID(nil)(o)
 		WithEntityOption{}.Accessibility(runtime.Local)(o)
+	}
+}
+
+// Inheritor 继承者，在扩展实体自身能力时使用
+func (WithEntityOption) Inheritor(v util.Face[ec.Entity]) EntityOption {
+	return func(o *EntityOptions) {
+		o.Inheritor = v
+	}
+}
+
+// Prototype 实体原型名称
+func (WithEntityOption) Prototype(v string) EntityOption {
+	return func(o *EntityOptions) {
+		ec.WithEntityOption{}.Prototype(v)
+	}
+}
+
+// PersistID 实体持久化ID
+func (WithEntityOption) PersistID(v ec.ID) EntityOption {
+	return func(o *EntityOptions) {
+		ec.WithEntityOption{}.PersistID(v)
+	}
+}
+
+// EnableComponentAwakeByAccess 开启组件被访问时，检测并调用Awake()
+func (WithEntityOption) EnableComponentAwakeByAccess(v bool) EntityOption {
+	return func(o *EntityOptions) {
+		ec.WithEntityOption{}.EnableComponentAwakeByAccess(v)
+	}
+}
+
+// FaceCache FaceCache用于提高性能，通常传入运行时上下文选项中的FaceCache
+func (WithEntityOption) FaceCache(v *container.Cache[util.FaceAny]) EntityOption {
+	return func(o *EntityOptions) {
+		ec.WithEntityOption{}.FaceCache(v)
+	}
+}
+
+// HookCache HookCache用于提高性能，通常传入运行时上下文选项中的HookCache
+func (WithEntityOption) HookCache(v *container.Cache[localevent.Hook]) EntityOption {
+	return func(o *EntityOptions) {
+		ec.WithEntityOption{}.HookCache(v)
 	}
 }
 
