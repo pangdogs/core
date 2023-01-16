@@ -50,12 +50,12 @@ func GetPlugin[T any](pluginResolver PluginResolver, pluginName string) T {
 //	@param pluginName 插件名称。
 func TryGetPlugin[T any](pluginResolver PluginResolver, pluginName string) (T, bool) {
 	if pluginResolver == nil {
-		return nil, false
+		return util.Zero[T](), false
 	}
 
 	pluginFace, ok := pluginResolver.GetPlugin(pluginName)
 	if !ok {
-		return nil, false
+		return util.Zero[T](), false
 	}
 
 	return util.Cache2Iface[T](pluginFace.Cache), true
