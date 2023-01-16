@@ -1,3 +1,4 @@
+//go:generate stringer -type EntityState
 package ec
 
 // EntityState 实体状态

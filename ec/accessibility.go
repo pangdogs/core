@@ -1,3 +1,4 @@
+//go:generate stringer -type Accessibility
 package ec
 
 // Accessibility 可访问性

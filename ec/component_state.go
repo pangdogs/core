@@ -1,3 +1,4 @@
+//go:generate stringer -type ComponentState
 package ec
 
 // ComponentState 组件状态

@@ -123,7 +123,7 @@ func (entity *EntityBehavior) String() string {
 		parentID = ksuid.KSUID(parent.GetID()).String()
 	}
 
-	return fmt.Sprintf("[ID:%s SerialNo:%d Prototype:%s Parent:%s State:%+v]",
+	return fmt.Sprintf("[ID:%s SerialNo:%d Prototype:%s Parent:%s State:%s]",
 		ksuid.KSUID(entity.GetID()).String(),
 		entity.GetSerialNo(),
 		entity.GetPrototype(),
