@@ -78,8 +78,8 @@ func (ecTree *ECTree) init(runtimeCtx Context, masterTree bool) {
 	ecTree.runtimeCtx = runtimeCtx
 	ecTree.masterTree = masterTree
 	ecTree.ecTree = map[ec.ID]_ECNode{}
-	ecTree.eventECTreeAddChild.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Discard, runtimeCtx.getOptions().HookCache, runtimeCtx)
-	ecTree.eventECTreeRemoveChild.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Discard, runtimeCtx.getOptions().HookCache, runtimeCtx)
+	ecTree.eventECTreeAddChild.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.getOptions().HookCache, runtimeCtx)
+	ecTree.eventECTreeRemoveChild.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.getOptions().HookCache, runtimeCtx)
 
 	if !ecTree.masterTree {
 		ecTree.hook = localevent.BindEvent[eventEntityMgrNotifyECTreeRemoveEntity](ecTree.runtimeCtx.GetEntityMgr().eventEntityMgrNotifyECTreeRemoveEntity(), ecTree)

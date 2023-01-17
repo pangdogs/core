@@ -148,9 +148,9 @@ func (entity *EntityBehavior) init(opts *EntityOptions) {
 	entity.componentList.Init(entity.opts.FaceCache, &entity.innerGC)
 
 	entity._eventEntityDestroySelf.Init(false, nil, localevent.EventRecursion_NotEmit, opts.HookCache, &entity.innerGC)
-	entity.eventCompMgrAddComponents.Init(false, nil, localevent.EventRecursion_Discard, opts.HookCache, &entity.innerGC)
-	entity.eventCompMgrRemoveComponent.Init(false, nil, localevent.EventRecursion_Discard, opts.HookCache, &entity.innerGC)
-	entity.eventCompMgrFirstAccessComponent.Init(false, nil, localevent.EventRecursion_Discard, opts.HookCache, &entity.innerGC)
+	entity.eventCompMgrAddComponents.Init(false, nil, localevent.EventRecursion_Allow, opts.HookCache, &entity.innerGC)
+	entity.eventCompMgrRemoveComponent.Init(false, nil, localevent.EventRecursion_Allow, opts.HookCache, &entity.innerGC)
+	entity.eventCompMgrFirstAccessComponent.Init(false, nil, localevent.EventRecursion_Allow, opts.HookCache, &entity.innerGC)
 }
 
 func (entity *EntityBehavior) getOptions() *EntityOptions {
