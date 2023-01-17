@@ -48,33 +48,7 @@ package %s
 
 			fmt.Fprintf(importCode, `
 	%s "github.com/golaxy-kit/golaxy/localevent"`, ctx.EventPackageAlias)
-
-			for _, imp := range ctx.FileAst.Imports {
-				begin := ctx.FileSet.Position(imp.Pos())
-				end := ctx.FileSet.Position(imp.End())
-
-				impStr := string(ctx.FileData[begin.Offset:end.Offset])
-
-				switch imp.Path.Value {
-				case `"github.com/golaxy-kit/golaxy/localevent"`:
-					if imp.Name == nil {
-						if ctx.EventPackageAlias == "localevent" {
-							continue
-						}
-					} else {
-						if imp.Name.Name == ctx.EventPackageAlias {
-							continue
-						}
-					}
-				case `"github.com/golaxy-kit/golaxy/util/container"`:
-					if imp.Name == nil {
-						continue
-					}
-				}
-
-				fmt.Fprintf(importCode, "\n\t%s", impStr)
-			}
-
+			
 			fmt.Fprintf(importCode, `
 	"github.com/golaxy-kit/golaxy/util/container"`)
 
