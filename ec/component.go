@@ -38,6 +38,7 @@ type Component interface {
 	setState(state ComponentState)
 	setReflectValue(v reflect.Value)
 	getReflectValue() reflect.Value
+	getInheritor() Component
 	eventComponentDestroySelf() localevent.IEvent
 }
 
@@ -150,6 +151,10 @@ func (comp *ComponentBehavior) getReflectValue() reflect.Value {
 	comp.reflectValue = reflect.ValueOf(comp.inheritor)
 
 	return comp.reflectValue
+}
+
+func (comp *ComponentBehavior) getInheritor() Component {
+	return comp.inheritor
 }
 
 func (comp *ComponentBehavior) eventComponentDestroySelf() localevent.IEvent {

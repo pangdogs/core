@@ -53,6 +53,10 @@ func (uc _UnsafeComponent) GetReflectValue() reflect.Value {
 	return uc.getReflectValue()
 }
 
+func (uc _UnsafeComponent) GetInheritor() Component {
+	return uc.getInheritor()
+}
+
 func (uc _UnsafeComponent) EventComponentDestroySelf() localevent.IEvent {
 	return uc.eventComponentDestroySelf()
 }
