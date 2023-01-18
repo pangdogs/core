@@ -57,9 +57,7 @@ func (ecTree *ECTree) Init(runtimeCtx Context) {
 
 // Shut 销毁EC树
 func (ecTree *ECTree) Shut() {
-	if !ecTree.masterTree {
-		ecTree.hook.Unbind()
-	}
+	ecTree.hook.Unbind()
 	ecTree.eventECTreeAddChild.Close()
 	ecTree.eventECTreeRemoveChild.Close()
 }
@@ -80,13 +78,10 @@ func (ecTree *ECTree) init(runtimeCtx Context, masterTree bool) {
 	ecTree.ecTree = map[ec.ID]_ECNode{}
 	ecTree.eventECTreeAddChild.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.getOptions().HookCache, runtimeCtx)
 	ecTree.eventECTreeRemoveChild.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.getOptions().HookCache, runtimeCtx)
-
-	if !ecTree.masterTree {
-		ecTree.hook = localevent.BindEvent[eventEntityMgrNotifyECTreeRemoveEntity](ecTree.runtimeCtx.GetEntityMgr().eventEntityMgrNotifyECTreeRemoveEntity(), ecTree)
-	}
+	ecTree.hook = localevent.BindEvent[eventEntityMgrRemovingEntity](ecTree.runtimeCtx.GetEntityMgr().eventEntityMgrRemovingEntity(), ecTree)
 }
 
-func (ecTree *ECTree) onEntityMgrNotifyECTreeRemoveEntity(entityMgr IEntityMgr, entity ec.Entity) {
+func (ecTree *ECTree) onEntityMgrRemovingEntity(entityMgr IEntityMgr, entity ec.Entity) {
 	ecTree.RemoveChild(entity.GetID())
 }
 

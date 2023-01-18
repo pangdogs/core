@@ -28,7 +28,7 @@ type EventEntityMgrEntityFirstAccessComponent interface {
 	OnEntityMgrEntityFirstAccessComponent(entityMgr IEntityMgr, entity ec.Entity, component ec.Component)
 }
 
-// eventEntityMgrNotifyECTreeRemoveEntity [EmitUnExport]
-type eventEntityMgrNotifyECTreeRemoveEntity interface {
-	onEntityMgrNotifyECTreeRemoveEntity(entityMgr IEntityMgr, entity ec.Entity)
+// eventEntityMgrRemovingEntity [EmitUnExport]
+type eventEntityMgrRemovingEntity interface {
+	onEntityMgrRemovingEntity(entityMgr IEntityMgr, entity ec.Entity)
 }

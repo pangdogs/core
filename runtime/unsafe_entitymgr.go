@@ -12,6 +12,6 @@ type _UnsafeEntityMgr struct {
 	IEntityMgr
 }
 
-func (u _UnsafeEntityMgr) EventEntityMgrNotifyECTreeRemoveEntity() localevent.IEvent {
-	return u.eventEntityMgrNotifyECTreeRemoveEntity()
+func (u _UnsafeEntityMgr) EventEntityMgrRemovingEntity() localevent.IEvent {
+	return u.eventEntityMgrRemovingEntity()
 }

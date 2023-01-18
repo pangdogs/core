@@ -58,12 +58,12 @@ func emitEventEntityMgrEntityFirstAccessComponent(event localevent.IEvent, entit
 	})
 }
 
-func emitEventEntityMgrNotifyECTreeRemoveEntity(event localevent.IEvent, entityMgr IEntityMgr, entity ec.Entity) {
+func emitEventEntityMgrRemovingEntity(event localevent.IEvent, entityMgr IEntityMgr, entity ec.Entity) {
 	if event == nil {
 		panic("nil event")
 	}
 	localevent.UnsafeEvent(event).Emit(func(delegate util.IfaceCache) bool {
-		util.Cache2Iface[eventEntityMgrNotifyECTreeRemoveEntity](delegate).onEntityMgrNotifyECTreeRemoveEntity(entityMgr, entity)
+		util.Cache2Iface[eventEntityMgrRemovingEntity](delegate).onEntityMgrRemovingEntity(entityMgr, entity)
 		return true
 	})
 }

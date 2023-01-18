@@ -36,7 +36,7 @@ type IEntityMgr interface {
 	// EventEntityMgrEntityFirstAccessComponent 事件：实体管理器中的实体首次访问组件
 	EventEntityMgrEntityFirstAccessComponent() localevent.IEvent
 
-	eventEntityMgrNotifyECTreeRemoveEntity() localevent.IEvent
+	eventEntityMgrRemovingEntity() localevent.IEvent
 }
 
 type _EntityInfo struct {
@@ -54,7 +54,7 @@ type _EntityMgr struct {
 	eventEntityMgrEntityAddComponents        localevent.Event
 	eventEntityMgrEntityRemoveComponent      localevent.Event
 	eventEntityMgrEntityFirstAccessComponent localevent.Event
-	_eventEntityMgrNotifyECTreeRemoveEntity  localevent.Event
+	_eventEntityMgrRemovingEntity            localevent.Event
 }
 
 func (entityMgr *_EntityMgr) Init(runtimeCtx Context) {
@@ -71,7 +71,7 @@ func (entityMgr *_EntityMgr) Init(runtimeCtx Context) {
 	entityMgr.eventEntityMgrEntityAddComponents.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookCache(), runtimeCtx)
 	entityMgr.eventEntityMgrEntityRemoveComponent.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookCache(), runtimeCtx)
 	entityMgr.eventEntityMgrEntityFirstAccessComponent.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookCache(), runtimeCtx)
-	entityMgr._eventEntityMgrNotifyECTreeRemoveEntity.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookCache(), runtimeCtx)
+	entityMgr._eventEntityMgrRemovingEntity.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookCache(), runtimeCtx)
 }
 
 // GetRuntimeCtx 获取运行时上下文
@@ -216,8 +216,7 @@ func (entityMgr *_EntityMgr) RemoveEntity(id ec.ID) {
 		serviceCtx.GetEntityMgr().RemoveEntityWithSerialNo(entity.GetID(), entity.GetSerialNo())
 	}
 
-	emitEventEntityMgrNotifyECTreeRemoveEntity(&entityMgr._eventEntityMgrNotifyECTreeRemoveEntity, entityMgr, entity.Entity)
-	runtimeCtx.GetECTree().RemoveChild(id)
+	emitEventEntityMgrRemovingEntity(&entityMgr._eventEntityMgrRemovingEntity, entityMgr, entity.Entity)
 
 	delete(entityMgr.entityMap, id)
 	entityInfo.Element.Escape()
@@ -254,8 +253,8 @@ func (entityMgr *_EntityMgr) EventEntityMgrEntityFirstAccessComponent() localeve
 	return &entityMgr.eventEntityMgrEntityFirstAccessComponent
 }
 
-func (entityMgr *_EntityMgr) eventEntityMgrNotifyECTreeRemoveEntity() localevent.IEvent {
-	return &entityMgr._eventEntityMgrNotifyECTreeRemoveEntity
+func (entityMgr *_EntityMgr) eventEntityMgrRemovingEntity() localevent.IEvent {
+	return &entityMgr._eventEntityMgrRemovingEntity
 }
 
 func (entityMgr *_EntityMgr) OnCompMgrAddComponents(entity ec.Entity, components []ec.Component) {
