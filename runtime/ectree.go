@@ -106,9 +106,21 @@ func (ecTree *ECTree) AddChild(parentID, childID ec.ID) error {
 		return errors.New("parent not exist")
 	}
 
+	switch parent.GetState() {
+	case ec.EntityState_Init, ec.EntityState_Living:
+	default:
+		return errors.New("parent state invalid")
+	}
+
 	child, ok := ecTree.runtimeCtx.GetEntityMgr().GetEntity(childID)
 	if !ok {
 		return errors.New("child not exist")
+	}
+
+	switch child.GetState() {
+	case ec.EntityState_Init, ec.EntityState_Living:
+	default:
+		return errors.New("parent state invalid")
 	}
 
 	if _, ok = ecTree.ecTree[childID]; ok {
