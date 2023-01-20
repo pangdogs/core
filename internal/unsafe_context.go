@@ -15,3 +15,7 @@ type _UnsafeContext struct {
 func (uc _UnsafeContext) Init(parentCtx context.Context, autoRecover bool, reportError chan error) {
 	uc.init(parentCtx, autoRecover, reportError)
 }
+
+func (uc _UnsafeContext) Paired() bool {
+	return uc.paired()
+}

@@ -42,6 +42,8 @@ type Context interface {
 	plugin.PluginResolver
 	_SafeCall
 
+	// GetName 获取名称
+	GetName() string
 	// GetServiceCtx 获取服务上下文
 	GetServiceCtx() service.Context
 	// GetFrame 获取帧
@@ -72,6 +74,11 @@ type ContextBehavior struct {
 	callee     internal.Callee
 	gcList     []container.GC
 	innerGC    _ContextInnerGC
+}
+
+// GetName 获取名称
+func (ctx *ContextBehavior) GetName() string {
+	return ctx.opts.Name
 }
 
 // GetServiceCtx 获取服务上下文

@@ -42,6 +42,8 @@ type Context interface {
 	pt.PtResolver
 	_SafeCall
 
+	// GetName 获取名称
+	GetName() string
 	// GenSerialNo 生成流水号（运行时唯一）
 	GenSerialNo() int64
 	// GenPersistID 生成持久化ID（全局唯一）
@@ -60,6 +62,11 @@ type ContextBehavior struct {
 	opts        ContextOptions
 	snGenerator int64
 	entityMgr   _EntityMgr
+}
+
+// GetName 获取名称
+func (ctx *ContextBehavior) GetName() string {
+	return ctx.opts.Name
 }
 
 // GenSerialNo 生成流水号（运行时唯一）

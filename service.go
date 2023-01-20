@@ -60,6 +60,10 @@ func (_service *ServiceBehavior) init(serviceCtx service.Context, opts *ServiceO
 		panic("nil opts")
 	}
 
+	if !internal.UnsafeContext(serviceCtx).Paired() {
+		panic("service context already paired")
+	}
+
 	_service.opts = *opts
 
 	if _service.opts.Inheritor.IsNil() {

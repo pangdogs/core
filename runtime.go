@@ -72,6 +72,10 @@ func (_runtime *RuntimeBehavior) init(runtimeCtx runtime.Context, opts *RuntimeO
 		panic("nil opts")
 	}
 
+	if !internal.UnsafeContext(runtimeCtx).Paired() {
+		panic("runtime context already paired")
+	}
+
 	_runtime.opts = *opts
 
 	if _runtime.opts.Inheritor.IsNil() {
