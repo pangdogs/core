@@ -83,10 +83,10 @@ func (ecTree *ECTree) init(runtimeCtx Context, masterTree bool) {
 	if !ecTree.masterTree {
 		priority = -1
 	}
-	ecTree.hook = localevent.BindEventWithPriority[eventEntityMgrRemovingEntity](ecTree.runtimeCtx.GetEntityMgr().eventEntityMgrRemovingEntity(), ecTree, priority)
+	ecTree.hook = localevent.BindEventWithPriority[EventEntityMgrRemovingEntity](ecTree.runtimeCtx.GetEntityMgr().EventEntityMgrRemovingEntity(), ecTree, priority)
 }
 
-func (ecTree *ECTree) onEntityMgrRemovingEntity(entityMgr IEntityMgr, entity ec.Entity) {
+func (ecTree *ECTree) OnEntityMgrRemovingEntity(entityMgr IEntityMgr, entity ec.Entity) {
 	ecTree.RemoveChild(entity.GetID())
 }
 

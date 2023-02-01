@@ -32,11 +32,14 @@ func UnsafeNewService(serviceCtx service.Context, options ServiceOptions) Servic
 
 // Service 服务
 type Service interface {
+	_Service
 	internal.Running
 
 	// GetContext 获取服务上下文
 	GetContext() service.Context
+}
 
+type _Service interface {
 	init(ctx service.Context, opts *ServiceOptions)
 	getOptions() *ServiceOptions
 }

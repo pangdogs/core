@@ -34,11 +34,14 @@ func UnsafeNewRuntime(runtimeCtx runtime.Context, options RuntimeOptions) Runtim
 
 // Runtime 运行时接口
 type Runtime interface {
+	_Runtime
 	internal.Running
 
 	// GetRuntimeCtx 获取运行时上下文
 	GetRuntimeCtx() runtime.Context
+}
 
+type _Runtime interface {
 	init(runtimeCtx runtime.Context, opts *RuntimeOptions)
 	getOptions() *RuntimeOptions
 }
@@ -97,13 +100,13 @@ func (_runtime *RuntimeBehavior) getOptions() *RuntimeOptions {
 	return &_runtime.opts
 }
 
-// OnEntityMgrAddEntity 事件回调：实体管理器中添加实体
+// OnEntityMgrAddEntity 事件回调：实体管理器添加实体
 func (_runtime *RuntimeBehavior) OnEntityMgrAddEntity(entityMgr runtime.IEntityMgr, entity ec.Entity) {
 	_runtime.connectEntity(entity)
 	_runtime.initEntity(entity)
 }
 
-// OnEntityMgrRemoveEntity 事件回调：实体管理器中删除实体
+// OnEntityMgrRemoveEntity 事件回调：实体管理器删除实体
 func (_runtime *RuntimeBehavior) OnEntityMgrRemoveEntity(entityMgr runtime.IEntityMgr, entity ec.Entity) {
 	_runtime.disconnectEntity(entity)
 	_runtime.shutEntity(entity)

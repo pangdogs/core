@@ -3,32 +3,32 @@ package runtime
 
 import "github.com/golaxy-kit/golaxy/ec"
 
-// EventEntityMgrAddEntity [EmitUnExport] 事件定义：实体管理器中添加实体
+// EventEntityMgrAddEntity [EmitUnExport] 事件：实体管理器添加实体
 type EventEntityMgrAddEntity interface {
 	OnEntityMgrAddEntity(entityMgr IEntityMgr, entity ec.Entity)
 }
 
-// EventEntityMgrRemoveEntity [EmitUnExport] 事件定义：实体管理器中删除实体
+// EventEntityMgrRemovingEntity [EmitUnExport] 事件：实体管理器开始删除实体
+type EventEntityMgrRemovingEntity interface {
+	OnEntityMgrRemovingEntity(entityMgr IEntityMgr, entity ec.Entity)
+}
+
+// EventEntityMgrRemoveEntity [EmitUnExport] 事件：实体管理器删除实体
 type EventEntityMgrRemoveEntity interface {
 	OnEntityMgrRemoveEntity(entityMgr IEntityMgr, entity ec.Entity)
 }
 
-// EventEntityMgrEntityAddComponents [EmitUnExport] 事件定义：实体管理器中的实体添加组件
+// EventEntityMgrEntityAddComponents [EmitUnExport] 事件：实体管理器中的实体添加组件
 type EventEntityMgrEntityAddComponents interface {
 	OnEntityMgrEntityAddComponents(entityMgr IEntityMgr, entity ec.Entity, components []ec.Component)
 }
 
-// EventEntityMgrEntityRemoveComponent [EmitUnExport] 事件定义：实体管理器中的实体删除组件
+// EventEntityMgrEntityRemoveComponent [EmitUnExport] 事件：实体管理器中的实体删除组件
 type EventEntityMgrEntityRemoveComponent interface {
 	OnEntityMgrEntityRemoveComponent(entityMgr IEntityMgr, entity ec.Entity, component ec.Component)
 }
 
-// EventEntityMgrEntityFirstAccessComponent [EmitUnExport] 事件定义：实体管理器中的实体首次访问组件
+// EventEntityMgrEntityFirstAccessComponent [EmitUnExport] 事件：实体管理器中的实体首次访问组件
 type EventEntityMgrEntityFirstAccessComponent interface {
 	OnEntityMgrEntityFirstAccessComponent(entityMgr IEntityMgr, entity ec.Entity, component ec.Component)
-}
-
-// eventEntityMgrRemovingEntity [EmitUnExport]
-type eventEntityMgrRemovingEntity interface {
-	onEntityMgrRemovingEntity(entityMgr IEntityMgr, entity ec.Entity)
 }

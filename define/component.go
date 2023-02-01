@@ -5,28 +5,28 @@ import (
 )
 
 type _Component struct {
-	_ifaceName, _name string
-}
-
-func (c _Component) ifaceName() string {
-	return c._ifaceName
+	_name, _path string
 }
 
 func (c _Component) name() string {
 	return c._name
 }
 
+func (c _Component) path() string {
+	return c._path
+}
+
 // Component 组件
 type Component struct {
-	IfaceName string // 组件接口名
-	Name      string // 组件名
+	Name string // 组件名
+	Path string // 组件路径
 }
 
 // Component 生成组件定义
 func (c _Component) Component() Component {
 	return Component{
-		IfaceName: c.ifaceName(),
-		Name:      c.name(),
+		Name: c.name(),
+		Path: c.path(),
 	}
 }
 
@@ -35,7 +35,7 @@ func DefineComponent[COMP_IFACE, COMP any](descr ...string) Component {
 	compIface := DefineComponentInterface[COMP_IFACE]()
 	compIface.Register(util.Zero[COMP](), descr...)
 	return _Component{
-		_ifaceName: compIface.Name,
-		_name:      util.TypeFullName[COMP](),
+		_name: compIface.Name,
+		_path: util.TypeFullName[COMP](),
 	}.Component()
 }

@@ -11,6 +11,7 @@ import (
 
 // Component 组件接口
 type Component interface {
+	_Component
 	_InnerGC
 	_InnerGCCollector
 	ContextResolver
@@ -29,7 +30,9 @@ type Component interface {
 	DestroySelf()
 	// String 字符串化
 	String() string
+}
 
+type _Component interface {
 	init(name string, entity Entity, inheritor Component, hookCache *container.Cache[localevent.Hook])
 	setID(id ID)
 	setSerialNo(sn int64)

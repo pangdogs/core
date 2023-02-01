@@ -36,6 +36,7 @@ func UnsafeNewContext(options ContextOptions) Context {
 
 // Context 服务上下文
 type Context interface {
+	_Context
 	internal.Context
 	internal.RunningMark
 	plugin.PluginResolver
@@ -50,7 +51,9 @@ type Context interface {
 	GenPersistID() ec.ID
 	// GetEntityMgr 获取实体管理器
 	GetEntityMgr() IEntityMgr
+}
 
+type _Context interface {
 	init(opts *ContextOptions)
 	getOptions() *ContextOptions
 }

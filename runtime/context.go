@@ -35,6 +35,7 @@ func UnsafeNewContext(serviceCtx service.Context, options ContextOptions) Contex
 
 // Context 运行时上下文接口
 type Context interface {
+	_Context
 	_InnerGC
 	container.GCCollector
 	internal.Context
@@ -56,7 +57,9 @@ type Context interface {
 	GetFaceCache() *container.Cache[util.FaceAny]
 	// GetHookCache 获取Hook缓存
 	GetHookCache() *container.Cache[localevent.Hook]
+}
 
+type _Context interface {
 	init(serviceCtx service.Context, opts *ContextOptions)
 	getOptions() *ContextOptions
 	setFrame(frame Frame)

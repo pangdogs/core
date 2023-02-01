@@ -3,12 +3,12 @@ package runtime
 
 import "github.com/golaxy-kit/golaxy/ec"
 
-// EventECTreeAddChild [EmitUnExport] 事件定义：EC树中子实体加入父实体
+// EventECTreeAddChild [EmitUnExport] 事件：EC树中子实体加入父实体
 type EventECTreeAddChild interface {
 	OnAddChild(ecTree IECTree, parent, child ec.Entity)
 }
 
-// EventECTreeRemoveChild [EmitUnExport] 事件定义：EC树中子实体离开父实体
+// EventECTreeRemoveChild [EmitUnExport] 事件：EC树中子实体离开父实体
 type EventECTreeRemoveChild interface {
 	OnRemoveChild(ecTree IECTree, parent, child ec.Entity)
 }

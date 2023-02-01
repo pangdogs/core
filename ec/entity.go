@@ -34,6 +34,7 @@ func UnsafeNewEntity(options EntityOptions) Entity {
 
 // Entity 实体接口
 type Entity interface {
+	_Entity
 	_InnerGC
 	_InnerGCCollector
 	_ComponentMgr
@@ -53,7 +54,9 @@ type Entity interface {
 	DestroySelf()
 	// String 字符串化
 	String() string
+}
 
+type _Entity interface {
 	init(opts *EntityOptions)
 	getOptions() *EntityOptions
 	setID(id ID)
