@@ -152,7 +152,9 @@ func (_runtime *RuntimeBehavior) OnComponentDestroySelf(comp ec.Component) {
 }
 
 func (_runtime *RuntimeBehavior) addComponents(entity ec.Entity, components []ec.Component) {
-	if entity.GetState() != ec.EntityState_Init && entity.GetState() != ec.EntityState_Living {
+	switch entity.GetState() {
+	case ec.EntityState_Init, ec.EntityState_Start, ec.EntityState_Living:
+	default:
 		return
 	}
 
@@ -176,7 +178,9 @@ func (_runtime *RuntimeBehavior) addComponents(entity ec.Entity, components []ec
 		_comp.SetState(ec.ComponentState_Start)
 	}
 
-	if entity.GetState() != ec.EntityState_Init && entity.GetState() != ec.EntityState_Living {
+	switch entity.GetState() {
+	case ec.EntityState_Init, ec.EntityState_Start, ec.EntityState_Living:
+	default:
 		return
 	}
 
@@ -364,13 +368,19 @@ func (_runtime *RuntimeBehavior) initEntity(entity ec.Entity) {
 		return
 	}
 
-	ec.UnsafeEntity(entity).SetState(ec.EntityState_Living)
+	ec.UnsafeEntity(entity).SetState(ec.EntityState_Start)
 
 	if entityInitFin, ok := entity.(_EntityStart); ok {
 		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 			entityInitFin.Start()
 		})
 	}
+
+	if entity.GetState() != ec.EntityState_Start {
+		return
+	}
+
+	ec.UnsafeEntity(entity).SetState(ec.EntityState_Living)
 }
 
 func (_runtime *RuntimeBehavior) shutEntity(entity ec.Entity) {

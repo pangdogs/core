@@ -114,7 +114,7 @@ func (entity *EntityBehavior) GetState() EntityState {
 // DestroySelf 销毁自身
 func (entity *EntityBehavior) DestroySelf() {
 	switch entity.GetState() {
-	case EntityState_Init, EntityState_Living:
+	case EntityState_Init, EntityState_Start, EntityState_Living:
 		emitEventEntityDestroySelf(&entity._eventEntityDestroySelf, entity.opts.Inheritor.Iface)
 	}
 }

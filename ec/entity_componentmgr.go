@@ -40,7 +40,7 @@ func (entity *EntityBehavior) GetComponent(name string) Component {
 
 		if entity.opts.EnableComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
 			switch entity.GetState() {
-			case EntityState_Init, EntityState_Living:
+			case EntityState_Init, EntityState_Start, EntityState_Living:
 				emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, comp)
 			}
 		}
@@ -58,7 +58,7 @@ func (entity *EntityBehavior) GetComponentByID(id ID) Component {
 
 		if entity.opts.EnableComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
 			switch entity.GetState() {
-			case EntityState_Init, EntityState_Living:
+			case EntityState_Init, EntityState_Start, EntityState_Living:
 				emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, comp)
 			}
 		}
@@ -87,7 +87,7 @@ func (entity *EntityBehavior) GetComponents(name string) []Component {
 			for i := range components {
 				if components[i].GetState() == ComponentState_Attach {
 					switch entity.GetState() {
-					case EntityState_Init, EntityState_Living:
+					case EntityState_Init, EntityState_Start, EntityState_Living:
 						emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, components[i])
 					}
 				}
@@ -111,7 +111,7 @@ func (entity *EntityBehavior) RangeComponents(fun func(component Component) bool
 
 		if entity.opts.EnableComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
 			switch entity.GetState() {
-			case EntityState_Init, EntityState_Living:
+			case EntityState_Init, EntityState_Start, EntityState_Living:
 				emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, comp)
 			}
 		}
