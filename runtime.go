@@ -364,17 +364,13 @@ func (_runtime *RuntimeBehavior) initEntity(entity ec.Entity) {
 		return
 	}
 
-	if entityInitFin, ok := entity.(_EntityInitFin); ok {
+	ec.UnsafeEntity(entity).SetState(ec.EntityState_Living)
+
+	if entityInitFin, ok := entity.(_EntityStart); ok {
 		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-			entityInitFin.InitFin()
+			entityInitFin.Start()
 		})
 	}
-
-	if entity.GetState() != ec.EntityState_Init {
-		return
-	}
-
-	ec.UnsafeEntity(entity).SetState(ec.EntityState_Living)
 }
 
 func (_runtime *RuntimeBehavior) shutEntity(entity ec.Entity) {
@@ -406,11 +402,11 @@ func (_runtime *RuntimeBehavior) shutEntity(entity ec.Entity) {
 		return true
 	})
 
-	if entityShutFin, ok := entity.(_EntityShutFin); ok {
+	ec.UnsafeEntity(entity).SetState(ec.EntityState_Death)
+
+	if entityShutFin, ok := entity.(_EntityDestroy); ok {
 		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-			entityShutFin.ShutFin()
+			entityShutFin.Destroy()
 		})
 	}
-
-	ec.UnsafeEntity(entity).SetState(ec.EntityState_Death)
 }

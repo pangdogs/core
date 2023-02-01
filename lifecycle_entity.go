@@ -4,8 +4,8 @@ type _EntityInit interface {
 	Init()
 }
 
-type _EntityInitFin interface {
-	InitFin()
+type _EntityStart interface {
+	Start()
 }
 
 type _EntityUpdate = eventUpdate
@@ -16,6 +16,6 @@ type _EntityShut interface {
 	Shut()
 }
 
-type _EntityShutFin interface {
-	ShutFin()
+type _EntityDestroy interface {
+	Destroy()
 }
