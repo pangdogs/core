@@ -11,15 +11,16 @@ func _() {
 	_ = x[EntityState_Birth-0]
 	_ = x[EntityState_Entry-1]
 	_ = x[EntityState_Init-2]
-	_ = x[EntityState_Living-3]
-	_ = x[EntityState_Leave-4]
-	_ = x[EntityState_Shut-5]
-	_ = x[EntityState_Death-6]
+	_ = x[EntityState_Start-3]
+	_ = x[EntityState_Living-4]
+	_ = x[EntityState_Leave-5]
+	_ = x[EntityState_Shut-6]
+	_ = x[EntityState_Death-7]
 }
 
-const _EntityState_name = "EntityState_BirthEntityState_EntryEntityState_InitEntityState_LivingEntityState_LeaveEntityState_ShutEntityState_Death"
+const _EntityState_name = "EntityState_BirthEntityState_EntryEntityState_InitEntityState_StartEntityState_LivingEntityState_LeaveEntityState_ShutEntityState_Death"
 
-var _EntityState_index = [...]uint8{0, 17, 34, 50, 68, 85, 101, 118}
+var _EntityState_index = [...]uint8{0, 17, 34, 50, 67, 85, 102, 118, 135}
 
 func (i EntityState) String() string {
 	if i < 0 || i >= EntityState(len(_EntityState_index)-1) {
