@@ -41,7 +41,7 @@ type Context interface {
 	internal.Context
 	internal.RunningMark
 	plugin.PluginResolver
-	_SafeCall
+	_Call
 
 	// GetName 获取名称
 	GetName() string

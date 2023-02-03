@@ -207,15 +207,12 @@ func (_runtime *RuntimeBehavior) loopWithFrame() {
 			select {
 			case <-updateTicker.C:
 				internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-					timeoutTimer := time.NewTimer(_runtime.opts.ProcessQueueTimeout)
-					defer timeoutTimer.Stop()
-
 					select {
 					case _runtime.processQueue <- _runtime.frameUpdate:
 						curFrames++
 						return
-					case <-timeoutTimer.C:
-						panic("process queue push frame update timeout")
+					default:
+						panic("process queue is full")
 					}
 				})
 

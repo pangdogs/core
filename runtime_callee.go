@@ -8,13 +8,22 @@ func (_runtime *RuntimeBehavior) PushCall(segment func()) {
 		panic("nil segment")
 	}
 
-	timeoutTimer := time.NewTimer(_runtime.opts.ProcessQueueTimeout)
-	defer timeoutTimer.Stop()
+	if _runtime.opts.ProcessQueueTimeout > 0 {
+		timeoutTimer := time.NewTimer(_runtime.opts.ProcessQueueTimeout)
+		defer timeoutTimer.Stop()
 
-	select {
-	case _runtime.processQueue <- segment:
-		return
-	case <-timeoutTimer.C:
-		panic("process queue push segment timeout")
+		select {
+		case _runtime.processQueue <- segment:
+			return
+		case <-timeoutTimer.C:
+			panic("process queue is full")
+		}
+	} else {
+		select {
+		case _runtime.processQueue <- segment:
+			return
+		default:
+			panic("process queue is full")
+		}
 	}
 }

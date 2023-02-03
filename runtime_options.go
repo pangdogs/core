@@ -11,7 +11,8 @@ type RuntimeOptions struct {
 	Inheritor            util.Face[Runtime] // 继承者，需要扩展运行时自身功能时需要使用
 	EnableAutoRun        bool               // 是否开启自动运行
 	ProcessQueueCapacity int                // 任务处理流水线大小
-	ProcessQueueTimeout  time.Duration      // 任务插入流水线超时时长
+	ProcessQueueTimeout  time.Duration      // 当任务处理流水线满时，向其插入代码片段的超时时间，为0表示不等待直接报错
+	SyncCallTimeout      time.Duration      // 同步调用超时时间，为0表示不处理超时，此时两个运行时互相同步调用会死锁
 	Frame                runtime.Frame      // 帧
 	GCInterval           time.Duration      // GC间隔时长
 }
@@ -28,7 +29,7 @@ func (WithRuntimeOption) Default() RuntimeOption {
 		WithRuntimeOption{}.Inheritor(util.Face[Runtime]{})(o)
 		WithRuntimeOption{}.EnableAutoRun(false)(o)
 		WithRuntimeOption{}.ProcessQueueCapacity(128)(o)
-		WithRuntimeOption{}.ProcessQueueTimeout(3 * time.Second)(o)
+		WithRuntimeOption{}.ProcessQueueTimeout(0)(o)
 		WithRuntimeOption{}.Frame(nil)(o)
 		WithRuntimeOption{}.GCInterval(10 * time.Second)(o)
 	}
@@ -58,13 +59,17 @@ func (WithRuntimeOption) ProcessQueueCapacity(v int) RuntimeOption {
 	}
 }
 
-// ProcessQueueTimeout 任务插入流水线超时时长
+// ProcessQueueTimeout 当任务处理流水线满时，向其插入代码片段的超时时间，为0表示不等待直接报错
 func (WithRuntimeOption) ProcessQueueTimeout(v time.Duration) RuntimeOption {
 	return func(o *RuntimeOptions) {
-		if v <= 0 {
-			panic("ProcessQueueTimeout less equal 0 invalid")
-		}
 		o.ProcessQueueTimeout = v
+	}
+}
+
+// SyncCallTimeout 同步调用超时时间，为0表示不处理超时，此时两个运行时互相同步调用会死锁
+func (WithRuntimeOption) SyncCallTimeout(v time.Duration) RuntimeOption {
+	return func(o *RuntimeOptions) {
+		o.SyncCallTimeout = v
 	}
 }
 
