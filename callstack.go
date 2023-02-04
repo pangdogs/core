@@ -77,6 +77,6 @@ func (stack CallStack[T]) Exist(runtimeCtx runtime.Context) bool {
 }
 
 // Variables 栈变量
-func (stack CallStack[T]) Variables() T {
-	return stack.variables
+func (stack *CallStack[T]) Variables() *T {
+	return &stack.variables
 }
