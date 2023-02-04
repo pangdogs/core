@@ -67,7 +67,7 @@ func (stack CallStack[T]) CallNoRet(runtimeCtx runtime.Context, segment func(sta
 }
 
 // Exist 运行时是否存在
-func (stack CallStack[T]) Exist(runtimeCtx runtime.Context) bool {
+func (stack *CallStack[T]) Exist(runtimeCtx runtime.Context) bool {
 	for i := range stack.ctxList {
 		if stack.ctxList[i] == runtimeCtx {
 			return true
