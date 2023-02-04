@@ -13,14 +13,14 @@ func NewCallStack[T any](runtimeCtx runtime.Context, variables T) CallStack[T] {
 
 	return CallStack[T]{
 		ctxList:   []runtime.Context{runtimeCtx},
-		variables: variables,
+		Variables: variables,
 	}
 }
 
 // CallStack 调用栈，用于在多个运行时之间安全的互相同步调用
 type CallStack[T any] struct {
 	ctxList   []runtime.Context
-	variables T
+	Variables T
 }
 
 // Call 同步调用
@@ -74,9 +74,4 @@ func (stack *CallStack[T]) Exist(runtimeCtx runtime.Context) bool {
 		}
 	}
 	return false
-}
-
-// Variables 栈变量
-func (stack *CallStack[T]) Variables() *T {
-	return &stack.variables
 }
