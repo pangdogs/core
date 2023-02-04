@@ -30,6 +30,7 @@ func (WithRuntimeOption) Default() RuntimeOption {
 		WithRuntimeOption{}.EnableAutoRun(false)(o)
 		WithRuntimeOption{}.ProcessQueueCapacity(128)(o)
 		WithRuntimeOption{}.ProcessQueueTimeout(0)(o)
+		WithRuntimeOption{}.SyncCallTimeout(0)(o)
 		WithRuntimeOption{}.Frame(nil)(o)
 		WithRuntimeOption{}.GCInterval(10 * time.Second)(o)
 	}

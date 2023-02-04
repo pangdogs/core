@@ -10,7 +10,7 @@ import (
 // EntityOptions 创建实体的所有选项
 type EntityOptions struct {
 	ec.EntityOptions
-	GenCompID     func(entity ec.Entity, compPt ComponentPt) ec.ID // 生成组件ID函数
+	AlertCompID   func(entity ec.Entity, compPt ComponentPt) ec.ID // 修改组件ID函数
 	Accessibility ec.Accessibility                                 // 实体的可访问性
 }
 
@@ -26,7 +26,7 @@ type WithEntityOption struct {
 func (WithEntityOption) Default() EntityOption {
 	return func(o *EntityOptions) {
 		ec.WithEntityOption{}.Default()(&o.EntityOptions)
-		WithEntityOption{}.GenCompID(nil)(o)
+		WithEntityOption{}.AlertCompID(nil)(o)
 		WithEntityOption{}.Accessibility(ec.Local)(o)
 	}
 }
@@ -73,10 +73,10 @@ func (WithEntityOption) HookCache(v *container.Cache[localevent.Hook]) EntityOpt
 	}
 }
 
-// GenCompID 生成组件ID函数
-func (WithEntityOption) GenCompID(v func(entity ec.Entity, compPt ComponentPt) ec.ID) EntityOption {
+// AlertCompID 修改组件ID函数
+func (WithEntityOption) AlertCompID(v func(entity ec.Entity, compPt ComponentPt) ec.ID) EntityOption {
 	return func(o *EntityOptions) {
-		o.GenCompID = v
+		o.AlertCompID = v
 	}
 }
 
