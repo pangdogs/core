@@ -10,8 +10,8 @@ import (
 )
 
 // NewEntityCreator 创建实体构建器
-func NewEntityCreator(ctx runtime.Context, options ...pt.EntityOption) EntityCreator {
-	if ctx == nil {
+func NewEntityCreator(runtimeCtx runtime.Context, options ...pt.EntityOption) EntityCreator {
+	if runtimeCtx == nil {
 		panic("nil runtimeCtx")
 	}
 
@@ -23,14 +23,14 @@ func NewEntityCreator(ctx runtime.Context, options ...pt.EntityOption) EntityCre
 	}
 
 	if opts.FaceCache == nil {
-		opts.FaceCache = ctx.GetFaceCache()
+		opts.FaceCache = runtimeCtx.GetFaceCache()
 	}
 	if opts.HookCache == nil {
-		opts.HookCache = ctx.GetHookCache()
+		opts.HookCache = runtimeCtx.GetHookCache()
 	}
 
 	return EntityCreator{
-		runtimeCtx: ctx,
+		runtimeCtx: runtimeCtx,
 		options:    opts,
 		inited:     true,
 	}
