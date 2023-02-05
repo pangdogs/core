@@ -12,7 +12,7 @@ import (
 type Ret = internal.Ret
 
 type _Call interface {
-	// SyncCall 同步调用。在运行时中，将代码片段压入任务流水线，串行化的进行调用，会阻塞并等待返回值。
+	// SyncCall 同步调用。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，会阻塞并等待返回值。
 	//
 	//	注意：
 	//	- 代码片段中的线程安全问题。
@@ -23,7 +23,7 @@ type _Call interface {
 	// SyncCallWithSerialNo 与SyncCall相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
 	SyncCallWithSerialNo(entityID ec.ID, entitySerialNo int64, segment func(entity ec.Entity) Ret) Ret
 
-	// AsyncCall 异步调用。在运行时中，将代码片段压入任务流水线，串行化的进行调用，不会阻塞，会返回result channel。
+	// AsyncCall 异步调用。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，不会阻塞，会返回result channel。
 	//
 	//	注意：
 	//	- 代码片段中的线程安全问题。
@@ -34,7 +34,7 @@ type _Call interface {
 	// AsyncCallWithSerialNo 与AsyncCall相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
 	AsyncCallWithSerialNo(entityID ec.ID, entitySerialNo int64, segment func(entity ec.Entity) Ret) <-chan Ret
 
-	// SyncCallNoRet 同步调用，无返回值。在运行时中，将代码片段压入任务流水线，串行化的进行调用，会阻塞，没有返回值。
+	// SyncCallNoRet 同步调用，无返回值。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，会阻塞，没有返回值。
 	//
 	//	注意：
 	//	- 代码片段中的线程安全问题。
@@ -45,7 +45,7 @@ type _Call interface {
 	// SyncCallNoRetWithSerialNo 与SyncCallNoRet相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
 	SyncCallNoRetWithSerialNo(entityID ec.ID, entitySerialNo int64, segment func(entity ec.Entity))
 
-	// AsyncCallNoRet 异步调用，无返回值。在运行时中，将代码片段压入任务流水线，串行化的进行调用，不会阻塞，没有返回值。
+	// AsyncCallNoRet 异步调用，无返回值。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，不会阻塞，没有返回值。
 	//
 	//	注意：
 	//	- 代码片段中的线程安全问题。
@@ -121,7 +121,7 @@ func asyncCall(entity ec.Entity, segment func(entity ec.Entity) Ret) <-chan Ret 
 	})
 }
 
-// SyncCall 同步调用。在运行时中，将代码片段压入任务流水线，串行化的进行调用，会阻塞并等待返回值。
+// SyncCall 同步调用。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，会阻塞并等待返回值。
 //
 //	注意：
 //	- 代码片段中的线程安全问题。
@@ -166,7 +166,7 @@ func (ctx *ContextBehavior) SyncCallWithSerialNo(entityID ec.ID, entitySerialNo 
 	return syncCall(entity, segment)
 }
 
-// AsyncCall 异步调用。在运行时中，将代码片段压入任务流水线，串行化的进行调用，不会阻塞，会返回result channel。
+// AsyncCall 异步调用。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，不会阻塞，会返回result channel。
 //
 //	注意：
 //	- 代码片段中的线程安全问题。
@@ -225,7 +225,7 @@ func (ctx *ContextBehavior) AsyncCallWithSerialNo(entityID ec.ID, entitySerialNo
 	return asyncCall(entity, segment)
 }
 
-// SyncCallNoRet 同步调用，无返回值。在运行时中，将代码片段压入任务流水线，串行化的进行调用，会阻塞，没有返回值。
+// SyncCallNoRet 同步调用，无返回值。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，会阻塞，没有返回值。
 //
 //	注意：
 //	- 代码片段中的线程安全问题。
@@ -266,7 +266,7 @@ func (ctx *ContextBehavior) SyncCallNoRetWithSerialNo(entityID ec.ID, entitySeri
 	})
 }
 
-// AsyncCallNoRet 异步调用，无返回值。在运行时中，将代码片段压入任务流水线，串行化的进行调用，不会阻塞，没有返回值。
+// AsyncCallNoRet 异步调用，无返回值。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，不会阻塞，没有返回值。
 //
 //	注意：
 //	- 代码片段中的线程安全问题。
