@@ -2,7 +2,7 @@ package internal
 
 import (
 	"fmt"
-	"github.com/golaxy-kit/golaxy/util"
+	"kit.golaxy.org/golaxy/util"
 	"runtime"
 )
 

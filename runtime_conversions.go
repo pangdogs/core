@@ -1,6 +1,6 @@
 package golaxy
 
-import "github.com/golaxy-kit/golaxy/util"
+import "kit.golaxy.org/golaxy/util"
 
 // GetRuntimeInheritor 获取运行时的继承者
 func GetRuntimeInheritor[T any](runtime Runtime) T {

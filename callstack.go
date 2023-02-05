@@ -1,8 +1,8 @@
 package golaxy
 
 import (
-	"github.com/golaxy-kit/golaxy/internal"
-	"github.com/golaxy-kit/golaxy/runtime"
+	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/runtime"
 )
 
 // NewCallStack 创建调用栈

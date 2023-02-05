@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/golaxy-kit/golaxy/pt"
+	"kit.golaxy.org/golaxy/pt"
 )
 
 // GetEntityPt 获取实体原型

@@ -1,7 +1,7 @@
 package define
 
 import (
-	"github.com/golaxy-kit/golaxy/util"
+	"kit.golaxy.org/golaxy/util"
 )
 
 type _Component struct {

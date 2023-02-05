@@ -1,8 +1,8 @@
 package define
 
 import (
-	"github.com/golaxy-kit/golaxy/pt"
-	"github.com/golaxy-kit/golaxy/util"
+	"kit.golaxy.org/golaxy/pt"
+	"kit.golaxy.org/golaxy/util"
 )
 
 type _ComponentInterface struct {

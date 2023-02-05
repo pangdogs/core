@@ -1,11 +1,11 @@
 package golaxy
 
 import (
-	"github.com/golaxy-kit/golaxy/ec"
-	"github.com/golaxy-kit/golaxy/internal"
-	"github.com/golaxy-kit/golaxy/localevent"
-	"github.com/golaxy-kit/golaxy/runtime"
-	"github.com/golaxy-kit/golaxy/util"
+	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/localevent"
+	"kit.golaxy.org/golaxy/runtime"
+	"kit.golaxy.org/golaxy/util"
 	"time"
 )
 

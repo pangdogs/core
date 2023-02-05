@@ -2,9 +2,9 @@ package service
 
 import (
 	"errors"
-	"github.com/golaxy-kit/golaxy/ec"
-	"github.com/golaxy-kit/golaxy/internal"
-	"github.com/golaxy-kit/golaxy/util"
+	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/util"
 	_ "unsafe"
 )
 
@@ -56,10 +56,10 @@ type _Call interface {
 	AsyncCallNoRetWithSerialNo(entityID ec.ID, entitySerialNo int64, segment func(entity ec.Entity))
 }
 
-//go:linkname entityCall github.com/golaxy-kit/golaxy/runtime.entityCall
+//go:linkname entityCall kit.golaxy.org/golaxy/runtime.entityCall
 func entityCall(entity ec.Entity) internal.Call
 
-//go:linkname entityExist github.com/golaxy-kit/golaxy/runtime.entityExist
+//go:linkname entityExist kit.golaxy.org/golaxy/runtime.entityExist
 func entityExist(entity ec.Entity) bool
 
 func checkEntityID(entityID ec.ID) error {

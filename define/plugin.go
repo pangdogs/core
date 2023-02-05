@@ -1,10 +1,10 @@
 package define
 
 import (
-	"github.com/golaxy-kit/golaxy/plugin"
-	"github.com/golaxy-kit/golaxy/runtime"
-	"github.com/golaxy-kit/golaxy/service"
-	"github.com/golaxy-kit/golaxy/util"
+	"kit.golaxy.org/golaxy/plugin"
+	"kit.golaxy.org/golaxy/runtime"
+	"kit.golaxy.org/golaxy/service"
+	"kit.golaxy.org/golaxy/util"
 )
 
 type _Plugin[PLUGIN_IFACE, OPTION any] struct {

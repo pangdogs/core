@@ -47,10 +47,10 @@ package %s
 			fmt.Fprintf(importCode, "\nimport (")
 
 			fmt.Fprintf(importCode, `
-	%s "github.com/golaxy-kit/golaxy/localevent"`, ctx.EventPackageAlias)
-			
+	%s "kit.golaxy.org/golaxy/localevent"`, ctx.EventPackageAlias)
+
 			fmt.Fprintf(importCode, `
-	"github.com/golaxy-kit/golaxy/util/container"`)
+	"kit.golaxy.org/golaxy/util/container"`)
 
 			fmt.Fprintf(importCode, "\n)\n")
 

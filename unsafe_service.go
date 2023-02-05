@@ -1,6 +1,6 @@
 package golaxy
 
-import "github.com/golaxy-kit/golaxy/service"
+import "kit.golaxy.org/golaxy/service"
 
 func UnsafeService(service Service) _UnsafeService {
 	return _UnsafeService{

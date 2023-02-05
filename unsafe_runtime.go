@@ -1,6 +1,6 @@
 package golaxy
 
-import "github.com/golaxy-kit/golaxy/runtime"
+import "kit.golaxy.org/golaxy/runtime"
 
 func UnsafeRuntime(runtime Runtime) _UnsafeRuntime {
 	return _UnsafeRuntime{

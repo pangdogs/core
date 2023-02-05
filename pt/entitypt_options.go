@@ -1,10 +1,10 @@
 package pt
 
 import (
-	"github.com/golaxy-kit/golaxy/ec"
-	"github.com/golaxy-kit/golaxy/localevent"
-	"github.com/golaxy-kit/golaxy/util"
-	"github.com/golaxy-kit/golaxy/util/container"
+	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/localevent"
+	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/container"
 )
 
 // EntityOptions 创建实体的所有选项

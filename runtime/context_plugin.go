@@ -1,7 +1,7 @@
 package runtime
 
 import (
-	"github.com/golaxy-kit/golaxy/util"
+	"kit.golaxy.org/golaxy/util"
 )
 
 // GetPlugin 获取插件

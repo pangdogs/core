@@ -1,4 +1,4 @@
-module github.com/golaxy-kit/golaxy
+module kit.golaxy.org/golaxy
 
 go 1.19
 

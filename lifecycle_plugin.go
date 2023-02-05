@@ -1,8 +1,8 @@
 package golaxy
 
 import (
-	"github.com/golaxy-kit/golaxy/runtime"
-	"github.com/golaxy-kit/golaxy/service"
+	"kit.golaxy.org/golaxy/runtime"
+	"kit.golaxy.org/golaxy/service"
 )
 
 type _ServicePluginInit interface {

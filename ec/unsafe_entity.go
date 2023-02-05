@@ -1,9 +1,9 @@
 package ec
 
 import (
-	"github.com/golaxy-kit/golaxy/localevent"
-	"github.com/golaxy-kit/golaxy/util"
-	"github.com/golaxy-kit/golaxy/util/container"
+	"kit.golaxy.org/golaxy/localevent"
+	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/container"
 )
 
 func UnsafeEntity(entity Entity) _UnsafeEntity {

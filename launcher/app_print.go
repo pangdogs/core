@@ -3,7 +3,7 @@ package launcher
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/golaxy-kit/golaxy/pt"
+	"kit.golaxy.org/golaxy/pt"
 	"sort"
 	"strings"
 )

@@ -1,6 +1,6 @@
 package ec
 
-import "github.com/golaxy-kit/golaxy/util/container"
+import "kit.golaxy.org/golaxy/util/container"
 
 type _InnerGC interface {
 	getInnerGC() container.GC

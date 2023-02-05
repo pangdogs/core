@@ -1,6 +1,6 @@
 package runtime
 
-import "github.com/golaxy-kit/golaxy/util"
+import "kit.golaxy.org/golaxy/util"
 
 // GetInheritor 获取运行时上下文的继承者
 func GetInheritor[T any](ctx Context) T {

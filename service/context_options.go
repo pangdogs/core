@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
-	"github.com/golaxy-kit/golaxy/ec"
-	"github.com/golaxy-kit/golaxy/plugin"
-	"github.com/golaxy-kit/golaxy/pt"
-	"github.com/golaxy-kit/golaxy/util"
 	"github.com/segmentio/ksuid"
+	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/plugin"
+	"kit.golaxy.org/golaxy/pt"
+	"kit.golaxy.org/golaxy/util"
 )
 
 // ContextOptions 创建服务上下文的所有选项

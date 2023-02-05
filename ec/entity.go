@@ -2,10 +2,10 @@ package ec
 
 import (
 	"fmt"
-	"github.com/golaxy-kit/golaxy/localevent"
-	"github.com/golaxy-kit/golaxy/util"
-	"github.com/golaxy-kit/golaxy/util/container"
 	"github.com/segmentio/ksuid"
+	"kit.golaxy.org/golaxy/localevent"
+	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/container"
 )
 
 // NewEntity 创建实体

@@ -2,10 +2,10 @@ package runtime
 
 import (
 	"context"
-	"github.com/golaxy-kit/golaxy/localevent"
-	"github.com/golaxy-kit/golaxy/plugin"
-	"github.com/golaxy-kit/golaxy/util"
-	"github.com/golaxy-kit/golaxy/util/container"
+	"kit.golaxy.org/golaxy/localevent"
+	"kit.golaxy.org/golaxy/plugin"
+	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/container"
 )
 
 // ContextOptions 创建运行时上下文的所有选项

@@ -2,8 +2,8 @@ package runtime
 
 import (
 	"fmt"
-	"github.com/golaxy-kit/golaxy/ec"
-	"github.com/golaxy-kit/golaxy/internal"
+	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/internal"
 )
 
 // Ret 调用结果

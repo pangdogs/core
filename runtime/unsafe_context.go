@@ -1,9 +1,9 @@
 package runtime
 
 import (
-	"github.com/golaxy-kit/golaxy/internal"
-	"github.com/golaxy-kit/golaxy/service"
-	"github.com/golaxy-kit/golaxy/util/container"
+	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/service"
+	"kit.golaxy.org/golaxy/util/container"
 )
 
 func UnsafeContext(ctx Context) _UnsafeContext {

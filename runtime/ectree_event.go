@@ -1,7 +1,7 @@
-//go:generate go run github.com/golaxy-kit/golaxy/localevent/eventcode --decl_file=$GOFILE gen_emit --package=$GOPACKAGE
+//go:generate go run kit.golaxy.org/golaxy/localevent/eventcode --decl_file=$GOFILE gen_emit --package=$GOPACKAGE
 package runtime
 
-import "github.com/golaxy-kit/golaxy/ec"
+import "kit.golaxy.org/golaxy/ec"
 
 // EventECTreeAddChild [EmitUnExport] 事件：EC树中子实体加入父实体
 type EventECTreeAddChild interface {

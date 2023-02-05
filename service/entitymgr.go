@@ -2,9 +2,9 @@ package service
 
 import (
 	"errors"
-	"github.com/golaxy-kit/golaxy/ec"
-	"github.com/golaxy-kit/golaxy/util"
-	"github.com/golaxy-kit/golaxy/util/concurrent"
+	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/concurrent"
 )
 
 // IEntityMgr 实体管理器接口

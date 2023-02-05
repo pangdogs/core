@@ -1,7 +1,7 @@
 package golaxy
 
 import (
-	"github.com/golaxy-kit/golaxy/util"
+	"kit.golaxy.org/golaxy/util"
 )
 
 // GetServiceInheritor 获取服务的继承者

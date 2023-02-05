@@ -2,7 +2,7 @@ package plugin
 
 import (
 	"fmt"
-	"github.com/golaxy-kit/golaxy/util"
+	"kit.golaxy.org/golaxy/util"
 )
 
 // InstallPlugin 安装插件。

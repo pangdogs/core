@@ -1,9 +1,9 @@
 package runtime
 
 import (
-	"github.com/golaxy-kit/golaxy/ec"
-	"github.com/golaxy-kit/golaxy/service"
-	"github.com/golaxy-kit/golaxy/util"
+	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/service"
+	"kit.golaxy.org/golaxy/util"
 )
 
 // Get 获取运行时上下文

@@ -3,7 +3,7 @@ package plugin
 
 import (
 	"fmt"
-	"github.com/golaxy-kit/golaxy/util"
+	"kit.golaxy.org/golaxy/util"
 )
 
 // PluginBundle 插件包

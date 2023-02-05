@@ -1,6 +1,6 @@
 package localevent
 
-import "github.com/golaxy-kit/golaxy/util"
+import "kit.golaxy.org/golaxy/util"
 
 func UnsafeEvent(v IEvent) _UnsafeEvent {
 	return _UnsafeEvent{

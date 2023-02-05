@@ -1,12 +1,12 @@
 package runtime
 
 import (
-	"github.com/golaxy-kit/golaxy/internal"
-	"github.com/golaxy-kit/golaxy/localevent"
-	"github.com/golaxy-kit/golaxy/plugin"
-	"github.com/golaxy-kit/golaxy/service"
-	"github.com/golaxy-kit/golaxy/util"
-	"github.com/golaxy-kit/golaxy/util/container"
+	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/localevent"
+	"kit.golaxy.org/golaxy/plugin"
+	"kit.golaxy.org/golaxy/service"
+	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/container"
 )
 
 // NewContext 创建运行时上下文

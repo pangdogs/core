@@ -1,6 +1,6 @@
 package service
 
-import "github.com/golaxy-kit/golaxy/internal"
+import "kit.golaxy.org/golaxy/internal"
 
 func UnsafeContext(ctx Context) _UnsafeContext {
 	return _UnsafeContext{

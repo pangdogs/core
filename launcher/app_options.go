@@ -1,9 +1,9 @@
 package launcher
 
 import (
-	"github.com/golaxy-kit/golaxy/plugin"
-	"github.com/golaxy-kit/golaxy/service"
 	"gopkg.in/alecthomas/kingpin.v2"
+	"kit.golaxy.org/golaxy/plugin"
+	"kit.golaxy.org/golaxy/service"
 )
 
 // Cmd 应用指令

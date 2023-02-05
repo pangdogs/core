@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/golaxy-kit/golaxy/ec"
+	"kit.golaxy.org/golaxy/ec"
 	_ "unsafe"
 )
 
@@ -19,8 +19,8 @@ func TryGet(ctxResolver ec.ContextResolver) (Context, bool) {
 	return serviceCtx, true
 }
 
-//go:linkname getServiceContext github.com/golaxy-kit/golaxy/runtime.getServiceContext
+//go:linkname getServiceContext kit.golaxy.org/golaxy/runtime.getServiceContext
 func getServiceContext(ctxResolver ec.ContextResolver) Context
 
-//go:linkname tryGetServiceContext github.com/golaxy-kit/golaxy/runtime.tryGetServiceContext
+//go:linkname tryGetServiceContext kit.golaxy.org/golaxy/runtime.tryGetServiceContext
 func tryGetServiceContext(ctxResolver ec.ContextResolver) (Context, bool)

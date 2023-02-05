@@ -3,9 +3,9 @@
 package runtime
 
 import (
-	localevent "github.com/golaxy-kit/golaxy/localevent"
-	"github.com/golaxy-kit/golaxy/ec"
-	"github.com/golaxy-kit/golaxy/util"
+	localevent "kit.golaxy.org/golaxy/localevent"
+	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/util"
 )
 
 func emitEventECTreeAddChild(event localevent.IEvent, ecTree IECTree, parent, child ec.Entity) {

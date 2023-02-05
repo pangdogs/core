@@ -1,9 +1,9 @@
 package golaxy
 
 import (
-	"github.com/golaxy-kit/golaxy/localevent"
-	"github.com/golaxy-kit/golaxy/runtime"
-	"github.com/golaxy-kit/golaxy/util/container"
+	"kit.golaxy.org/golaxy/localevent"
+	"kit.golaxy.org/golaxy/runtime"
+	"kit.golaxy.org/golaxy/util/container"
 )
 
 func (_runtime *RuntimeBehavior) gc() {

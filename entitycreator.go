@@ -3,10 +3,10 @@ package golaxy
 import (
 	"errors"
 	"fmt"
-	"github.com/golaxy-kit/golaxy/ec"
-	"github.com/golaxy-kit/golaxy/pt"
-	"github.com/golaxy-kit/golaxy/runtime"
-	"github.com/golaxy-kit/golaxy/service"
+	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/pt"
+	"kit.golaxy.org/golaxy/runtime"
+	"kit.golaxy.org/golaxy/service"
 )
 
 // NewEntityCreator 创建实体构建器

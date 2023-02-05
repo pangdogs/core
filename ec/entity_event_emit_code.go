@@ -3,8 +3,8 @@
 package ec
 
 import (
-	localevent "github.com/golaxy-kit/golaxy/localevent"
-	"github.com/golaxy-kit/golaxy/util"
+	localevent "kit.golaxy.org/golaxy/localevent"
+	"kit.golaxy.org/golaxy/util"
 )
 
 func emitEventEntityDestroySelf(event localevent.IEvent, entity Entity) {

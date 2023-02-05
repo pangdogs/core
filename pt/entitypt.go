@@ -1,7 +1,7 @@
 package pt
 
 import (
-	"github.com/golaxy-kit/golaxy/ec"
+	"kit.golaxy.org/golaxy/ec"
 )
 
 // EntityPt 实体原型

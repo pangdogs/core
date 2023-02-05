@@ -1,7 +1,7 @@
 package golaxy
 
 import (
-	"github.com/golaxy-kit/golaxy/util"
+	"kit.golaxy.org/golaxy/util"
 )
 
 // ServiceOptions 创建服务的所有选项

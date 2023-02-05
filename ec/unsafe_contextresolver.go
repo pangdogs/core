@@ -1,7 +1,7 @@
 package ec
 
 import (
-	"github.com/golaxy-kit/golaxy/util"
+	"kit.golaxy.org/golaxy/util"
 )
 
 func UnsafeContextResolver(ctxResolver ContextResolver) _UnsafeContextResolver {

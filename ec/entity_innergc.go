@@ -1,8 +1,8 @@
 package ec
 
 import (
-	"github.com/golaxy-kit/golaxy/localevent"
-	"github.com/golaxy-kit/golaxy/util/container"
+	"kit.golaxy.org/golaxy/localevent"
+	"kit.golaxy.org/golaxy/util/container"
 )
 
 type _EntityInnerGC struct {
