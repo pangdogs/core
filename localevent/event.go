@@ -17,6 +17,9 @@ const (
 	EventRecursion_Deepest                        // 深度优先处理递归事件，如果在订阅者中再次发送这个事件，那么会中断上次事件发送过程，并在本次事件发送过程中，不会再次进入这个订阅者
 )
 
+// EventRecursionLimit 事件递归次数上限
+var EventRecursionLimit = 128
+
 // IEvent 本地事件接口，非线程安全，不能用于跨线程事件通知
 type IEvent interface {
 	emit(fun func(delegate util.IfaceCache) bool)
@@ -81,6 +84,10 @@ func (event *Event) Clean() {
 func (event *Event) emit(fun func(delegate util.IfaceCache) bool) {
 	if fun == nil {
 		return
+	}
+
+	if event.emitted >= EventRecursionLimit {
+		panic("recursive event calls cause stack overflow")
 	}
 
 	switch event.eventRecursion {
