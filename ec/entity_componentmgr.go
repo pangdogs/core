@@ -162,6 +162,8 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 		other.Escape()
 		comp.setState(ComponentState_Detach)
 
+		entity.changedVersion++
+
 		emitEventCompMgrRemoveComponent(&entity.eventCompMgrRemoveComponent, entity.opts.Inheritor.Iface, comp)
 
 		return true
@@ -183,6 +185,8 @@ func (entity *EntityBehavior) RemoveComponentByID(id ID) {
 
 	e.Escape()
 	comp.setState(ComponentState_Detach)
+
+	entity.changedVersion++
 
 	emitEventCompMgrRemoveComponent(&entity.eventCompMgrRemoveComponent, entity.opts.Inheritor.Iface, comp)
 }
@@ -232,6 +236,8 @@ func (entity *EntityBehavior) addSingleComponent(name string, component Componen
 
 	component.setState(ComponentState_Attach)
 	entity.getInnerGCCollector().CollectGC(component.getInnerGC())
+
+	entity.changedVersion++
 
 	return nil
 }

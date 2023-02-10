@@ -40,6 +40,10 @@ func (ue _UnsafeEntity) GetContext() util.IfaceCache {
 	return ue.getContext()
 }
 
+func (ue _UnsafeEntity) GetChangedVersion() int64 {
+	return ue.getChangedVersion()
+}
+
 func (ue _UnsafeEntity) SetGCCollector(gcCollect container.GCCollector) {
 	ue.setGCCollector(gcCollect)
 }

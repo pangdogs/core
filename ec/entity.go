@@ -62,6 +62,7 @@ type _Entity interface {
 	setID(id ID)
 	setSerialNo(sn int64)
 	setContext(ctx util.IfaceCache)
+	getChangedVersion() int64
 	setGCCollector(gcCollect container.GCCollector)
 	getGCCollector() container.GCCollector
 	setParent(parent Entity)
@@ -78,6 +79,7 @@ type EntityBehavior struct {
 	gcCollector                      container.GCCollector
 	parent                           Entity
 	componentList                    container.List[util.FaceAny]
+	changedVersion                   int64
 	state                            EntityState
 	_eventEntityDestroySelf          localevent.Event
 	eventCompMgrAddComponents        localevent.Event
@@ -174,6 +176,10 @@ func (entity *EntityBehavior) setContext(ctx util.IfaceCache) {
 
 func (entity *EntityBehavior) getContext() util.IfaceCache {
 	return entity.context
+}
+
+func (entity *EntityBehavior) getChangedVersion() int64 {
+	return entity.changedVersion
 }
 
 func (entity *EntityBehavior) setGCCollector(gcCollect container.GCCollector) {
