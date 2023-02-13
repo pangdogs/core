@@ -10,8 +10,8 @@ import (
 // EntityOptions 创建实体的所有选项
 type EntityOptions struct {
 	ec.EntityOptions
-	AssignCompID  func(entity ec.Entity, compPt ComponentPt) ec.ID // 设置组件ID函数
-	Accessibility ec.Accessibility                                 // 实体的可访问性
+	AssignCompID func(entity ec.Entity, compPt ComponentPt) ec.ID // 设置组件ID函数
+	Scope        ec.Scope                                         // 实体的可访问作用域
 }
 
 // EntityOption 创建实体的选项设置器
@@ -27,7 +27,7 @@ func (WithEntityOption) Default() EntityOption {
 	return func(o *EntityOptions) {
 		ec.WithEntityOption{}.Default()(&o.EntityOptions)
 		WithEntityOption{}.AssignCompID(nil)(o)
-		WithEntityOption{}.Accessibility(ec.Local)(o)
+		WithEntityOption{}.Scope(ec.Scope_Local)(o)
 	}
 }
 
@@ -80,9 +80,9 @@ func (WithEntityOption) AssignCompID(v func(entity ec.Entity, compPt ComponentPt
 	}
 }
 
-// Accessibility 实体的可访问性
-func (WithEntityOption) Accessibility(v ec.Accessibility) EntityOption {
+// Scope 实体的可访问作用域
+func (WithEntityOption) Scope(v ec.Scope) EntityOption {
 	return func(o *EntityOptions) {
-		o.Accessibility = v
+		o.Scope = v
 	}
 }

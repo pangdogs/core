@@ -22,7 +22,7 @@ type IEntityMgr interface {
 	// GetEntityCount 获取实体数量
 	GetEntityCount() int
 	// AddEntity 添加实体
-	AddEntity(entity ec.Entity, accessibility ec.Accessibility) error
+	AddEntity(entity ec.Entity, scope ec.Scope) error
 	// RemoveEntity 删除实体
 	RemoveEntity(id ec.ID)
 	// EventEntityMgrAddEntity 事件：实体管理器添加实体
@@ -121,15 +121,15 @@ func (entityMgr *_EntityMgr) GetEntityCount() int {
 }
 
 // AddEntity 添加实体
-func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, accessibility ec.Accessibility) error {
+func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 	if entity == nil {
 		return errors.New("nil entity")
 	}
 
-	switch accessibility {
-	case ec.Local, ec.Global:
+	switch scope {
+	case ec.Scope_Local, ec.Scope_Global:
 	default:
-		return errors.New("accessibility invalid")
+		return errors.New("scope invalid")
 	}
 
 	if entity.GetState() != ec.EntityState_Birth {
@@ -163,7 +163,7 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, accessibility ec.Access
 		return true
 	})
 
-	if accessibility == ec.Global {
+	if scope == ec.Scope_Global {
 		_, loaded, err := entityMgr.GetRuntimeCtx().GetServiceCtx().GetEntityMgr().GetOrAddEntity(entity)
 		if err != nil {
 			return err
@@ -180,7 +180,7 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, accessibility ec.Access
 	if _entity.GetOptions().EnableComponentAwakeByAccess {
 		entityInfo.Hooks[2] = localevent.BindEvent[ec.EventCompMgrFirstAccessComponent](entity.EventCompMgrFirstAccessComponent(), entityMgr)
 	}
-	entityInfo.GlobalMark = accessibility == ec.Global
+	entityInfo.GlobalMark = scope == ec.Scope_Global
 
 	entityMgr.entityMap[entity.GetID()] = entityInfo
 

@@ -78,7 +78,7 @@ func (creator EntityCreator) spawn(modifyOptions func(options *pt.EntityOptions)
 
 	entity := entityPt.UnsafeConstruct(creator.options)
 
-	if err := runtimeCtx.GetEntityMgr().AddEntity(entity, creator.options.Accessibility); err != nil {
+	if err := runtimeCtx.GetEntityMgr().AddEntity(entity, creator.options.Scope); err != nil {
 		return nil, fmt.Errorf("add entity to runtime context failed, %v", err)
 	}
 
