@@ -125,7 +125,7 @@ func (eventTab *%[1]s) %[2]s() %[3]sIEvent {
 		fmt.Fprintf(eventTabCode, `
 type %[1]s [%[2]d]%[4]sEvent
 
-func (eventTab *%[1]s) Init(autoRecover bool, reportError chan error, hookCache *container.Cache[%[4]sHook], gcCollector container.GCCollector) {
+func (eventTab *%[1]s) Init(autoRecover bool, reportError chan error, hookCache container.Cache[%[4]sHook], gcCollector container.GCCollector) {
 %[3]s}
 
 func (eventTab *%[1]s) Get(id int) %[4]sIEvent {
