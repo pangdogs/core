@@ -42,7 +42,7 @@ type Event struct {
 }
 
 // Init 初始化事件
-func (event *Event) Init(autoRecover bool, reportError chan error, eventRecursion EventRecursion, hookCache *container.Cache[Hook], gcCollector container.GCCollector) {
+func (event *Event) Init(autoRecover bool, reportError chan error, eventRecursion EventRecursion, hookCache container.Cache[Hook], gcCollector container.GCCollector) {
 	if gcCollector == nil {
 		panic("nil gcCollector")
 	}

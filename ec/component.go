@@ -33,7 +33,7 @@ type Component interface {
 }
 
 type _Component interface {
-	init(name string, entity Entity, inheritor Component, hookCache *container.Cache[localevent.Hook])
+	init(name string, entity Entity, inheritor Component, hookCache container.Cache[localevent.Hook])
 	setID(id ID)
 	setSerialNo(sn int64)
 	setFixed(v bool)
@@ -107,7 +107,7 @@ func (comp *ComponentBehavior) String() string {
 		comp.GetState())
 }
 
-func (comp *ComponentBehavior) init(name string, entity Entity, inheritor Component, hookCache *container.Cache[localevent.Hook]) {
+func (comp *ComponentBehavior) init(name string, entity Entity, inheritor Component, hookCache container.Cache[localevent.Hook]) {
 	comp.innerGC.Init(comp)
 	comp.name = name
 	comp.entity = entity

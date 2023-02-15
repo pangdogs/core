@@ -17,7 +17,7 @@ type _UnsafeComponent struct {
 	Component
 }
 
-func (uc _UnsafeComponent) Init(name string, entity Entity, inheritor Component, hookCache *container.Cache[localevent.Hook]) {
+func (uc _UnsafeComponent) Init(name string, entity Entity, inheritor Component, hookCache container.Cache[localevent.Hook]) {
 	uc.init(name, entity, inheritor, hookCache)
 }
 

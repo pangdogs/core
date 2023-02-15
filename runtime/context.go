@@ -54,9 +54,9 @@ type Context interface {
 	// GetECTree 获取主EC树
 	GetECTree() IECTree
 	// GetFaceCache 获取Face缓存
-	GetFaceCache() *container.Cache[util.FaceAny]
+	GetFaceCache() container.Cache[util.FaceAny]
 	// GetHookCache 获取Hook缓存
-	GetHookCache() *container.Cache[localevent.Hook]
+	GetHookCache() container.Cache[localevent.Hook]
 }
 
 type _Context interface {
@@ -105,12 +105,12 @@ func (ctx *ContextBehavior) GetECTree() IECTree {
 }
 
 // GetFaceCache 获取Face缓存
-func (ctx *ContextBehavior) GetFaceCache() *container.Cache[util.FaceAny] {
+func (ctx *ContextBehavior) GetFaceCache() container.Cache[util.FaceAny] {
 	return ctx.opts.FaceCache
 }
 
 // GetHookCache 获取Hook缓存
-func (ctx *ContextBehavior) GetHookCache() *container.Cache[localevent.Hook] {
+func (ctx *ContextBehavior) GetHookCache() container.Cache[localevent.Hook] {
 	return ctx.opts.HookCache
 }
 

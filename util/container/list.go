@@ -60,22 +60,32 @@ func (e *Element[T]) Escaped() bool {
 	return e.escaped
 }
 
+type _DefaultCache[T any] struct{}
+
+func (*_DefaultCache[T]) Alloc() *Element[T] {
+	return &Element[T]{}
+}
+
 // NewList 创建链表
-func NewList[T any](cache *Cache[T], gcCollector GCCollector) *List[T] {
+func NewList[T any](cache Cache[T], gcCollector GCCollector) *List[T] {
 	return new(List[T]).Init(cache, gcCollector)
 }
 
 // List 链表，非线程安全，支持在遍历过程中删除元素
 type List[T any] struct {
-	cache       *Cache[T]
+	cache       Cache[T]
 	root        Element[T]
 	cap, gcLen  int
 	gcCollector GCCollector
 }
 
 // Init 初始化
-func (l *List[T]) Init(cache *Cache[T], gcCollector GCCollector) *List[T] {
-	l.cache = cache
+func (l *List[T]) Init(cache Cache[T], gcCollector GCCollector) *List[T] {
+	if cache == nil {
+		l.cache = (*_DefaultCache[T])(nil)
+	} else {
+		l.cache = cache
+	}
 	l.gcCollector = gcCollector
 	l.root._next = &l.root
 	l.root._prev = &l.root
@@ -85,12 +95,12 @@ func (l *List[T]) Init(cache *Cache[T], gcCollector GCCollector) *List[T] {
 }
 
 // SetCache 设置缓存
-func (l *List[T]) SetCache(cache *Cache[T]) {
+func (l *List[T]) SetCache(cache Cache[T]) {
 	l.cache = cache
 }
 
 // GetCache 获取缓存
-func (l *List[T]) GetCache() *Cache[T] {
+func (l *List[T]) GetCache() Cache[T] {
 	return l.cache
 }
 
@@ -184,7 +194,7 @@ func (l *List[T]) insert(e, at *Element[T]) *Element[T] {
 
 // insertValue 插入数据
 func (l *List[T]) insertValue(value T, at *Element[T]) *Element[T] {
-	e := l.cache.alloc()
+	e := l.cache.Alloc()
 	e.Value = value
 	return l.insert(e, at)
 }
