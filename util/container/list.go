@@ -206,6 +206,8 @@ func (l *List[T]) remove(e *Element[T]) *Element[T] {
 	e._next = nil
 	e._prev = nil
 	e.list = nil
+	var zero T
+	e.Value = zero
 	l.cap--
 	l.gcLen--
 	return e
