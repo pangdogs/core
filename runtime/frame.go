@@ -11,7 +11,7 @@ import (
 //	@param blink 是否是瞬时运行。
 //	@return 帧。
 func NewFrame(targetFPS float32, totalFrames uint64, blink bool) Frame {
-	frame := &FrameBehavior{}
+	frame := &_FrameBehavior{}
 	frame.init(targetFPS, totalFrames, blink)
 	return frame
 }
@@ -54,8 +54,7 @@ type _Frame interface {
 	updateEnd()
 }
 
-// FrameBehavior 帧行为，在需要扩展帧能力时，匿名嵌入至帧结构体中
-type FrameBehavior struct {
+type _FrameBehavior struct {
 	targetFPS, curFPS      float32
 	totalFrames, curFrames uint64
 	blink                  bool
@@ -71,61 +70,61 @@ type FrameBehavior struct {
 }
 
 // GetTargetFPS 获取目标FPS
-func (frame *FrameBehavior) GetTargetFPS() float32 {
+func (frame *_FrameBehavior) GetTargetFPS() float32 {
 	return frame.targetFPS
 }
 
 // GetCurFPS 获取当前FPS
-func (frame *FrameBehavior) GetCurFPS() float32 {
+func (frame *_FrameBehavior) GetCurFPS() float32 {
 	return frame.curFPS
 }
 
 // GetTotalFrames 获取运行帧数上限
-func (frame *FrameBehavior) GetTotalFrames() uint64 {
+func (frame *_FrameBehavior) GetTotalFrames() uint64 {
 	return frame.totalFrames
 }
 
 // GetCurFrames 获取当前帧数
-func (frame *FrameBehavior) GetCurFrames() uint64 {
+func (frame *_FrameBehavior) GetCurFrames() uint64 {
 	return frame.curFrames
 }
 
 // Blink 是否是瞬时运行
-func (frame *FrameBehavior) Blink() bool {
+func (frame *_FrameBehavior) Blink() bool {
 	return frame.blink
 }
 
 // GetRunningBeginTime 获取运行开始时间
-func (frame *FrameBehavior) GetRunningBeginTime() time.Time {
+func (frame *_FrameBehavior) GetRunningBeginTime() time.Time {
 	return frame.runningBeginTime
 }
 
 // GetRunningElapseTime 获取运行持续时间
-func (frame *FrameBehavior) GetRunningElapseTime() time.Duration {
+func (frame *_FrameBehavior) GetRunningElapseTime() time.Duration {
 	return frame.runningElapseTime
 }
 
 // GetFrameBeginTime 获取当前帧开始时间
-func (frame *FrameBehavior) GetFrameBeginTime() time.Time {
+func (frame *_FrameBehavior) GetFrameBeginTime() time.Time {
 	return frame.frameBeginTime
 }
 
 // GetLastFrameElapseTime 获取上一帧耗时
-func (frame *FrameBehavior) GetLastFrameElapseTime() time.Duration {
+func (frame *_FrameBehavior) GetLastFrameElapseTime() time.Duration {
 	return frame.lastFrameElapseTime
 }
 
 // GetUpdateBeginTime 获取当前帧更新开始时间
-func (frame *FrameBehavior) GetUpdateBeginTime() time.Time {
+func (frame *_FrameBehavior) GetUpdateBeginTime() time.Time {
 	return frame.updateBeginTime
 }
 
 // GetLastUpdateElapseTime 获取上一次帧更新耗时
-func (frame *FrameBehavior) GetLastUpdateElapseTime() time.Duration {
+func (frame *_FrameBehavior) GetLastUpdateElapseTime() time.Duration {
 	return frame.lastUpdateElapseTime
 }
 
-func (frame *FrameBehavior) init(targetFPS float32, totalFrames uint64, blink bool) {
+func (frame *_FrameBehavior) init(targetFPS float32, totalFrames uint64, blink bool) {
 	if targetFPS <= 0 {
 		panic("targetFPS less equal 0 invalid")
 	}
@@ -143,11 +142,11 @@ func (frame *FrameBehavior) init(targetFPS float32, totalFrames uint64, blink bo
 	}
 }
 
-func (frame *FrameBehavior) setCurFrames(v uint64) {
+func (frame *_FrameBehavior) setCurFrames(v uint64) {
 	frame.curFrames = v
 }
 
-func (frame *FrameBehavior) runningBegin() {
+func (frame *_FrameBehavior) runningBegin() {
 	now := time.Now()
 
 	frame.curFPS = 0
@@ -166,13 +165,13 @@ func (frame *FrameBehavior) runningBegin() {
 	frame.lastUpdateElapseTime = 0
 }
 
-func (frame *FrameBehavior) runningEnd() {
+func (frame *_FrameBehavior) runningEnd() {
 	if frame.blink {
 		frame.curFPS = float32(float64(frame.curFrames) / time.Now().Sub(frame.runningBeginTime).Seconds())
 	}
 }
 
-func (frame *FrameBehavior) frameBegin() {
+func (frame *_FrameBehavior) frameBegin() {
 	now := time.Now()
 
 	frame.frameBeginTime = now
@@ -187,7 +186,7 @@ func (frame *FrameBehavior) frameBegin() {
 	}
 }
 
-func (frame *FrameBehavior) frameEnd() {
+func (frame *_FrameBehavior) frameEnd() {
 	if frame.blink {
 		frame.runningElapseTime += frame.blinkFrameTime
 	} else {
@@ -197,10 +196,10 @@ func (frame *FrameBehavior) frameEnd() {
 	}
 }
 
-func (frame *FrameBehavior) updateBegin() {
+func (frame *_FrameBehavior) updateBegin() {
 	frame.updateBeginTime = time.Now()
 }
 
-func (frame *FrameBehavior) updateEnd() {
+func (frame *_FrameBehavior) updateEnd() {
 	frame.lastUpdateElapseTime = time.Now().Sub(frame.updateBeginTime)
 }
