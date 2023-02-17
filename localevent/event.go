@@ -48,27 +48,34 @@ func (event *Event) Init(autoRecover bool, reportError chan error, eventRecursio
 	}
 
 	if event.inited {
-		panic("repeated init event")
+		panic("event initialized")
+	}
+
+	if event.inited {
+		panic("event initialized")
 	}
 
 	event.autoRecover = autoRecover
 	event.reportError = reportError
 	event.eventRecursion = eventRecursion
-	event.subscribers.Init(hookCache, gcCollector)
 	event.gcCollector = gcCollector
-	event.opened = true
 	event.inited = true
+
+	event.Open()
 }
 
 // Open 打开事件
 func (event *Event) Open() {
+	if !event.inited {
+		panic("event not initialized")
+	}
+
 	event.subscribers.SetGCCollector(event.gcCollector)
 	event.opened = true
 }
 
 // Close 关闭事件
 func (event *Event) Close() {
-	event.subscribers.SetGCCollector(nil)
 	event.Clean()
 	event.opened = false
 }
@@ -82,7 +89,7 @@ func (event *Event) Clean() {
 }
 
 func (event *Event) emit(fun func(delegate util.IfaceCache) bool) {
-	if fun == nil {
+	if fun == nil || !event.opened {
 		return
 	}
 

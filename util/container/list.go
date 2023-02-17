@@ -60,6 +60,15 @@ func (e *Element[T]) Escaped() bool {
 	return e.escaped
 }
 
+func (e *Element[T]) release() {
+	*e = Element[T]{}
+}
+
+// Released 是否已释放
+func (e *Element[T]) Released() bool {
+	return e.list == nil
+}
+
 type _DefaultCache[T any] struct{}
 
 func (*_DefaultCache[T]) Alloc() *Element[T] {
@@ -203,11 +212,7 @@ func (l *List[T]) insertValue(value T, at *Element[T]) *Element[T] {
 func (l *List[T]) remove(e *Element[T]) *Element[T] {
 	e._prev._next = e._next
 	e._next._prev = e._prev
-	e._next = nil
-	e._prev = nil
-	e.list = nil
-	var zero T
-	e.Value = zero
+	e.release()
 	l.cap--
 	l.gcLen--
 	return e
