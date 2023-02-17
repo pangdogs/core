@@ -14,10 +14,10 @@
 package main
 
 import (
+	"github.com/alecthomas/kingpin/v2"
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"gopkg.in/alecthomas/kingpin.v2"
 	"io/ioutil"
 	"path/filepath"
 	"strconv"

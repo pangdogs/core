@@ -1,7 +1,7 @@
 package launcher
 
 import (
-	"gopkg.in/alecthomas/kingpin.v2"
+	"github.com/alecthomas/kingpin/v2"
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/service"
 )
