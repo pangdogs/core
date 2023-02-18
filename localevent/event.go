@@ -50,10 +50,6 @@ func (event *Event) Init(autoRecover bool, reportError chan error, eventRecursio
 		panic("event initialized")
 	}
 
-	if event.inited {
-		panic("event initialized")
-	}
-
 	event.autoRecover = autoRecover
 	event.reportError = reportError
 	event.eventRecursion = eventRecursion
