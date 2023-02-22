@@ -126,11 +126,11 @@ func (frame *_FrameBehavior) GetLastUpdateElapseTime() time.Duration {
 
 func (frame *_FrameBehavior) init(targetFPS float32, totalFrames uint64, blink bool) {
 	if targetFPS <= 0 {
-		panic("targetFPS less equal 0 invalid")
+		panic("targetFPS less equal 0 is invalid")
 	}
 
 	if totalFrames < 0 {
-		panic("totalFrames less 0 invalid")
+		panic("totalFrames less 0 is invalid")
 	}
 
 	frame.targetFPS = targetFPS

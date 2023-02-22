@@ -63,15 +63,15 @@ func (entityMgr *_EntityMgr) Init(runtimeCtx Context) {
 	}
 
 	entityMgr.runtimeCtx = runtimeCtx
-	entityMgr.entityList.Init(runtimeCtx.GetFaceCache(), runtimeCtx)
+	entityMgr.entityList.Init(runtimeCtx.GetFaceAnyAllocator(), runtimeCtx)
 	entityMgr.entityMap = map[ec.ID]_EntityInfo{}
 
-	entityMgr.eventEntityMgrAddEntity.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookCache(), runtimeCtx)
-	entityMgr.eventEntityMgrRemovingEntity.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookCache(), runtimeCtx)
-	entityMgr.eventEntityMgrRemoveEntity.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookCache(), runtimeCtx)
-	entityMgr.eventEntityMgrEntityAddComponents.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookCache(), runtimeCtx)
-	entityMgr.eventEntityMgrEntityRemoveComponent.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookCache(), runtimeCtx)
-	entityMgr.eventEntityMgrEntityFirstAccessComponent.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookCache(), runtimeCtx)
+	entityMgr.eventEntityMgrAddEntity.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookAllocator(), runtimeCtx)
+	entityMgr.eventEntityMgrRemovingEntity.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookAllocator(), runtimeCtx)
+	entityMgr.eventEntityMgrRemoveEntity.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookAllocator(), runtimeCtx)
+	entityMgr.eventEntityMgrEntityAddComponents.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookAllocator(), runtimeCtx)
+	entityMgr.eventEntityMgrEntityRemoveComponent.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookAllocator(), runtimeCtx)
+	entityMgr.eventEntityMgrEntityFirstAccessComponent.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookAllocator(), runtimeCtx)
 }
 
 // GetRuntimeCtx 获取运行时上下文
@@ -133,7 +133,7 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 	}
 
 	if entity.GetState() != ec.EntityState_Birth {
-		return errors.New("entity state not birth invalid")
+		return errors.New("entity state not birth is invalid")
 	}
 
 	if entity.GetID() != util.Zero[ec.ID]() {

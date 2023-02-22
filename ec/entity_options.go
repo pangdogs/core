@@ -8,12 +8,12 @@ import (
 
 // EntityOptions 创建实体的所有选项
 type EntityOptions struct {
-	Inheritor                    util.Face[Entity]                // 继承者，在扩展实体自身能力时使用
-	Prototype                    string                           // 实体原型名称
-	PersistID                    ID                               // 实体持久化ID
-	EnableComponentAwakeByAccess bool                             // 开启组件被访问时，检测并调用Awake()
-	FaceCache                    container.Cache[util.FaceAny]    // FaceCache用于提高性能，通常传入运行时上下文选项中的FaceCache
-	HookCache                    container.Cache[localevent.Hook] // HookCache用于提高性能，通常传入运行时上下文选项中的HookCache
+	Inheritor                    util.Face[Entity]                    // 继承者，在扩展实体自身能力时使用
+	Prototype                    string                               // 实体原型名称
+	PersistID                    ID                                   // 实体持久化ID
+	EnableComponentAwakeByAccess bool                                 // 开启组件被访问时，检测并调用Awake()
+	FaceAnyAllocator             container.Allocator[util.FaceAny]    // 自定义FaceAny内存分配器，用于提高性能，通常传入运行时上下文中的FaceAnyAllocator
+	HookAllocator                container.Allocator[localevent.Hook] // 自定义Hook内存分配器，用于提高性能，通常传入运行时上下文中的HookAllocator
 }
 
 // EntityOption 创建实体的选项设置器
@@ -29,8 +29,8 @@ func (WithEntityOption) Default() EntityOption {
 		WithEntityOption{}.Prototype("")(o)
 		WithEntityOption{}.PersistID(util.Zero[ID]())(o)
 		WithEntityOption{}.EnableComponentAwakeByAccess(true)(o)
-		WithEntityOption{}.FaceCache(nil)(o)
-		WithEntityOption{}.HookCache(nil)(o)
+		WithEntityOption{}.FaceAnyAllocator(nil)(o)
+		WithEntityOption{}.HookAllocator(nil)(o)
 	}
 }
 
@@ -62,16 +62,16 @@ func (WithEntityOption) EnableComponentAwakeByAccess(v bool) EntityOption {
 	}
 }
 
-// FaceCache FaceCache用于提高性能，通常传入运行时上下文选项中的FaceCache
-func (WithEntityOption) FaceCache(v container.Cache[util.FaceAny]) EntityOption {
+// FaceAnyAllocator 自定义FaceAny内存分配器，用于提高性能，通常传入运行时上下文中的FaceAnyAllocator
+func (WithEntityOption) FaceAnyAllocator(v container.Allocator[util.FaceAny]) EntityOption {
 	return func(o *EntityOptions) {
-		o.FaceCache = v
+		o.FaceAnyAllocator = v
 	}
 }
 
-// HookCache HookCache用于提高性能，通常传入运行时上下文选项中的HookCache
-func (WithEntityOption) HookCache(v container.Cache[localevent.Hook]) EntityOption {
+// HookAllocator 自定义Hook内存分配器，用于提高性能，通常传入运行时上下文中的HookAllocator
+func (WithEntityOption) HookAllocator(v container.Allocator[localevent.Hook]) EntityOption {
 	return func(o *EntityOptions) {
-		o.HookCache = v
+		o.HookAllocator = v
 	}
 }

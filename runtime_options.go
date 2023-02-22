@@ -54,7 +54,7 @@ func (WithRuntimeOption) EnableAutoRun(v bool) RuntimeOption {
 func (WithRuntimeOption) ProcessQueueCapacity(v int) RuntimeOption {
 	return func(o *RuntimeOptions) {
 		if v <= 0 {
-			panic("ProcessQueueCapacity less equal 0 invalid")
+			panic("ProcessQueueCapacity less equal 0 is invalid")
 		}
 		o.ProcessQueueCapacity = v
 	}
@@ -85,7 +85,7 @@ func (WithRuntimeOption) Frame(v runtime.Frame) RuntimeOption {
 func (WithRuntimeOption) GCInterval(v time.Duration) RuntimeOption {
 	return func(o *RuntimeOptions) {
 		if v <= 0 {
-			panic("GCInterval less equal 0 invalid")
+			panic("GCInterval less equal 0 is invalid")
 		}
 		o.GCInterval = v
 	}

@@ -22,11 +22,11 @@ func NewEntityCreator(runtimeCtx runtime.Context, options ...pt.EntityOption) En
 		options[i](&opts)
 	}
 
-	if opts.FaceCache == nil {
-		opts.FaceCache = runtimeCtx.GetFaceCache()
+	if opts.FaceAnyAllocator == nil {
+		opts.FaceAnyAllocator = runtimeCtx.GetFaceCache()
 	}
-	if opts.HookCache == nil {
-		opts.HookCache = runtimeCtx.GetHookCache()
+	if opts.HookAllocator == nil {
+		opts.HookAllocator = runtimeCtx.GetHookCache()
 	}
 
 	return EntityCreator{

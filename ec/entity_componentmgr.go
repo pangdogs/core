@@ -212,10 +212,10 @@ func (entity *EntityBehavior) addSingleComponent(name string, component Componen
 	}
 
 	if component.GetState() != ComponentState_Birth {
-		return errors.New("component state not birth invalid")
+		return errors.New("component state not birth is invalid")
 	}
 
-	component.init(name, entity.opts.Inheritor.Iface, component, entity.opts.HookCache)
+	component.init(name, entity.opts.Inheritor.Iface, component, entity.opts.HookAllocator)
 
 	face := util.NewFacePair[any](component, component)
 

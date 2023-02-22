@@ -10,19 +10,19 @@ import (
 
 // ContextOptions 创建运行时上下文的所有选项
 type ContextOptions struct {
-	Inheritor          util.Face[Context]               // 继承者，需要扩展运行时上下文自身能力时需要使用
-	Context            context.Context                  // 父Context
-	AutoRecover        bool                             // 是否开启panic时自动恢复
-	ReportError        chan error                       // panic时错误写入的error channel
-	Name               string                           // 运行时名称
-	PluginBundle       plugin.PluginBundle              // 插件包
-	StartedCallback    func(runtimeCtx Context)         // 启动运行时回调函数
-	StoppingCallback   func(runtimeCtx Context)         // 开始停止运行时回调函数
-	StoppedCallback    func(runtimeCtx Context)         // 完全停止运行时回调函数
-	FrameBeginCallback func(runtimeCtx Context)         // 帧开始时的回调函数
-	FrameEndCallback   func(runtimeCtx Context)         // 帧结束时的回调函数
-	FaceCache          container.Cache[util.FaceAny]    // Face缓存，用于提高性能
-	HookCache          container.Cache[localevent.Hook] // Hook缓存，用于提高性能
+	Inheritor          util.Face[Context]                   // 继承者，需要扩展运行时上下文自身能力时需要使用
+	Context            context.Context                      // 父Context
+	AutoRecover        bool                                 // 是否开启panic时自动恢复
+	ReportError        chan error                           // panic时错误写入的error channel
+	Name               string                               // 运行时名称
+	PluginBundle       plugin.PluginBundle                  // 插件包
+	StartedCallback    func(runtimeCtx Context)             // 启动运行时回调函数
+	StoppingCallback   func(runtimeCtx Context)             // 开始停止运行时回调函数
+	StoppedCallback    func(runtimeCtx Context)             // 完全停止运行时回调函数
+	FrameBeginCallback func(runtimeCtx Context)             // 帧开始时的回调函数
+	FrameEndCallback   func(runtimeCtx Context)             // 帧结束时的回调函数
+	FaceAnyAllocator   container.Allocator[util.FaceAny]    // 自定义FaceAny内存分配器，用于提高性能
+	HookAllocator      container.Allocator[localevent.Hook] // 自定义Hook内存分配器，用于提高性能
 }
 
 // ContextOption 创建运行时上下文的选项设置器
@@ -45,8 +45,8 @@ func (WithContextOption) Default() ContextOption {
 		WithContextOption{}.StoppedCallback(nil)(o)
 		WithContextOption{}.FrameBeginCallback(nil)(o)
 		WithContextOption{}.FrameEndCallback(nil)(o)
-		WithContextOption{}.FaceCache(nil)(o)
-		WithContextOption{}.HookCache(nil)(o)
+		WithContextOption{}.FaceAnyAllocator(nil)(o)
+		WithContextOption{}.HookAllocator(nil)(o)
 	}
 }
 
@@ -127,16 +127,16 @@ func (WithContextOption) FrameEndCallback(v func(runtimeCtx Context)) ContextOpt
 	}
 }
 
-// FaceCache Face缓存，用于提高性能
-func (WithContextOption) FaceCache(v container.Cache[util.FaceAny]) ContextOption {
+// FaceAnyAllocator 自定义FaceAny内存分配器，用于提高性能
+func (WithContextOption) FaceAnyAllocator(v container.Allocator[util.FaceAny]) ContextOption {
 	return func(o *ContextOptions) {
-		o.FaceCache = v
+		o.FaceAnyAllocator = v
 	}
 }
 
-// HookCache Hook缓存，用于提高性能
-func (WithContextOption) HookCache(v container.Cache[localevent.Hook]) ContextOption {
+// HookAllocator 自定义Hook内存分配器，用于提高性能
+func (WithContextOption) HookAllocator(v container.Allocator[localevent.Hook]) ContextOption {
 	return func(o *ContextOptions) {
-		o.HookCache = v
+		o.HookAllocator = v
 	}
 }

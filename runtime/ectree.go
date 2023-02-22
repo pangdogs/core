@@ -76,8 +76,8 @@ func (ecTree *ECTree) init(runtimeCtx Context, masterTree bool) {
 	ecTree.runtimeCtx = runtimeCtx
 	ecTree.masterTree = masterTree
 	ecTree.ecTree = map[ec.ID]_ECNode{}
-	ecTree.eventECTreeAddChild.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.getOptions().HookCache, runtimeCtx)
-	ecTree.eventECTreeRemoveChild.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.getOptions().HookCache, runtimeCtx)
+	ecTree.eventECTreeAddChild.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.getOptions().HookAllocator, runtimeCtx)
+	ecTree.eventECTreeRemoveChild.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.getOptions().HookAllocator, runtimeCtx)
 
 	var priority int32
 	if !ecTree.masterTree {
@@ -98,7 +98,7 @@ func (ecTree *ECTree) GetRuntimeCtx() Context {
 // AddChild 子实体加入父实体，在实体加入运行时上下文后调用，切换父实体时，先调用RemoveChild()离开旧父实体，再调用AddChild()加入新父实体
 func (ecTree *ECTree) AddChild(parentID, childID ec.ID) error {
 	if parentID == childID {
-		return errors.New("parentID equal childID invalid")
+		return errors.New("parentID equal childID is invalid")
 	}
 
 	parent, ok := ecTree.runtimeCtx.GetEntityMgr().GetEntity(parentID)
@@ -109,7 +109,7 @@ func (ecTree *ECTree) AddChild(parentID, childID ec.ID) error {
 	switch parent.GetState() {
 	case ec.EntityState_Init, ec.EntityState_Start, ec.EntityState_Living:
 	default:
-		return errors.New("parent state not init or living invalid")
+		return errors.New("parent state not init or living is invalid")
 	}
 
 	child, ok := ecTree.runtimeCtx.GetEntityMgr().GetEntity(childID)
@@ -120,7 +120,7 @@ func (ecTree *ECTree) AddChild(parentID, childID ec.ID) error {
 	switch child.GetState() {
 	case ec.EntityState_Init, ec.EntityState_Start, ec.EntityState_Living:
 	default:
-		return errors.New("parent state not init or living invalid")
+		return errors.New("parent state not init or living is invalid")
 	}
 
 	if _, ok = ecTree.ecTree[childID]; ok {
@@ -129,7 +129,7 @@ func (ecTree *ECTree) AddChild(parentID, childID ec.ID) error {
 
 	node, ok := ecTree.ecTree[parentID]
 	if !ok || node.Children == nil {
-		node.Children = container.NewList[util.FaceAny](ecTree.runtimeCtx.getOptions().FaceCache, ecTree.runtimeCtx)
+		node.Children = container.NewList[util.FaceAny](ecTree.runtimeCtx.getOptions().FaceAnyAllocator, ecTree.runtimeCtx)
 		ecTree.ecTree[parentID] = node
 	}
 

@@ -64,14 +64,14 @@ func entityExist(entity ec.Entity) bool
 
 func checkEntityID(entityID ec.ID) error {
 	if entityID == util.Zero[ec.ID]() {
-		return errors.New("entity id is zero invalid")
+		return errors.New("entity id equal zero is invalid")
 	}
 	return nil
 }
 
 func checkEntitySerialNo(entitySerialNo int64) error {
 	if entitySerialNo <= 0 {
-		return errors.New("entity serial no less equal 0 invalid")
+		return errors.New("entity serial no less equal 0 is invalid")
 	}
 	return nil
 }

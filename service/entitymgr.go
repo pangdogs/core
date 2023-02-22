@@ -78,7 +78,7 @@ func (entityMgr *_EntityMgr) GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, 
 	}
 
 	if entity.GetID() == util.Zero[ec.ID]() {
-		return nil, false, errors.New("entity id is zero invalid")
+		return nil, false, errors.New("entity id equal zero is invalid")
 	}
 
 	if ec.UnsafeEntity(entity).GetContext() == util.NilIfaceCache {
@@ -96,7 +96,7 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity) error {
 	}
 
 	if entity.GetID() == util.Zero[ec.ID]() {
-		return errors.New("entity id is zero invalid")
+		return errors.New("entity id equal zero is invalid")
 	}
 
 	if ec.UnsafeEntity(entity).GetContext() == util.NilIfaceCache {

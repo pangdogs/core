@@ -53,10 +53,10 @@ type Context interface {
 	GetEntityMgr() IEntityMgr
 	// GetECTree 获取主EC树
 	GetECTree() IECTree
-	// GetFaceCache 获取Face缓存
-	GetFaceCache() container.Cache[util.FaceAny]
-	// GetHookCache 获取Hook缓存
-	GetHookCache() container.Cache[localevent.Hook]
+	// GetFaceAnyAllocator 获取FaceAny内存分配器
+	GetFaceAnyAllocator() container.Allocator[util.FaceAny]
+	// GetHookAllocator 获取Hook内存分配器
+	GetHookAllocator() container.Allocator[localevent.Hook]
 }
 
 type _Context interface {
@@ -104,14 +104,14 @@ func (ctx *ContextBehavior) GetECTree() IECTree {
 	return &ctx.ecTree
 }
 
-// GetFaceCache 获取Face缓存
-func (ctx *ContextBehavior) GetFaceCache() container.Cache[util.FaceAny] {
-	return ctx.opts.FaceCache
+// GetFaceAnyAllocator 获取FaceAny内存分配器
+func (ctx *ContextBehavior) GetFaceAnyAllocator() container.Allocator[util.FaceAny] {
+	return ctx.opts.FaceAnyAllocator
 }
 
-// GetHookCache 获取Hook缓存
-func (ctx *ContextBehavior) GetHookCache() container.Cache[localevent.Hook] {
-	return ctx.opts.HookCache
+// GetHookAllocator 获取Hook内存分配器
+func (ctx *ContextBehavior) GetHookAllocator() container.Allocator[localevent.Hook] {
+	return ctx.opts.HookAllocator
 }
 
 // CollectGC 收集GC

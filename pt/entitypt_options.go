@@ -59,17 +59,17 @@ func (WithEntityOption) EnableComponentAwakeByAccess(v bool) EntityOption {
 	}
 }
 
-// FaceCache FaceCache用于提高性能，通常传入运行时上下文选项中的FaceCache
-func (WithEntityOption) FaceCache(v container.Cache[util.FaceAny]) EntityOption {
+// FaceAnyAllocator 自定义FaceAny内存分配器，用于提高性能，通常传入运行时上下文中的FaceAnyAllocator
+func (WithEntityOption) FaceAnyAllocator(v container.Allocator[util.FaceAny]) EntityOption {
 	return func(o *EntityOptions) {
-		ec.WithEntityOption{}.FaceCache(v)(&o.EntityOptions)
+		ec.WithEntityOption{}.FaceAnyAllocator(v)(&o.EntityOptions)
 	}
 }
 
-// HookCache HookCache用于提高性能，通常传入运行时上下文选项中的HookCache
-func (WithEntityOption) HookCache(v container.Cache[localevent.Hook]) EntityOption {
+// HookAllocator 自定义Hook内存分配器，用于提高性能，通常传入运行时上下文中的HookAllocator
+func (WithEntityOption) HookAllocator(v container.Allocator[localevent.Hook]) EntityOption {
 	return func(o *EntityOptions) {
-		ec.WithEntityOption{}.HookCache(v)(&o.EntityOptions)
+		ec.WithEntityOption{}.HookAllocator(v)(&o.EntityOptions)
 	}
 }
 

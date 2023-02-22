@@ -60,42 +60,46 @@ func (e *Element[T]) Escaped() bool {
 	return e.escaped
 }
 
+// release 从链表中释放
 func (e *Element[T]) release() {
 	*e = Element[T]{}
 }
 
-// Released 是否已释放
+// Released 是否已从链表中释放
 func (e *Element[T]) Released() bool {
 	return e.list == nil
 }
 
-type _DefaultCache[T any] struct{}
+type _DefaultAllocator[T any] struct{}
 
-func (*_DefaultCache[T]) Alloc() *Element[T] {
+func (*_DefaultAllocator[T]) Alloc() *Element[T] {
 	return &Element[T]{}
 }
 
 // NewList 创建链表
-func NewList[T any](cache Cache[T], gcCollector GCCollector) *List[T] {
-	return new(List[T]).Init(cache, gcCollector)
+func NewList[T any](allocator Allocator[T], collector GCCollector) *List[T] {
+	return new(List[T]).Init(allocator, collector)
 }
 
 // List 链表，非线程安全，支持在遍历过程中删除元素
 type List[T any] struct {
-	cache       Cache[T]
-	root        Element[T]
-	cap, gcLen  int
-	gcCollector GCCollector
+	allocator  Allocator[T]
+	collector  GCCollector
+	root       Element[T]
+	cap, gcLen int
 }
 
 // Init 初始化
-func (l *List[T]) Init(cache Cache[T], gcCollector GCCollector) *List[T] {
-	if cache == nil {
-		l.cache = (*_DefaultCache[T])(nil)
-	} else {
-		l.cache = cache
+func (l *List[T]) Init(allocator Allocator[T], collector GCCollector) *List[T] {
+	if collector == nil {
+		panic("nil collector")
 	}
-	l.gcCollector = gcCollector
+	if allocator == nil {
+		l.allocator = (*_DefaultAllocator[T])(nil)
+	} else {
+		l.allocator = allocator
+	}
+	l.collector = collector
 	l.root._next = &l.root
 	l.root._prev = &l.root
 	l.cap = 0
@@ -103,28 +107,14 @@ func (l *List[T]) Init(cache Cache[T], gcCollector GCCollector) *List[T] {
 	return l
 }
 
-// SetCache 设置缓存
-func (l *List[T]) SetCache(cache Cache[T]) {
-	l.cache = cache
+// GetAllocator 获取链表内存分配器
+func (l *List[T]) GetAllocator() Allocator[T] {
+	return l.allocator
 }
 
-// GetCache 获取缓存
-func (l *List[T]) GetCache() Cache[T] {
-	return l.cache
-}
-
-// SetGCCollector 设置GC收集器
-func (l *List[T]) SetGCCollector(gcCollector GCCollector) {
-	l.gcCollector = gcCollector
-
-	if l.gcCollector != nil {
-		l.gcCollector.CollectGC(l)
-	}
-}
-
-// GetGCCollector 获取GC收集器
-func (l *List[T]) GetGCCollector() GCCollector {
-	return l.gcCollector
+// GetCollector 获取GC收集器
+func (l *List[T]) GetCollector() GCCollector {
+	return l.collector
 }
 
 // GC 执行GC
@@ -152,8 +142,8 @@ func (l *List[T]) NeedGC() bool {
 // markGC 标记需要GC
 func (l *List[T]) markGC() {
 	l.gcLen++
-	if l.gcLen == 1 && l.gcCollector != nil {
-		l.gcCollector.CollectGC(l)
+	if l.gcLen == 1 {
+		l.collector.CollectGC(l)
 	}
 }
 
@@ -183,13 +173,6 @@ func (l *List[T]) Back() *Element[T] {
 	return l.root._prev
 }
 
-// lazyInit 迟滞初始化
-func (l *List[T]) lazyInit() {
-	if l.root._next == nil {
-		l.Init(nil, nil)
-	}
-}
-
 // insert 插入元素
 func (l *List[T]) insert(e, at *Element[T]) *Element[T] {
 	e._prev = at
@@ -203,7 +186,7 @@ func (l *List[T]) insert(e, at *Element[T]) *Element[T] {
 
 // insertValue 插入数据
 func (l *List[T]) insertValue(value T, at *Element[T]) *Element[T] {
-	e := l.cache.Alloc()
+	e := l.allocator.Alloc()
 	e.Value = value
 	return l.insert(e, at)
 }
@@ -244,13 +227,11 @@ func (l *List[T]) Remove(e *Element[T]) T {
 
 // PushFront 在链表头部插入数据
 func (l *List[T]) PushFront(value T) *Element[T] {
-	l.lazyInit()
 	return l.insertValue(value, &l.root)
 }
 
 // PushBack 在链表尾部插入数据
 func (l *List[T]) PushBack(value T) *Element[T] {
-	l.lazyInit()
 	return l.insertValue(value, l.root._prev)
 }
 
@@ -304,7 +285,6 @@ func (l *List[T]) MoveAfter(e, mark *Element[T]) {
 
 // PushBackList 在链表尾部插入其他链表
 func (l *List[T]) PushBackList(other *List[T]) {
-	l.lazyInit()
 	for i, e := other.Cap(), other.Front(); i > 0; i, e = i-1, e.next() {
 		l.insertValue(e.Value, l.root._prev)
 	}
@@ -312,7 +292,6 @@ func (l *List[T]) PushBackList(other *List[T]) {
 
 // PushFrontList 在链表头部插入其他链表
 func (l *List[T]) PushFrontList(other *List[T]) {
-	l.lazyInit()
 	for i, e := other.Cap(), other.Back(); i > 0; i, e = i-1, e.prev() {
 		l.insertValue(e.Value, &l.root)
 	}
