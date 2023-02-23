@@ -70,36 +70,29 @@ func (e *Element[T]) Released() bool {
 	return e.list == nil
 }
 
-type _DefaultAllocator[T any] struct{}
-
-func (*_DefaultAllocator[T]) Alloc() *Element[T] {
-	return &Element[T]{}
-}
-
 // NewList 创建链表
-func NewList[T any](allocator Allocator[T], collector GCCollector) *List[T] {
-	return new(List[T]).Init(allocator, collector)
+func NewList[T any](allocator Allocator[T], gcCollector GCCollector) *List[T] {
+	return new(List[T]).Init(allocator, gcCollector)
 }
 
 // List 链表，非线程安全，支持在遍历过程中删除元素
 type List[T any] struct {
-	allocator  Allocator[T]
-	collector  GCCollector
-	root       Element[T]
-	cap, gcLen int
+	allocator   Allocator[T]
+	gcCollector GCCollector
+	root        Element[T]
+	cap, gcLen  int
 }
 
 // Init 初始化
-func (l *List[T]) Init(allocator Allocator[T], collector GCCollector) *List[T] {
-	if collector == nil {
-		panic("nil collector")
-	}
+func (l *List[T]) Init(allocator Allocator[T], gcCollector GCCollector) *List[T] {
 	if allocator == nil {
-		l.allocator = (*_DefaultAllocator[T])(nil)
-	} else {
-		l.allocator = allocator
+		panic("nil allocator")
 	}
-	l.collector = collector
+	if gcCollector == nil {
+		panic("nil gcCollector")
+	}
+	l.allocator = allocator
+	l.gcCollector = gcCollector
 	l.root._next = &l.root
 	l.root._prev = &l.root
 	l.cap = 0
@@ -112,9 +105,9 @@ func (l *List[T]) GetAllocator() Allocator[T] {
 	return l.allocator
 }
 
-// GetCollector 获取GC收集器
-func (l *List[T]) GetCollector() GCCollector {
-	return l.collector
+// GetGCCollector 获取GC收集器
+func (l *List[T]) GetGCCollector() GCCollector {
+	return l.gcCollector
 }
 
 // GC 执行GC
@@ -143,7 +136,7 @@ func (l *List[T]) NeedGC() bool {
 func (l *List[T]) markGC() {
 	l.gcLen++
 	if l.gcLen == 1 {
-		l.collector.CollectGC(l)
+		l.gcCollector.CollectGC(l)
 	}
 }
 

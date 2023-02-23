@@ -45,8 +45,8 @@ func (WithContextOption) Default() ContextOption {
 		WithContextOption{}.StoppedCallback(nil)(o)
 		WithContextOption{}.FrameBeginCallback(nil)(o)
 		WithContextOption{}.FrameEndCallback(nil)(o)
-		WithContextOption{}.FaceAnyAllocator(nil)(o)
-		WithContextOption{}.HookAllocator(nil)(o)
+		WithContextOption{}.FaceAnyAllocator(container.DefaultAllocator[util.FaceAny]())(o)
+		WithContextOption{}.HookAllocator(container.DefaultAllocator[localevent.Hook]())(o)
 	}
 }
 
@@ -130,6 +130,9 @@ func (WithContextOption) FrameEndCallback(v func(runtimeCtx Context)) ContextOpt
 // FaceAnyAllocator 自定义FaceAny内存分配器，用于提高性能
 func (WithContextOption) FaceAnyAllocator(v container.Allocator[util.FaceAny]) ContextOption {
 	return func(o *ContextOptions) {
+		if v == nil {
+			panic("nil allocator")
+		}
 		o.FaceAnyAllocator = v
 	}
 }
@@ -137,6 +140,9 @@ func (WithContextOption) FaceAnyAllocator(v container.Allocator[util.FaceAny]) C
 // HookAllocator 自定义Hook内存分配器，用于提高性能
 func (WithContextOption) HookAllocator(v container.Allocator[localevent.Hook]) ContextOption {
 	return func(o *ContextOptions) {
+		if v == nil {
+			panic("nil allocator")
+		}
 		o.HookAllocator = v
 	}
 }
