@@ -25,7 +25,7 @@ type IEvent interface {
 	emit(fun func(delegate util.IfaceCache) bool)
 	newHook(delegateFace util.FaceAny, priority int32) Hook
 	removeDelegate(delegate any)
-	setGCCollector(gcCollect container.GCCollector)
+	setGCCollector(gcCollector container.GCCollector)
 	gc()
 }
 
@@ -189,8 +189,8 @@ func (event *Event) removeDelegate(delegate any) {
 	})
 }
 
-func (event *Event) setGCCollector(gcCollect container.GCCollector) {
-	event.subscribers.SetGCCollector(gcCollect)
+func (event *Event) setGCCollector(gcCollector container.GCCollector) {
+	event.subscribers.SetGCCollector(gcCollector)
 }
 
 func (event *Event) gc() {

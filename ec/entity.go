@@ -61,7 +61,7 @@ type _Entity interface {
 	setSerialNo(sn int64)
 	setContext(ctx util.IfaceCache)
 	getChangedVersion() int64
-	setGCCollector(gcCollect container.GCCollector)
+	setGCCollector(gcCollector container.GCCollector)
 	getGCCollector() container.GCCollector
 	setParent(parent Entity)
 	setState(state EntityState)
@@ -176,23 +176,23 @@ func (entity *EntityBehavior) getChangedVersion() int64 {
 	return entity.changedVersion
 }
 
-func (entity *EntityBehavior) setGCCollector(gcCollect container.GCCollector) {
-	if entity.opts.GCCollector == gcCollect {
+func (entity *EntityBehavior) setGCCollector(gcCollector container.GCCollector) {
+	if entity.opts.GCCollector == gcCollector {
 		return
 	}
 
-	entity.opts.GCCollector = gcCollect
+	entity.opts.GCCollector = gcCollector
 
-	entity.componentList.SetGCCollector(gcCollect)
+	entity.componentList.SetGCCollector(gcCollector)
 	entity.componentList.Traversal(func(e *container.Element[util.FaceAny]) bool {
 		comp := util.Cache2Iface[Component](e.Value.Cache)
-		comp.setGCCollector(gcCollect)
+		comp.setGCCollector(gcCollector)
 		return true
 	})
 
-	localevent.UnsafeEvent(&entity._eventEntityDestroySelf).SetGCCollector(gcCollect)
-	localevent.UnsafeEvent(&entity.eventCompMgrAddComponents).SetGCCollector(gcCollect)
-	localevent.UnsafeEvent(&entity.eventCompMgrRemoveComponent).SetGCCollector(gcCollect)
+	localevent.UnsafeEvent(&entity._eventEntityDestroySelf).SetGCCollector(gcCollector)
+	localevent.UnsafeEvent(&entity.eventCompMgrAddComponents).SetGCCollector(gcCollector)
+	localevent.UnsafeEvent(&entity.eventCompMgrRemoveComponent).SetGCCollector(gcCollector)
 }
 
 func (entity *EntityBehavior) getGCCollector() container.GCCollector {

@@ -57,8 +57,8 @@ func (uc _UnsafeComponent) GetInheritor() Component {
 	return uc.getInheritor()
 }
 
-func (uc _UnsafeComponent) SetGCCollector(gcCollect container.GCCollector) {
-	uc.setGCCollector(gcCollect)
+func (uc _UnsafeComponent) SetGCCollector(gcCollector container.GCCollector) {
+	uc.setGCCollector(gcCollector)
 }
 
 func (uc _UnsafeComponent) EventComponentDestroySelf() localevent.IEvent {

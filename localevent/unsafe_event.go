@@ -27,8 +27,8 @@ func (ue _UnsafeEvent) RemoveDelegate(delegate any) {
 	ue.removeDelegate(delegate)
 }
 
-func (ue _UnsafeEvent) SetGCCollector(gcCollect container.GCCollector) {
-	ue.setGCCollector(gcCollect)
+func (ue _UnsafeEvent) SetGCCollector(gcCollector container.GCCollector) {
+	ue.setGCCollector(gcCollector)
 }
 
 func (ue _UnsafeEvent) GC() {
