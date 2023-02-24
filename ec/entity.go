@@ -144,12 +144,12 @@ func (entity *EntityBehavior) init(opts *EntityOptions) {
 	}
 
 	entity.id = entity.opts.PersistID
-	entity.componentList.Init(entity.opts.FaceAnyAllocator, opts.GCCollector)
+	entity.componentList.Init(entity.opts.FaceAnyAllocator, entity.opts.GCCollector)
 
-	entity._eventEntityDestroySelf.Init(false, nil, localevent.EventRecursion_NotEmit, opts.HookAllocator, opts.GCCollector)
-	entity.eventCompMgrAddComponents.Init(false, nil, localevent.EventRecursion_Allow, opts.HookAllocator, opts.GCCollector)
-	entity.eventCompMgrRemoveComponent.Init(false, nil, localevent.EventRecursion_Allow, opts.HookAllocator, opts.GCCollector)
-	entity.eventCompMgrFirstAccessComponent.Init(false, nil, localevent.EventRecursion_Allow, opts.HookAllocator, opts.GCCollector)
+	entity._eventEntityDestroySelf.Init(false, nil, localevent.EventRecursion_NotEmit, entity.opts.HookAllocator, entity.opts.GCCollector)
+	entity.eventCompMgrAddComponents.Init(false, nil, localevent.EventRecursion_Allow, entity.opts.HookAllocator, entity.opts.GCCollector)
+	entity.eventCompMgrRemoveComponent.Init(false, nil, localevent.EventRecursion_Allow, entity.opts.HookAllocator, entity.opts.GCCollector)
+	entity.eventCompMgrFirstAccessComponent.Init(false, nil, localevent.EventRecursion_Allow, entity.opts.HookAllocator, entity.opts.GCCollector)
 }
 
 func (entity *EntityBehavior) getOptions() *EntityOptions {
