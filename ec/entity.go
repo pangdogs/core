@@ -35,8 +35,6 @@ func UnsafeNewEntity(options EntityOptions) Entity {
 // Entity 实体接口
 type Entity interface {
 	_Entity
-	_InnerGC
-	_InnerGCCollector
 	_ComponentMgr
 	ContextResolver
 
@@ -76,7 +74,6 @@ type EntityBehavior struct {
 	serialNo                         int64
 	opts                             EntityOptions
 	context                          util.IfaceCache
-	gcCollector                      container.GCCollector
 	parent                           Entity
 	componentList                    container.List[util.FaceAny]
 	changedVersion                   int64
@@ -85,7 +82,6 @@ type EntityBehavior struct {
 	eventCompMgrAddComponents        localevent.Event
 	eventCompMgrRemoveComponent      localevent.Event
 	eventCompMgrFirstAccessComponent localevent.Event
-	innerGC                          _EntityInnerGC
 }
 
 // GetID 获取实体ID
@@ -147,15 +143,13 @@ func (entity *EntityBehavior) init(opts *EntityOptions) {
 		entity.opts.Inheritor = util.NewFace[Entity](entity)
 	}
 
-	entity.innerGC.Init(entity)
-
 	entity.id = entity.opts.PersistID
-	entity.componentList.Init(entity.opts.FaceAnyAllocator, &entity.innerGC)
+	entity.componentList.Init(entity.opts.FaceAnyAllocator, opts.GCCollector)
 
-	entity._eventEntityDestroySelf.Init(false, nil, localevent.EventRecursion_NotEmit, opts.HookAllocator, &entity.innerGC)
-	entity.eventCompMgrAddComponents.Init(false, nil, localevent.EventRecursion_Allow, opts.HookAllocator, &entity.innerGC)
-	entity.eventCompMgrRemoveComponent.Init(false, nil, localevent.EventRecursion_Allow, opts.HookAllocator, &entity.innerGC)
-	entity.eventCompMgrFirstAccessComponent.Init(false, nil, localevent.EventRecursion_Allow, opts.HookAllocator, &entity.innerGC)
+	entity._eventEntityDestroySelf.Init(false, nil, localevent.EventRecursion_NotEmit, opts.HookAllocator, opts.GCCollector)
+	entity.eventCompMgrAddComponents.Init(false, nil, localevent.EventRecursion_Allow, opts.HookAllocator, opts.GCCollector)
+	entity.eventCompMgrRemoveComponent.Init(false, nil, localevent.EventRecursion_Allow, opts.HookAllocator, opts.GCCollector)
+	entity.eventCompMgrFirstAccessComponent.Init(false, nil, localevent.EventRecursion_Allow, opts.HookAllocator, opts.GCCollector)
 }
 
 func (entity *EntityBehavior) getOptions() *EntityOptions {
@@ -183,11 +177,26 @@ func (entity *EntityBehavior) getChangedVersion() int64 {
 }
 
 func (entity *EntityBehavior) setGCCollector(gcCollect container.GCCollector) {
-	entity.gcCollector = gcCollect
+	if entity.opts.GCCollector == gcCollect {
+		return
+	}
+
+	entity.opts.GCCollector = gcCollect
+
+	entity.componentList.SetGCCollector(gcCollect)
+	entity.componentList.Traversal(func(e *container.Element[util.FaceAny]) bool {
+		comp := util.Cache2Iface[Component](e.Value.Cache)
+		comp.setGCCollector(gcCollect)
+		return true
+	})
+
+	localevent.UnsafeEvent(&entity._eventEntityDestroySelf).SetGCCollector(gcCollect)
+	localevent.UnsafeEvent(&entity.eventCompMgrAddComponents).SetGCCollector(gcCollect)
+	localevent.UnsafeEvent(&entity.eventCompMgrRemoveComponent).SetGCCollector(gcCollect)
 }
 
 func (entity *EntityBehavior) getGCCollector() container.GCCollector {
-	return entity.gcCollector
+	return entity.opts.GCCollector
 }
 
 func (entity *EntityBehavior) setParent(parent Entity) {
@@ -203,12 +212,4 @@ func (entity *EntityBehavior) setState(state EntityState) {
 
 func (entity *EntityBehavior) eventEntityDestroySelf() localevent.IEvent {
 	return &entity._eventEntityDestroySelf
-}
-
-func (entity *EntityBehavior) getInnerGC() container.GC {
-	return &entity.innerGC
-}
-
-func (entity *EntityBehavior) getInnerGCCollector() container.GCCollector {
-	return &entity.innerGC
 }

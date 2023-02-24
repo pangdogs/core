@@ -12,8 +12,6 @@ import (
 // Component 组件接口
 type Component interface {
 	_Component
-	_InnerGC
-	_InnerGCCollector
 	ContextResolver
 
 	// GetID 获取组件ID
@@ -33,7 +31,7 @@ type Component interface {
 }
 
 type _Component interface {
-	init(name string, entity Entity, inheritor Component, hookAllocator container.Allocator[localevent.Hook])
+	init(name string, entity Entity, inheritor Component, hookAllocator container.Allocator[localevent.Hook], gcCollector container.GCCollector)
 	setID(id ID)
 	setSerialNo(sn int64)
 	setFixed(v bool)
@@ -42,6 +40,7 @@ type _Component interface {
 	setReflectValue(v reflect.Value)
 	getReflectValue() reflect.Value
 	getInheritor() Component
+	setGCCollector(gcCollect container.GCCollector)
 	eventComponentDestroySelf() localevent.IEvent
 }
 
@@ -56,7 +55,6 @@ type ComponentBehavior struct {
 	state                      ComponentState
 	reflectValue               reflect.Value
 	_eventComponentDestroySelf localevent.Event
-	innerGC                    _ComponentInnerGC
 }
 
 // GetID 获取组件ID
@@ -107,12 +105,11 @@ func (comp *ComponentBehavior) String() string {
 		comp.GetState())
 }
 
-func (comp *ComponentBehavior) init(name string, entity Entity, inheritor Component, hookAllocator container.Allocator[localevent.Hook]) {
-	comp.innerGC.Init(comp)
+func (comp *ComponentBehavior) init(name string, entity Entity, inheritor Component, hookAllocator container.Allocator[localevent.Hook], gcCollector container.GCCollector) {
 	comp.name = name
 	comp.entity = entity
 	comp.inheritor = inheritor
-	comp._eventComponentDestroySelf.Init(false, nil, localevent.EventRecursion_NotEmit, hookAllocator, &comp.innerGC)
+	comp._eventComponentDestroySelf.Init(false, nil, localevent.EventRecursion_NotEmit, hookAllocator, gcCollector)
 }
 
 func (comp *ComponentBehavior) setID(id ID) {
@@ -160,14 +157,10 @@ func (comp *ComponentBehavior) getInheritor() Component {
 	return comp.inheritor
 }
 
+func (comp *ComponentBehavior) setGCCollector(gcCollect container.GCCollector) {
+	localevent.UnsafeEvent(&comp._eventComponentDestroySelf).SetGCCollector(gcCollect)
+}
+
 func (comp *ComponentBehavior) eventComponentDestroySelf() localevent.IEvent {
 	return &comp._eventComponentDestroySelf
-}
-
-func (comp *ComponentBehavior) getInnerGC() container.GC {
-	return &comp.innerGC
-}
-
-func (comp *ComponentBehavior) getInnerGCCollector() container.GCCollector {
-	return &comp.innerGC
 }

@@ -215,7 +215,7 @@ func (entity *EntityBehavior) addSingleComponent(name string, component Componen
 		return errors.New("component state not birth is invalid")
 	}
 
-	component.init(name, entity.opts.Inheritor.Iface, component, entity.opts.HookAllocator)
+	component.init(name, entity.opts.Inheritor.Iface, component, entity.opts.HookAllocator, entity.opts.GCCollector)
 
 	face := util.NewFacePair[any](component, component)
 
@@ -235,7 +235,6 @@ func (entity *EntityBehavior) addSingleComponent(name string, component Componen
 	}
 
 	component.setState(ComponentState_Attach)
-	entity.getInnerGCCollector().CollectGC(component.getInnerGC())
 
 	entity.changedVersion++
 

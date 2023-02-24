@@ -36,7 +36,6 @@ func UnsafeNewContext(serviceCtx service.Context, options ContextOptions) Contex
 // Context 运行时上下文接口
 type Context interface {
 	_Context
-	_InnerGC
 	container.GCCollector
 	internal.Context
 	internal.RunningMark
@@ -63,6 +62,7 @@ type _Context interface {
 	init(serviceCtx service.Context, opts *ContextOptions)
 	getOptions() *ContextOptions
 	setFrame(frame Frame)
+	gc()
 }
 
 // ContextBehavior 运行时上下文行为，在需要扩展运行时上下文能力时，匿名嵌入至运行时上下文结构体中
@@ -76,7 +76,6 @@ type ContextBehavior struct {
 	ecTree     ECTree
 	callee     internal.Callee
 	gcList     []container.GC
-	innerGC    _ContextInnerGC
 }
 
 // GetName 获取名称
@@ -142,8 +141,6 @@ func (ctx *ContextBehavior) init(serviceCtx service.Context, opts *ContextOption
 		ctx.opts.Context = serviceCtx
 	}
 
-	ctx.innerGC.Init(ctx)
-
 	internal.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
 	ctx.serviceCtx = serviceCtx
 	ctx.entityMgr.Init(ctx.getOptions().Inheritor.Iface)
@@ -156,8 +153,4 @@ func (ctx *ContextBehavior) getOptions() *ContextOptions {
 
 func (ctx *ContextBehavior) setFrame(frame Frame) {
 	ctx.frame = frame
-}
-
-func (ctx *ContextBehavior) getInnerGC() container.GC {
-	return &ctx.innerGC
 }

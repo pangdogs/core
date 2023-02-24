@@ -14,6 +14,7 @@ type EntityOptions struct {
 	EnableComponentAwakeByAccess bool                                 // 开启组件被访问时，检测并调用Awake()
 	FaceAnyAllocator             container.Allocator[util.FaceAny]    // 自定义FaceAny内存分配器，用于提高性能，通常传入运行时上下文中的FaceAnyAllocator
 	HookAllocator                container.Allocator[localevent.Hook] // 自定义Hook内存分配器，用于提高性能，通常传入运行时上下文中的HookAllocator
+	GCCollector                  container.GCCollector                // 自定义GC收集器，通常不传或者传入运行时上下文
 }
 
 // EntityOption 创建实体的选项设置器
@@ -31,6 +32,7 @@ func (WithEntityOption) Default() EntityOption {
 		WithEntityOption{}.EnableComponentAwakeByAccess(true)(o)
 		WithEntityOption{}.FaceAnyAllocator(container.DefaultAllocator[util.FaceAny]())(o)
 		WithEntityOption{}.HookAllocator(container.DefaultAllocator[localevent.Hook]())(o)
+		WithEntityOption{}.GCCollector(nil)(o)
 	}
 }
 
@@ -79,5 +81,12 @@ func (WithEntityOption) HookAllocator(v container.Allocator[localevent.Hook]) En
 			panic("nil allocator")
 		}
 		o.HookAllocator = v
+	}
+}
+
+// GCCollector 自定义GC收集器，通常不传或者传入运行时上下文
+func (WithEntityOption) GCCollector(v container.GCCollector) EntityOption {
+	return func(o *EntityOptions) {
+		o.GCCollector = v
 	}
 }

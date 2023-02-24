@@ -1,6 +1,9 @@
 package localevent
 
-import "kit.golaxy.org/golaxy/util"
+import (
+	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/container"
+)
 
 func UnsafeEvent(v IEvent) _UnsafeEvent {
 	return _UnsafeEvent{
@@ -22,6 +25,10 @@ func (ue _UnsafeEvent) NewHook(delegateFace util.FaceAny, priority int32) Hook {
 
 func (ue _UnsafeEvent) RemoveDelegate(delegate any) {
 	ue.removeDelegate(delegate)
+}
+
+func (ue _UnsafeEvent) SetGCCollector(gcCollect container.GCCollector) {
+	ue.setGCCollector(gcCollect)
 }
 
 func (ue _UnsafeEvent) GC() {

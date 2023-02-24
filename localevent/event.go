@@ -25,6 +25,7 @@ type IEvent interface {
 	emit(fun func(delegate util.IfaceCache) bool)
 	newHook(delegateFace util.FaceAny, priority int32) Hook
 	removeDelegate(delegate any)
+	setGCCollector(gcCollect container.GCCollector)
 	gc()
 }
 
@@ -42,10 +43,6 @@ type Event struct {
 
 // Init 初始化事件
 func (event *Event) Init(autoRecover bool, reportError chan error, eventRecursion EventRecursion, hookAllocator container.Allocator[Hook], gcCollector container.GCCollector) {
-	if gcCollector == nil {
-		panic("nil gcCollector")
-	}
-
 	if event.inited {
 		panic("event initialized")
 	}
@@ -190,6 +187,10 @@ func (event *Event) removeDelegate(delegate any) {
 		}
 		return true
 	})
+}
+
+func (event *Event) setGCCollector(gcCollect container.GCCollector) {
+	event.subscribers.SetGCCollector(gcCollect)
 }
 
 func (event *Event) gc() {

@@ -63,11 +63,3 @@ func (ue _UnsafeEntity) SetState(state EntityState) {
 func (ue _UnsafeEntity) EventEntityDestroySelf() localevent.IEvent {
 	return ue.eventEntityDestroySelf()
 }
-
-func (ue _UnsafeEntity) GetInnerGC() container.GC {
-	return ue.getInnerGC()
-}
-
-func (ue _UnsafeEntity) GetInnerGCCollector() container.GCCollector {
-	return ue.getInnerGCCollector()
-}

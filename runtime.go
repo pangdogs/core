@@ -88,8 +88,8 @@ func (_runtime *RuntimeBehavior) init(runtimeCtx runtime.Context, opts *RuntimeO
 	_runtime.ctx = runtimeCtx
 	_runtime.hooksMap = make(map[_HookKey][3]localevent.Hook)
 
-	_runtime.eventUpdate.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Disallow, runtimeCtx.GetHookAllocator(), _runtime)
-	_runtime.eventLateUpdate.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Disallow, runtimeCtx.GetHookAllocator(), _runtime)
+	_runtime.eventUpdate.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Disallow, runtimeCtx.GetHookAllocator(), nil)
+	_runtime.eventLateUpdate.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Disallow, runtimeCtx.GetHookAllocator(), nil)
 
 	if opts.EnableAutoRun {
 		_runtime.opts.Inheritor.Iface.Run()

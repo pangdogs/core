@@ -3,7 +3,6 @@ package runtime
 import (
 	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/service"
-	"kit.golaxy.org/golaxy/util/container"
 )
 
 func UnsafeContext(ctx Context) _UnsafeContext {
@@ -40,6 +39,6 @@ func (uc _UnsafeContext) MarkShutdown() bool {
 	return internal.UnsafeRunningMark(uc.Context).MarkShutdown()
 }
 
-func (uc _UnsafeContext) GetInnerGC() container.GC {
-	return uc.getInnerGC()
+func (uc _UnsafeContext) GC() {
+	uc.gc()
 }

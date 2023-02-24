@@ -185,8 +185,10 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 	entityMgr.entityMap[entity.GetID()] = entityInfo
 
 	_entity.SetState(ec.EntityState_Entry)
-	_entity.SetGCCollector(runtimeCtx)
-	runtimeCtx.CollectGC(_entity.GetInnerGC())
+
+	if _entity.GetGCCollector() == nil {
+		_entity.SetGCCollector(runtimeCtx)
+	}
 
 	emitEventEntityMgrAddEntity(&entityMgr.eventEntityMgrAddEntity, entityMgr, entity)
 
