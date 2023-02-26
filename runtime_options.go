@@ -15,6 +15,7 @@ type RuntimeOptions struct {
 	SyncCallTimeout      time.Duration      // 同步调用超时时间，为0表示不处理超时，此时两个运行时互相同步调用会死锁
 	Frame                runtime.Frame      // 帧
 	GCInterval           time.Duration      // GC间隔时长
+	CustomGC             func(rt Runtime)   // 自定义GC
 }
 
 // RuntimeOption 创建运行时的选项设置器
@@ -33,6 +34,7 @@ func (WithRuntimeOption) Default() RuntimeOption {
 		WithRuntimeOption{}.SyncCallTimeout(0)(o)
 		WithRuntimeOption{}.Frame(nil)(o)
 		WithRuntimeOption{}.GCInterval(10 * time.Second)(o)
+		WithRuntimeOption{}.CustomGC(nil)(o)
 	}
 }
 
@@ -88,5 +90,12 @@ func (WithRuntimeOption) GCInterval(v time.Duration) RuntimeOption {
 			panic("GCInterval less equal 0 is invalid")
 		}
 		o.GCInterval = v
+	}
+}
+
+// CustomGC 自定义GC
+func (WithRuntimeOption) CustomGC(v func(rt Runtime)) RuntimeOption {
+	return func(o *RuntimeOptions) {
+		o.CustomGC = v
 	}
 }
