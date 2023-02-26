@@ -2,7 +2,6 @@ package ec
 
 import (
 	"fmt"
-	"github.com/segmentio/ksuid"
 	"kit.golaxy.org/golaxy/localevent"
 	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/golaxy/util/container"
@@ -119,13 +118,13 @@ func (entity *EntityBehavior) DestroySelf() {
 
 // String 字符串化
 func (entity *EntityBehavior) String() string {
-	var parentID string
+	var parentID ID
 	if parent, ok := entity.GetParent(); ok {
-		parentID = ksuid.KSUID(parent.GetID()).String()
+		parentID = parent.GetID()
 	}
 
 	return fmt.Sprintf("[ID:%s SerialNo:%d Prototype:%s Parent:%s State:%s]",
-		ksuid.KSUID(entity.GetID()).String(),
+		entity.GetID(),
 		entity.GetSerialNo(),
 		entity.GetPrototype(),
 		parentID,

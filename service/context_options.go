@@ -38,7 +38,7 @@ func (WithContextOption) Default() ContextOption {
 		WithContextOption{}.AutoRecover(false)(o)
 		WithContextOption{}.ReportError(nil)(o)
 		WithContextOption{}.Name("")(o)
-		WithContextOption{}.GenPersistID(func() ec.ID { return ksuid.New() })(o)
+		WithContextOption{}.GenPersistID(func() ec.ID { return ec.ID(ksuid.New()) })(o)
 		WithContextOption{}.EntityLib(nil)(o)
 		WithContextOption{}.PluginBundle(nil)(o)
 		WithContextOption{}.StartedCallback(nil)(o)
