@@ -11,20 +11,19 @@ import (
 type ID [20]byte
 
 func (id ID) String() string {
-	return EncodeIDToString(id)
+	return id.Encode()
 }
 
-var EncodeIDToString = func(id ID) string {
+func (id ID) Encode() string {
 	return base64.RawURLEncoding.EncodeToString(id[:])
 }
 
-var DecodeStringToID = func(str string) (id ID, err error) {
+func (id *ID) Decode(str string) error {
 	if base64.RawURLEncoding.DecodedLen(len(str)) > len(id) {
-		err = errors.New("string too long")
-		return
+		return errors.New("string too long")
 	}
-	base64.RawURLEncoding.Decode(id[:], string2Bytes(str))
-	return
+	_, err := base64.RawURLEncoding.Decode(id[:], string2Bytes(str))
+	return err
 }
 
 func string2Bytes(s string) []byte {
