@@ -6,5 +6,5 @@ import "encoding/base64"
 type ID [20]byte
 
 func (id ID) String() string {
-	return base64.RawURLEncoding.EncodeToString(id[0:])
+	return base64.RawURLEncoding.EncodeToString(id[:])
 }
