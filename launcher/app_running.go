@@ -96,8 +96,8 @@ func (app *_App) runService(ctx context.Context, servicePt string, serviceConf S
 	}
 
 	if app.options.ServiceCtxInitTab != nil {
-		initFunc, ok := app.options.ServiceCtxInitTab[servicePt]
-		if ok {
+		initFunc := app.options.ServiceCtxInitTab[servicePt]
+		if initFunc != nil {
 			serviceCtxOpts = append(serviceCtxOpts, initFunc(entityLib, pluginBundle)...)
 		}
 	}
@@ -105,8 +105,8 @@ func (app *_App) runService(ctx context.Context, servicePt string, serviceConf S
 	var serviceOpts []golaxy.ServiceOption
 
 	if app.options.ServiceInitTab != nil {
-		initFunc, ok := app.options.ServiceInitTab[servicePt]
-		if ok {
+		initFunc := app.options.ServiceInitTab[servicePt]
+		if initFunc != nil {
 			serviceOpts = append(serviceOpts, initFunc()...)
 		}
 	}
