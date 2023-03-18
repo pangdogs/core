@@ -41,8 +41,8 @@ func (app *_App) Run() {
 	var printComp = printInfo.Command("comp", "打印所有组件。")
 
 	var customCmds []Cmd
-	if app.options.SetupCommands != nil {
-		customCmds = app.options.SetupCommands()
+	if app.options.Commands != nil {
+		customCmds = app.options.Commands()
 	}
 
 	cmd := kingpin.Parse()

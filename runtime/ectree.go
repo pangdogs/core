@@ -109,7 +109,7 @@ func (ecTree *ECTree) AddChild(parentID, childID ec.ID) error {
 	switch parent.GetState() {
 	case ec.EntityState_Init, ec.EntityState_Start, ec.EntityState_Living:
 	default:
-		return errors.New("parent state not init or living is invalid")
+		return errors.New("parent state not init or start or living is invalid")
 	}
 
 	child, ok := ecTree.runtimeCtx.GetEntityMgr().GetEntity(childID)
@@ -120,7 +120,7 @@ func (ecTree *ECTree) AddChild(parentID, childID ec.ID) error {
 	switch child.GetState() {
 	case ec.EntityState_Init, ec.EntityState_Start, ec.EntityState_Living:
 	default:
-		return errors.New("parent state not init or living is invalid")
+		return errors.New("parent state not init or start or living is invalid")
 	}
 
 	if _, ok = ecTree.ecTree[childID]; ok {

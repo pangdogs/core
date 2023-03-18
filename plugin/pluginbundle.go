@@ -32,6 +32,28 @@ type PluginBundle interface {
 	Range(fun func(pluginName string, pluginFace util.FaceAny) bool)
 }
 
+// InstallPlugin 安装插件。
+//
+//	@param pluginBundle 插件包。
+//	@param pluginName 插件名称。
+//	@param plugin 插件。
+func InstallPlugin[T any](pluginBundle PluginBundle, pluginName string, plugin T) {
+	if pluginBundle == nil {
+		panic("nil pluginBundle")
+	}
+	pluginBundle.Install(pluginName, util.NewFacePair[any](plugin, plugin))
+}
+
+// UninstallPlugin 卸载插件。
+//
+//	@param pluginBundle 插件包。
+func UninstallPlugin(pluginBundle PluginBundle, pluginName string) {
+	if pluginBundle == nil {
+		panic("nil pluginBundle")
+	}
+	pluginBundle.Uninstall(pluginName)
+}
+
 // NewPluginBundle 创建插件包
 func NewPluginBundle() PluginBundle {
 	pluginBundle := &_PluginBundle{}

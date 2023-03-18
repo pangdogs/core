@@ -79,7 +79,7 @@ func (app *_App) loadPtConfig(ptConfFile string) ServiceConfTab {
 	}
 }
 
-func (app *_App) runService(ctx context.Context, serviceName string, serviceConf ServiceConf) {
+func (app *_App) runService(ctx context.Context, servicePt string, serviceConf ServiceConf) {
 	entityLib := pt.NewEntityLib()
 
 	for entityPtName, entityPtConf := range serviceConf.EntityTab {
@@ -88,37 +88,29 @@ func (app *_App) runService(ctx context.Context, serviceName string, serviceConf
 
 	pluginBundle := plugin.NewPluginBundle()
 
-	if app.options.ServiceInstallPlugin != nil {
-		app.options.ServiceInstallPlugin(serviceName, pluginBundle)
-	}
-
-	var autoRecover bool
-	var reportError chan error
-	if app.options.ServiceSetupRecover != nil {
-		autoRecover, reportError = app.options.ServiceSetupRecover(serviceName)
-	}
-
-	var startedCallback, stoppingCallback, stoppedCallback func(serviceCtx service.Context)
-	if app.options.ServiceSetupStartedCallback != nil {
-		startedCallback = app.options.ServiceSetupStartedCallback(serviceName)
-	}
-	if app.options.ServiceSetupStoppingCallback != nil {
-		stoppingCallback = app.options.ServiceSetupStoppingCallback(serviceName)
-	}
-	if app.options.ServiceSetupStoppedCallback != nil {
-		stoppedCallback = app.options.ServiceSetupStoppedCallback(serviceName)
-	}
-
-	service := golaxy.NewService(service.NewContext(
+	serviceCtxOpts := []service.ContextOption{
 		service.WithContextOption{}.Context(ctx),
-		service.WithContextOption{}.AutoRecover(autoRecover),
-		service.WithContextOption{}.ReportError(reportError),
-		service.WithContextOption{}.Name(serviceName),
+		service.WithContextOption{}.Prototype(servicePt),
 		service.WithContextOption{}.EntityLib(entityLib),
 		service.WithContextOption{}.PluginBundle(pluginBundle),
-		service.WithContextOption{}.StartedCallback(startedCallback),
-		service.WithContextOption{}.StoppingCallback(stoppingCallback),
-		service.WithContextOption{}.StoppedCallback(stoppedCallback),
-	))
+	}
+
+	if app.options.ServiceCtxInitTab != nil {
+		initFunc, ok := app.options.ServiceCtxInitTab[servicePt]
+		if ok {
+			serviceCtxOpts = append(serviceCtxOpts, initFunc(entityLib, pluginBundle)...)
+		}
+	}
+
+	var serviceOpts []golaxy.ServiceOption
+
+	if app.options.ServiceInitTab != nil {
+		initFunc, ok := app.options.ServiceInitTab[servicePt]
+		if ok {
+			serviceOpts = append(serviceOpts, initFunc()...)
+		}
+	}
+
+	service := golaxy.NewService(service.NewContext(serviceCtxOpts...), serviceOpts...)
 	<-service.Run()
 }

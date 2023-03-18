@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"fmt"
 	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/localevent"
 	"kit.golaxy.org/golaxy/plugin"
@@ -42,8 +43,8 @@ type Context interface {
 	plugin.PluginResolver
 	_Call
 
-	// GetName 获取名称
-	GetName() string
+	// GetPrototype 获取原型名称
+	GetPrototype() string
 	// GetServiceCtx 获取服务上下文
 	GetServiceCtx() service.Context
 	// GetFrame 获取帧
@@ -56,6 +57,8 @@ type Context interface {
 	GetFaceAnyAllocator() container.Allocator[util.FaceAny]
 	// GetHookAllocator 获取Hook内存分配器
 	GetHookAllocator() container.Allocator[localevent.Hook]
+	// String 字符串化
+	String() string
 }
 
 type _Context interface {
@@ -78,9 +81,9 @@ type ContextBehavior struct {
 	gcList     []container.GC
 }
 
-// GetName 获取名称
-func (ctx *ContextBehavior) GetName() string {
-	return ctx.opts.Name
+// GetPrototype 获取原型名称
+func (ctx *ContextBehavior) GetPrototype() string {
+	return ctx.opts.Prototype
 }
 
 // GetServiceCtx 获取服务上下文
@@ -111,6 +114,11 @@ func (ctx *ContextBehavior) GetFaceAnyAllocator() container.Allocator[util.FaceA
 // GetHookAllocator 获取Hook内存分配器
 func (ctx *ContextBehavior) GetHookAllocator() container.Allocator[localevent.Hook] {
 	return ctx.opts.HookAllocator
+}
+
+// String 字符串化
+func (ctx *ContextBehavior) String() string {
+	return fmt.Sprintf("[Ptr:0x%x Prototype:%s]", ctx.opts.Inheritor.Cache[1], ctx.GetPrototype())
 }
 
 // CollectGC 收集GC

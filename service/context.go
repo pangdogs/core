@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/plugin"
@@ -43,14 +44,16 @@ type Context interface {
 	pt.PtResolver
 	_Call
 
-	// GetName 获取名称
-	GetName() string
+	// GetPrototype 获取原型名称
+	GetPrototype() string
 	// GenSerialNo 生成流水号（运行时唯一）
 	GenSerialNo() int64
 	// GenPersistID 生成持久化ID（全局唯一）
 	GenPersistID() ec.ID
 	// GetEntityMgr 获取实体管理器
 	GetEntityMgr() IEntityMgr
+	// String 字符串化
+	String() string
 }
 
 type _Context interface {
@@ -67,9 +70,9 @@ type ContextBehavior struct {
 	entityMgr   _EntityMgr
 }
 
-// GetName 获取名称
-func (ctx *ContextBehavior) GetName() string {
-	return ctx.opts.Name
+// GetPrototype 获取原型名称
+func (ctx *ContextBehavior) GetPrototype() string {
+	return ctx.opts.Prototype
 }
 
 // GenSerialNo 生成流水号（运行时唯一）
@@ -85,6 +88,11 @@ func (ctx *ContextBehavior) GenPersistID() ec.ID {
 // GetEntityMgr 获取实体管理器
 func (ctx *ContextBehavior) GetEntityMgr() IEntityMgr {
 	return &ctx.entityMgr
+}
+
+// String 字符串化
+func (ctx *ContextBehavior) String() string {
+	return fmt.Sprintf("[Ptr:0x%x Prototype:%s]", ctx.opts.Inheritor.Cache[1], ctx.GetPrototype())
 }
 
 func (ctx *ContextBehavior) init(opts *ContextOptions) {

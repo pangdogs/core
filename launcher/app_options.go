@@ -2,7 +2,9 @@ package launcher
 
 import (
 	"github.com/alecthomas/kingpin/v2"
+	"kit.golaxy.org/golaxy"
 	"kit.golaxy.org/golaxy/plugin"
+	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/service"
 )
 
@@ -13,14 +15,17 @@ type Cmd struct {
 	Run    func(flags []interface{}) // run cmd
 }
 
+// ServiceCtxInitFunc 服务上下文初始化函数
+type ServiceCtxInitFunc func(entityLib pt.EntityLib, pluginBundle plugin.PluginBundle) []service.ContextOption
+
+// ServiceInitFunc 服务初始化函数
+type ServiceInitFunc func() []golaxy.ServiceOption
+
 // AppOptions 创建应用的所有选项
 type AppOptions struct {
-	SetupCommands                func() []Cmd                                                        // 设置自定义应用指令
-	ServiceInstallPlugin         func(serviceName string, pluginBundle plugin.PluginBundle)          // 安装服务插件
-	ServiceSetupRecover          func(serviceName string) (autoRecover bool, reportError chan error) // 设置服务panic恢复选项
-	ServiceSetupStartedCallback  func(serviceName string) func(serviceCtx service.Context)           // 设置服务启动时回调
-	ServiceSetupStoppingCallback func(serviceName string) func(serviceCtx service.Context)           // 设置服务开始停止时回调
-	ServiceSetupStoppedCallback  func(serviceName string) func(serviceCtx service.Context)           // 设置服务完全停止时回调
+	Commands          func() []Cmd                  // 自定义应用指令
+	ServiceCtxInitTab map[string]ServiceCtxInitFunc // 所有服务上下文初始化函数
+	ServiceInitTab    map[string]ServiceInitFunc    // 所有服务初始化函数
 }
 
 // AppOption 创建应用的选项设置器
@@ -32,53 +37,29 @@ type WithAppOption struct{}
 // Default 默认值
 func (WithAppOption) Default() AppOption {
 	return func(o *AppOptions) {
-		o.SetupCommands = nil
-		o.ServiceInstallPlugin = nil
-		o.ServiceSetupRecover = nil
-		o.ServiceSetupStartedCallback = nil
-		o.ServiceSetupStoppingCallback = nil
-		o.ServiceSetupStoppedCallback = nil
+		o.Commands = nil
+		o.ServiceCtxInitTab = nil
+		o.ServiceInitTab = nil
 	}
 }
 
-// SetupCustomCommands 设置自定义应用指令
-func (WithAppOption) SetupCustomCommands(v func() []Cmd) AppOption {
+// Commands 自定义应用指令
+func (WithAppOption) Commands(v func() []Cmd) AppOption {
 	return func(o *AppOptions) {
-		o.SetupCommands = v
+		o.Commands = v
 	}
 }
 
-// ServiceInstallPlugin 安装服务插件
-func (WithAppOption) ServiceInstallPlugin(v func(serviceName string, pluginBundle plugin.PluginBundle)) AppOption {
+// ServiceCtxInitTab 所有服务上下文初始化函数
+func (WithAppOption) ServiceCtxInitTab(v map[string]ServiceCtxInitFunc) AppOption {
 	return func(o *AppOptions) {
-		o.ServiceInstallPlugin = v
+		o.ServiceCtxInitTab = v
 	}
 }
 
-// ServiceSetupRecover 设置服务panic恢复选项
-func (WithAppOption) ServiceSetupRecover(v func(serviceName string) (autoRecover bool, reportError chan error)) AppOption {
+// ServiceInitTab 所有服务初始化函数
+func (WithAppOption) ServiceInitTab(v map[string]ServiceInitFunc) AppOption {
 	return func(o *AppOptions) {
-		o.ServiceSetupRecover = v
-	}
-}
-
-// ServiceSetupStartedCallback 设置服务启动时回调
-func (WithAppOption) ServiceSetupStartedCallback(v func(serviceName string) func(serviceCtx service.Context)) AppOption {
-	return func(o *AppOptions) {
-		o.ServiceSetupStartedCallback = v
-	}
-}
-
-// ServiceSetupStoppingCallback 设置服务开始停止时回调
-func (WithAppOption) ServiceSetupStoppingCallback(v func(serviceName string) func(serviceCtx service.Context)) AppOption {
-	return func(o *AppOptions) {
-		o.ServiceSetupStoppingCallback = v
-	}
-}
-
-// ServiceSetupStoppedCallback 设置服务完全停止时回调
-func (WithAppOption) ServiceSetupStoppedCallback(v func(serviceName string) func(serviceCtx service.Context)) AppOption {
-	return func(o *AppOptions) {
-		o.ServiceSetupStoppedCallback = v
+		o.ServiceInitTab = v
 	}
 }
