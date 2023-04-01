@@ -24,15 +24,15 @@ func NewContext(options ...ContextOption) Context {
 }
 
 func UnsafeNewContext(options ContextOptions) Context {
-	if !options.Inheritor.IsNil() {
-		options.Inheritor.Iface.init(&options)
-		return options.Inheritor.Iface
+	if !options.CompositeFace.IsNil() {
+		options.CompositeFace.Iface.init(&options)
+		return options.CompositeFace.Iface
 	}
 
 	ctx := &ContextBehavior{}
 	ctx.init(&options)
 
-	return ctx.opts.Inheritor.Iface
+	return ctx.opts.CompositeFace.Iface
 }
 
 // Context 服务上下文
@@ -92,7 +92,7 @@ func (ctx *ContextBehavior) GetEntityMgr() IEntityMgr {
 
 // String 字符串化
 func (ctx *ContextBehavior) String() string {
-	return fmt.Sprintf("[Ptr:0x%x Prototype:%s]", ctx.opts.Inheritor.Cache[1], ctx.GetPrototype())
+	return fmt.Sprintf("[Ptr:0x%x Prototype:%s]", ctx.opts.CompositeFace.Cache[1], ctx.GetPrototype())
 }
 
 func (ctx *ContextBehavior) init(opts *ContextOptions) {
@@ -102,8 +102,8 @@ func (ctx *ContextBehavior) init(opts *ContextOptions) {
 
 	ctx.opts = *opts
 
-	if ctx.opts.Inheritor.IsNil() {
-		ctx.opts.Inheritor = util.NewFace[Context](ctx)
+	if ctx.opts.CompositeFace.IsNil() {
+		ctx.opts.CompositeFace = util.NewFace[Context](ctx)
 	}
 
 	if ctx.opts.Context == nil {
@@ -111,7 +111,7 @@ func (ctx *ContextBehavior) init(opts *ContextOptions) {
 	}
 
 	internal.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
-	ctx.entityMgr.init(ctx.opts.Inheritor.Iface)
+	ctx.entityMgr.init(ctx.opts.CompositeFace.Iface)
 }
 
 func (ctx *ContextBehavior) getOptions() *ContextOptions {

@@ -10,7 +10,7 @@ import (
 
 // ContextOptions 创建运行时上下文的所有选项
 type ContextOptions struct {
-	Inheritor          util.Face[Context]                   // 继承者，需要扩展运行时上下文自身能力时需要使用
+	CompositeFace      util.Face[Context]                   // 扩展者，需要扩展运行时上下文自身能力时需要使用
 	Context            context.Context                      // 父Context
 	AutoRecover        bool                                 // 是否开启panic时自动恢复
 	ReportError        chan error                           // panic时错误写入的error channel
@@ -34,7 +34,7 @@ type WithContextOption struct{}
 // Default 默认值
 func (WithContextOption) Default() ContextOption {
 	return func(o *ContextOptions) {
-		WithContextOption{}.Inheritor(util.Face[Context]{})(o)
+		WithContextOption{}.Composite(util.Face[Context]{})(o)
 		WithContextOption{}.Context(nil)(o)
 		WithContextOption{}.AutoRecover(false)(o)
 		WithContextOption{}.ReportError(nil)(o)
@@ -50,10 +50,10 @@ func (WithContextOption) Default() ContextOption {
 	}
 }
 
-// Inheritor 继承者，需要扩展运行时上下文自身功能时需要使用
-func (WithContextOption) Inheritor(v util.Face[Context]) ContextOption {
+// Composite 扩展者，需要扩展运行时上下文自身功能时需要使用
+func (WithContextOption) Composite(v util.Face[Context]) ContextOption {
 	return func(o *ContextOptions) {
-		o.Inheritor = v
+		o.CompositeFace = v
 	}
 }
 

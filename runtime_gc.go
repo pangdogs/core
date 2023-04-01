@@ -11,6 +11,6 @@ func (_runtime *RuntimeBehavior) gc() {
 	localevent.UnsafeEvent(&_runtime.eventLateUpdate).GC()
 
 	if _runtime.opts.CustomGC != nil {
-		_runtime.opts.CustomGC(_runtime.opts.Inheritor.Iface)
+		_runtime.opts.CustomGC(_runtime.opts.CompositeFace.Iface)
 	}
 }

@@ -21,15 +21,15 @@ func NewRuntime(runtimeCtx runtime.Context, options ...RuntimeOption) Runtime {
 }
 
 func UnsafeNewRuntime(runtimeCtx runtime.Context, options RuntimeOptions) Runtime {
-	if !options.Inheritor.IsNil() {
-		options.Inheritor.Iface.init(runtimeCtx, &options)
-		return options.Inheritor.Iface
+	if !options.CompositeFace.IsNil() {
+		options.CompositeFace.Iface.init(runtimeCtx, &options)
+		return options.CompositeFace.Iface
 	}
 
 	runtime := &RuntimeBehavior{}
 	runtime.init(runtimeCtx, &options)
 
-	return runtime.opts.Inheritor.Iface
+	return runtime.opts.CompositeFace.Iface
 }
 
 // Runtime 运行时接口
@@ -81,8 +81,8 @@ func (_runtime *RuntimeBehavior) init(runtimeCtx runtime.Context, opts *RuntimeO
 
 	_runtime.opts = *opts
 
-	if _runtime.opts.Inheritor.IsNil() {
-		_runtime.opts.Inheritor = util.NewFace[Runtime](_runtime)
+	if _runtime.opts.CompositeFace.IsNil() {
+		_runtime.opts.CompositeFace = util.NewFace[Runtime](_runtime)
 	}
 
 	_runtime.ctx = runtimeCtx
@@ -92,7 +92,7 @@ func (_runtime *RuntimeBehavior) init(runtimeCtx runtime.Context, opts *RuntimeO
 	_runtime.eventLateUpdate.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Disallow, runtimeCtx.GetHookAllocator(), nil)
 
 	if _runtime.opts.EnableAutoRun {
-		_runtime.opts.Inheritor.Iface.Run()
+		_runtime.opts.CompositeFace.Iface.Run()
 	}
 }
 

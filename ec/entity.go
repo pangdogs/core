@@ -20,15 +20,15 @@ func NewEntity(options ...EntityOption) Entity {
 }
 
 func UnsafeNewEntity(options EntityOptions) Entity {
-	if !options.Inheritor.IsNil() {
-		options.Inheritor.Iface.init(&options)
-		return options.Inheritor.Iface
+	if !options.CompositeFace.IsNil() {
+		options.CompositeFace.Iface.init(&options)
+		return options.CompositeFace.Iface
 	}
 
 	e := &EntityBehavior{}
 	e.init(&options)
 
-	return e.opts.Inheritor.Iface
+	return e.opts.CompositeFace.Iface
 }
 
 // Entity 实体接口
@@ -112,7 +112,7 @@ func (entity *EntityBehavior) GetState() EntityState {
 func (entity *EntityBehavior) DestroySelf() {
 	switch entity.GetState() {
 	case EntityState_Init, EntityState_Start, EntityState_Living:
-		emitEventEntityDestroySelf(&entity._eventEntityDestroySelf, entity.opts.Inheritor.Iface)
+		emitEventEntityDestroySelf(&entity._eventEntityDestroySelf, entity.opts.CompositeFace.Iface)
 	}
 }
 
@@ -138,8 +138,8 @@ func (entity *EntityBehavior) init(opts *EntityOptions) {
 
 	entity.opts = *opts
 
-	if entity.opts.Inheritor.IsNil() {
-		entity.opts.Inheritor = util.NewFace[Entity](entity)
+	if entity.opts.CompositeFace.IsNil() {
+		entity.opts.CompositeFace = util.NewFace[Entity](entity)
 	}
 
 	entity.id = entity.opts.PersistID

@@ -30,7 +30,7 @@ type Component interface {
 }
 
 type _Component interface {
-	init(name string, entity Entity, inheritor Component, hookAllocator container.Allocator[localevent.Hook], gcCollector container.GCCollector)
+	init(name string, entity Entity, composite Component, hookAllocator container.Allocator[localevent.Hook], gcCollector container.GCCollector)
 	setID(id ID)
 	setSerialNo(sn int64)
 	setFixed(v bool)
@@ -38,7 +38,7 @@ type _Component interface {
 	setState(state ComponentState)
 	setReflectValue(v reflect.Value)
 	getReflectValue() reflect.Value
-	getInheritor() Component
+	getComposite() Component
 	setGCCollector(gcCollector container.GCCollector)
 	eventComponentDestroySelf() localevent.IEvent
 }
@@ -49,7 +49,7 @@ type ComponentBehavior struct {
 	serialNo                   int64
 	name                       string
 	entity                     Entity
-	inheritor                  Component
+	composite                  Component
 	fixed                      bool
 	state                      ComponentState
 	reflectValue               reflect.Value
@@ -85,7 +85,7 @@ func (comp *ComponentBehavior) GetState() ComponentState {
 func (comp *ComponentBehavior) DestroySelf() {
 	switch comp.GetState() {
 	case ComponentState_Awake, ComponentState_Start, ComponentState_Living:
-		emitEventComponentDestroySelf(&comp._eventComponentDestroySelf, comp.inheritor)
+		emitEventComponentDestroySelf(&comp._eventComponentDestroySelf, comp.composite)
 	}
 }
 
@@ -104,10 +104,10 @@ func (comp *ComponentBehavior) String() string {
 		comp.GetState())
 }
 
-func (comp *ComponentBehavior) init(name string, entity Entity, inheritor Component, hookAllocator container.Allocator[localevent.Hook], gcCollector container.GCCollector) {
+func (comp *ComponentBehavior) init(name string, entity Entity, composite Component, hookAllocator container.Allocator[localevent.Hook], gcCollector container.GCCollector) {
 	comp.name = name
 	comp.entity = entity
-	comp.inheritor = inheritor
+	comp.composite = composite
 	comp._eventComponentDestroySelf.Init(false, nil, localevent.EventRecursion_NotEmit, hookAllocator, gcCollector)
 }
 
@@ -147,13 +147,13 @@ func (comp *ComponentBehavior) getReflectValue() reflect.Value {
 		return comp.reflectValue
 	}
 
-	comp.reflectValue = reflect.ValueOf(comp.inheritor)
+	comp.reflectValue = reflect.ValueOf(comp.composite)
 
 	return comp.reflectValue
 }
 
-func (comp *ComponentBehavior) getInheritor() Component {
-	return comp.inheritor
+func (comp *ComponentBehavior) getComposite() Component {
+	return comp.composite
 }
 
 func (comp *ComponentBehavior) setGCCollector(gcCollector container.GCCollector) {

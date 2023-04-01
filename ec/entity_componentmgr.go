@@ -41,7 +41,7 @@ func (entity *EntityBehavior) GetComponent(name string) Component {
 		if entity.opts.EnableComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
 			switch entity.GetState() {
 			case EntityState_Init, EntityState_Start, EntityState_Living:
-				emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, comp)
+				emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.CompositeFace.Iface, comp)
 			}
 		}
 
@@ -59,7 +59,7 @@ func (entity *EntityBehavior) GetComponentByID(id ID) Component {
 		if entity.opts.EnableComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
 			switch entity.GetState() {
 			case EntityState_Init, EntityState_Start, EntityState_Living:
-				emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, comp)
+				emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.CompositeFace.Iface, comp)
 			}
 		}
 
@@ -88,7 +88,7 @@ func (entity *EntityBehavior) GetComponents(name string) []Component {
 				if components[i].GetState() == ComponentState_Attach {
 					switch entity.GetState() {
 					case EntityState_Init, EntityState_Start, EntityState_Living:
-						emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, components[i])
+						emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.CompositeFace.Iface, components[i])
 					}
 				}
 			}
@@ -112,7 +112,7 @@ func (entity *EntityBehavior) RangeComponents(fun func(component Component) bool
 		if entity.opts.EnableComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
 			switch entity.GetState() {
 			case EntityState_Init, EntityState_Start, EntityState_Living:
-				emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.Inheritor.Iface, comp)
+				emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.CompositeFace.Iface, comp)
 			}
 		}
 
@@ -128,7 +128,7 @@ func (entity *EntityBehavior) AddComponents(name string, components []Component)
 		}
 	}
 
-	emitEventCompMgrAddComponents(&entity.eventCompMgrAddComponents, entity.opts.Inheritor.Iface, components)
+	emitEventCompMgrAddComponents(&entity.eventCompMgrAddComponents, entity.opts.CompositeFace.Iface, components)
 	return nil
 }
 
@@ -138,7 +138,7 @@ func (entity *EntityBehavior) AddComponent(name string, component Component) err
 		return err
 	}
 
-	emitEventCompMgrAddComponents(&entity.eventCompMgrAddComponents, entity.opts.Inheritor.Iface, []Component{component})
+	emitEventCompMgrAddComponents(&entity.eventCompMgrAddComponents, entity.opts.CompositeFace.Iface, []Component{component})
 	return nil
 }
 
@@ -164,7 +164,7 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 
 		entity.changedVersion++
 
-		emitEventCompMgrRemoveComponent(&entity.eventCompMgrRemoveComponent, entity.opts.Inheritor.Iface, comp)
+		emitEventCompMgrRemoveComponent(&entity.eventCompMgrRemoveComponent, entity.opts.CompositeFace.Iface, comp)
 
 		return true
 	}, e)
@@ -188,7 +188,7 @@ func (entity *EntityBehavior) RemoveComponentByID(id ID) {
 
 	entity.changedVersion++
 
-	emitEventCompMgrRemoveComponent(&entity.eventCompMgrRemoveComponent, entity.opts.Inheritor.Iface, comp)
+	emitEventCompMgrRemoveComponent(&entity.eventCompMgrRemoveComponent, entity.opts.CompositeFace.Iface, comp)
 }
 
 // EventCompMgrAddComponents 事件：实体的组件管理器加入一些组件
@@ -215,7 +215,7 @@ func (entity *EntityBehavior) addSingleComponent(name string, component Componen
 		return errors.New("component state not birth is invalid")
 	}
 
-	component.init(name, entity.opts.Inheritor.Iface, component, entity.opts.HookAllocator, entity.opts.GCCollector)
+	component.init(name, entity.opts.CompositeFace.Iface, component, entity.opts.HookAllocator, entity.opts.GCCollector)
 
 	face := util.NewFacePair[any](component, component)
 

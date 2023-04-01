@@ -23,15 +23,15 @@ func NewContext(serviceCtx service.Context, options ...ContextOption) Context {
 }
 
 func UnsafeNewContext(serviceCtx service.Context, options ContextOptions) Context {
-	if !options.Inheritor.IsNil() {
-		options.Inheritor.Iface.init(serviceCtx, &options)
-		return options.Inheritor.Iface
+	if !options.CompositeFace.IsNil() {
+		options.CompositeFace.Iface.init(serviceCtx, &options)
+		return options.CompositeFace.Iface
 	}
 
 	ctx := &ContextBehavior{}
 	ctx.init(serviceCtx, &options)
 
-	return ctx.opts.Inheritor.Iface
+	return ctx.opts.CompositeFace.Iface
 }
 
 // Context 运行时上下文接口
@@ -118,7 +118,7 @@ func (ctx *ContextBehavior) GetHookAllocator() container.Allocator[localevent.Ho
 
 // String 字符串化
 func (ctx *ContextBehavior) String() string {
-	return fmt.Sprintf("[Ptr:0x%x Prototype:%s]", ctx.opts.Inheritor.Cache[1], ctx.GetPrototype())
+	return fmt.Sprintf("[Ptr:0x%x Prototype:%s]", ctx.opts.CompositeFace.Cache[1], ctx.GetPrototype())
 }
 
 // CollectGC 收集GC
@@ -141,8 +141,8 @@ func (ctx *ContextBehavior) init(serviceCtx service.Context, opts *ContextOption
 
 	ctx.opts = *opts
 
-	if ctx.opts.Inheritor.IsNil() {
-		ctx.opts.Inheritor = util.NewFace[Context](ctx)
+	if ctx.opts.CompositeFace.IsNil() {
+		ctx.opts.CompositeFace = util.NewFace[Context](ctx)
 	}
 
 	if ctx.opts.Context == nil {
@@ -151,8 +151,8 @@ func (ctx *ContextBehavior) init(serviceCtx service.Context, opts *ContextOption
 
 	internal.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
 	ctx.serviceCtx = serviceCtx
-	ctx.entityMgr.Init(ctx.getOptions().Inheritor.Iface)
-	ctx.ecTree.init(ctx.opts.Inheritor.Iface, true)
+	ctx.entityMgr.Init(ctx.getOptions().CompositeFace.Iface)
+	ctx.ecTree.init(ctx.opts.CompositeFace.Iface, true)
 }
 
 func (ctx *ContextBehavior) getOptions() *ContextOptions {

@@ -31,10 +31,10 @@ func (WithEntityOption) Default() EntityOption {
 	}
 }
 
-// Inheritor 继承者，在扩展实体自身能力时使用
-func (WithEntityOption) Inheritor(v util.Face[ec.Entity]) EntityOption {
+// CompositeFace 扩展者，在扩展实体自身能力时使用
+func (WithEntityOption) CompositeFace(v util.Face[ec.Entity]) EntityOption {
 	return func(o *EntityOptions) {
-		ec.WithEntityOption{}.Inheritor(v)(&o.EntityOptions)
+		ec.WithEntityOption{}.CompositeFace(v)(&o.EntityOptions)
 	}
 }
 

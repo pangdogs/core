@@ -19,15 +19,15 @@ func NewService(serviceCtx service.Context, options ...ServiceOption) Service {
 }
 
 func UnsafeNewService(serviceCtx service.Context, options ServiceOptions) Service {
-	if !options.Inheritor.IsNil() {
-		options.Inheritor.Iface.init(serviceCtx, &options)
-		return options.Inheritor.Iface
+	if !options.CompositeFace.IsNil() {
+		options.CompositeFace.Iface.init(serviceCtx, &options)
+		return options.CompositeFace.Iface
 	}
 
 	service := &ServiceBehavior{}
 	service.init(serviceCtx, &options)
 
-	return service.opts.Inheritor.Iface
+	return service.opts.CompositeFace.Iface
 }
 
 // Service 服务
@@ -69,8 +69,8 @@ func (_service *ServiceBehavior) init(serviceCtx service.Context, opts *ServiceO
 
 	_service.opts = *opts
 
-	if _service.opts.Inheritor.IsNil() {
-		_service.opts.Inheritor = util.NewFace[Service](_service)
+	if _service.opts.CompositeFace.IsNil() {
+		_service.opts.CompositeFace = util.NewFace[Service](_service)
 	}
 
 	_service.ctx = serviceCtx

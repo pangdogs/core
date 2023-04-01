@@ -8,7 +8,7 @@ import (
 
 // EntityOptions 创建实体的所有选项
 type EntityOptions struct {
-	Inheritor                    util.Face[Entity]                    // 继承者，在扩展实体自身能力时使用
+	CompositeFace                util.Face[Entity]                    // 扩展者，在扩展实体自身能力时使用
 	Prototype                    string                               // 实体原型名称
 	PersistID                    ID                                   // 实体持久化ID
 	EnableComponentAwakeByAccess bool                                 // 开启组件被访问时，检测并调用Awake()
@@ -26,7 +26,7 @@ type WithEntityOption struct{}
 // Default 默认值
 func (WithEntityOption) Default() EntityOption {
 	return func(o *EntityOptions) {
-		WithEntityOption{}.Inheritor(util.Face[Entity]{})(o)
+		WithEntityOption{}.CompositeFace(util.Face[Entity]{})(o)
 		WithEntityOption{}.Prototype("")(o)
 		WithEntityOption{}.PersistID(util.Zero[ID]())(o)
 		WithEntityOption{}.EnableComponentAwakeByAccess(true)(o)
@@ -36,10 +36,10 @@ func (WithEntityOption) Default() EntityOption {
 	}
 }
 
-// Inheritor 继承者，在扩展实体自身能力时使用
-func (WithEntityOption) Inheritor(v util.Face[Entity]) EntityOption {
+// CompositeFace 扩展者，在扩展实体自身能力时使用
+func (WithEntityOption) CompositeFace(v util.Face[Entity]) EntityOption {
 	return func(o *EntityOptions) {
-		o.Inheritor = v
+		o.CompositeFace = v
 	}
 }
 
