@@ -55,9 +55,7 @@ type _ComponentLib struct {
 }
 
 func (lib *_ComponentLib) init() {
-	if lib.compPtMap == nil {
-		lib.compPtMap = map[string]ComponentPt{}
-	}
+	lib.compPtMap = map[string]ComponentPt{}
 }
 
 func (lib *_ComponentLib) RegisterComponent(compName string, comp any, descr string) {
@@ -88,12 +86,12 @@ func (lib *_ComponentLib) Get(compPath string) (ComponentPt, bool) {
 }
 
 func (lib *_ComponentLib) Range(fun func(compPt ComponentPt) bool) {
-	lib.mutex.RLock()
-	defer lib.mutex.RUnlock()
-
 	if fun == nil {
 		return
 	}
+
+	lib.mutex.RLock()
+	defer lib.mutex.RUnlock()
 
 	for _, compPt := range lib.compPtMap {
 		if !fun(compPt) {

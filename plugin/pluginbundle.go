@@ -4,6 +4,7 @@ package plugin
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy/util"
+	"sync"
 )
 
 // PluginBundle 插件包
@@ -30,6 +31,11 @@ type PluginBundle interface {
 	//
 	//	@param fun 遍历函数。
 	Range(fun func(pluginName string, pluginFace util.FaceAny) bool)
+
+	// ReverseRange 反向遍历所有已注册的插件
+	//
+	//	@param fun 遍历函数。
+	ReverseRange(fun func(pluginName string, pluginFace util.FaceAny) bool)
 }
 
 // InstallPlugin 安装插件。
@@ -61,8 +67,15 @@ func NewPluginBundle() PluginBundle {
 	return pluginBundle
 }
 
+type _PluginInfo struct {
+	Name   string
+	Plugin util.FaceAny
+}
+
 type _PluginBundle struct {
-	pluginMap map[string]util.FaceAny
+	pluginMap  map[string]util.FaceAny
+	pluginList []_PluginInfo
+	mutex      sync.RWMutex
 }
 
 func (bundle *_PluginBundle) init() {
@@ -74,19 +87,37 @@ func (bundle *_PluginBundle) Install(pluginName string, pluginFace util.FaceAny)
 		panic("nil pluginFace")
 	}
 
+	bundle.mutex.Lock()
+	defer bundle.mutex.Unlock()
+
 	_, ok := bundle.pluginMap[pluginName]
 	if ok {
 		panic(fmt.Errorf("plugin '%s' is already installed", pluginName))
 	}
 
 	bundle.pluginMap[pluginName] = pluginFace
+	bundle.pluginList = append(bundle.pluginList, _PluginInfo{Name: pluginName, Plugin: pluginFace})
 }
 
 func (bundle *_PluginBundle) Uninstall(pluginName string) {
+	bundle.mutex.Lock()
+	defer bundle.mutex.Unlock()
+
 	delete(bundle.pluginMap, pluginName)
+
+	for i, pluginInfo := range bundle.pluginList {
+		if pluginInfo.Name == pluginName {
+			bundle.pluginList = append(bundle.pluginList[:i], bundle.pluginList[i+1:]...)
+			return
+		}
+	}
+
 }
 
 func (bundle *_PluginBundle) Get(pluginName string) (util.FaceAny, bool) {
+	bundle.mutex.RLock()
+	defer bundle.mutex.RUnlock()
+
 	pluginFace, ok := bundle.pluginMap[pluginName]
 	return pluginFace, ok
 }
@@ -96,8 +127,30 @@ func (bundle *_PluginBundle) Range(fun func(pluginName string, pluginFace util.F
 		return
 	}
 
-	for pluginName, pluginFace := range bundle.pluginMap {
-		if !fun(pluginName, pluginFace) {
+	bundle.mutex.RLock()
+	defer bundle.mutex.RUnlock()
+
+	pluginList := append(make([]_PluginInfo, 0, len(bundle.pluginList)), bundle.pluginList...)
+
+	for i := range pluginList {
+		if !fun(pluginList[i].Name, pluginList[i].Plugin) {
+			return
+		}
+	}
+}
+
+func (bundle *_PluginBundle) ReverseRange(fun func(pluginName string, pluginFace util.FaceAny) bool) {
+	if fun == nil {
+		return
+	}
+
+	bundle.mutex.RLock()
+	defer bundle.mutex.RUnlock()
+
+	pluginList := append(make([]_PluginInfo, 0, len(bundle.pluginList)), bundle.pluginList...)
+
+	for i := len(pluginList) - 1; i >= 0; i-- {
+		if !fun(pluginList[i].Name, pluginList[i].Plugin) {
 			return
 		}
 	}

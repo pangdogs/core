@@ -2,6 +2,7 @@ package pt
 
 import (
 	"fmt"
+	"sync"
 )
 
 // EntityLib 实体原型库
@@ -39,15 +40,17 @@ func NewEntityLib() EntityLib {
 
 type _EntityLib struct {
 	entityPtMap map[string]EntityPt
+	mutex       sync.RWMutex
 }
 
 func (lib *_EntityLib) init() {
-	if lib.entityPtMap == nil {
-		lib.entityPtMap = map[string]EntityPt{}
-	}
+	lib.entityPtMap = map[string]EntityPt{}
 }
 
 func (lib *_EntityLib) Register(prototype string, compPaths []string) {
+	lib.mutex.Lock()
+	defer lib.mutex.Unlock()
+
 	_, ok := lib.entityPtMap[prototype]
 	if ok {
 		panic(fmt.Errorf("entity '%s' is already registered", prototype))
@@ -69,10 +72,16 @@ func (lib *_EntityLib) Register(prototype string, compPaths []string) {
 }
 
 func (lib *_EntityLib) Deregister(prototype string) {
+	lib.mutex.Lock()
+	defer lib.mutex.Unlock()
+
 	delete(lib.entityPtMap, prototype)
 }
 
 func (lib *_EntityLib) Get(prototype string) (EntityPt, bool) {
+	lib.mutex.RLock()
+	defer lib.mutex.RUnlock()
+
 	entityPt, ok := lib.entityPtMap[prototype]
 	return entityPt, ok
 }
@@ -81,6 +90,9 @@ func (lib *_EntityLib) Range(fun func(entityPt EntityPt) bool) {
 	if fun == nil {
 		return
 	}
+
+	lib.mutex.RLock()
+	defer lib.mutex.RUnlock()
 
 	for _, entityPt := range lib.entityPtMap {
 		if !fun(entityPt) {
