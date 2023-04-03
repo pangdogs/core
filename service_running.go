@@ -61,7 +61,7 @@ func (_service *ServiceBehavior) running(shutChan chan struct{}) {
 		}
 
 		if pluginBundle := service.UnsafeContext(_service.ctx).GetOptions().PluginBundle; pluginBundle != nil {
-			pluginBundle.Range(func(pluginName string, pluginFace util.FaceAny) bool {
+			pluginBundle.ReverseRange(func(pluginName string, pluginFace util.FaceAny) bool {
 				if pluginShut, ok := pluginFace.Iface.(_PluginShut); ok {
 					internal.CallOuterNoRet(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
 						pluginShut.Shut()

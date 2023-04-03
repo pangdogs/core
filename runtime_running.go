@@ -71,7 +71,7 @@ func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
 		}
 
 		if pluginBundle := runtime.UnsafeContext(_runtime.ctx).GetOptions().PluginBundle; pluginBundle != nil {
-			pluginBundle.Range(func(pluginName string, pluginFace util.FaceAny) bool {
+			pluginBundle.ReverseRange(func(pluginName string, pluginFace util.FaceAny) bool {
 				if pluginShut, ok := pluginFace.Iface.(_PluginShut); ok {
 					internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 						pluginShut.Shut()
