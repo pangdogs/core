@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"fmt"
+	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/localevent"
 	"kit.golaxy.org/golaxy/plugin"
@@ -37,6 +38,7 @@ func UnsafeNewContext(serviceCtx service.Context, options ContextOptions) Contex
 // Context 运行时上下文接口
 type Context interface {
 	_Context
+	ec.ContextResolver
 	container.GCCollector
 	internal.Context
 	internal.RunningMark
@@ -119,6 +121,11 @@ func (ctx *ContextBehavior) GetHookAllocator() container.Allocator[localevent.Ho
 // String 字符串化
 func (ctx *ContextBehavior) String() string {
 	return fmt.Sprintf("[Ptr:0x%x Prototype:%s]", ctx.opts.CompositeFace.Cache[1], ctx.GetPrototype())
+}
+
+// ResolveContext 解析上下文
+func (ctx *ContextBehavior) ResolveContext() util.IfaceCache {
+	return ctx.opts.CompositeFace.Cache
 }
 
 // CollectGC 收集GC

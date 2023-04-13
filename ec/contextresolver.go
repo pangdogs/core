@@ -4,7 +4,8 @@ import (
 	"kit.golaxy.org/golaxy/util"
 )
 
-// ContextResolver 用于从实体或组件上获取上下文
+// ContextResolver 上下文获取器
 type ContextResolver interface {
-	getContext() util.IfaceCache
+	// ResolveContext 解析上下文
+	ResolveContext() util.IfaceCache
 }

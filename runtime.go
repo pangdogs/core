@@ -35,10 +35,11 @@ func UnsafeNewRuntime(runtimeCtx runtime.Context, options RuntimeOptions) Runtim
 // Runtime 运行时接口
 type Runtime interface {
 	_Runtime
+	ec.ContextResolver
 	internal.Running
 
-	// GetRuntimeCtx 获取运行时上下文
-	GetRuntimeCtx() runtime.Context
+	// GetContext 获取运行时上下文
+	GetContext() runtime.Context
 }
 
 type _Runtime interface {
@@ -61,9 +62,14 @@ type RuntimeBehavior struct {
 	eventLateUpdate localevent.Event
 }
 
-// GetRuntimeCtx 获取运行时上下文
-func (_runtime *RuntimeBehavior) GetRuntimeCtx() runtime.Context {
+// GetContext 获取运行时上下文
+func (_runtime *RuntimeBehavior) GetContext() runtime.Context {
 	return _runtime.ctx
+}
+
+// ResolveContext 解析上下文
+func (_runtime *RuntimeBehavior) ResolveContext() util.IfaceCache {
+	return util.Iface2Cache[runtime.Context](_runtime.ctx)
 }
 
 func (_runtime *RuntimeBehavior) init(runtimeCtx runtime.Context, opts *RuntimeOptions) {

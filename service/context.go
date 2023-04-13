@@ -41,7 +41,7 @@ type Context interface {
 	internal.Context
 	internal.RunningMark
 	plugin.PluginResolver
-	pt.PtResolver
+	pt.EntityPtResolver
 	_Call
 
 	// GetPrototype 获取原型名称

@@ -2,7 +2,6 @@ package ec
 
 import (
 	"kit.golaxy.org/golaxy/localevent"
-	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/golaxy/util/container"
 	"reflect"
 )
@@ -35,10 +34,6 @@ func (uc _UnsafeComponent) SetFixed(v bool) {
 
 func (uc _UnsafeComponent) GetFixed() bool {
 	return uc.getFixed()
-}
-
-func (uc _UnsafeComponent) GetContext() util.IfaceCache {
-	return uc.getContext()
 }
 
 func (uc _UnsafeComponent) SetState(state ComponentState) {

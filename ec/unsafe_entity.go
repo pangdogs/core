@@ -36,10 +36,6 @@ func (ue _UnsafeEntity) SetContext(ctx util.IfaceCache) {
 	ue.setContext(ctx)
 }
 
-func (ue _UnsafeEntity) GetContext() util.IfaceCache {
-	return ue.getContext()
-}
-
 func (ue _UnsafeEntity) GetChangedVersion() int64 {
 	return ue.getChangedVersion()
 }

@@ -81,7 +81,7 @@ func (entityMgr *_EntityMgr) GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, 
 		return nil, false, errors.New("entity id equal zero is invalid")
 	}
 
-	if ec.UnsafeEntity(entity).GetContext() == util.NilIfaceCache {
+	if entity.ResolveContext() == util.NilIfaceCache {
 		return nil, false, errors.New("entity context can't be resolve")
 	}
 
@@ -99,7 +99,7 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity) error {
 		return errors.New("entity id equal zero is invalid")
 	}
 
-	if ec.UnsafeEntity(entity).GetContext() == util.NilIfaceCache {
+	if entity.ResolveContext() == util.NilIfaceCache {
 		return errors.New("entity context can't be resolve")
 	}
 
