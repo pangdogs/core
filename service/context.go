@@ -92,7 +92,7 @@ func (ctx *ContextBehavior) GetEntityMgr() IEntityMgr {
 
 // String 字符串化
 func (ctx *ContextBehavior) String() string {
-	return fmt.Sprintf("[Ptr:0x%x Prototype:%s]", ctx.opts.CompositeFace.Cache[1], ctx.GetPrototype())
+	return fmt.Sprintf("[Address:0x%x Prototype:%s]", ctx.opts.CompositeFace.Cache[1], ctx.GetPrototype())
 }
 
 func (ctx *ContextBehavior) init(opts *ContextOptions) {

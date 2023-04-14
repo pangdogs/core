@@ -1,10 +1,7 @@
 package ec
 
 import (
-	"encoding/base64"
-	"errors"
-	"reflect"
-	"unsafe"
+	"github.com/segmentio/ksuid"
 )
 
 // ID 唯一ID（160位）
@@ -15,23 +12,23 @@ func (id ID) String() string {
 }
 
 func (id ID) Encode() string {
-	return base64.RawURLEncoding.EncodeToString(id[:])
+	return EncodeID(id)
+}
+
+var EncodeID = func(id ID) string {
+	return ksuid.KSUID(id).String()
 }
 
 func (id *ID) Decode(str string) error {
-	if base64.RawURLEncoding.DecodedLen(len(str)) > len(id) {
-		return errors.New("string too long")
+	_id, err := DecodeID(str)
+	if err != nil {
+		return err
 	}
-	_, err := base64.RawURLEncoding.Decode(id[:], string2Bytes(str))
-	return err
+	*id = _id
+	return nil
 }
 
-func string2Bytes(s string) []byte {
-	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
-	bh := reflect.SliceHeader{
-		Data: sh.Data,
-		Len:  sh.Len,
-		Cap:  sh.Len,
-	}
-	return *(*[]byte)(unsafe.Pointer(&bh))
+var DecodeID = func(str string) (ID, error) {
+	id, err := ksuid.Parse(str)
+	return ID(id), err
 }

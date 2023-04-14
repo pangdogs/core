@@ -114,7 +114,7 @@ func (ctx *ContextBehavior) GetHookAllocator() container.Allocator[localevent.Ho
 
 // String 字符串化
 func (ctx *ContextBehavior) String() string {
-	return fmt.Sprintf("[Ptr:0x%x Prototype:%s]", ctx.opts.CompositeFace.Cache[1], ctx.GetPrototype())
+	return fmt.Sprintf("[Address:0x%x Prototype:%s]", ctx.opts.CompositeFace.Cache[1], ctx.GetPrototype())
 }
 
 // ResolveContext 解析上下文
