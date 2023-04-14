@@ -143,7 +143,7 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 	}
 
 	runtimeCtx := entityMgr.runtimeCtx
-	serviceCtx := runtimeCtx.GetServiceCtx()
+	serviceCtx := runtimeCtx.getServiceCtx()
 	_entity := ec.UnsafeEntity(entity)
 
 	if _entity.GetID() == util.Zero[ec.ID]() {
@@ -164,7 +164,7 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 	})
 
 	if scope == ec.Scope_Global {
-		_, loaded, err := entityMgr.GetRuntimeCtx().GetServiceCtx().GetEntityMgr().GetOrAddEntity(entity)
+		_, loaded, err := entityMgr.GetRuntimeCtx().getServiceCtx().GetEntityMgr().GetOrAddEntity(entity)
 		if err != nil {
 			return err
 		}
@@ -210,7 +210,7 @@ func (entityMgr *_EntityMgr) RemoveEntity(id ec.ID) {
 	entity.SetState(ec.EntityState_Leave)
 
 	runtimeCtx := entityMgr.runtimeCtx
-	serviceCtx := runtimeCtx.GetServiceCtx()
+	serviceCtx := runtimeCtx.getServiceCtx()
 
 	if entityInfo.GlobalMark {
 		serviceCtx.GetEntityMgr().RemoveEntityWithSerialNo(entity.GetID(), entity.GetSerialNo())
@@ -259,7 +259,7 @@ func (entityMgr *_EntityMgr) EventEntityMgrEntityFirstAccessComponent() localeve
 }
 
 func (entityMgr *_EntityMgr) OnCompMgrAddComponents(entity ec.Entity, components []ec.Component) {
-	serviceCtx := entityMgr.runtimeCtx.GetServiceCtx()
+	serviceCtx := entityMgr.runtimeCtx.getServiceCtx()
 
 	for i := range components {
 		_comp := ec.UnsafeComponent(components[i])

@@ -27,6 +27,10 @@ func (uc _UnsafeContext) SetFrame(frame Frame) {
 	uc.setFrame(frame)
 }
 
+func (uc _UnsafeContext) GetServiceCtx() service.Context {
+	return uc.getServiceCtx()
+}
+
 func (uc _UnsafeContext) SetCallee(callee Callee) {
 	uc.setCallee(callee)
 }

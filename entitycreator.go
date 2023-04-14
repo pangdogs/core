@@ -60,7 +60,7 @@ func (creator EntityCreator) spawn(modifyOptions func(options *pt.EntityOptions)
 	}
 
 	runtimeCtx := creator.runtimeCtx
-	serviceCtx := runtimeCtx.GetServiceCtx()
+	serviceCtx := service.Get(runtimeCtx)
 
 	entityLib := service.UnsafeContext(serviceCtx).GetOptions().EntityLib
 	if entityLib == nil {

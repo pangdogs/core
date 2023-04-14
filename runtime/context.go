@@ -47,8 +47,6 @@ type Context interface {
 
 	// GetPrototype 获取原型名称
 	GetPrototype() string
-	// GetServiceCtx 获取服务上下文
-	GetServiceCtx() service.Context
 	// GetFrame 获取帧
 	GetFrame() Frame
 	// GetEntityMgr 获取实体管理器
@@ -67,6 +65,7 @@ type _Context interface {
 	init(serviceCtx service.Context, opts *ContextOptions)
 	getOptions() *ContextOptions
 	setFrame(frame Frame)
+	getServiceCtx() service.Context
 	gc()
 }
 
@@ -86,11 +85,6 @@ type ContextBehavior struct {
 // GetPrototype 获取原型名称
 func (ctx *ContextBehavior) GetPrototype() string {
 	return ctx.opts.Prototype
-}
-
-// GetServiceCtx 获取服务上下文
-func (ctx *ContextBehavior) GetServiceCtx() service.Context {
-	return ctx.serviceCtx
 }
 
 // GetFrame 获取帧
@@ -168,4 +162,8 @@ func (ctx *ContextBehavior) getOptions() *ContextOptions {
 
 func (ctx *ContextBehavior) setFrame(frame Frame) {
 	ctx.frame = frame
+}
+
+func (ctx *ContextBehavior) getServiceCtx() service.Context {
+	return ctx.serviceCtx
 }

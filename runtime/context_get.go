@@ -16,5 +16,5 @@ func Get(ctxResolver ec.ContextResolver) Context {
 }
 
 func getServiceContext(ctxResolver ec.ContextResolver) service.Context {
-	return Get(ctxResolver).GetServiceCtx()
+	return Get(ctxResolver).getServiceCtx()
 }
