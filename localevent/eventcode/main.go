@@ -37,6 +37,7 @@ type _CommandContext struct {
 	EmitPackage   string
 	EmitDir       string
 	EmitDefExport bool
+	EmitDefAuto   bool
 
 	// 生成事件表代码相关选项
 	EventTabPackage           string
@@ -55,7 +56,8 @@ func main() {
 	emitCmd := kingpin.Command("gen_emit", "通过定义的事件生成发送事件代码。")
 	emitPackage := emitCmd.Flag("package", "生成的发送事件代码时使用的包名。").String()
 	emitDir := emitCmd.Flag("dir", "生成的发送事件代码产生的源文件（*.go）存放的相对目录。").String()
-	emitDefExport := emitCmd.Flag("default_export", "生成的发送事件代码默认的可见性，事件选项[EmitExport][EmitUnExport]可以覆盖此配置。").Default("true").String()
+	emitDefExport := emitCmd.Flag("default_export", "生成的发送事件代码，默认的可见性，事件选项[EmitExport][EmitUnExport]可以覆盖此配置。").Default("true").String()
+	emitDefAuto := emitCmd.Flag("default_auto", "生成的发送事件代码，默认是否支持自动选择事件表中的事件，事件选项[EmitAuto][EmitManual]可以覆盖此配置。").Default("false").String()
 
 	// 生成事件表代码相关选项
 	eventTabCmd := kingpin.Command("gen_eventtab", "通过定义的事件生成事件表代码。")
@@ -82,6 +84,7 @@ func main() {
 		ctx.EmitPackage = strings.TrimSpace(*emitPackage)
 		ctx.EmitDir = strings.TrimSpace(*emitDir)
 		ctx.EmitDefExport, _ = strconv.ParseBool(*emitDefExport)
+		ctx.EmitDefAuto, _ = strconv.ParseBool(*emitDefAuto)
 
 		if ctx.EmitPackage == "" {
 			panic("`gen_emit --package`设置的包名不能为空")

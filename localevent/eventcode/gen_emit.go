@@ -105,9 +105,80 @@ package %s
 			exportEmitStr = "emit"
 		}
 
+		auto := ctx.EmitDefAuto
+
+		if strings.Contains(eventDecl.Comment, "[EmitAuto]") {
+			auto = true
+		} else if strings.Contains(eventDecl.Comment, "[EmitManual]") {
+			auto = false
+		}
+
 		// 生成代码
-		if eventDecl.FuncHasRet {
-			fmt.Fprintf(emitCode, `
+		if auto {
+			if eventDecl.FuncHasRet {
+				fmt.Fprintf(emitCode, `
+type iAuto%[1]s interface {
+	%[1]s() %[6]sIEvent
+}
+
+func Bind%[1]s(auto iAuto%[1]s, delegate %[2]s%[8]s) %[6]sHook {
+	if auto == nil {
+		panic("nil auto")
+	}
+	return %[6]sBindEvent[%[2]s%[8]s](auto.%[1]s(), delegate)
+}
+
+func Bind%[1]sWithPriority(auto iAuto%[1]s, delegate %[2]s%[8]s, priority int32) %[6]sHook {
+	if auto == nil {
+		panic("nil auto")
+	}
+	return %[6]sBindEventWithPriority[%[2]s%[8]s](auto.%[1]s(), delegate, priority)
+}
+
+func %[9]s%[1]s%[7]s(auto iAuto%[1]s%[4]s) {
+	if auto == nil {
+		panic("nil auto")
+	}
+	%[6]sUnsafeEvent(auto.%[1]s()).Emit(func(delegate util.IfaceCache) bool {
+		return util.Cache2Iface[%[2]s%[8]s](delegate).%[3]s(%[5]s)
+	})
+}
+`, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, localeventPrefix, eventDecl.FuncTypeParamsDecl, eventDecl.FuncTypeParams, exportEmitStr)
+
+			} else {
+				fmt.Fprintf(emitCode, `
+type iAuto%[1]s interface {
+	%[1]s() %[6]sIEvent
+}
+
+func Bind%[1]s(auto iAuto%[1]s, delegate %[2]s%[8]s) %[6]sHook {
+	if auto == nil {
+		panic("nil auto")
+	}
+	return %[6]sBindEvent[%[2]s%[8]s](auto.%[1]s(), delegate)
+}
+
+func Bind%[1]sWithPriority(auto iAuto%[1]s, delegate %[2]s%[8]s, priority int32) %[6]sHook {
+	if auto == nil {
+		panic("nil auto")
+	}
+	return %[6]sBindEventWithPriority[%[2]s%[8]s](auto.%[1]s(), delegate, priority)
+}
+
+func %[9]s%[1]s%[7]s(auto iAuto%[1]s%[4]s) {
+	if auto == nil {
+		panic("nil auto")
+	}
+	%[6]sUnsafeEvent(auto.%[1]s()).Emit(func(delegate util.IfaceCache) bool {
+		util.Cache2Iface[%[2]s%[8]s](delegate).%[3]s(%[5]s)
+		return true
+	})
+}
+`, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, localeventPrefix, eventDecl.FuncTypeParamsDecl, eventDecl.FuncTypeParams, exportEmitStr)
+			}
+		} else {
+			if eventDecl.FuncHasRet {
+				fmt.Fprintf(emitCode, `
 func %[9]s%[1]s%[7]s(event %[6]sIEvent%[4]s) {
 	if event == nil {
 		panic("nil event")
@@ -118,8 +189,8 @@ func %[9]s%[1]s%[7]s(event %[6]sIEvent%[4]s) {
 }
 `, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, localeventPrefix, eventDecl.FuncTypeParamsDecl, eventDecl.FuncTypeParams, exportEmitStr)
 
-		} else {
-			fmt.Fprintf(emitCode, `
+			} else {
+				fmt.Fprintf(emitCode, `
 func %[9]s%[1]s%[7]s(event %[6]sIEvent%[4]s) {
 	if event == nil {
 		panic("nil event")
@@ -130,6 +201,7 @@ func %[9]s%[1]s%[7]s(event %[6]sIEvent%[4]s) {
 	})
 }
 `, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, localeventPrefix, eventDecl.FuncTypeParamsDecl, eventDecl.FuncTypeParams, exportEmitStr)
+			}
 		}
 
 		fmt.Printf("Emit: %s\n", eventDecl.Name)
