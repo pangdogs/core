@@ -118,16 +118,18 @@ func (entity *EntityBehavior) DestroySelf() {
 
 // String 字符串化
 func (entity *EntityBehavior) String() string {
-	var parentID ID
+	var parentInfo string
 	if parent, ok := entity.GetParent(); ok {
-		parentID = parent.GetID()
+		parentInfo = parent.GetID().String()
+	} else {
+		parentInfo = "nil"
 	}
 
 	return fmt.Sprintf("[ID:%s SerialNo:%d Prototype:%s Parent:%s State:%s]",
 		entity.GetID(),
 		entity.GetSerialNo(),
 		entity.GetPrototype(),
-		parentID,
+		parentInfo,
 		entity.GetState())
 }
 

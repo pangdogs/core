@@ -45,8 +45,8 @@ type Context interface {
 	plugin.PluginResolver
 	_Call
 
-	// GetPrototype 获取原型名称
-	GetPrototype() string
+	// GetName 获取名称
+	GetName() string
 	// GetFrame 获取帧
 	GetFrame() Frame
 	// GetEntityMgr 获取实体管理器
@@ -82,9 +82,9 @@ type ContextBehavior struct {
 	gcList     []container.GC
 }
 
-// GetPrototype 获取原型名称
-func (ctx *ContextBehavior) GetPrototype() string {
-	return ctx.opts.Prototype
+// GetName 获取名称
+func (ctx *ContextBehavior) GetName() string {
+	return ctx.opts.Name
 }
 
 // GetFrame 获取帧
@@ -114,7 +114,7 @@ func (ctx *ContextBehavior) GetHookAllocator() container.Allocator[localevent.Ho
 
 // String 字符串化
 func (ctx *ContextBehavior) String() string {
-	return fmt.Sprintf("[Address:0x%x Prototype:%s]", ctx.opts.CompositeFace.Cache[1], ctx.GetPrototype())
+	return fmt.Sprintf("[Addr:0x%x Name:%s]", ctx.opts.CompositeFace.Cache[1], ctx.GetName())
 }
 
 // ResolveContext 解析上下文

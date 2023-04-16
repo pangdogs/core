@@ -14,7 +14,7 @@ type ContextOptions struct {
 	Context            context.Context                      // 父Context
 	AutoRecover        bool                                 // 是否开启panic时自动恢复
 	ReportError        chan error                           // panic时错误写入的error channel
-	Prototype          string                               // 运行时原型名称
+	Name               string                               // 运行时名称
 	PluginBundle       plugin.PluginBundle                  // 插件包
 	StartedCallback    func(runtimeCtx Context)             // 启动运行时回调函数
 	StoppingCallback   func(runtimeCtx Context)             // 开始停止运行时回调函数
@@ -38,7 +38,7 @@ func (WithContextOption) Default() ContextOption {
 		WithContextOption{}.Context(nil)(o)
 		WithContextOption{}.AutoRecover(false)(o)
 		WithContextOption{}.ReportError(nil)(o)
-		WithContextOption{}.Prototype("")(o)
+		WithContextOption{}.Name("")(o)
 		WithContextOption{}.PluginBundle(nil)(o)
 		WithContextOption{}.StartedCallback(nil)(o)
 		WithContextOption{}.StoppingCallback(nil)(o)
@@ -78,10 +78,10 @@ func (WithContextOption) ReportError(v chan error) ContextOption {
 	}
 }
 
-// Prototype 运行时原型名称
-func (WithContextOption) Prototype(v string) ContextOption {
+// Name 运行时名称
+func (WithContextOption) Name(v string) ContextOption {
 	return func(o *ContextOptions) {
-		o.Prototype = v
+		o.Name = v
 	}
 }
 

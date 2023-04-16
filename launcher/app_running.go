@@ -79,7 +79,7 @@ func (app *_App) loadPtConfig(ptConfFile string) ServiceConfTab {
 	}
 }
 
-func (app *_App) runService(ctx context.Context, servicePt string, serviceConf ServiceConf) {
+func (app *_App) runService(ctx context.Context, serviceName string, serviceConf ServiceConf) {
 	entityLib := pt.NewEntityLib()
 
 	for entityPtName, entityPtConf := range serviceConf.EntityTab {
@@ -90,13 +90,13 @@ func (app *_App) runService(ctx context.Context, servicePt string, serviceConf S
 
 	serviceCtxOpts := []service.ContextOption{
 		service.WithContextOption{}.Context(ctx),
-		service.WithContextOption{}.Prototype(servicePt),
+		service.WithContextOption{}.Name(serviceName),
 		service.WithContextOption{}.EntityLib(entityLib),
 		service.WithContextOption{}.PluginBundle(pluginBundle),
 	}
 
 	if app.options.ServiceCtxInitTab != nil {
-		initFunc := app.options.ServiceCtxInitTab[servicePt]
+		initFunc := app.options.ServiceCtxInitTab[serviceName]
 		if initFunc != nil {
 			serviceCtxOpts = append(serviceCtxOpts, initFunc(entityLib, pluginBundle)...)
 		}
@@ -105,7 +105,7 @@ func (app *_App) runService(ctx context.Context, servicePt string, serviceConf S
 	var serviceOpts []golaxy.ServiceOption
 
 	if app.options.ServiceInitTab != nil {
-		initFunc := app.options.ServiceInitTab[servicePt]
+		initFunc := app.options.ServiceInitTab[serviceName]
 		if initFunc != nil {
 			serviceOpts = append(serviceOpts, initFunc()...)
 		}

@@ -44,8 +44,8 @@ type Context interface {
 	pt.EntityPtResolver
 	_Call
 
-	// GetPrototype 获取原型名称
-	GetPrototype() string
+	// GetName 获取名称
+	GetName() string
 	// GenSerialNo 生成流水号（运行时唯一）
 	GenSerialNo() int64
 	// GenPersistID 生成持久化ID（全局唯一）
@@ -70,9 +70,9 @@ type ContextBehavior struct {
 	entityMgr   _EntityMgr
 }
 
-// GetPrototype 获取原型名称
-func (ctx *ContextBehavior) GetPrototype() string {
-	return ctx.opts.Prototype
+// GetName 获取名称
+func (ctx *ContextBehavior) GetName() string {
+	return ctx.opts.Name
 }
 
 // GenSerialNo 生成流水号（运行时唯一）
@@ -92,7 +92,7 @@ func (ctx *ContextBehavior) GetEntityMgr() IEntityMgr {
 
 // String 字符串化
 func (ctx *ContextBehavior) String() string {
-	return fmt.Sprintf("[Address:0x%x Prototype:%s]", ctx.opts.CompositeFace.Cache[1], ctx.GetPrototype())
+	return fmt.Sprintf("[Addr:0x%x Name:%s]", ctx.opts.CompositeFace.Cache[1], ctx.GetName())
 }
 
 func (ctx *ContextBehavior) init(opts *ContextOptions) {

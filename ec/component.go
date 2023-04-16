@@ -91,16 +91,18 @@ func (comp *ComponentBehavior) DestroySelf() {
 
 // String 字符串化
 func (comp *ComponentBehavior) String() string {
-	var entityID ID
+	var entityInfo string
 	if entity := comp.GetEntity(); entity != nil {
-		entityID = entity.GetID()
+		entityInfo = entity.GetID().String()
+	} else {
+		entityInfo = "nil"
 	}
 
 	return fmt.Sprintf("[ID:%s SerialNo:%d Name:%s Entity:%s State:%s]",
 		comp.GetID(),
 		comp.GetSerialNo(),
 		comp.GetName(),
-		entityID,
+		entityInfo,
 		comp.GetState())
 }
 
