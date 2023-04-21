@@ -46,6 +46,8 @@ type Context interface {
 
 	// GetName 获取名称
 	GetName() string
+	// GetID 获取服务ID
+	GetID() ec.ID
 	// GenSerialNo 生成流水号（运行时唯一）
 	GenSerialNo() int64
 	// GenPersistID 生成持久化ID（全局唯一）
@@ -75,6 +77,11 @@ func (ctx *ContextBehavior) GetName() string {
 	return ctx.opts.Name
 }
 
+// GetID 获取服务ID
+func (ctx *ContextBehavior) GetID() ec.ID {
+	return ctx.opts.PersistID
+}
+
 // GenSerialNo 生成流水号（运行时唯一）
 func (ctx *ContextBehavior) GenSerialNo() int64 {
 	return atomic.AddInt64(&ctx.snGenerator, 1)
@@ -92,7 +99,7 @@ func (ctx *ContextBehavior) GetEntityMgr() IEntityMgr {
 
 // String 字符串化
 func (ctx *ContextBehavior) String() string {
-	return fmt.Sprintf("[Addr:0x%x Name:%s]", ctx.opts.CompositeFace.Cache[1], ctx.GetName())
+	return fmt.Sprintf("[ID:%s Name:%s]", ctx.GetID(), ctx.GetName())
 }
 
 func (ctx *ContextBehavior) init(opts *ContextOptions) {
@@ -108,6 +115,10 @@ func (ctx *ContextBehavior) init(opts *ContextOptions) {
 
 	if ctx.opts.Context == nil {
 		ctx.opts.Context = context.Background()
+	}
+
+	if ctx.opts.PersistID == util.Zero[ec.ID]() {
+		ctx.opts.PersistID = ctx.opts.GenPersistID()
 	}
 
 	internal.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)

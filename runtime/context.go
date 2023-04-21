@@ -47,6 +47,8 @@ type Context interface {
 
 	// GetName 获取名称
 	GetName() string
+	// GetID 获取运行时ID
+	GetID() ec.ID
 	// GetFrame 获取帧
 	GetFrame() Frame
 	// GetEntityMgr 获取实体管理器
@@ -87,6 +89,11 @@ func (ctx *ContextBehavior) GetName() string {
 	return ctx.opts.Name
 }
 
+// GetID 获取运行时ID
+func (ctx *ContextBehavior) GetID() ec.ID {
+	return ctx.opts.PersistID
+}
+
 // GetFrame 获取帧
 func (ctx *ContextBehavior) GetFrame() Frame {
 	return ctx.frame
@@ -114,7 +121,7 @@ func (ctx *ContextBehavior) GetHookAllocator() container.Allocator[localevent.Ho
 
 // String 字符串化
 func (ctx *ContextBehavior) String() string {
-	return fmt.Sprintf("[Addr:0x%x Name:%s]", ctx.opts.CompositeFace.Cache[1], ctx.GetName())
+	return fmt.Sprintf("[ID:%s Name:%s]", ctx.GetID(), ctx.GetName())
 }
 
 // ResolveContext 解析上下文
@@ -148,6 +155,10 @@ func (ctx *ContextBehavior) init(serviceCtx service.Context, opts *ContextOption
 
 	if ctx.opts.Context == nil {
 		ctx.opts.Context = serviceCtx
+	}
+
+	if ctx.opts.PersistID == util.Zero[ec.ID]() {
+		ctx.opts.PersistID = serviceCtx.GenPersistID()
 	}
 
 	internal.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)

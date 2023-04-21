@@ -69,7 +69,6 @@ type _Entity interface {
 
 // EntityBehavior 实体行为，在需要扩展实体能力时，匿名嵌入至实体结构体中
 type EntityBehavior struct {
-	id                               ID
 	serialNo                         int64
 	opts                             EntityOptions
 	context                          util.IfaceCache
@@ -85,7 +84,7 @@ type EntityBehavior struct {
 
 // GetID 获取实体ID
 func (entity *EntityBehavior) GetID() ID {
-	return entity.id
+	return entity.opts.PersistID
 }
 
 // GetSerialNo 获取序列号
@@ -149,7 +148,6 @@ func (entity *EntityBehavior) init(opts *EntityOptions) {
 		entity.opts.CompositeFace = util.NewFace[Entity](entity)
 	}
 
-	entity.id = entity.opts.PersistID
 	entity.componentList.Init(entity.opts.FaceAnyAllocator, entity.opts.GCCollector)
 
 	entity._eventEntityDestroySelf.Init(false, nil, localevent.EventRecursion_NotEmit, entity.opts.HookAllocator, entity.opts.GCCollector)
@@ -163,7 +161,7 @@ func (entity *EntityBehavior) getOptions() *EntityOptions {
 }
 
 func (entity *EntityBehavior) setID(id ID) {
-	entity.id = id
+	entity.opts.PersistID = id
 }
 
 func (entity *EntityBehavior) setSerialNo(sn int64) {

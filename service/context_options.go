@@ -16,6 +16,7 @@ type ContextOptions struct {
 	AutoRecover      bool                     // 是否开启panic时自动恢复
 	ReportError      chan error               // panic时错误写入的error channel
 	Name             string                   // 服务名称
+	PersistID        ec.ID                    // 服务持久化ID
 	GenPersistID     func() ec.ID             // 生成持久化ID的函数
 	EntityLib        pt.EntityLib             // 实体原型库
 	PluginBundle     plugin.PluginBundle      // 插件包
@@ -38,6 +39,7 @@ func (WithContextOption) Default() ContextOption {
 		WithContextOption{}.AutoRecover(false)(o)
 		WithContextOption{}.ReportError(nil)(o)
 		WithContextOption{}.Name("")(o)
+		WithContextOption{}.PersistID(util.Zero[ec.ID]())(o)
 		WithContextOption{}.GenPersistID(func() ec.ID { return ec.ID(ksuid.New()) })(o)
 		WithContextOption{}.EntityLib(nil)(o)
 		WithContextOption{}.PluginBundle(nil)(o)
@@ -79,6 +81,13 @@ func (WithContextOption) ReportError(v chan error) ContextOption {
 func (WithContextOption) Name(v string) ContextOption {
 	return func(o *ContextOptions) {
 		o.Name = v
+	}
+}
+
+// PersistID 服务持久化ID
+func (WithContextOption) PersistID(v ec.ID) ContextOption {
+	return func(o *ContextOptions) {
+		o.PersistID = v
 	}
 }
 
