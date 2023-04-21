@@ -34,7 +34,7 @@ func (_service *ServiceBehavior) running(shutChan chan struct{}) {
 		pluginBundle.Range(func(pluginName string, pluginFace util.FaceAny) bool {
 			if pluginInit, ok := pluginFace.Iface.(_ServicePluginInit); ok {
 				internal.CallOuterNoRet(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
-					pluginInit.Init(_service.ctx)
+					pluginInit.InitService(_service.ctx)
 				})
 			}
 			return true

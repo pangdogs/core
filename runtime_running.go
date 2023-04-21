@@ -40,7 +40,7 @@ func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
 		pluginBundle.Range(func(pluginName string, pluginFace util.FaceAny) bool {
 			if pluginInit, ok := pluginFace.Iface.(_RuntimePluginInit); ok {
 				internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-					pluginInit.Init(_runtime.ctx)
+					pluginInit.InitRuntime(_runtime.ctx)
 				})
 			}
 			return true

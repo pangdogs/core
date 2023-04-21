@@ -6,11 +6,11 @@ import (
 )
 
 type _ServicePluginInit interface {
-	Init(ctx service.Context)
+	InitService(ctx service.Context)
 }
 
 type _RuntimePluginInit interface {
-	Init(ctx runtime.Context)
+	InitRuntime(ctx runtime.Context)
 }
 
 type _PluginShut interface {
