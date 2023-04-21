@@ -9,10 +9,14 @@ type _ServicePluginInit interface {
 	InitService(ctx service.Context)
 }
 
+type _ServicePluginShut interface {
+	ShutService(ctx service.Context)
+}
+
 type _RuntimePluginInit interface {
 	InitRuntime(ctx runtime.Context)
 }
 
-type _PluginShut interface {
-	Shut()
+type _RuntimePluginShut interface {
+	ShutRuntime(ctx runtime.Context)
 }

@@ -72,9 +72,9 @@ func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
 
 		if pluginBundle := runtime.UnsafeContext(_runtime.ctx).GetOptions().PluginBundle; pluginBundle != nil {
 			pluginBundle.ReverseRange(func(pluginName string, pluginFace util.FaceAny) bool {
-				if pluginShut, ok := pluginFace.Iface.(_PluginShut); ok {
+				if pluginShut, ok := pluginFace.Iface.(_RuntimePluginShut); ok {
 					internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-						pluginShut.Shut()
+						pluginShut.ShutRuntime(_runtime.ctx)
 					})
 				}
 				return true
