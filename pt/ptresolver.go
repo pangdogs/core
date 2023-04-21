@@ -21,7 +21,7 @@ func GetEntityPt(entityPtResolver EntityPtResolver, prototype string) EntityPt {
 
 	entityPt, ok := entityPtResolver.ResolveEntityPt(prototype)
 	if !ok {
-		panic(fmt.Errorf("entity prototype '%s' not registered", prototype))
+		panic(fmt.Errorf("entity prototype %q not registered", prototype))
 	}
 
 	return entityPt

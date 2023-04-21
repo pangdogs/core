@@ -69,7 +69,7 @@ func (creator EntityCreator) spawn(modifyOptions func(options *pt.EntityOptions)
 
 	entityPt, ok := entityLib.Get(creator.options.Prototype)
 	if !ok {
-		return nil, fmt.Errorf("entity '%s' not registered", creator.options.Prototype)
+		return nil, fmt.Errorf("entity %q not registered", creator.options.Prototype)
 	}
 
 	if modifyOptions != nil {

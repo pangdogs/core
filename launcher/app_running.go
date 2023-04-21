@@ -41,7 +41,7 @@ func (app *_App) runApp(services []string, ptPath string) {
 	for _, service := range services {
 		serviceConf, ok := servicePtConf[service]
 		if !ok {
-			panic(fmt.Errorf("service '%s' pt config not found", service))
+			panic(fmt.Errorf("service %q pt config not found", service))
 		}
 
 		wg.Add(1)
@@ -60,7 +60,7 @@ func (app *_App) loadPtConfig(ptConfFile string) ServiceConfTab {
 		loader := util.JsonLoader[ServiceConfTab]{}
 
 		if err := loader.SetFile(ptConfFile); err != nil {
-			panic(fmt.Errorf("load service pt config '%s' failed, %v", ptConfFile, err))
+			panic(fmt.Errorf("load service pt config %q failed, %v", ptConfFile, err))
 		}
 
 		return loader.Get()
@@ -69,13 +69,13 @@ func (app *_App) loadPtConfig(ptConfFile string) ServiceConfTab {
 		loader := util.XmlLoader[ServiceConfTab]{}
 
 		if err := loader.SetFile(ptConfFile); err != nil {
-			panic(fmt.Errorf("load service pt config '%s' failed, %v", ptConfFile, err))
+			panic(fmt.Errorf("load service pt config %q failed, %v", ptConfFile, err))
 		}
 
 		return loader.Get()
 
 	default:
-		panic(fmt.Errorf("load service pt config '%s' failed, file suffix invalid", ptConfFile))
+		panic(fmt.Errorf("load service pt config %q failed, file suffix invalid", ptConfFile))
 	}
 }
 

@@ -92,7 +92,7 @@ func (bundle *_PluginBundle) Install(pluginName string, pluginFace util.FaceAny)
 
 	_, ok := bundle.pluginMap[pluginName]
 	if ok {
-		panic(fmt.Errorf("plugin '%s' is already installed", pluginName))
+		panic(fmt.Errorf("plugin %q is already installed", pluginName))
 	}
 
 	bundle.pluginMap[pluginName] = pluginFace

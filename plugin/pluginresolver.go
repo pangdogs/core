@@ -22,7 +22,7 @@ func GetPlugin[T any](pluginResolver PluginResolver, pluginName string) T {
 
 	pluginFace, ok := pluginResolver.ResolvePlugin(pluginName)
 	if !ok {
-		panic(fmt.Errorf("plugin '%s' not installed", pluginName))
+		panic(fmt.Errorf("plugin %q not installed", pluginName))
 	}
 
 	return util.Cache2Iface[T](pluginFace.Cache)

@@ -115,12 +115,12 @@ func (lib *_ComponentLib) register(compName string, tfComp reflect.Type, descr s
 	compPath := tfComp.PkgPath() + "/" + tfComp.Name()
 
 	if !reflect.PointerTo(tfComp).Implements(reflect.TypeOf((*ec.Component)(nil)).Elem()) {
-		panic(fmt.Errorf("component '%s' not implement ec.Component", compPath))
+		panic(fmt.Errorf("component %q not implement ec.Component", compPath))
 	}
 
 	_, ok := lib.compPtMap[compPath]
 	if ok {
-		panic(fmt.Errorf("component '%s' is already registered", compPath))
+		panic(fmt.Errorf("component %q is already registered", compPath))
 	}
 
 	lib.compPtMap[compPath] = ComponentPt{
