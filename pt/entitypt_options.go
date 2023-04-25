@@ -32,57 +32,57 @@ func (WithEntityOption) Default() EntityOption {
 }
 
 // CompositeFace 扩展者，在扩展实体自身能力时使用
-func (WithEntityOption) CompositeFace(v util.Face[ec.Entity]) EntityOption {
+func (WithEntityOption) CompositeFace(face util.Face[ec.Entity]) EntityOption {
 	return func(o *EntityOptions) {
-		ec.WithEntityOption{}.CompositeFace(v)(&o.EntityOptions)
+		ec.WithEntityOption{}.CompositeFace(face)(&o.EntityOptions)
 	}
 }
 
 // Prototype 实体原型名称
-func (WithEntityOption) Prototype(v string) EntityOption {
+func (WithEntityOption) Prototype(pt string) EntityOption {
 	return func(o *EntityOptions) {
-		ec.WithEntityOption{}.Prototype(v)(&o.EntityOptions)
+		ec.WithEntityOption{}.Prototype(pt)(&o.EntityOptions)
 	}
 }
 
 // PersistID 实体持久化ID
-func (WithEntityOption) PersistID(v ec.ID) EntityOption {
+func (WithEntityOption) PersistID(id ec.ID) EntityOption {
 	return func(o *EntityOptions) {
-		ec.WithEntityOption{}.PersistID(v)(&o.EntityOptions)
+		ec.WithEntityOption{}.PersistID(id)(&o.EntityOptions)
 	}
 }
 
 // EnableComponentAwakeByAccess 开启组件被访问时，检测并调用Awake()
-func (WithEntityOption) EnableComponentAwakeByAccess(v bool) EntityOption {
+func (WithEntityOption) EnableComponentAwakeByAccess(b bool) EntityOption {
 	return func(o *EntityOptions) {
-		ec.WithEntityOption{}.EnableComponentAwakeByAccess(v)(&o.EntityOptions)
+		ec.WithEntityOption{}.EnableComponentAwakeByAccess(b)(&o.EntityOptions)
 	}
 }
 
 // FaceAnyAllocator 自定义FaceAny内存分配器，用于提高性能，通常传入运行时上下文中的FaceAnyAllocator
-func (WithEntityOption) FaceAnyAllocator(v container.Allocator[util.FaceAny]) EntityOption {
+func (WithEntityOption) FaceAnyAllocator(allocator container.Allocator[util.FaceAny]) EntityOption {
 	return func(o *EntityOptions) {
-		ec.WithEntityOption{}.FaceAnyAllocator(v)(&o.EntityOptions)
+		ec.WithEntityOption{}.FaceAnyAllocator(allocator)(&o.EntityOptions)
 	}
 }
 
 // HookAllocator 自定义Hook内存分配器，用于提高性能，通常传入运行时上下文中的HookAllocator
-func (WithEntityOption) HookAllocator(v container.Allocator[localevent.Hook]) EntityOption {
+func (WithEntityOption) HookAllocator(allocator container.Allocator[localevent.Hook]) EntityOption {
 	return func(o *EntityOptions) {
-		ec.WithEntityOption{}.HookAllocator(v)(&o.EntityOptions)
+		ec.WithEntityOption{}.HookAllocator(allocator)(&o.EntityOptions)
 	}
 }
 
 // AssignCompID 设置组件ID函数
-func (WithEntityOption) AssignCompID(v func(entity ec.Entity, compPt ComponentPt) ec.ID) EntityOption {
+func (WithEntityOption) AssignCompID(fn func(entity ec.Entity, compPt ComponentPt) ec.ID) EntityOption {
 	return func(o *EntityOptions) {
-		o.AssignCompID = v
+		o.AssignCompID = fn
 	}
 }
 
 // Scope 实体的可访问作用域
-func (WithEntityOption) Scope(v ec.Scope) EntityOption {
+func (WithEntityOption) Scope(scope ec.Scope) EntityOption {
 	return func(o *EntityOptions) {
-		o.Scope = v
+		o.Scope = scope
 	}
 }

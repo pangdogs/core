@@ -44,22 +44,22 @@ func (WithAppOption) Default() AppOption {
 }
 
 // Commands 自定义应用指令
-func (WithAppOption) Commands(v func() []Cmd) AppOption {
+func (WithAppOption) Commands(fn func() []Cmd) AppOption {
 	return func(o *AppOptions) {
-		o.Commands = v
+		o.Commands = fn
 	}
 }
 
 // ServiceCtxInitTab 所有服务上下文初始化函数
-func (WithAppOption) ServiceCtxInitTab(v map[string]ServiceCtxInitFunc) AppOption {
+func (WithAppOption) ServiceCtxInitTab(tab map[string]ServiceCtxInitFunc) AppOption {
 	return func(o *AppOptions) {
-		o.ServiceCtxInitTab = v
+		o.ServiceCtxInitTab = tab
 	}
 }
 
 // ServiceInitTab 所有服务初始化函数
-func (WithAppOption) ServiceInitTab(v map[string]ServiceInitFunc) AppOption {
+func (WithAppOption) ServiceInitTab(tab map[string]ServiceInitFunc) AppOption {
 	return func(o *AppOptions) {
-		o.ServiceInitTab = v
+		o.ServiceInitTab = tab
 	}
 }

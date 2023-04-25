@@ -23,8 +23,8 @@ func (WithServiceOption) Default() ServiceOption {
 }
 
 // CompositeFace 扩展者，需要扩展服务自身功能时需要使用
-func (WithServiceOption) CompositeFace(v util.Face[Service]) ServiceOption {
+func (WithServiceOption) CompositeFace(face util.Face[Service]) ServiceOption {
 	return func(o *ServiceOptions) {
-		o.CompositeFace = v
+		o.CompositeFace = face
 	}
 }

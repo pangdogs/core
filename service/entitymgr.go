@@ -9,8 +9,8 @@ import (
 
 // IEntityMgr 实体管理器接口
 type IEntityMgr interface {
-	// GetServiceCtx 获取服务上下文
-	GetServiceCtx() Context
+	// GetContext 获取服务上下文
+	GetContext() Context
 	// GetEntity 查询实体
 	GetEntity(id ec.ID) (ec.Entity, bool)
 	// GetEntityWithSerialNo 查询实体，同时使用id与serialNo可以在多线程环境中准确定位实体
@@ -30,21 +30,21 @@ type IEntityMgr interface {
 }
 
 type _EntityMgr struct {
-	serviceCtx Context
-	entityMap  concurrent.Map[ec.ID, ec.Entity]
+	ctx       Context
+	entityMap concurrent.Map[ec.ID, ec.Entity]
 }
 
-func (entityMgr *_EntityMgr) init(serviceCtx Context) {
-	if serviceCtx == nil {
-		panic("nil serviceCtx")
+func (entityMgr *_EntityMgr) init(ctx Context) {
+	if ctx == nil {
+		panic("nil ctx")
 	}
 
-	entityMgr.serviceCtx = serviceCtx
+	entityMgr.ctx = ctx
 }
 
-// GetServiceCtx 获取服务上下文
-func (entityMgr *_EntityMgr) GetServiceCtx() Context {
-	return entityMgr.serviceCtx
+// GetContext 获取服务上下文
+func (entityMgr *_EntityMgr) GetContext() Context {
+	return entityMgr.ctx
 }
 
 // GetEntity 查询实体

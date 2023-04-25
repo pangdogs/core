@@ -10,8 +10,7 @@ import (
 
 // IECTree EC树接口
 type IECTree interface {
-	// GetRuntimeCtx 获取运行时上下文
-	GetRuntimeCtx() Context
+	ec.ContextResolver
 	// AddChild 子实体加入父实体，在实体加入运行时上下文后调用，切换父实体时，先调用RemoveChild()离开旧父实体，再调用AddChild()加入新父实体
 	AddChild(parentID, childID ec.ID) error
 	// RemoveChild 子实体离开父实体，在实体从运行时上下文中删除前调用，切换父实体时，先调用RemoveChild()离开旧父实体，再调用AddChild()加入新父实体
@@ -41,7 +40,7 @@ type _ECNode struct {
 // 主要区别是，从主EC树中删除父实体会递归删除并销毁所有子实体，从EC引用树中删除父实体则仅会递归删除所有子实体。
 // 同个实体可以同时加入多个EC引用树，这个特性可以实现一些特殊的需求。
 type ECTree struct {
-	runtimeCtx             Context
+	ctx                    Context
 	masterTree             bool
 	ecTree                 map[ec.ID]_ECNode
 	eventECTreeAddChild    localevent.Event
@@ -51,8 +50,8 @@ type ECTree struct {
 }
 
 // Init 初始化EC树
-func (ecTree *ECTree) Init(runtimeCtx Context) {
-	ecTree.init(runtimeCtx, false)
+func (ecTree *ECTree) Init(ctx Context) {
+	ecTree.init(ctx, false)
 }
 
 // Shut 销毁EC树
@@ -62,9 +61,9 @@ func (ecTree *ECTree) Shut() {
 	ecTree.eventECTreeRemoveChild.Close()
 }
 
-func (ecTree *ECTree) init(runtimeCtx Context, masterTree bool) {
-	if runtimeCtx == nil {
-		panic("nil runtimeCtx")
+func (ecTree *ECTree) init(ctx Context, masterTree bool) {
+	if ctx == nil {
+		panic("nil ctx")
 	}
 
 	if ecTree.inited {
@@ -73,26 +72,26 @@ func (ecTree *ECTree) init(runtimeCtx Context, masterTree bool) {
 
 	ecTree.inited = true
 
-	ecTree.runtimeCtx = runtimeCtx
+	ecTree.ctx = ctx
 	ecTree.masterTree = masterTree
 	ecTree.ecTree = map[ec.ID]_ECNode{}
-	ecTree.eventECTreeAddChild.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.getOptions().HookAllocator, runtimeCtx)
-	ecTree.eventECTreeRemoveChild.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.getOptions().HookAllocator, runtimeCtx)
+	ecTree.eventECTreeAddChild.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Allow, ctx.getOptions().HookAllocator, ctx)
+	ecTree.eventECTreeRemoveChild.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Allow, ctx.getOptions().HookAllocator, ctx)
 
 	var priority int32
 	if !ecTree.masterTree {
 		priority = -1
 	}
-	ecTree.hook = localevent.BindEventWithPriority[EventEntityMgrRemovingEntity](ecTree.runtimeCtx.GetEntityMgr().EventEntityMgrRemovingEntity(), ecTree, priority)
+	ecTree.hook = localevent.BindEventWithPriority[EventEntityMgrRemovingEntity](ecTree.ctx.GetEntityMgr().EventEntityMgrRemovingEntity(), ecTree, priority)
 }
 
 func (ecTree *ECTree) OnEntityMgrRemovingEntity(entityMgr IEntityMgr, entity ec.Entity) {
 	ecTree.RemoveChild(entity.GetID())
 }
 
-// GetRuntimeCtx 获取运行时上下文
-func (ecTree *ECTree) GetRuntimeCtx() Context {
-	return ecTree.runtimeCtx
+// ResolveContext 解析上下文
+func (ecTree *ECTree) ResolveContext() util.IfaceCache {
+	return ecTree.ctx.ResolveContext()
 }
 
 // AddChild 子实体加入父实体，在实体加入运行时上下文后调用，切换父实体时，先调用RemoveChild()离开旧父实体，再调用AddChild()加入新父实体
@@ -101,7 +100,7 @@ func (ecTree *ECTree) AddChild(parentID, childID ec.ID) error {
 		return errors.New("parentID equal childID is invalid")
 	}
 
-	parent, ok := ecTree.runtimeCtx.GetEntityMgr().GetEntity(parentID)
+	parent, ok := ecTree.ctx.GetEntityMgr().GetEntity(parentID)
 	if !ok {
 		return errors.New("parent not exist")
 	}
@@ -112,7 +111,7 @@ func (ecTree *ECTree) AddChild(parentID, childID ec.ID) error {
 		return errors.New("parent state not init or start or living is invalid")
 	}
 
-	child, ok := ecTree.runtimeCtx.GetEntityMgr().GetEntity(childID)
+	child, ok := ecTree.ctx.GetEntityMgr().GetEntity(childID)
 	if !ok {
 		return errors.New("child not exist")
 	}
@@ -129,7 +128,7 @@ func (ecTree *ECTree) AddChild(parentID, childID ec.ID) error {
 
 	node, ok := ecTree.ecTree[parentID]
 	if !ok || node.Children == nil {
-		node.Children = container.NewList[util.FaceAny](ecTree.runtimeCtx.getOptions().FaceAnyAllocator, ecTree.runtimeCtx)
+		node.Children = container.NewList[util.FaceAny](ecTree.ctx.getOptions().FaceAnyAllocator, ecTree.ctx)
 		ecTree.ecTree[parentID] = node
 	}
 

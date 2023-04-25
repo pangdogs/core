@@ -37,56 +37,56 @@ func (WithEntityOption) Default() EntityOption {
 }
 
 // CompositeFace 扩展者，在扩展实体自身能力时使用
-func (WithEntityOption) CompositeFace(v util.Face[Entity]) EntityOption {
+func (WithEntityOption) CompositeFace(face util.Face[Entity]) EntityOption {
 	return func(o *EntityOptions) {
-		o.CompositeFace = v
+		o.CompositeFace = face
 	}
 }
 
 // Prototype 实体原型名称
-func (WithEntityOption) Prototype(v string) EntityOption {
+func (WithEntityOption) Prototype(pt string) EntityOption {
 	return func(o *EntityOptions) {
-		o.Prototype = v
+		o.Prototype = pt
 	}
 }
 
 // PersistID 实体持久化ID
-func (WithEntityOption) PersistID(v ID) EntityOption {
+func (WithEntityOption) PersistID(id ID) EntityOption {
 	return func(o *EntityOptions) {
-		o.PersistID = v
+		o.PersistID = id
 	}
 }
 
 // EnableComponentAwakeByAccess 开启组件被访问时，检测并调用Awake()
-func (WithEntityOption) EnableComponentAwakeByAccess(v bool) EntityOption {
+func (WithEntityOption) EnableComponentAwakeByAccess(b bool) EntityOption {
 	return func(o *EntityOptions) {
-		o.EnableComponentAwakeByAccess = v
+		o.EnableComponentAwakeByAccess = b
 	}
 }
 
 // FaceAnyAllocator 自定义FaceAny内存分配器，用于提高性能，通常传入运行时上下文中的FaceAnyAllocator
-func (WithEntityOption) FaceAnyAllocator(v container.Allocator[util.FaceAny]) EntityOption {
+func (WithEntityOption) FaceAnyAllocator(allocator container.Allocator[util.FaceAny]) EntityOption {
 	return func(o *EntityOptions) {
-		if v == nil {
+		if allocator == nil {
 			panic("nil allocator")
 		}
-		o.FaceAnyAllocator = v
+		o.FaceAnyAllocator = allocator
 	}
 }
 
 // HookAllocator 自定义Hook内存分配器，用于提高性能，通常传入运行时上下文中的HookAllocator
-func (WithEntityOption) HookAllocator(v container.Allocator[localevent.Hook]) EntityOption {
+func (WithEntityOption) HookAllocator(allocator container.Allocator[localevent.Hook]) EntityOption {
 	return func(o *EntityOptions) {
-		if v == nil {
+		if allocator == nil {
 			panic("nil allocator")
 		}
-		o.HookAllocator = v
+		o.HookAllocator = allocator
 	}
 }
 
 // GCCollector 自定义GC收集器，通常不传或者传入运行时上下文
-func (WithEntityOption) GCCollector(v container.GCCollector) EntityOption {
+func (WithEntityOption) GCCollector(collector container.GCCollector) EntityOption {
 	return func(o *EntityOptions) {
-		o.GCCollector = v
+		o.GCCollector = collector
 	}
 }

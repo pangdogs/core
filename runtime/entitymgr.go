@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/localevent"
+	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/golaxy/util/container"
 )
 
 // IEntityMgr 实体管理器接口
 type IEntityMgr interface {
-	// GetRuntimeCtx 获取运行时上下文
-	GetRuntimeCtx() Context
+	ec.ContextResolver
 	// GetEntity 查询实体
 	GetEntity(id ec.ID) (ec.Entity, bool)
 	// RangeEntities 遍历所有实体
@@ -46,7 +46,7 @@ type _EntityInfo struct {
 }
 
 type _EntityMgr struct {
-	runtimeCtx                               Context
+	ctx                                      Context
 	entityMap                                map[ec.ID]_EntityInfo
 	entityList                               container.List[util.FaceAny]
 	eventEntityMgrAddEntity                  localevent.Event
@@ -57,26 +57,26 @@ type _EntityMgr struct {
 	eventEntityMgrEntityFirstAccessComponent localevent.Event
 }
 
-func (entityMgr *_EntityMgr) Init(runtimeCtx Context) {
-	if runtimeCtx == nil {
-		panic("nil runtimeCtx")
+func (entityMgr *_EntityMgr) Init(ctx Context) {
+	if ctx == nil {
+		panic("nil ctx")
 	}
 
-	entityMgr.runtimeCtx = runtimeCtx
-	entityMgr.entityList.Init(runtimeCtx.GetFaceAnyAllocator(), runtimeCtx)
+	entityMgr.ctx = ctx
+	entityMgr.entityList.Init(ctx.GetFaceAnyAllocator(), ctx)
 	entityMgr.entityMap = map[ec.ID]_EntityInfo{}
 
-	entityMgr.eventEntityMgrAddEntity.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookAllocator(), runtimeCtx)
-	entityMgr.eventEntityMgrRemovingEntity.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookAllocator(), runtimeCtx)
-	entityMgr.eventEntityMgrRemoveEntity.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookAllocator(), runtimeCtx)
-	entityMgr.eventEntityMgrEntityAddComponents.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookAllocator(), runtimeCtx)
-	entityMgr.eventEntityMgrEntityRemoveComponent.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookAllocator(), runtimeCtx)
-	entityMgr.eventEntityMgrEntityFirstAccessComponent.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Allow, runtimeCtx.GetHookAllocator(), runtimeCtx)
+	entityMgr.eventEntityMgrAddEntity.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Allow, ctx.GetHookAllocator(), ctx)
+	entityMgr.eventEntityMgrRemovingEntity.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Allow, ctx.GetHookAllocator(), ctx)
+	entityMgr.eventEntityMgrRemoveEntity.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Allow, ctx.GetHookAllocator(), ctx)
+	entityMgr.eventEntityMgrEntityAddComponents.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Allow, ctx.GetHookAllocator(), ctx)
+	entityMgr.eventEntityMgrEntityRemoveComponent.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Allow, ctx.GetHookAllocator(), ctx)
+	entityMgr.eventEntityMgrEntityFirstAccessComponent.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Allow, ctx.GetHookAllocator(), ctx)
 }
 
-// GetRuntimeCtx 获取运行时上下文
-func (entityMgr *_EntityMgr) GetRuntimeCtx() Context {
-	return entityMgr.runtimeCtx
+// ResolveContext 解析上下文
+func (entityMgr *_EntityMgr) ResolveContext() util.IfaceCache {
+	return entityMgr.ctx.ResolveContext()
 }
 
 // GetEntity 查询实体
@@ -142,15 +142,14 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 		}
 	}
 
-	runtimeCtx := entityMgr.runtimeCtx
-	serviceCtx := runtimeCtx.getServiceCtx()
+	serviceCtx := service.Get(entityMgr)
 	_entity := ec.UnsafeEntity(entity)
 
 	if _entity.GetID() == util.Zero[ec.ID]() {
 		_entity.SetID(serviceCtx.GenPersistID())
 	}
 	_entity.SetSerialNo(serviceCtx.GenSerialNo())
-	_entity.SetContext(util.Iface2Cache[Context](runtimeCtx))
+	_entity.SetContext(util.Iface2Cache[Context](entityMgr.ctx))
 
 	_entity.RangeComponents(func(comp ec.Component) bool {
 		_comp := ec.UnsafeComponent(comp)
@@ -164,7 +163,7 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 	})
 
 	if scope == ec.Scope_Global {
-		_, loaded, err := entityMgr.GetRuntimeCtx().getServiceCtx().GetEntityMgr().GetOrAddEntity(entity)
+		_, loaded, err := service.Get(entityMgr).GetEntityMgr().GetOrAddEntity(entity)
 		if err != nil {
 			return err
 		}
@@ -187,7 +186,7 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 	_entity.SetState(ec.EntityState_Entry)
 
 	if _entity.GetGCCollector() == nil {
-		_entity.SetGCCollector(runtimeCtx)
+		_entity.SetGCCollector(entityMgr.ctx)
 	}
 
 	emitEventEntityMgrAddEntity(&entityMgr.eventEntityMgrAddEntity, entityMgr, entity)
@@ -209,11 +208,8 @@ func (entityMgr *_EntityMgr) RemoveEntity(id ec.ID) {
 
 	entity.SetState(ec.EntityState_Leave)
 
-	runtimeCtx := entityMgr.runtimeCtx
-	serviceCtx := runtimeCtx.getServiceCtx()
-
 	if entityInfo.GlobalMark {
-		serviceCtx.GetEntityMgr().RemoveEntityWithSerialNo(entity.GetID(), entity.GetSerialNo())
+		service.Get(entityMgr).GetEntityMgr().RemoveEntityWithSerialNo(entity.GetID(), entity.GetSerialNo())
 	}
 
 	emitEventEntityMgrRemovingEntity(&entityMgr.eventEntityMgrRemovingEntity, entityMgr, entity.Entity)
@@ -259,7 +255,7 @@ func (entityMgr *_EntityMgr) EventEntityMgrEntityFirstAccessComponent() localeve
 }
 
 func (entityMgr *_EntityMgr) OnCompMgrAddComponents(entity ec.Entity, components []ec.Component) {
-	serviceCtx := entityMgr.runtimeCtx.getServiceCtx()
+	serviceCtx := service.Get(entityMgr)
 
 	for i := range components {
 		_comp := ec.UnsafeComponent(components[i])

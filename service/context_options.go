@@ -50,88 +50,88 @@ func (WithContextOption) Default() ContextOption {
 }
 
 // CompositeFace 扩展者，需要扩展服务上下文自身能力时需要使用
-func (WithContextOption) CompositeFace(v util.Face[Context]) ContextOption {
+func (WithContextOption) CompositeFace(face util.Face[Context]) ContextOption {
 	return func(o *ContextOptions) {
-		o.CompositeFace = v
+		o.CompositeFace = face
 	}
 }
 
 // Context 父Context
-func (WithContextOption) Context(v context.Context) ContextOption {
+func (WithContextOption) Context(ctx context.Context) ContextOption {
 	return func(o *ContextOptions) {
-		o.Context = v
+		o.Context = ctx
 	}
 }
 
 // AutoRecover 是否开启panic时自动恢复
-func (WithContextOption) AutoRecover(v bool) ContextOption {
+func (WithContextOption) AutoRecover(b bool) ContextOption {
 	return func(o *ContextOptions) {
-		o.AutoRecover = v
+		o.AutoRecover = b
 	}
 }
 
 // ReportError panic时错误写入的error channel
-func (WithContextOption) ReportError(v chan error) ContextOption {
+func (WithContextOption) ReportError(ch chan error) ContextOption {
 	return func(o *ContextOptions) {
-		o.ReportError = v
+		o.ReportError = ch
 	}
 }
 
 // Name 服务名称
-func (WithContextOption) Name(v string) ContextOption {
+func (WithContextOption) Name(name string) ContextOption {
 	return func(o *ContextOptions) {
-		o.Name = v
+		o.Name = name
 	}
 }
 
 // PersistID 服务持久化ID
-func (WithContextOption) PersistID(v ec.ID) ContextOption {
+func (WithContextOption) PersistID(id ec.ID) ContextOption {
 	return func(o *ContextOptions) {
-		o.PersistID = v
+		o.PersistID = id
 	}
 }
 
 // GenPersistID 生成持久化ID的函数
-func (WithContextOption) GenPersistID(v func() ec.ID) ContextOption {
+func (WithContextOption) GenPersistID(fn func() ec.ID) ContextOption {
 	return func(o *ContextOptions) {
-		if v == nil {
+		if fn == nil {
 			panic("GenPersistID nil invalid")
 		}
-		o.GenPersistID = v
+		o.GenPersistID = fn
 	}
 }
 
 // EntityLib 实体原型库
-func (WithContextOption) EntityLib(v pt.EntityLib) ContextOption {
+func (WithContextOption) EntityLib(lib pt.EntityLib) ContextOption {
 	return func(o *ContextOptions) {
-		o.EntityLib = v
+		o.EntityLib = lib
 	}
 }
 
 // PluginBundle 插件包
-func (WithContextOption) PluginBundle(v plugin.PluginBundle) ContextOption {
+func (WithContextOption) PluginBundle(bundle plugin.PluginBundle) ContextOption {
 	return func(o *ContextOptions) {
-		o.PluginBundle = v
+		o.PluginBundle = bundle
 	}
 }
 
 // StartedCallback 启动运行时回调函数
-func (WithContextOption) StartedCallback(v func(serviceCtx Context)) ContextOption {
+func (WithContextOption) StartedCallback(fn func(serviceCtx Context)) ContextOption {
 	return func(o *ContextOptions) {
-		o.StartedCallback = v
+		o.StartedCallback = fn
 	}
 }
 
 // StoppingCallback 开始停止运行时回调函数
-func (WithContextOption) StoppingCallback(v func(serviceCtx Context)) ContextOption {
+func (WithContextOption) StoppingCallback(fn func(serviceCtx Context)) ContextOption {
 	return func(o *ContextOptions) {
-		o.StoppingCallback = v
+		o.StoppingCallback = fn
 	}
 }
 
 // StoppedCallback 完全停止运行时回调函数
-func (WithContextOption) StoppedCallback(v func(serviceCtx Context)) ContextOption {
+func (WithContextOption) StoppedCallback(fn func(serviceCtx Context)) ContextOption {
 	return func(o *ContextOptions) {
-		o.StoppedCallback = v
+		o.StoppedCallback = fn
 	}
 }
