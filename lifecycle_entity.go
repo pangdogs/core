@@ -1,21 +1,21 @@
 package golaxy
 
-type _EntityInit interface {
+type LifecycleEntityInit interface {
 	Init()
 }
 
-type _EntityStart interface {
-	Start()
+type LifecycleEntityInited interface {
+	Inited()
 }
 
-type _EntityUpdate = eventUpdate
+type LifecycleEntityUpdate = eventUpdate
 
-type _EntityLateUpdate = eventLateUpdate
+type LifecycleEntityLateUpdate = eventLateUpdate
 
-type _EntityShut interface {
+type LifecycleEntityShut interface {
 	Shut()
 }
 
-type _EntityDestroy interface {
+type LifecycleEntityDestroy interface {
 	Destroy()
 }

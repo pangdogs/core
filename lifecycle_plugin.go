@@ -5,18 +5,18 @@ import (
 	"kit.golaxy.org/golaxy/service"
 )
 
-type _ServicePluginInit interface {
+type LifecycleServicePluginInit interface {
 	InitService(ctx service.Context)
 }
 
-type _ServicePluginShut interface {
+type LifecycleServicePluginShut interface {
 	ShutService(ctx service.Context)
 }
 
-type _RuntimePluginInit interface {
+type LifecycleRuntimePluginInit interface {
 	InitRuntime(ctx runtime.Context)
 }
 
-type _RuntimePluginShut interface {
+type LifecycleRuntimePluginShut interface {
 	ShutRuntime(ctx runtime.Context)
 }
