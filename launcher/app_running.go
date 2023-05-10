@@ -13,7 +13,6 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
-	"syscall"
 )
 
 func (app *_App) runApp(services []string, ptPath string) {
@@ -28,14 +27,12 @@ func (app *_App) runApp(services []string, ptPath string) {
 	ctx, cancel := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
 
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM, os.Kill)
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, app.options.QuitSignals...)
 
 	go func() {
-		select {
-		case <-c:
-			cancel()
-		}
+		<-sigChan
+		cancel()
 	}()
 
 	for _, service := range services {

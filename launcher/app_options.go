@@ -6,6 +6,8 @@ import (
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/service"
+	"os"
+	"syscall"
 )
 
 // Cmd 应用指令
@@ -24,6 +26,7 @@ type ServiceInitFunc func() []golaxy.ServiceOption
 // AppOptions 创建应用的所有选项
 type AppOptions struct {
 	Commands          func() []Cmd                  // 自定义应用指令
+	QuitSignals       []os.Signal                   // 退出信号
 	ServiceCtxInitTab map[string]ServiceCtxInitFunc // 所有服务上下文初始化函数
 	ServiceInitTab    map[string]ServiceInitFunc    // 所有服务初始化函数
 }
@@ -37,9 +40,10 @@ type WithAppOption struct{}
 // Default 默认值
 func (WithAppOption) Default() AppOption {
 	return func(o *AppOptions) {
-		o.Commands = nil
-		o.ServiceCtxInitTab = nil
-		o.ServiceInitTab = nil
+		WithAppOption{}.Commands(nil)(o)
+		WithAppOption{}.QuitSignals(syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGKILL)(o)
+		WithAppOption{}.ServiceCtxInitTab(nil)(o)
+		WithAppOption{}.ServiceInitTab(nil)(o)
 	}
 }
 
@@ -47,6 +51,13 @@ func (WithAppOption) Default() AppOption {
 func (WithAppOption) Commands(fn func() []Cmd) AppOption {
 	return func(o *AppOptions) {
 		o.Commands = fn
+	}
+}
+
+// QuitSignals 退出信号
+func (WithAppOption) QuitSignals(signals ...os.Signal) AppOption {
+	return func(o *AppOptions) {
+		o.QuitSignals = signals
 	}
 }
 
