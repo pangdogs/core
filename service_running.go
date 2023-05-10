@@ -34,7 +34,7 @@ func (_service *ServiceBehavior) running(shutChan chan struct{}) {
 		pluginBundle.Range(func(pluginName string, pluginFace util.FaceAny) bool {
 			if pluginInit, ok := pluginFace.Iface.(LifecycleServicePluginInit); ok {
 				internal.CallOuterNoRet(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
-					pluginInit.InitService(_service.ctx)
+					pluginInit.InitServicePlugin(_service.ctx)
 				})
 			}
 			return true
@@ -64,7 +64,7 @@ func (_service *ServiceBehavior) running(shutChan chan struct{}) {
 			pluginBundle.ReverseRange(func(pluginName string, pluginFace util.FaceAny) bool {
 				if pluginShut, ok := pluginFace.Iface.(LifecycleServicePluginShut); ok {
 					internal.CallOuterNoRet(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
-						pluginShut.ShutService(_service.ctx)
+						pluginShut.ShutServicePlugin(_service.ctx)
 					})
 				}
 				return true

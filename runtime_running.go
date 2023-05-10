@@ -40,7 +40,7 @@ func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
 		pluginBundle.Range(func(pluginName string, pluginFace util.FaceAny) bool {
 			if pluginInit, ok := pluginFace.Iface.(LifecycleRuntimePluginInit); ok {
 				internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-					pluginInit.InitRuntime(_runtime.ctx)
+					pluginInit.InitRuntimePlugin(_runtime.ctx)
 				})
 			}
 			return true
@@ -74,7 +74,7 @@ func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
 			pluginBundle.ReverseRange(func(pluginName string, pluginFace util.FaceAny) bool {
 				if pluginShut, ok := pluginFace.Iface.(LifecycleRuntimePluginShut); ok {
 					internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-						pluginShut.ShutRuntime(_runtime.ctx)
+						pluginShut.ShutRuntimePlugin(_runtime.ctx)
 					})
 				}
 				return true
