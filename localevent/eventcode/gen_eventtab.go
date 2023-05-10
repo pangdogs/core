@@ -114,10 +114,10 @@ type I%[1]s interface {
 
 		for i, event := range eventDeclTab {
 			eventsAccessCode += fmt.Sprintf(`
-const %[2]sID int = %[4]d
+const %[2]sId int = %[4]d
 
 func (eventTab *%[1]s) %[2]s() %[3]sIEvent {
-	return &(*eventTab)[%[2]sID]
+	return &(*eventTab)[%[2]sId]
 }
 `, ctx.EventTabName, event.Name, localeventPrefix, i)
 		}

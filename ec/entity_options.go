@@ -2,6 +2,7 @@ package ec
 
 import (
 	"kit.golaxy.org/golaxy/localevent"
+	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/golaxy/util/container"
 )
@@ -10,7 +11,7 @@ import (
 type EntityOptions struct {
 	CompositeFace                util.Face[Entity]                    // 扩展者，在扩展实体自身能力时使用
 	Prototype                    string                               // 实体原型名称
-	PersistID                    ID                                   // 实体持久化ID
+	PersistId                    uid.Id                               // 实体持久化Id
 	EnableComponentAwakeByAccess bool                                 // 开启组件被访问时，检测并调用Awake()
 	FaceAnyAllocator             container.Allocator[util.FaceAny]    // 自定义FaceAny内存分配器，用于提高性能，通常传入运行时上下文中的FaceAnyAllocator
 	HookAllocator                container.Allocator[localevent.Hook] // 自定义Hook内存分配器，用于提高性能，通常传入运行时上下文中的HookAllocator
@@ -28,7 +29,7 @@ func (WithEntityOption) Default() EntityOption {
 	return func(o *EntityOptions) {
 		WithEntityOption{}.CompositeFace(util.Face[Entity]{})(o)
 		WithEntityOption{}.Prototype("")(o)
-		WithEntityOption{}.PersistID(util.Zero[ID]())(o)
+		WithEntityOption{}.PersistId(util.Zero[uid.Id]())(o)
 		WithEntityOption{}.EnableComponentAwakeByAccess(true)(o)
 		WithEntityOption{}.FaceAnyAllocator(container.DefaultAllocator[util.FaceAny]())(o)
 		WithEntityOption{}.HookAllocator(container.DefaultAllocator[localevent.Hook]())(o)
@@ -50,10 +51,10 @@ func (WithEntityOption) Prototype(pt string) EntityOption {
 	}
 }
 
-// PersistID 实体持久化ID
-func (WithEntityOption) PersistID(id ID) EntityOption {
+// PersistId 实体持久化Id
+func (WithEntityOption) PersistId(id uid.Id) EntityOption {
 	return func(o *EntityOptions) {
-		o.PersistID = id
+		o.PersistId = id
 	}
 }
 

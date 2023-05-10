@@ -3,10 +3,10 @@ package service
 import (
 	"context"
 	"fmt"
-	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/pt"
+	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util"
 	"sync/atomic"
 )
@@ -46,12 +46,10 @@ type Context interface {
 
 	// GetName 获取名称
 	GetName() string
-	// GetID 获取服务ID
-	GetID() ec.ID
+	// GetId 获取服务Id
+	GetId() uid.Id
 	// GenSerialNo 生成流水号（运行时唯一）
 	GenSerialNo() int64
-	// GenPersistID 生成持久化ID（全局唯一）
-	GenPersistID() ec.ID
 	// GetEntityMgr 获取实体管理器
 	GetEntityMgr() IEntityMgr
 	// String 字符串化
@@ -77,19 +75,14 @@ func (ctx *ContextBehavior) GetName() string {
 	return ctx.opts.Name
 }
 
-// GetID 获取服务ID
-func (ctx *ContextBehavior) GetID() ec.ID {
-	return ctx.opts.PersistID
+// GetId 获取服务Id
+func (ctx *ContextBehavior) GetId() uid.Id {
+	return ctx.opts.PersistId
 }
 
 // GenSerialNo 生成流水号（运行时唯一）
 func (ctx *ContextBehavior) GenSerialNo() int64 {
 	return atomic.AddInt64(&ctx.snGenerator, 1)
-}
-
-// GenPersistID 生成持久化ID（全局唯一）
-func (ctx *ContextBehavior) GenPersistID() ec.ID {
-	return ctx.opts.GenPersistID()
 }
 
 // GetEntityMgr 获取实体管理器
@@ -99,7 +92,7 @@ func (ctx *ContextBehavior) GetEntityMgr() IEntityMgr {
 
 // String 字符串化
 func (ctx *ContextBehavior) String() string {
-	return fmt.Sprintf("[ID:%s Name:%s]", ctx.GetID(), ctx.GetName())
+	return fmt.Sprintf("[Id:%s Name:%s]", ctx.GetId(), ctx.GetName())
 }
 
 func (ctx *ContextBehavior) init(opts *ContextOptions) {
@@ -117,8 +110,8 @@ func (ctx *ContextBehavior) init(opts *ContextOptions) {
 		ctx.opts.Context = context.Background()
 	}
 
-	if ctx.opts.PersistID == util.Zero[ec.ID]() {
-		ctx.opts.PersistID = ctx.opts.GenPersistID()
+	if ctx.opts.PersistId.IsNil() {
+		ctx.opts.PersistId = uid.New()
 	}
 
 	internal.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)

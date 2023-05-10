@@ -2,6 +2,7 @@ package ec
 
 import (
 	"kit.golaxy.org/golaxy/localevent"
+	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/golaxy/util/container"
 )
@@ -24,8 +25,8 @@ func (ue _UnsafeEntity) GetOptions() *EntityOptions {
 	return ue.getOptions()
 }
 
-func (ue _UnsafeEntity) SetID(id ID) {
-	ue.setID(id)
+func (ue _UnsafeEntity) SetId(id uid.Id) {
+	ue.setId(id)
 }
 
 func (ue _UnsafeEntity) SetSerialNo(sn int64) {

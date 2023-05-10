@@ -5,6 +5,7 @@ import (
 	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/localevent"
 	"kit.golaxy.org/golaxy/runtime"
+	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util"
 )
 
@@ -48,7 +49,7 @@ type _Runtime interface {
 }
 
 type _HookKey struct {
-	ID ec.ID
+	Id uid.Id
 	SN int64
 }
 
@@ -149,12 +150,12 @@ func (_runtime *RuntimeBehavior) OnEntityMgrEntityRemoveComponent(entityMgr runt
 
 // OnEntityDestroySelf 事件回调：实体销毁自身
 func (_runtime *RuntimeBehavior) OnEntityDestroySelf(entity ec.Entity) {
-	_runtime.ctx.GetEntityMgr().RemoveEntity(entity.GetID())
+	_runtime.ctx.GetEntityMgr().RemoveEntity(entity.GetId())
 }
 
 // OnComponentDestroySelf 事件回调：组件销毁自身
 func (_runtime *RuntimeBehavior) OnComponentDestroySelf(comp ec.Component) {
-	comp.GetEntity().RemoveComponentByID(comp.GetID())
+	comp.GetEntity().RemoveComponentById(comp.GetId())
 }
 
 func (_runtime *RuntimeBehavior) addComponents(entity ec.Entity, components []ec.Component) {
@@ -239,7 +240,7 @@ func (_runtime *RuntimeBehavior) connectEntity(entity ec.Entity) {
 	hooks[2] = localevent.BindEvent[ec.EventEntityDestroySelf](ec.UnsafeEntity(entity).EventEntityDestroySelf(), _runtime)
 
 	_runtime.hooksMap[_HookKey{
-		ID: entity.GetID(),
+		Id: entity.GetId(),
 		SN: entity.GetSerialNo(),
 	}] = hooks
 
@@ -258,7 +259,7 @@ func (_runtime *RuntimeBehavior) disconnectEntity(entity ec.Entity) {
 	})
 
 	hookKey := _HookKey{
-		ID: entity.GetID(),
+		Id: entity.GetId(),
 		SN: entity.GetSerialNo(),
 	}
 
@@ -290,7 +291,7 @@ func (_runtime *RuntimeBehavior) connectComponent(comp ec.Component) {
 	hooks[2] = localevent.BindEvent[ec.EventComponentDestroySelf](ec.UnsafeComponent(comp).EventComponentDestroySelf(), _runtime)
 
 	_runtime.hooksMap[_HookKey{
-		ID: comp.GetID(),
+		Id: comp.GetId(),
 		SN: comp.GetSerialNo(),
 	}] = hooks
 
@@ -299,7 +300,7 @@ func (_runtime *RuntimeBehavior) connectComponent(comp ec.Component) {
 
 func (_runtime *RuntimeBehavior) disconnectComponent(comp ec.Component) {
 	hookKey := _HookKey{
-		ID: comp.GetID(),
+		Id: comp.GetId(),
 		SN: comp.GetSerialNo(),
 	}
 

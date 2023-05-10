@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/golaxy/util/concurrent"
 )
@@ -12,26 +13,26 @@ type IEntityMgr interface {
 	// GetContext 获取服务上下文
 	GetContext() Context
 	// GetEntity 查询实体
-	GetEntity(id ec.ID) (ec.Entity, bool)
+	GetEntity(id uid.Id) (ec.Entity, bool)
 	// GetEntityWithSerialNo 查询实体，同时使用id与serialNo可以在多线程环境中准确定位实体
-	GetEntityWithSerialNo(id ec.ID, serialNo int64) (ec.Entity, bool)
+	GetEntityWithSerialNo(id uid.Id, serialNo int64) (ec.Entity, bool)
 	// GetOrAddEntity 查询或添加实体
 	GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, error)
 	// AddEntity 添加实体
 	AddEntity(entity ec.Entity) error
 	// GetAndRemoveEntity 查询并删除实体
-	GetAndRemoveEntity(id ec.ID) (ec.Entity, bool)
+	GetAndRemoveEntity(id uid.Id) (ec.Entity, bool)
 	// GetAndRemoveEntityWithSerialNo 查询并删除实体，同时使用id与serialNo可以在多线程环境中准确定位实体
-	GetAndRemoveEntityWithSerialNo(id ec.ID, serialNo int64) (ec.Entity, bool)
+	GetAndRemoveEntityWithSerialNo(id uid.Id, serialNo int64) (ec.Entity, bool)
 	// RemoveEntity 删除实体
-	RemoveEntity(id ec.ID)
+	RemoveEntity(id uid.Id)
 	// RemoveEntityWithSerialNo 删除实体，同时使用id与serialNo可以在多线程环境中准确定位实体
-	RemoveEntityWithSerialNo(id ec.ID, serialNo int64)
+	RemoveEntityWithSerialNo(id uid.Id, serialNo int64)
 }
 
 type _EntityMgr struct {
 	ctx       Context
-	entityMap concurrent.Map[ec.ID, ec.Entity]
+	entityMap concurrent.Map[uid.Id, ec.Entity]
 }
 
 func (entityMgr *_EntityMgr) init(ctx Context) {
@@ -48,7 +49,7 @@ func (entityMgr *_EntityMgr) GetContext() Context {
 }
 
 // GetEntity 查询实体
-func (entityMgr *_EntityMgr) GetEntity(id ec.ID) (ec.Entity, bool) {
+func (entityMgr *_EntityMgr) GetEntity(id uid.Id) (ec.Entity, bool) {
 	entity, ok := entityMgr.entityMap.Load(id)
 	if !ok {
 		return nil, false
@@ -58,7 +59,7 @@ func (entityMgr *_EntityMgr) GetEntity(id ec.ID) (ec.Entity, bool) {
 }
 
 // GetEntityWithSerialNo 查询实体，同时使用id与serialNo可以在多线程环境中准确定位实体
-func (entityMgr *_EntityMgr) GetEntityWithSerialNo(id ec.ID, serialNo int64) (ec.Entity, bool) {
+func (entityMgr *_EntityMgr) GetEntityWithSerialNo(id uid.Id, serialNo int64) (ec.Entity, bool) {
 	entity, ok := entityMgr.entityMap.Load(id)
 	if !ok {
 		return nil, false
@@ -77,7 +78,7 @@ func (entityMgr *_EntityMgr) GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, 
 		return nil, false, errors.New("nil entity")
 	}
 
-	if entity.GetID() == util.Zero[ec.ID]() {
+	if entity.GetId().IsNil() {
 		return nil, false, errors.New("entity id equal zero is invalid")
 	}
 
@@ -85,7 +86,7 @@ func (entityMgr *_EntityMgr) GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, 
 		return nil, false, errors.New("entity context can't be resolve")
 	}
 
-	actual, loaded := entityMgr.entityMap.LoadOrStore(entity.GetID(), entity)
+	actual, loaded := entityMgr.entityMap.LoadOrStore(entity.GetId(), entity)
 	return actual, loaded, nil
 }
 
@@ -95,7 +96,7 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity) error {
 		return errors.New("nil entity")
 	}
 
-	if entity.GetID() == util.Zero[ec.ID]() {
+	if entity.GetId().IsNil() {
 		return errors.New("entity id equal zero is invalid")
 	}
 
@@ -103,30 +104,30 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity) error {
 		return errors.New("entity context can't be resolve")
 	}
 
-	entityMgr.entityMap.Store(entity.GetID(), entity)
+	entityMgr.entityMap.Store(entity.GetId(), entity)
 
 	return nil
 }
 
 // GetAndRemoveEntity 查询并删除实体
-func (entityMgr *_EntityMgr) GetAndRemoveEntity(id ec.ID) (ec.Entity, bool) {
+func (entityMgr *_EntityMgr) GetAndRemoveEntity(id uid.Id) (ec.Entity, bool) {
 	return entityMgr.entityMap.LoadAndDelete(id)
 }
 
 // GetAndRemoveEntityWithSerialNo 查询并删除实体，同时使用id与serialNo可以在多线程环境中准确定位实体
-func (entityMgr *_EntityMgr) GetAndRemoveEntityWithSerialNo(id ec.ID, serialNo int64) (ec.Entity, bool) {
+func (entityMgr *_EntityMgr) GetAndRemoveEntityWithSerialNo(id uid.Id, serialNo int64) (ec.Entity, bool) {
 	return entityMgr.entityMap.TryLoadAndDelete(id, func(entity ec.Entity) bool {
 		return entity.GetSerialNo() == serialNo
 	})
 }
 
 // RemoveEntity 删除实体
-func (entityMgr *_EntityMgr) RemoveEntity(id ec.ID) {
+func (entityMgr *_EntityMgr) RemoveEntity(id uid.Id) {
 	entityMgr.entityMap.Delete(id)
 }
 
 // RemoveEntityWithSerialNo 删除实体，同时使用id与serialNo可以在多线程环境中准确定位实体
-func (entityMgr *_EntityMgr) RemoveEntityWithSerialNo(id ec.ID, serialNo int64) {
+func (entityMgr *_EntityMgr) RemoveEntityWithSerialNo(id uid.Id, serialNo int64) {
 	entityMgr.entityMap.TryDelete(id, func(entity ec.Entity) bool {
 		return entity.GetSerialNo() == serialNo
 	})

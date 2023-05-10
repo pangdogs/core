@@ -3,6 +3,7 @@ package ec
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy/localevent"
+	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/golaxy/util/container"
 )
@@ -37,8 +38,8 @@ type Entity interface {
 	_ComponentMgr
 	ContextResolver
 
-	// GetID 获取实体ID
-	GetID() ID
+	// GetId 获取实体Id
+	GetId() uid.Id
 	// GetSerialNo 获取序列号
 	GetSerialNo() int64
 	// GetPrototype 获取实体原型
@@ -56,7 +57,7 @@ type Entity interface {
 type _Entity interface {
 	init(opts *EntityOptions)
 	getOptions() *EntityOptions
-	setID(id ID)
+	setId(id uid.Id)
 	setSerialNo(sn int64)
 	setContext(ctx util.IfaceCache)
 	getChangedVersion() int64
@@ -82,9 +83,9 @@ type EntityBehavior struct {
 	eventCompMgrFirstAccessComponent localevent.Event
 }
 
-// GetID 获取实体ID
-func (entity *EntityBehavior) GetID() ID {
-	return entity.opts.PersistID
+// GetId 获取实体Id
+func (entity *EntityBehavior) GetId() uid.Id {
+	return entity.opts.PersistId
 }
 
 // GetSerialNo 获取序列号
@@ -119,13 +120,13 @@ func (entity *EntityBehavior) DestroySelf() {
 func (entity *EntityBehavior) String() string {
 	var parentInfo string
 	if parent, ok := entity.GetParent(); ok {
-		parentInfo = parent.GetID().String()
+		parentInfo = parent.GetId().String()
 	} else {
 		parentInfo = "nil"
 	}
 
-	return fmt.Sprintf("[ID:%s SerialNo:%d Prototype:%s Parent:%s State:%s]",
-		entity.GetID(),
+	return fmt.Sprintf("[Id:%s SerialNo:%d Prototype:%s Parent:%s State:%s]",
+		entity.GetId(),
 		entity.GetSerialNo(),
 		entity.GetPrototype(),
 		parentInfo,
@@ -160,8 +161,8 @@ func (entity *EntityBehavior) getOptions() *EntityOptions {
 	return &entity.opts
 }
 
-func (entity *EntityBehavior) setID(id ID) {
-	entity.opts.PersistID = id
+func (entity *EntityBehavior) setId(id uid.Id) {
+	entity.opts.PersistId = id
 }
 
 func (entity *EntityBehavior) setSerialNo(sn int64) {

@@ -3,6 +3,7 @@ package pt
 import (
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/localevent"
+	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/golaxy/util/container"
 )
@@ -10,8 +11,8 @@ import (
 // EntityOptions 创建实体的所有选项
 type EntityOptions struct {
 	ec.EntityOptions
-	AssignCompID func(entity ec.Entity, compPt ComponentPt) ec.ID // 设置组件ID函数
-	Scope        ec.Scope                                         // 实体的可访问作用域
+	AssignCompId func(entity ec.Entity, compPt ComponentPt) uid.Id // 设置组件Id函数
+	Scope        ec.Scope                                          // 实体的可访问作用域
 }
 
 // EntityOption 创建实体的选项设置器
@@ -26,7 +27,7 @@ type WithEntityOption struct {
 func (WithEntityOption) Default() EntityOption {
 	return func(o *EntityOptions) {
 		ec.WithEntityOption{}.Default()(&o.EntityOptions)
-		WithEntityOption{}.AssignCompID(nil)(o)
+		WithEntityOption{}.AssignCompId(nil)(o)
 		WithEntityOption{}.Scope(ec.Scope_Local)(o)
 	}
 }
@@ -45,10 +46,10 @@ func (WithEntityOption) Prototype(pt string) EntityOption {
 	}
 }
 
-// PersistID 实体持久化ID
-func (WithEntityOption) PersistID(id ec.ID) EntityOption {
+// PersistId 实体持久化Id
+func (WithEntityOption) PersistId(id uid.Id) EntityOption {
 	return func(o *EntityOptions) {
-		ec.WithEntityOption{}.PersistID(id)(&o.EntityOptions)
+		ec.WithEntityOption{}.PersistId(id)(&o.EntityOptions)
 	}
 }
 
@@ -73,10 +74,10 @@ func (WithEntityOption) HookAllocator(allocator container.Allocator[localevent.H
 	}
 }
 
-// AssignCompID 设置组件ID函数
-func (WithEntityOption) AssignCompID(fn func(entity ec.Entity, compPt ComponentPt) ec.ID) EntityOption {
+// AssignCompId 设置组件Id函数
+func (WithEntityOption) AssignCompId(fn func(entity ec.Entity, compPt ComponentPt) uid.Id) EntityOption {
 	return func(o *EntityOptions) {
-		o.AssignCompID = fn
+		o.AssignCompId = fn
 	}
 }
 

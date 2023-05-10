@@ -2,9 +2,9 @@ package runtime
 
 import (
 	"context"
-	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/localevent"
 	"kit.golaxy.org/golaxy/plugin"
+	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/golaxy/util/container"
 )
@@ -16,7 +16,7 @@ type ContextOptions struct {
 	AutoRecover        bool                                 // 是否开启panic时自动恢复
 	ReportError        chan error                           // panic时错误写入的error channel
 	Name               string                               // 运行时名称
-	PersistID          ec.ID                                // 运行时持久化ID
+	PersistId          uid.Id                               // 运行时持久化Id
 	PluginBundle       plugin.PluginBundle                  // 插件包
 	StartedCallback    func(ctx Context)                    // 启动运行时回调函数
 	StoppingCallback   func(ctx Context)                    // 开始停止运行时回调函数
@@ -41,7 +41,7 @@ func (WithContextOption) Default() ContextOption {
 		WithContextOption{}.AutoRecover(false)(o)
 		WithContextOption{}.ReportError(nil)(o)
 		WithContextOption{}.Name("")(o)
-		WithContextOption{}.PersistID(util.Zero[ec.ID]())(o)
+		WithContextOption{}.PersistId(util.Zero[uid.Id]())(o)
 		WithContextOption{}.PluginBundle(nil)(o)
 		WithContextOption{}.StartedCallback(nil)(o)
 		WithContextOption{}.StoppingCallback(nil)(o)
@@ -88,10 +88,10 @@ func (WithContextOption) Name(name string) ContextOption {
 	}
 }
 
-// PersistID 运行时持久化ID
-func (WithContextOption) PersistID(id ec.ID) ContextOption {
+// PersistId 运行时持久化Id
+func (WithContextOption) PersistId(id uid.Id) ContextOption {
 	return func(o *ContextOptions) {
-		o.PersistID = id
+		o.PersistId = id
 	}
 }
 

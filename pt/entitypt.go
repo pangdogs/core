@@ -2,6 +2,7 @@ package pt
 
 import (
 	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/uid"
 )
 
 // EntityPt 实体原型
@@ -25,20 +26,20 @@ func (pt *EntityPt) Construct(options ...EntityOption) ec.Entity {
 // UnsafeConstruct 不安全的创建实体，需要自己初始化所有选项
 func (pt *EntityPt) UnsafeConstruct(options EntityOptions) ec.Entity {
 	options.Prototype = pt.Prototype
-	return pt.Assemble(ec.UnsafeNewEntity(options.EntityOptions), options.AssignCompID)
+	return pt.Assemble(ec.UnsafeNewEntity(options.EntityOptions), options.AssignCompId)
 }
 
 // Assemble 向实体安装组件
-func (pt *EntityPt) Assemble(entity ec.Entity, assignCompID func(entity ec.Entity, compPt ComponentPt) ec.ID) ec.Entity {
+func (pt *EntityPt) Assemble(entity ec.Entity, assignCompId func(entity ec.Entity, compPt ComponentPt) uid.Id) ec.Entity {
 	if entity == nil {
 		return nil
 	}
 
 	for i := range pt.compPts {
-		var id ec.ID
+		var id uid.Id
 
-		if assignCompID != nil {
-			id = assignCompID(entity, pt.compPts[i])
+		if assignCompId != nil {
+			id = assignCompId(entity, pt.compPts[i])
 		}
 
 		entity.AddComponent(pt.compPts[i].Name, pt.compPts[i].Construct(id))

@@ -2,6 +2,7 @@ package pt
 
 import (
 	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/uid"
 	"reflect"
 )
 
@@ -14,12 +15,12 @@ type ComponentPt struct {
 }
 
 // Construct 创建组件
-func (pt *ComponentPt) Construct(id ec.ID) ec.Component {
+func (pt *ComponentPt) Construct(id uid.Id) ec.Component {
 	vfComp := reflect.New(pt.tfComp)
 
 	comp := vfComp.Interface().(ec.Component)
 	ec.UnsafeComponent(comp).SetReflectValue(vfComp)
-	ec.UnsafeComponent(comp).SetID(id)
+	ec.UnsafeComponent(comp).SetId(id)
 
 	return comp
 }

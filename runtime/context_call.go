@@ -22,7 +22,7 @@ func entityCall(entity ec.Entity) internal.Call {
 }
 
 func entityExist(entity ec.Entity) bool {
-	_, ok := Get(entity).GetEntityMgr().GetEntity(entity.GetID())
+	_, ok := Get(entity).GetEntityMgr().GetEntity(entity.GetId())
 	return ok
 }
 

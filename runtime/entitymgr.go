@@ -6,6 +6,7 @@ import (
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/localevent"
 	"kit.golaxy.org/golaxy/service"
+	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/golaxy/util/container"
 )
@@ -14,7 +15,7 @@ import (
 type IEntityMgr interface {
 	ec.ContextResolver
 	// GetEntity 查询实体
-	GetEntity(id ec.ID) (ec.Entity, bool)
+	GetEntity(id uid.Id) (ec.Entity, bool)
 	// RangeEntities 遍历所有实体
 	RangeEntities(func(entity ec.Entity) bool)
 	// ReverseRangeEntities 反向遍历所有实体
@@ -24,7 +25,7 @@ type IEntityMgr interface {
 	// AddEntity 添加实体
 	AddEntity(entity ec.Entity, scope ec.Scope) error
 	// RemoveEntity 删除实体
-	RemoveEntity(id ec.ID)
+	RemoveEntity(id uid.Id)
 	// EventEntityMgrAddEntity 事件：实体管理器添加实体
 	EventEntityMgrAddEntity() localevent.IEvent
 	// EventEntityMgrRemovingEntity 事件：实体管理器开始删除实体
@@ -47,7 +48,7 @@ type _EntityInfo struct {
 
 type _EntityMgr struct {
 	ctx                                      Context
-	entityMap                                map[ec.ID]_EntityInfo
+	entityMap                                map[uid.Id]_EntityInfo
 	entityList                               container.List[util.FaceAny]
 	eventEntityMgrAddEntity                  localevent.Event
 	eventEntityMgrRemovingEntity             localevent.Event
@@ -64,7 +65,7 @@ func (entityMgr *_EntityMgr) Init(ctx Context) {
 
 	entityMgr.ctx = ctx
 	entityMgr.entityList.Init(ctx.GetFaceAnyAllocator(), ctx)
-	entityMgr.entityMap = map[ec.ID]_EntityInfo{}
+	entityMgr.entityMap = map[uid.Id]_EntityInfo{}
 
 	entityMgr.eventEntityMgrAddEntity.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Allow, ctx.GetHookAllocator(), ctx)
 	entityMgr.eventEntityMgrRemovingEntity.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Allow, ctx.GetHookAllocator(), ctx)
@@ -80,7 +81,7 @@ func (entityMgr *_EntityMgr) ResolveContext() util.IfaceCache {
 }
 
 // GetEntity 查询实体
-func (entityMgr *_EntityMgr) GetEntity(id ec.ID) (ec.Entity, bool) {
+func (entityMgr *_EntityMgr) GetEntity(id uid.Id) (ec.Entity, bool) {
 	e, ok := entityMgr.entityMap[id]
 	if !ok {
 		return nil, false
@@ -136,8 +137,8 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 		return errors.New("entity state not birth is invalid")
 	}
 
-	if entity.GetID() != util.Zero[ec.ID]() {
-		if _, ok := entityMgr.entityMap[entity.GetID()]; ok {
+	if !entity.GetId().IsNil() {
+		if _, ok := entityMgr.entityMap[entity.GetId()]; ok {
 			return fmt.Errorf("entity id already existed")
 		}
 	}
@@ -145,8 +146,8 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 	serviceCtx := service.Get(entityMgr)
 	_entity := ec.UnsafeEntity(entity)
 
-	if _entity.GetID() == util.Zero[ec.ID]() {
-		_entity.SetID(serviceCtx.GenPersistID())
+	if _entity.GetId().IsNil() {
+		_entity.SetId(uid.New())
 	}
 	_entity.SetSerialNo(serviceCtx.GenSerialNo())
 	_entity.SetContext(util.Iface2Cache[Context](entityMgr.ctx))
@@ -154,8 +155,8 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 	_entity.RangeComponents(func(comp ec.Component) bool {
 		_comp := ec.UnsafeComponent(comp)
 
-		if _comp.GetID() == util.Zero[ec.ID]() {
-			_comp.SetID(serviceCtx.GenPersistID())
+		if _comp.GetId().IsNil() {
+			_comp.SetId(uid.New())
 		}
 		_comp.SetSerialNo(serviceCtx.GenSerialNo())
 
@@ -181,7 +182,7 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 	}
 	entityInfo.GlobalMark = scope == ec.Scope_Global
 
-	entityMgr.entityMap[entity.GetID()] = entityInfo
+	entityMgr.entityMap[entity.GetId()] = entityInfo
 
 	_entity.SetState(ec.EntityState_Entry)
 
@@ -195,7 +196,7 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 }
 
 // RemoveEntity 删除实体
-func (entityMgr *_EntityMgr) RemoveEntity(id ec.ID) {
+func (entityMgr *_EntityMgr) RemoveEntity(id uid.Id) {
 	entityInfo, ok := entityMgr.entityMap[id]
 	if !ok {
 		return
@@ -209,7 +210,7 @@ func (entityMgr *_EntityMgr) RemoveEntity(id ec.ID) {
 	entity.SetState(ec.EntityState_Leave)
 
 	if entityInfo.GlobalMark {
-		service.Get(entityMgr).GetEntityMgr().RemoveEntityWithSerialNo(entity.GetID(), entity.GetSerialNo())
+		service.Get(entityMgr).GetEntityMgr().RemoveEntityWithSerialNo(entity.GetId(), entity.GetSerialNo())
 	}
 
 	emitEventEntityMgrRemovingEntity(&entityMgr.eventEntityMgrRemovingEntity, entityMgr, entity.Entity)
@@ -260,8 +261,8 @@ func (entityMgr *_EntityMgr) OnCompMgrAddComponents(entity ec.Entity, components
 	for i := range components {
 		_comp := ec.UnsafeComponent(components[i])
 
-		if _comp.GetID() == util.Zero[ec.ID]() {
-			_comp.SetID(serviceCtx.GenPersistID())
+		if _comp.GetId().IsNil() {
+			_comp.SetId(uid.New())
 		}
 		_comp.SetSerialNo(serviceCtx.GenSerialNo())
 	}

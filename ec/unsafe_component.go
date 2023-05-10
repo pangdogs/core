@@ -2,6 +2,7 @@ package ec
 
 import (
 	"kit.golaxy.org/golaxy/localevent"
+	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util/container"
 	"reflect"
 )
@@ -20,8 +21,8 @@ func (uc _UnsafeComponent) Init(name string, entity Entity, composite Component,
 	uc.init(name, entity, composite, hookAllocator, gcCollector)
 }
 
-func (uc _UnsafeComponent) SetID(id ID) {
-	uc.setID(id)
+func (uc _UnsafeComponent) SetId(id uid.Id) {
+	uc.setId(id)
 }
 
 func (uc _UnsafeComponent) SetSerialNo(sn int64) {

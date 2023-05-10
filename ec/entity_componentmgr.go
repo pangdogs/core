@@ -3,6 +3,7 @@ package ec
 import (
 	"errors"
 	"kit.golaxy.org/golaxy/localevent"
+	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/golaxy/util/container"
 )
@@ -11,8 +12,8 @@ import (
 type _ComponentMgr interface {
 	// GetComponent 使用名称查询组件，一般情况下名称指组件接口名称，也可以自定义名称，同个名称指向多个组件时，返回首个组件
 	GetComponent(name string) Component
-	// GetComponentByID 使用组件ID查询组件
-	GetComponentByID(id ID) Component
+	// GetComponentById 使用组件Id查询组件
+	GetComponentById(id uid.Id) Component
 	// GetComponents 使用名称查询所有指向的组件
 	GetComponents(name string) []Component
 	// RangeComponents 遍历所有组件
@@ -23,8 +24,8 @@ type _ComponentMgr interface {
 	AddComponent(name string, component Component) error
 	// RemoveComponent 删除名称指向的组件，会删除同个名称指向的多个组件
 	RemoveComponent(name string)
-	// RemoveComponentByID 使用组件ID删除组件
-	RemoveComponentByID(id ID)
+	// RemoveComponentById 使用组件Id删除组件
+	RemoveComponentById(id uid.Id)
 	// EventCompMgrAddComponents 事件：实体的组件管理器加入一些组件
 	EventCompMgrAddComponents() localevent.IEvent
 	// EventCompMgrRemoveComponent 事件：实体的组件管理器删除组件
@@ -51,9 +52,9 @@ func (entity *EntityBehavior) GetComponent(name string) Component {
 	return nil
 }
 
-// GetComponentByID 使用组件ID查询组件
-func (entity *EntityBehavior) GetComponentByID(id ID) Component {
-	if e, ok := entity.getComponentElementByID(id); ok {
+// GetComponentById 使用组件Id查询组件
+func (entity *EntityBehavior) GetComponentById(id uid.Id) Component {
+	if e, ok := entity.getComponentElementById(id); ok {
 		comp := util.Cache2Iface[Component](e.Value.Cache)
 
 		if entity.opts.EnableComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
@@ -170,9 +171,9 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 	}, e)
 }
 
-// RemoveComponentByID 使用组件ID删除组件
-func (entity *EntityBehavior) RemoveComponentByID(id ID) {
-	e, ok := entity.getComponentElementByID(id)
+// RemoveComponentById 使用组件Id删除组件
+func (entity *EntityBehavior) RemoveComponentById(id uid.Id) {
+	e, ok := entity.getComponentElementById(id)
 	if !ok {
 		return
 	}
@@ -255,11 +256,11 @@ func (entity *EntityBehavior) getComponentElement(name string) (*container.Eleme
 	return e, e != nil
 }
 
-func (entity *EntityBehavior) getComponentElementByID(id ID) (*container.Element[util.FaceAny], bool) {
+func (entity *EntityBehavior) getComponentElementById(id uid.Id) (*container.Element[util.FaceAny], bool) {
 	var e *container.Element[util.FaceAny]
 
 	entity.componentList.Traversal(func(other *container.Element[util.FaceAny]) bool {
-		if util.Cache2Iface[Component](other.Value.Cache).GetID() == id {
+		if util.Cache2Iface[Component](other.Value.Cache).GetId() == id {
 			e = other
 			return false
 		}

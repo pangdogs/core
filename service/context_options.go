@@ -2,10 +2,9 @@ package service
 
 import (
 	"context"
-	"github.com/segmentio/ksuid"
-	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/pt"
+	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util"
 )
 
@@ -16,8 +15,7 @@ type ContextOptions struct {
 	AutoRecover      bool                     // 是否开启panic时自动恢复
 	ReportError      chan error               // panic时错误写入的error channel
 	Name             string                   // 服务名称
-	PersistID        ec.ID                    // 服务持久化ID
-	GenPersistID     func() ec.ID             // 生成持久化ID的函数
+	PersistId        uid.Id                   // 服务持久化Id
 	EntityLib        pt.EntityLib             // 实体原型库
 	PluginBundle     plugin.PluginBundle      // 插件包
 	StartedCallback  func(serviceCtx Context) // 启动运行时回调函数
@@ -39,8 +37,7 @@ func (WithContextOption) Default() ContextOption {
 		WithContextOption{}.AutoRecover(false)(o)
 		WithContextOption{}.ReportError(nil)(o)
 		WithContextOption{}.Name("")(o)
-		WithContextOption{}.PersistID(util.Zero[ec.ID]())(o)
-		WithContextOption{}.GenPersistID(func() ec.ID { return ec.ID(ksuid.New()) })(o)
+		WithContextOption{}.PersistId(util.Zero[uid.Id]())(o)
 		WithContextOption{}.EntityLib(nil)(o)
 		WithContextOption{}.PluginBundle(nil)(o)
 		WithContextOption{}.StartedCallback(nil)(o)
@@ -84,20 +81,10 @@ func (WithContextOption) Name(name string) ContextOption {
 	}
 }
 
-// PersistID 服务持久化ID
-func (WithContextOption) PersistID(id ec.ID) ContextOption {
+// PersistId 服务持久化Id
+func (WithContextOption) PersistId(id uid.Id) ContextOption {
 	return func(o *ContextOptions) {
-		o.PersistID = id
-	}
-}
-
-// GenPersistID 生成持久化ID的函数
-func (WithContextOption) GenPersistID(fn func() ec.ID) ContextOption {
-	return func(o *ContextOptions) {
-		if fn == nil {
-			panic("GenPersistID nil invalid")
-		}
-		o.GenPersistID = fn
+		o.PersistId = id
 	}
 }
 

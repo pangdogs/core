@@ -7,6 +7,7 @@ import (
 	"kit.golaxy.org/golaxy/localevent"
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/service"
+	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/golaxy/util/container"
 )
@@ -47,8 +48,8 @@ type Context interface {
 
 	// GetName 获取名称
 	GetName() string
-	// GetID 获取运行时ID
-	GetID() ec.ID
+	// GetId 获取运行时Id
+	GetId() uid.Id
 	// GetFrame 获取帧
 	GetFrame() Frame
 	// GetEntityMgr 获取实体管理器
@@ -89,9 +90,9 @@ func (ctx *ContextBehavior) GetName() string {
 	return ctx.opts.Name
 }
 
-// GetID 获取运行时ID
-func (ctx *ContextBehavior) GetID() ec.ID {
-	return ctx.opts.PersistID
+// GetId 获取运行时Id
+func (ctx *ContextBehavior) GetId() uid.Id {
+	return ctx.opts.PersistId
 }
 
 // GetFrame 获取帧
@@ -121,7 +122,7 @@ func (ctx *ContextBehavior) GetHookAllocator() container.Allocator[localevent.Ho
 
 // String 字符串化
 func (ctx *ContextBehavior) String() string {
-	return fmt.Sprintf("[ID:%s Name:%s]", ctx.GetID(), ctx.GetName())
+	return fmt.Sprintf("[Id:%s Name:%s]", ctx.GetId(), ctx.GetName())
 }
 
 // ResolveContext 解析上下文
@@ -157,8 +158,8 @@ func (ctx *ContextBehavior) init(serviceCtx service.Context, opts *ContextOption
 		ctx.opts.Context = serviceCtx
 	}
 
-	if ctx.opts.PersistID == util.Zero[ec.ID]() {
-		ctx.opts.PersistID = serviceCtx.GenPersistID()
+	if ctx.opts.PersistId.IsNil() {
+		ctx.opts.PersistId = uid.New()
 	}
 
 	internal.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)

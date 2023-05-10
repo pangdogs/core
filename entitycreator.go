@@ -7,6 +7,7 @@ import (
 	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/service"
+	"kit.golaxy.org/golaxy/uid"
 )
 
 // NewEntityCreator 创建实体构建器
@@ -47,10 +48,10 @@ func (creator EntityCreator) Spawn() (ec.Entity, error) {
 	return creator.spawn(nil)
 }
 
-// SpawnWithID 使用指定ID创建实体
-func (creator EntityCreator) SpawnWithID(id ec.ID) (ec.Entity, error) {
+// SpawnWithId 使用指定Id创建实体
+func (creator EntityCreator) SpawnWithId(id uid.Id) (ec.Entity, error) {
 	return creator.spawn(func(options *pt.EntityOptions) {
-		options.PersistID = id
+		options.PersistId = id
 	})
 }
 
