@@ -6,17 +6,17 @@ import (
 )
 
 type LifecycleServicePluginInit interface {
-	InitServicePlugin(ctx service.Context)
+	InitSP(ctx service.Context)
 }
 
 type LifecycleServicePluginShut interface {
-	ShutServicePlugin(ctx service.Context)
+	ShutSP(ctx service.Context)
 }
 
 type LifecycleRuntimePluginInit interface {
-	InitRuntimePlugin(ctx runtime.Context)
+	InitRP(ctx runtime.Context)
 }
 
 type LifecycleRuntimePluginShut interface {
-	ShutRuntimePlugin(ctx runtime.Context)
+	ShutRP(ctx runtime.Context)
 }
