@@ -12,16 +12,16 @@ import (
 type Ret = internal.Ret
 
 type _Call interface {
-	// SyncCall 同步调用。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，会阻塞并等待返回值。
+	// AwaitCall 同步调用。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，会阻塞并等待返回值。
 	//
 	//	注意：
 	//	- 代码片段中的线程安全问题。
-	//	- 当运行时的SyncCallTimeout选项设置为0时，在代码片段中，如果向调用方所在的运行时发起同步调用，那么会造成线程死锁。
+	//	- 当运行时的AwaitCallTimeout选项设置为0时，在代码片段中，如果向调用方所在的运行时发起同步调用，那么会造成线程死锁。
 	//  - 调用过程中的panic信息，均会转换为error返回。
-	SyncCall(entityId uid.Id, segment func(entity ec.Entity) Ret) Ret
+	AwaitCall(entityId uid.Id, segment func(entity ec.Entity) Ret) Ret
 
-	// SyncCallWithSerialNo 与SyncCall相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
-	SyncCallWithSerialNo(entityId uid.Id, entitySerialNo int64, segment func(entity ec.Entity) Ret) Ret
+	// AwaitCallWithSerialNo 与AwaitCall()相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
+	AwaitCallWithSerialNo(entityId uid.Id, entitySerialNo int64, segment func(entity ec.Entity) Ret) Ret
 
 	// AsyncCall 异步调用。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，不会阻塞，会返回result channel。
 	//
@@ -31,19 +31,19 @@ type _Call interface {
 	//  - 调用过程中的panic信息，均会转换为error返回。
 	AsyncCall(entityId uid.Id, segment func(entity ec.Entity) Ret) <-chan Ret
 
-	// AsyncCallWithSerialNo 与AsyncCall相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
+	// AsyncCallWithSerialNo 与AsyncCall()相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
 	AsyncCallWithSerialNo(entityId uid.Id, entitySerialNo int64, segment func(entity ec.Entity) Ret) <-chan Ret
 
-	// SyncCallNoRet 同步调用，无返回值。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，会阻塞，没有返回值。
+	// AwaitCallNoRet 同步调用，无返回值。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，会阻塞，没有返回值。
 	//
 	//	注意：
 	//	- 代码片段中的线程安全问题。
-	//	- 当运行时的SyncCallTimeout选项设置为0时，在代码片段中，如果向调用方所在的运行时发起同步调用，那么会造成线程死锁。
+	//	- 当运行时的AwaitCallTimeout选项设置为0时，在代码片段中，如果向调用方所在的运行时发起同步调用，那么会造成线程死锁。
 	//  - 调用过程中的panic信息，均会抛弃。
-	SyncCallNoRet(entityId uid.Id, segment func(entity ec.Entity))
+	AwaitCallNoRet(entityId uid.Id, segment func(entity ec.Entity))
 
-	// SyncCallNoRetWithSerialNo 与SyncCallNoRet相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
-	SyncCallNoRetWithSerialNo(entityId uid.Id, entitySerialNo int64, segment func(entity ec.Entity))
+	// AwaitCallNoRetWithSerialNo 与AwaitCallNoRet()相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
+	AwaitCallNoRetWithSerialNo(entityId uid.Id, entitySerialNo int64, segment func(entity ec.Entity))
 
 	// AsyncCallNoRet 异步调用，无返回值。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，不会阻塞，没有返回值。
 	//
@@ -52,7 +52,7 @@ type _Call interface {
 	//  - 调用过程中的panic信息，均会抛弃。
 	AsyncCallNoRet(entityId uid.Id, segment func(entity ec.Entity))
 
-	// AsyncCallNoRetWithSerialNo 与AsyncCallNoRet相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
+	// AsyncCallNoRetWithSerialNo 与AsyncCallNoRet()相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
 	AsyncCallNoRetWithSerialNo(entityId uid.Id, entitySerialNo int64, segment func(entity ec.Entity))
 }
 
@@ -99,8 +99,8 @@ func getEntityWithSerialNo(entityMgr _EntityMgr, id uid.Id, serialNo int64) (ec.
 	return entity, nil
 }
 
-func syncCall(entity ec.Entity, segment func(entity ec.Entity) Ret) Ret {
-	return entityCall(entity).SyncCall(func() Ret {
+func awaitCall(entity ec.Entity, segment func(entity ec.Entity) Ret) Ret {
+	return entityCall(entity).AwaitCall(func() Ret {
 		if !entityExist(entity) {
 			return Ret{
 				Err: errors.New("entity not exist in runtime context"),
@@ -121,13 +121,13 @@ func asyncCall(entity ec.Entity, segment func(entity ec.Entity) Ret) <-chan Ret 
 	})
 }
 
-// SyncCall 同步调用。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，会阻塞并等待返回值。
+// AwaitCall 同步调用。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，会阻塞并等待返回值。
 //
 //	注意：
 //	- 代码片段中的线程安全问题。
-//	- 当运行时的SyncCallTimeout选项设置为0时，在代码片段中，如果向调用方所在的运行时发起同步调用，那么会造成线程死锁。
+//	- 当运行时的AwaitCallTimeout选项设置为0时，在代码片段中，如果向调用方所在的运行时发起同步调用，那么会造成线程死锁。
 //	- 调用过程中的panic信息，均会转换为error返回。
-func (ctx *ContextBehavior) SyncCall(entityId uid.Id, segment func(entity ec.Entity) Ret) Ret {
+func (ctx *ContextBehavior) AwaitCall(entityId uid.Id, segment func(entity ec.Entity) Ret) Ret {
 	if err := checkEntityId(entityId); err != nil {
 		return Ret{Err: err}
 	}
@@ -141,11 +141,11 @@ func (ctx *ContextBehavior) SyncCall(entityId uid.Id, segment func(entity ec.Ent
 		return Ret{Err: err}
 	}
 
-	return syncCall(entity, segment)
+	return awaitCall(entity, segment)
 }
 
-// SyncCallWithSerialNo 与SyncCall相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
-func (ctx *ContextBehavior) SyncCallWithSerialNo(entityId uid.Id, entitySerialNo int64, segment func(entity ec.Entity) Ret) Ret {
+// AwaitCallWithSerialNo 与AwaitCall()相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
+func (ctx *ContextBehavior) AwaitCallWithSerialNo(entityId uid.Id, entitySerialNo int64, segment func(entity ec.Entity) Ret) Ret {
 	if err := checkEntityId(entityId); err != nil {
 		return Ret{Err: err}
 	}
@@ -163,7 +163,7 @@ func (ctx *ContextBehavior) SyncCallWithSerialNo(entityId uid.Id, entitySerialNo
 		return Ret{Err: err}
 	}
 
-	return syncCall(entity, segment)
+	return awaitCall(entity, segment)
 }
 
 // AsyncCall 异步调用。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，不会阻塞，会返回result channel。
@@ -195,7 +195,7 @@ func (ctx *ContextBehavior) AsyncCall(entityId uid.Id, segment func(entity ec.En
 	return asyncCall(entity, segment)
 }
 
-// AsyncCallWithSerialNo 与AsyncCall相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
+// AsyncCallWithSerialNo 与AsyncCall()相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
 func (ctx *ContextBehavior) AsyncCallWithSerialNo(entityId uid.Id, entitySerialNo int64, segment func(entity ec.Entity) Ret) <-chan Ret {
 	if err := checkEntityId(entityId); err != nil {
 		retChan := make(chan Ret)
@@ -225,13 +225,13 @@ func (ctx *ContextBehavior) AsyncCallWithSerialNo(entityId uid.Id, entitySerialN
 	return asyncCall(entity, segment)
 }
 
-// SyncCallNoRet 同步调用，无返回值。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，会阻塞，没有返回值。
+// AwaitCallNoRet 同步调用，无返回值。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，会阻塞，没有返回值。
 //
 //	注意：
 //	- 代码片段中的线程安全问题。
-//	- 当运行时的SyncCallTimeout选项设置为0时，在代码片段中，如果向调用方所在的运行时发起同步调用，那么会造成线程死锁。
+//	- 当运行时的AwaitCallTimeout选项设置为0时，在代码片段中，如果向调用方所在的运行时发起同步调用，那么会造成线程死锁。
 //	- 调用过程中的panic信息，均会抛弃。
-func (ctx *ContextBehavior) SyncCallNoRet(entityId uid.Id, segment func(entity ec.Entity)) {
+func (ctx *ContextBehavior) AwaitCallNoRet(entityId uid.Id, segment func(entity ec.Entity)) {
 	if entityId.IsNil() || segment == nil {
 		return
 	}
@@ -241,15 +241,15 @@ func (ctx *ContextBehavior) SyncCallNoRet(entityId uid.Id, segment func(entity e
 		return
 	}
 
-	entityCall(entity).SyncCallNoRet(func() {
+	entityCall(entity).AwaitCallNoRet(func() {
 		if entityExist(entity) {
 			segment(entity)
 		}
 	})
 }
 
-// SyncCallNoRetWithSerialNo 与SyncCallNoRet相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
-func (ctx *ContextBehavior) SyncCallNoRetWithSerialNo(entityId uid.Id, entitySerialNo int64, segment func(entity ec.Entity)) {
+// AwaitCallNoRetWithSerialNo 与AwaitCallNoRet()相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
+func (ctx *ContextBehavior) AwaitCallNoRetWithSerialNo(entityId uid.Id, entitySerialNo int64, segment func(entity ec.Entity)) {
 	if entityId.IsNil() || entitySerialNo <= 0 || segment == nil {
 		return
 	}
@@ -259,7 +259,7 @@ func (ctx *ContextBehavior) SyncCallNoRetWithSerialNo(entityId uid.Id, entitySer
 		return
 	}
 
-	entityCall(entity).SyncCallNoRet(func() {
+	entityCall(entity).AwaitCallNoRet(func() {
 		if entityExist(entity) {
 			segment(entity)
 		}
@@ -288,7 +288,7 @@ func (ctx *ContextBehavior) AsyncCallNoRet(entityId uid.Id, segment func(entity 
 	})
 }
 
-// AsyncCallNoRetWithSerialNo 与AsyncCallNoRet相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
+// AsyncCallNoRetWithSerialNo 与AsyncCallNoRet()相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
 func (ctx *ContextBehavior) AsyncCallNoRetWithSerialNo(entityId uid.Id, entitySerialNo int64, segment func(entity ec.Entity)) {
 	if entityId.IsNil() || entitySerialNo <= 0 || segment == nil {
 		return

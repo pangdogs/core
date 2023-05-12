@@ -26,13 +26,13 @@ func entityExist(entity ec.Entity) bool {
 	return ok
 }
 
-// SyncCall 同步调用。在运行时中，将代码片段压入任务流水线，串行化的进行调用，会阻塞并等待返回值。
+// AwaitCall 同步调用。在运行时中，将代码片段压入任务流水线，串行化的进行调用，会阻塞并等待返回值。
 //
 //	注意：
 //	- 代码片段中的线程安全问题。
-//	- 当运行时的SyncCallTimeout选项设置为0时，在代码片段中，如果向调用方所在的运行时发起同步调用，那么会造成线程死锁。
+//	- 当运行时的AwaitCallTimeout选项设置为0时，在代码片段中，如果向调用方所在的运行时发起同步调用，那么会造成线程死锁。
 //	- 调用过程中的panic信息，均会转换为error返回。
-func (ctx *ContextBehavior) SyncCall(segment func() Ret) Ret {
+func (ctx *ContextBehavior) AwaitCall(segment func() Ret) Ret {
 	var ret Ret
 
 	func() {
@@ -90,13 +90,13 @@ func (ctx *ContextBehavior) AsyncCall(segment func() Ret) <-chan Ret {
 	return ret
 }
 
-// SyncCallNoRet 同步调用，无返回值。在运行时中，将代码片段压入任务流水线，串行化的进行调用，会阻塞，没有返回值。
+// AwaitCallNoRet 同步调用，无返回值。在运行时中，将代码片段压入任务流水线，串行化的进行调用，会阻塞，没有返回值。
 //
 //	注意：
 //	- 代码片段中的线程安全问题。
-//	- 当运行时的SyncCallTimeout选项设置为0时，在代码片段中，如果向调用方所在的运行时发起同步调用，那么会造成线程死锁。
+//	- 当运行时的AwaitCallTimeout选项设置为0时，在代码片段中，如果向调用方所在的运行时发起同步调用，那么会造成线程死锁。
 //	- 调用过程中的panic信息，均会抛弃。
-func (ctx *ContextBehavior) SyncCallNoRet(segment func()) {
+func (ctx *ContextBehavior) AwaitCallNoRet(segment func()) {
 	func() {
 		defer func() {
 			recover()

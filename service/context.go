@@ -9,6 +9,7 @@ import (
 	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util"
 	"sync/atomic"
+	"time"
 )
 
 // NewContext 创建服务上下文
@@ -113,6 +114,8 @@ func (ctx *ContextBehavior) init(opts *ContextOptions) {
 	if ctx.opts.PersistId.IsNil() {
 		ctx.opts.PersistId = uid.New()
 	}
+
+	ctx.snGenerator = time.Now().UnixMilli()
 
 	internal.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
 	ctx.entityMgr.init(ctx.opts.CompositeFace.Iface)
