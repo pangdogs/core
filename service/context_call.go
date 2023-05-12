@@ -164,7 +164,7 @@ func (ctx *ContextBehavior) AwaitCallWithSerialNo(entityId uid.Id, entitySerialN
 }
 
 func returnAsyncRet(err error, val any) runtime.AsyncRet {
-	asyncRet := make(chan runtime.Ret)
+	asyncRet := make(chan runtime.Ret, 1)
 	asyncRet <- runtime.NewRet(err, val)
 	close(asyncRet)
 	return asyncRet

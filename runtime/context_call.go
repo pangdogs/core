@@ -123,7 +123,7 @@ func (ctx *ContextBehavior) AwaitCall(segment func() Ret) Ret {
 //	- 在代码片段中，如果向调用方所在的运行时发起同步调用，并且调用方也在阻塞AsyncRet等待返回值，那么会造成线程死锁。
 //	- 调用过程中的panic信息，均会转换为error返回。
 func (ctx *ContextBehavior) AsyncCall(segment func() Ret) AsyncRet {
-	asyncRet := make(chan Ret)
+	asyncRet := make(chan Ret, 1)
 
 	go func() {
 		defer func() {
