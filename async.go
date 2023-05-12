@@ -21,7 +21,10 @@ func Async(ctxResolver ec.ContextResolver, awaitRet AsyncRet, asyncWait func(ctx
 			recover()
 		}()
 
-		ret := <-awaitRet
+		ret, ok := <-awaitRet
+		if !ok {
+			return
+		}
 
 		ctx.AsyncCallNoRet(func() {
 			asyncWait(ctx, ret)
