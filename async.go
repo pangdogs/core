@@ -1,20 +1,21 @@
 package golaxy
 
 import (
+	"errors"
 	"kit.golaxy.org/golaxy/ec"
 	. "kit.golaxy.org/golaxy/runtime"
+	"sync/atomic"
 )
 
-// Async 异步调用async
-func Async(ctxResolver ec.ContextResolver, awaitRet AsyncRet, asyncWait func(ctx Context, ret Ret)) {
+func Await(ctxResolver ec.ContextResolver, asyncWait func(ctx Context, ret Ret), asyncRet AsyncRet) {
 	ctx := Get(ctxResolver)
-
-	if awaitRet == nil {
-		panic("nil awaitRet")
-	}
 
 	if asyncWait == nil {
 		panic("nil asyncWait")
+	}
+
+	if asyncRet == nil {
+		return
 	}
 
 	go func() {
@@ -22,9 +23,9 @@ func Async(ctxResolver ec.ContextResolver, awaitRet AsyncRet, asyncWait func(ctx
 			recover()
 		}()
 
-		ret, ok := <-awaitRet
+		ret, ok := <-asyncRet
 		if !ok {
-			return
+			ret = NewRet(errors.New("asyncRet closed"), nil)
 		}
 
 		ctx.AsyncCallNoRet(func() {
@@ -33,8 +34,83 @@ func Async(ctxResolver ec.ContextResolver, awaitRet AsyncRet, asyncWait func(ctx
 	}()
 }
 
-// Await 异步调用await
-func Await(ctxResolver ec.ContextResolver, segment func(ctx Context) Ret) AsyncRet {
+func AwaitAny(ctxResolver ec.ContextResolver, asyncWait func(ctx Context, ret Ret), asyncRets ...AsyncRet) {
+	ctx := Get(ctxResolver)
+
+	if asyncWait == nil {
+		panic("nil asyncWait")
+	}
+
+	if len(asyncRets) <= 0 {
+		return
+	}
+
+	var b atomic.Bool
+
+	for _, asyncRet := range asyncRets {
+		if asyncRet == nil {
+			continue
+		}
+
+		go func() {
+			defer func() {
+				recover()
+			}()
+
+			ret, ok := <-asyncRet
+			if !ok {
+				return
+			}
+
+			if !ret.OK() {
+				return
+			}
+
+			if !b.CompareAndSwap(false, true) {
+				return
+			}
+
+			ctx.AsyncCallNoRet(func() {
+				asyncWait(ctx, ret)
+			})
+		}()
+	}
+}
+
+func AwaitAll(ctxResolver ec.ContextResolver, asyncWait func(ctx Context, ret Ret), asyncRets ...AsyncRet) {
+	ctx := Get(ctxResolver)
+
+	if asyncWait == nil {
+		panic("nil asyncWait")
+	}
+
+	if len(asyncRets) <= 0 {
+		return
+	}
+
+	for _, asyncRet := range asyncRets {
+		if asyncRet == nil {
+			continue
+		}
+
+		go func() {
+			defer func() {
+				recover()
+			}()
+
+			ret, ok := <-asyncRet
+			if !ok {
+				ret = NewRet(errors.New("asyncRet closed"), nil)
+			}
+
+			ctx.AsyncCallNoRet(func() {
+				asyncWait(ctx, ret)
+			})
+		}()
+	}
+}
+
+func Async(ctxResolver ec.ContextResolver, segment func(ctx Context) Ret) AsyncRet {
 	ctx := Get(ctxResolver)
 
 	if segment == nil {
