@@ -173,12 +173,14 @@ func (ctx *ContextBehavior) AsyncCall(entityId uid.Id, segment func(entity ec.En
 	if err := checkEntityId(entityId); err != nil {
 		retChan := make(chan runtime.Ret)
 		retChan <- runtime.Ret{Err: err}
+		close(retChan)
 		return retChan
 	}
 
 	if err := checkSegment(segment); err != nil {
 		retChan := make(chan runtime.Ret)
 		retChan <- runtime.Ret{Err: err}
+		close(retChan)
 		return retChan
 	}
 
@@ -186,6 +188,7 @@ func (ctx *ContextBehavior) AsyncCall(entityId uid.Id, segment func(entity ec.En
 	if err != nil {
 		retChan := make(chan runtime.Ret)
 		retChan <- runtime.Ret{Err: err}
+		close(retChan)
 		return retChan
 	}
 
@@ -197,18 +200,21 @@ func (ctx *ContextBehavior) AsyncCallWithSerialNo(entityId uid.Id, entitySerialN
 	if err := checkEntityId(entityId); err != nil {
 		retChan := make(chan runtime.Ret)
 		retChan <- runtime.Ret{Err: err}
+		close(retChan)
 		return retChan
 	}
 
 	if err := checkEntitySerialNo(entitySerialNo); err != nil {
 		retChan := make(chan runtime.Ret)
 		retChan <- runtime.Ret{Err: err}
+		close(retChan)
 		return retChan
 	}
 
 	if err := checkSegment(segment); err != nil {
 		retChan := make(chan runtime.Ret)
 		retChan <- runtime.Ret{Err: err}
+		close(retChan)
 		return retChan
 	}
 
@@ -216,6 +222,7 @@ func (ctx *ContextBehavior) AsyncCallWithSerialNo(entityId uid.Id, entitySerialN
 	if err != nil {
 		retChan := make(chan runtime.Ret)
 		retChan <- runtime.Ret{Err: err}
+		close(retChan)
 		return retChan
 	}
 

@@ -112,6 +112,7 @@ func (ctx *ContextBehavior) AsyncCall(segment func() Ret) AsyncRet {
 					err = fmt.Errorf("%v", info)
 				}
 				ret <- Ret{Err: err}
+				close(ret)
 			}
 		}()
 
@@ -121,6 +122,7 @@ func (ctx *ContextBehavior) AsyncCall(segment func() Ret) AsyncRet {
 
 		ctx.callee.PushCall(func() {
 			ret <- segment()
+			close(ret)
 		})
 	}()
 
