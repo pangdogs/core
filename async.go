@@ -5,6 +5,7 @@ import (
 	. "kit.golaxy.org/golaxy/runtime"
 )
 
+// Async 异步调用async
 func Async(ctxResolver ec.ContextResolver, awaitRet AsyncRet, asyncWait func(ctx Context, ret Ret)) {
 	ctx := Get(ctxResolver)
 
@@ -32,6 +33,7 @@ func Async(ctxResolver ec.ContextResolver, awaitRet AsyncRet, asyncWait func(ctx
 	}()
 }
 
+// Await 异步调用await
 func Await(ctxResolver ec.ContextResolver, segment func(ctx Context) Ret) AsyncRet {
 	ctx := Get(ctxResolver)
 
