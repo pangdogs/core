@@ -3,22 +3,29 @@ package service
 import (
 	"errors"
 	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/runtime"
+	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/uid"
 	_ "unsafe"
 )
 
-type _Call interface {
+// Ret 调用结果
+type Ret = internal.Ret
+
+// AsyncRet 异步调用结果
+type AsyncRet = internal.AsyncRet
+
+// Caller 异步调用发起者
+type Caller interface {
 	// SyncCall 同步调用。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，会阻塞并等待返回值。
 	//
 	//	注意：
 	//	- 代码片段中的线程安全问题。
 	//	- 当运行时的SyncCallTimeout选项设置为0时，在代码片段中，如果向调用方所在的运行时发起同步调用，那么会造成线程死锁。
 	//  - 调用过程中的panic信息，均会转换为error返回。
-	SyncCall(entityId uid.Id, segment func(entity ec.Entity) runtime.Ret) runtime.Ret
+	SyncCall(entityId uid.Id, segment func(entity ec.Entity) Ret) Ret
 
 	// SyncCallWithSerialNo 与SyncCall()相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
-	SyncCallWithSerialNo(entityId uid.Id, entitySerialNo int64, segment func(entity ec.Entity) runtime.Ret) runtime.Ret
+	SyncCallWithSerialNo(entityId uid.Id, entitySerialNo int64, segment func(entity ec.Entity) Ret) Ret
 
 	// AsyncCall 异步调用。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，不会阻塞，会返回AsyncRet。
 	//
@@ -26,10 +33,10 @@ type _Call interface {
 	//	- 代码片段中的线程安全问题。
 	//	- 在代码片段中，如果向调用方所在的运行时发起同步调用，并且调用方也在阻塞AsyncRet等待返回值，那么会造成线程死锁。
 	//  - 调用过程中的panic信息，均会转换为error返回。
-	AsyncCall(entityId uid.Id, segment func(entity ec.Entity) runtime.Ret) runtime.AsyncRet
+	AsyncCall(entityId uid.Id, segment func(entity ec.Entity) Ret) AsyncRet
 
 	// AsyncCallWithSerialNo 与AsyncCall()相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
-	AsyncCallWithSerialNo(entityId uid.Id, entitySerialNo int64, segment func(entity ec.Entity) runtime.Ret) runtime.AsyncRet
+	AsyncCallWithSerialNo(entityId uid.Id, entitySerialNo int64, segment func(entity ec.Entity) Ret) AsyncRet
 
 	// SyncCallNoRet 同步调用，无返回值。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，会阻塞，没有返回值。
 	//
@@ -54,7 +61,7 @@ type _Call interface {
 }
 
 //go:linkname entityCaller kit.golaxy.org/golaxy/runtime.entityCaller
-func entityCaller(entity ec.Entity) runtime.Caller
+func entityCaller(entity ec.Entity) internal.Caller
 
 //go:linkname entityExist kit.golaxy.org/golaxy/runtime.entityExist
 func entityExist(entity ec.Entity) bool
@@ -73,7 +80,7 @@ func checkEntitySerialNo(entitySerialNo int64) error {
 	return nil
 }
 
-func checkSegment(segment func(entity ec.Entity) runtime.Ret) error {
+func checkSegment(segment func(entity ec.Entity) Ret) error {
 	if segment == nil {
 		return errors.New("nil segment")
 	}
@@ -96,10 +103,10 @@ func getEntityWithSerialNo(entityMgr _EntityMgr, id uid.Id, serialNo int64) (ec.
 	return entity, nil
 }
 
-func syncCall(entity ec.Entity, segment func(entity ec.Entity) runtime.Ret) runtime.Ret {
-	return entityCaller(entity).SyncCall(func() runtime.Ret {
+func syncCall(entity ec.Entity, segment func(entity ec.Entity) Ret) Ret {
+	return entityCaller(entity).SyncCall(func() Ret {
 		if !entityExist(entity) {
-			return runtime.Ret{
+			return Ret{
 				Error: errors.New("entity not exist in runtime context"),
 			}
 		}
@@ -107,10 +114,10 @@ func syncCall(entity ec.Entity, segment func(entity ec.Entity) runtime.Ret) runt
 	})
 }
 
-func asyncCall(entity ec.Entity, segment func(entity ec.Entity) runtime.Ret) runtime.AsyncRet {
-	return entityCaller(entity).AsyncCall(func() runtime.Ret {
+func asyncCall(entity ec.Entity, segment func(entity ec.Entity) Ret) AsyncRet {
+	return entityCaller(entity).AsyncCall(func() Ret {
 		if !entityExist(entity) {
-			return runtime.Ret{
+			return Ret{
 				Error: errors.New("entity not exist in runtime context"),
 			}
 		}
@@ -124,48 +131,48 @@ func asyncCall(entity ec.Entity, segment func(entity ec.Entity) runtime.Ret) run
 //	- 代码片段中的线程安全问题。
 //	- 当运行时的SyncCallTimeout选项设置为0时，在代码片段中，如果向调用方所在的运行时发起同步调用，那么会造成线程死锁。
 //	- 调用过程中的panic信息，均会转换为error返回。
-func (ctx *ContextBehavior) SyncCall(entityId uid.Id, segment func(entity ec.Entity) runtime.Ret) runtime.Ret {
+func (ctx *ContextBehavior) SyncCall(entityId uid.Id, segment func(entity ec.Entity) Ret) Ret {
 	if err := checkEntityId(entityId); err != nil {
-		return runtime.NewRet(err, nil)
+		return internal.NewRet(err, nil)
 	}
 
 	if err := checkSegment(segment); err != nil {
-		return runtime.NewRet(err, nil)
+		return internal.NewRet(err, nil)
 	}
 
 	entity, err := getEntity(ctx.entityMgr, entityId)
 	if err != nil {
-		return runtime.NewRet(err, nil)
+		return internal.NewRet(err, nil)
 	}
 
 	return syncCall(entity, segment)
 }
 
 // SyncCallWithSerialNo 与SyncCall()相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
-func (ctx *ContextBehavior) SyncCallWithSerialNo(entityId uid.Id, entitySerialNo int64, segment func(entity ec.Entity) runtime.Ret) runtime.Ret {
+func (ctx *ContextBehavior) SyncCallWithSerialNo(entityId uid.Id, entitySerialNo int64, segment func(entity ec.Entity) Ret) Ret {
 	if err := checkEntityId(entityId); err != nil {
-		return runtime.NewRet(err, nil)
+		return internal.NewRet(err, nil)
 	}
 
 	if err := checkEntitySerialNo(entitySerialNo); err != nil {
-		return runtime.NewRet(err, nil)
+		return internal.NewRet(err, nil)
 	}
 
 	if err := checkSegment(segment); err != nil {
-		return runtime.NewRet(err, nil)
+		return internal.NewRet(err, nil)
 	}
 
 	entity, err := getEntityWithSerialNo(ctx.entityMgr, entityId, entitySerialNo)
 	if err != nil {
-		return runtime.NewRet(err, nil)
+		return internal.NewRet(err, nil)
 	}
 
 	return syncCall(entity, segment)
 }
 
-func returnAsyncRet(err error, val any) runtime.AsyncRet {
-	asyncRet := make(chan runtime.Ret, 1)
-	asyncRet <- runtime.NewRet(err, val)
+func returnAsyncRet(err error, val any) AsyncRet {
+	asyncRet := make(chan Ret, 1)
+	asyncRet <- internal.NewRet(err, val)
 	close(asyncRet)
 	return asyncRet
 }
@@ -176,7 +183,7 @@ func returnAsyncRet(err error, val any) runtime.AsyncRet {
 //	- 代码片段中的线程安全问题。
 //	- 在代码片段中，如果向调用方所在的运行时发起同步调用，并且调用方也在阻塞AsyncRet等待返回值，那么会造成线程死锁。
 //	- 调用过程中的panic信息，均会转换为error返回。
-func (ctx *ContextBehavior) AsyncCall(entityId uid.Id, segment func(entity ec.Entity) runtime.Ret) runtime.AsyncRet {
+func (ctx *ContextBehavior) AsyncCall(entityId uid.Id, segment func(entity ec.Entity) Ret) AsyncRet {
 	if err := checkEntityId(entityId); err != nil {
 		return returnAsyncRet(err, nil)
 	}
@@ -194,7 +201,7 @@ func (ctx *ContextBehavior) AsyncCall(entityId uid.Id, segment func(entity ec.En
 }
 
 // AsyncCallWithSerialNo 与AsyncCall()相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
-func (ctx *ContextBehavior) AsyncCallWithSerialNo(entityId uid.Id, entitySerialNo int64, segment func(entity ec.Entity) runtime.Ret) runtime.AsyncRet {
+func (ctx *ContextBehavior) AsyncCallWithSerialNo(entityId uid.Id, entitySerialNo int64, segment func(entity ec.Entity) Ret) AsyncRet {
 	if err := checkEntityId(entityId); err != nil {
 		return returnAsyncRet(err, nil)
 	}

@@ -43,7 +43,7 @@ type Context interface {
 	internal.RunningMark
 	plugin.PluginResolver
 	pt.EntityPtResolver
-	_Call
+	Caller
 
 	// GetName 获取名称
 	GetName() string
