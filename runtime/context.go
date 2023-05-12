@@ -44,7 +44,7 @@ type Context interface {
 	internal.Context
 	internal.RunningMark
 	plugin.PluginResolver
-	_Call
+	Caller
 
 	// GetName 获取名称
 	GetName() string
@@ -68,6 +68,7 @@ type _Context interface {
 	init(serviceCtx service.Context, opts *ContextOptions)
 	getOptions() *ContextOptions
 	setFrame(frame Frame)
+	setCallee(callee Callee)
 	getServiceCtx() service.Context
 	gc()
 }
@@ -81,7 +82,7 @@ type ContextBehavior struct {
 	frame      Frame
 	entityMgr  _EntityMgr
 	ecTree     ECTree
-	callee     internal.Callee
+	callee     Callee
 	gcList     []container.GC
 }
 
@@ -174,6 +175,10 @@ func (ctx *ContextBehavior) getOptions() *ContextOptions {
 
 func (ctx *ContextBehavior) setFrame(frame Frame) {
 	ctx.frame = frame
+}
+
+func (ctx *ContextBehavior) setCallee(callee Callee) {
+	ctx.callee = callee
 }
 
 func (ctx *ContextBehavior) getServiceCtx() service.Context {
