@@ -5,10 +5,31 @@ import (
 	"kit.golaxy.org/golaxy/ec"
 )
 
+// NewRet 创建调用结果
+func NewRet(err error, val any) Ret {
+	return Ret{
+		Error: err,
+		Value: val,
+	}
+}
+
 // Ret 调用结果
 type Ret struct {
-	Err error // error
-	Ret any   // 返回值
+	Error error // error
+	Value any   // 返回值
+}
+
+// OK 是否成功
+func (ret Ret) OK() bool {
+	return ret.Error == nil
+}
+
+// String 字符串化
+func (ret Ret) String() string {
+	if ret.Error != nil {
+		return ret.Error.Error()
+	}
+	return fmt.Sprintf("%v", ret.Value)
 }
 
 // AsyncRet 异步调用结果
@@ -79,7 +100,7 @@ func (ctx *ContextBehavior) AwaitCall(segment func() Ret) Ret {
 				if !ok {
 					err = fmt.Errorf("%v", info)
 				}
-				ret = Ret{Err: err}
+				ret = NewRet(err, nil)
 			}
 		}()
 
@@ -102,7 +123,7 @@ func (ctx *ContextBehavior) AwaitCall(segment func() Ret) Ret {
 //	- 在代码片段中，如果向调用方所在的运行时发起同步调用，并且调用方也在阻塞AsyncRet等待返回值，那么会造成线程死锁。
 //	- 调用过程中的panic信息，均会转换为error返回。
 func (ctx *ContextBehavior) AsyncCall(segment func() Ret) AsyncRet {
-	ret := make(chan Ret)
+	asyncRet := make(chan Ret)
 
 	go func() {
 		defer func() {
@@ -111,8 +132,8 @@ func (ctx *ContextBehavior) AsyncCall(segment func() Ret) AsyncRet {
 				if !ok {
 					err = fmt.Errorf("%v", info)
 				}
-				ret <- Ret{Err: err}
-				close(ret)
+				asyncRet <- NewRet(err, nil)
+				close(asyncRet)
 			}
 		}()
 
@@ -121,12 +142,12 @@ func (ctx *ContextBehavior) AsyncCall(segment func() Ret) AsyncRet {
 		}
 
 		ctx.callee.PushCall(func() {
-			ret <- segment()
-			close(ret)
+			asyncRet <- segment()
+			close(asyncRet)
 		})
 	}()
 
-	return ret
+	return asyncRet
 }
 
 // AwaitCallNoRet 同步调用，无返回值。在运行时中，将代码片段压入任务流水线，串行化的进行调用，会阻塞，没有返回值。

@@ -100,7 +100,7 @@ func awaitCall(entity ec.Entity, segment func(entity ec.Entity) runtime.Ret) run
 	return entityCaller(entity).AwaitCall(func() runtime.Ret {
 		if !entityExist(entity) {
 			return runtime.Ret{
-				Err: errors.New("entity not exist in runtime context"),
+				Error: errors.New("entity not exist in runtime context"),
 			}
 		}
 		return segment(entity)
@@ -111,7 +111,7 @@ func asyncCall(entity ec.Entity, segment func(entity ec.Entity) runtime.Ret) run
 	return entityCaller(entity).AsyncCall(func() runtime.Ret {
 		if !entityExist(entity) {
 			return runtime.Ret{
-				Err: errors.New("entity not exist in runtime context"),
+				Error: errors.New("entity not exist in runtime context"),
 			}
 		}
 		return segment(entity)
@@ -126,16 +126,16 @@ func asyncCall(entity ec.Entity, segment func(entity ec.Entity) runtime.Ret) run
 //	- 调用过程中的panic信息，均会转换为error返回。
 func (ctx *ContextBehavior) AwaitCall(entityId uid.Id, segment func(entity ec.Entity) runtime.Ret) runtime.Ret {
 	if err := checkEntityId(entityId); err != nil {
-		return runtime.Ret{Err: err}
+		return runtime.NewRet(err, nil)
 	}
 
 	if err := checkSegment(segment); err != nil {
-		return runtime.Ret{Err: err}
+		return runtime.NewRet(err, nil)
 	}
 
 	entity, err := getEntity(ctx.entityMgr, entityId)
 	if err != nil {
-		return runtime.Ret{Err: err}
+		return runtime.NewRet(err, nil)
 	}
 
 	return awaitCall(entity, segment)
@@ -144,23 +144,30 @@ func (ctx *ContextBehavior) AwaitCall(entityId uid.Id, segment func(entity ec.En
 // AwaitCallWithSerialNo 与AwaitCall()相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
 func (ctx *ContextBehavior) AwaitCallWithSerialNo(entityId uid.Id, entitySerialNo int64, segment func(entity ec.Entity) runtime.Ret) runtime.Ret {
 	if err := checkEntityId(entityId); err != nil {
-		return runtime.Ret{Err: err}
+		return runtime.NewRet(err, nil)
 	}
 
 	if err := checkEntitySerialNo(entitySerialNo); err != nil {
-		return runtime.Ret{Err: err}
+		return runtime.NewRet(err, nil)
 	}
 
 	if err := checkSegment(segment); err != nil {
-		return runtime.Ret{Err: err}
+		return runtime.NewRet(err, nil)
 	}
 
 	entity, err := getEntityWithSerialNo(ctx.entityMgr, entityId, entitySerialNo)
 	if err != nil {
-		return runtime.Ret{Err: err}
+		return runtime.NewRet(err, nil)
 	}
 
 	return awaitCall(entity, segment)
+}
+
+func returnAsyncRet(err error, val any) runtime.AsyncRet {
+	asyncRet := make(chan runtime.Ret)
+	asyncRet <- runtime.NewRet(err, val)
+	close(asyncRet)
+	return asyncRet
 }
 
 // AsyncCall 异步调用。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，不会阻塞，会返回AsyncRet。
@@ -171,25 +178,16 @@ func (ctx *ContextBehavior) AwaitCallWithSerialNo(entityId uid.Id, entitySerialN
 //	- 调用过程中的panic信息，均会转换为error返回。
 func (ctx *ContextBehavior) AsyncCall(entityId uid.Id, segment func(entity ec.Entity) runtime.Ret) runtime.AsyncRet {
 	if err := checkEntityId(entityId); err != nil {
-		retChan := make(chan runtime.Ret)
-		retChan <- runtime.Ret{Err: err}
-		close(retChan)
-		return retChan
+		return returnAsyncRet(err, nil)
 	}
 
 	if err := checkSegment(segment); err != nil {
-		retChan := make(chan runtime.Ret)
-		retChan <- runtime.Ret{Err: err}
-		close(retChan)
-		return retChan
+		return returnAsyncRet(err, nil)
 	}
 
 	entity, err := getEntity(ctx.entityMgr, entityId)
 	if err != nil {
-		retChan := make(chan runtime.Ret)
-		retChan <- runtime.Ret{Err: err}
-		close(retChan)
-		return retChan
+		return returnAsyncRet(err, nil)
 	}
 
 	return asyncCall(entity, segment)
@@ -198,32 +196,20 @@ func (ctx *ContextBehavior) AsyncCall(entityId uid.Id, segment func(entity ec.En
 // AsyncCallWithSerialNo 与AsyncCall()相同，只是同时使用id与serialNo可以在多线程环境中准确定位实体
 func (ctx *ContextBehavior) AsyncCallWithSerialNo(entityId uid.Id, entitySerialNo int64, segment func(entity ec.Entity) runtime.Ret) runtime.AsyncRet {
 	if err := checkEntityId(entityId); err != nil {
-		retChan := make(chan runtime.Ret)
-		retChan <- runtime.Ret{Err: err}
-		close(retChan)
-		return retChan
+		return returnAsyncRet(err, nil)
 	}
 
 	if err := checkEntitySerialNo(entitySerialNo); err != nil {
-		retChan := make(chan runtime.Ret)
-		retChan <- runtime.Ret{Err: err}
-		close(retChan)
-		return retChan
+		return returnAsyncRet(err, nil)
 	}
 
 	if err := checkSegment(segment); err != nil {
-		retChan := make(chan runtime.Ret)
-		retChan <- runtime.Ret{Err: err}
-		close(retChan)
-		return retChan
+		return returnAsyncRet(err, nil)
 	}
 
 	entity, err := getEntityWithSerialNo(ctx.entityMgr, entityId, entitySerialNo)
 	if err != nil {
-		retChan := make(chan runtime.Ret)
-		retChan <- runtime.Ret{Err: err}
-		close(retChan)
-		return retChan
+		return returnAsyncRet(err, nil)
 	}
 
 	return asyncCall(entity, segment)
