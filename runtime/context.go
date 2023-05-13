@@ -13,9 +13,9 @@ import (
 )
 
 // NewContext 创建运行时上下文
-func NewContext(serviceCtx service.Context, options ...ContextOption) Context {
-	opts := ContextOptions{}
-	WithContextOption{}.Default()(&opts)
+func NewContext(serviceCtx service.Context, options ...Option) Context {
+	opts := Options{}
+	WithOption{}.Default()(&opts)
 
 	for i := range options {
 		options[i](&opts)
@@ -24,7 +24,7 @@ func NewContext(serviceCtx service.Context, options ...ContextOption) Context {
 	return UnsafeNewContext(serviceCtx, opts)
 }
 
-func UnsafeNewContext(serviceCtx service.Context, options ContextOptions) Context {
+func UnsafeNewContext(serviceCtx service.Context, options Options) Context {
 	if !options.CompositeFace.IsNil() {
 		options.CompositeFace.Iface.init(serviceCtx, &options)
 		return options.CompositeFace.Iface
@@ -65,8 +65,8 @@ type Context interface {
 }
 
 type _Context interface {
-	init(serviceCtx service.Context, opts *ContextOptions)
-	getOptions() *ContextOptions
+	init(serviceCtx service.Context, opts *Options)
+	getOptions() *Options
 	setFrame(frame Frame)
 	setCallee(callee Callee)
 	getServiceCtx() service.Context
@@ -77,7 +77,7 @@ type _Context interface {
 type ContextBehavior struct {
 	internal.ContextBehavior
 	internal.RunningMarkBehavior
-	opts       ContextOptions
+	opts       Options
 	serviceCtx service.Context
 	frame      Frame
 	entityMgr  _EntityMgr
@@ -140,7 +140,7 @@ func (ctx *ContextBehavior) CollectGC(gc container.GC) {
 	ctx.gcList = append(ctx.gcList, gc)
 }
 
-func (ctx *ContextBehavior) init(serviceCtx service.Context, opts *ContextOptions) {
+func (ctx *ContextBehavior) init(serviceCtx service.Context, opts *Options) {
 	if serviceCtx == nil {
 		panic("nil serviceCtx")
 	}
@@ -169,7 +169,7 @@ func (ctx *ContextBehavior) init(serviceCtx service.Context, opts *ContextOption
 	ctx.ecTree.init(ctx.opts.CompositeFace.Iface, true)
 }
 
-func (ctx *ContextBehavior) getOptions() *ContextOptions {
+func (ctx *ContextBehavior) getOptions() *Options {
 	return &ctx.opts
 }
 

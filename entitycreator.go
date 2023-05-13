@@ -11,13 +11,13 @@ import (
 )
 
 // NewEntityCreator 创建实体构建器
-func NewEntityCreator(runtimeCtx runtime.Context, options ...pt.EntityOption) EntityCreator {
+func NewEntityCreator(runtimeCtx runtime.Context, options ...pt.Option) EntityCreator {
 	if runtimeCtx == nil {
 		panic("nil runtimeCtx")
 	}
 
-	opts := pt.EntityOptions{}
-	pt.WithEntityOption{}.Default()(&opts)
+	opts := pt.Options{}
+	pt.WithOption{}.Default()(&opts)
 
 	for i := range options {
 		options[i](&opts)
@@ -39,7 +39,7 @@ func NewEntityCreator(runtimeCtx runtime.Context, options ...pt.EntityOption) En
 
 type EntityCreator struct {
 	runtimeCtx runtime.Context
-	options    pt.EntityOptions
+	options    pt.Options
 	inited     bool
 }
 
@@ -50,12 +50,12 @@ func (creator EntityCreator) Spawn() (ec.Entity, error) {
 
 // SpawnWithId 使用指定Id创建实体
 func (creator EntityCreator) SpawnWithId(id uid.Id) (ec.Entity, error) {
-	return creator.spawn(func(options *pt.EntityOptions) {
+	return creator.spawn(func(options *pt.Options) {
 		options.PersistId = id
 	})
 }
 
-func (creator EntityCreator) spawn(modifyOptions func(options *pt.EntityOptions)) (ec.Entity, error) {
+func (creator EntityCreator) spawn(modifyOptions func(options *pt.Options)) (ec.Entity, error) {
 	if !creator.inited {
 		return nil, errors.New("not inited")
 	}

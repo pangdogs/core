@@ -85,11 +85,11 @@ func (app *_App) runService(ctx context.Context, serviceName string, serviceConf
 
 	pluginBundle := plugin.NewPluginBundle()
 
-	serviceCtxOpts := []service.ContextOption{
-		service.WithContextOption{}.Context(ctx),
-		service.WithContextOption{}.Name(serviceName),
-		service.WithContextOption{}.EntityLib(entityLib),
-		service.WithContextOption{}.PluginBundle(pluginBundle),
+	serviceCtxOpts := []service.Option{
+		service.WithOption{}.Context(ctx),
+		service.WithOption{}.Name(serviceName),
+		service.WithOption{}.EntityLib(entityLib),
+		service.WithOption{}.PluginBundle(pluginBundle),
 	}
 
 	if app.options.ServiceCtxInitTab != nil {

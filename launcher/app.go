@@ -5,9 +5,9 @@ import (
 )
 
 // NewApp 创建应用
-func NewApp(options ...AppOption) App {
-	opts := AppOptions{}
-	WithAppOption{}.Default()(&opts)
+func NewApp(options ...Option) App {
+	opts := Options{}
+	WithOption{}.Default()(&opts)
 
 	for i := range options {
 		options[i](&opts)
@@ -26,7 +26,7 @@ type App interface {
 }
 
 type _App struct {
-	options AppOptions
+	options Options
 }
 
 // Run 运行
