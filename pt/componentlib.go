@@ -28,18 +28,18 @@ func RegisterComponent(compName string, comp any, descr ...string) {
 
 // DeregisterComponent 取消注册组件原型，线程安全。
 //
-//	@param compPath 组件路径，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld/HelloWorld`。
-func DeregisterComponent(compPath string) {
-	componentLib.DeregisterComponent(compPath)
+//	@param compImpl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld/HelloWorld`。
+func DeregisterComponent(compImpl string) {
+	componentLib.DeregisterComponent(compImpl)
 }
 
 // GetComponent 获取组件原型，线程安全。
 //
-//	@param compPath 组件路径，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld/HelloWorld`。
+//	@param compImpl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld/HelloWorld`。
 //	@return 组件原型，可以用于创建组件。
 //	@return 是否存在。
-func GetComponent(compPath string) (ComponentPt, bool) {
-	return componentLib.Get(compPath)
+func GetComponent(compImpl string) (ComponentPt, bool) {
+	return componentLib.Get(compImpl)
 }
 
 // RangeComponent 遍历所有已注册的组件原型，线程安全。
@@ -70,18 +70,18 @@ func (lib *_ComponentLib) RegisterComponent(compName string, comp any, descr str
 	}
 }
 
-func (lib *_ComponentLib) DeregisterComponent(compPath string) {
+func (lib *_ComponentLib) DeregisterComponent(compImpl string) {
 	lib.mutex.Lock()
 	defer lib.mutex.Unlock()
 
-	delete(lib.compPtMap, compPath)
+	delete(lib.compPtMap, compImpl)
 }
 
-func (lib *_ComponentLib) Get(compPath string) (ComponentPt, bool) {
+func (lib *_ComponentLib) Get(compImpl string) (ComponentPt, bool) {
 	lib.mutex.RLock()
 	defer lib.mutex.RUnlock()
 
-	compPt, ok := lib.compPtMap[compPath]
+	compPt, ok := lib.compPtMap[compImpl]
 	return compPt, ok
 }
 
@@ -112,21 +112,21 @@ func (lib *_ComponentLib) register(compName string, tfComp reflect.Type, descr s
 		panic("register anonymous component not allowed")
 	}
 
-	compPath := tfComp.PkgPath() + "/" + tfComp.Name()
+	compImpl := tfComp.PkgPath() + "/" + tfComp.Name()
 
 	if !reflect.PointerTo(tfComp).Implements(reflect.TypeOf((*ec.Component)(nil)).Elem()) {
-		panic(fmt.Errorf("component %q not implement ec.Component", compPath))
+		panic(fmt.Errorf("component %q not implement ec.Component", compImpl))
 	}
 
-	_, ok := lib.compPtMap[compPath]
+	_, ok := lib.compPtMap[compImpl]
 	if ok {
-		panic(fmt.Errorf("component %q is already registered", compPath))
+		panic(fmt.Errorf("component %q is already registered", compImpl))
 	}
 
-	lib.compPtMap[compPath] = ComponentPt{
-		Name:        compName,
-		Path:        compPath,
-		Description: descr,
-		tfComp:      tfComp,
+	lib.compPtMap[compImpl] = ComponentPt{
+		Name:           compName,
+		Implementation: compImpl,
+		Description:    descr,
+		tfComp:         tfComp,
 	}
 }

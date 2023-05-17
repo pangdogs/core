@@ -8,10 +8,10 @@ import (
 
 // ComponentPt 组件原型
 type ComponentPt struct {
-	Name        string // 组件名称
-	Path        string // 组件路径
-	Description string // 组件描述信息
-	tfComp      reflect.Type
+	Name           string // 组件名称
+	Implementation string // 组件实现
+	Description    string // 组件描述信息
+	tfComp         reflect.Type
 }
 
 // Construct 创建组件
