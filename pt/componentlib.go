@@ -3,6 +3,7 @@ package pt
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/util"
 	"reflect"
 	"sync"
 )
@@ -112,7 +113,7 @@ func (lib *_ComponentLib) register(compName string, tfComp reflect.Type, descr s
 		panic("register anonymous component not allowed")
 	}
 
-	compImpl := tfComp.PkgPath() + "/" + tfComp.Name()
+	compImpl := util.TypeOfAnyFullName(tfComp)
 
 	if !reflect.PointerTo(tfComp).Implements(reflect.TypeOf((*ec.Component)(nil)).Elem()) {
 		panic(fmt.Errorf("component %q not implement ec.Component", compImpl))
