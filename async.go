@@ -121,3 +121,16 @@ func Async(ctxResolver ec.ContextResolver, segment func(ctx Context) Ret) AsyncR
 		return segment(ctx)
 	})
 }
+
+func AsyncVoid(ctxResolver ec.ContextResolver, segment func(ctx Context)) AsyncRet {
+	ctx := Get(ctxResolver)
+
+	if segment == nil {
+		panic("nil segment")
+	}
+
+	return ctx.AsyncCall(func() Ret {
+		segment(ctx)
+		return NewRet(nil, nil)
+	})
+}
