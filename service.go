@@ -7,7 +7,7 @@ import (
 )
 
 // NewService 创建服务
-func NewService(serviceCtx service.Context, options ...ServiceOption) Service {
+func NewService(ctx service.Context, options ...ServiceOption) Service {
 	opts := ServiceOptions{}
 	WithServiceOption{}.Default()(&opts)
 
@@ -15,17 +15,17 @@ func NewService(serviceCtx service.Context, options ...ServiceOption) Service {
 		options[i](&opts)
 	}
 
-	return UnsafeNewService(serviceCtx, opts)
+	return UnsafeNewService(ctx, opts)
 }
 
-func UnsafeNewService(serviceCtx service.Context, options ServiceOptions) Service {
+func UnsafeNewService(ctx service.Context, options ServiceOptions) Service {
 	if !options.CompositeFace.IsNil() {
-		options.CompositeFace.Iface.init(serviceCtx, &options)
+		options.CompositeFace.Iface.init(ctx, &options)
 		return options.CompositeFace.Iface
 	}
 
 	service := &ServiceBehavior{}
-	service.init(serviceCtx, &options)
+	service.init(ctx, &options)
 
 	return service.opts.CompositeFace.Iface
 }
@@ -54,16 +54,16 @@ func (_service *ServiceBehavior) GetContext() service.Context {
 	return _service.ctx
 }
 
-func (_service *ServiceBehavior) init(serviceCtx service.Context, opts *ServiceOptions) {
-	if serviceCtx == nil {
-		panic("nil serviceCtx")
+func (_service *ServiceBehavior) init(ctx service.Context, opts *ServiceOptions) {
+	if ctx == nil {
+		panic("nil ctx")
 	}
 
 	if opts == nil {
 		panic("nil opts")
 	}
 
-	if !internal.UnsafeContext(serviceCtx).Paired() {
+	if !internal.UnsafeContext(ctx).Paired() {
 		panic("service context already paired")
 	}
 
@@ -73,7 +73,7 @@ func (_service *ServiceBehavior) init(serviceCtx service.Context, opts *ServiceO
 		_service.opts.CompositeFace = util.NewFace[Service](_service)
 	}
 
-	_service.ctx = serviceCtx
+	_service.ctx = ctx
 }
 
 func (_service *ServiceBehavior) getOptions() *ServiceOptions {

@@ -10,7 +10,7 @@ import (
 )
 
 // NewRuntime 创建运行时
-func NewRuntime(runtimeCtx runtime.Context, options ...RuntimeOption) Runtime {
+func NewRuntime(ctx runtime.Context, options ...RuntimeOption) Runtime {
 	opts := RuntimeOptions{}
 	WithRuntimeOption{}.Default()(&opts)
 
@@ -18,17 +18,17 @@ func NewRuntime(runtimeCtx runtime.Context, options ...RuntimeOption) Runtime {
 		options[i](&opts)
 	}
 
-	return UnsafeNewRuntime(runtimeCtx, opts)
+	return UnsafeNewRuntime(ctx, opts)
 }
 
-func UnsafeNewRuntime(runtimeCtx runtime.Context, options RuntimeOptions) Runtime {
+func UnsafeNewRuntime(ctx runtime.Context, options RuntimeOptions) Runtime {
 	if !options.CompositeFace.IsNil() {
-		options.CompositeFace.Iface.init(runtimeCtx, &options)
+		options.CompositeFace.Iface.init(ctx, &options)
 		return options.CompositeFace.Iface
 	}
 
 	runtime := &RuntimeBehavior{}
-	runtime.init(runtimeCtx, &options)
+	runtime.init(ctx, &options)
 
 	return runtime.opts.CompositeFace.Iface
 }
@@ -44,7 +44,7 @@ type Runtime interface {
 }
 
 type _Runtime interface {
-	init(runtimeCtx runtime.Context, opts *RuntimeOptions)
+	init(ctx runtime.Context, opts *RuntimeOptions)
 	getOptions() *RuntimeOptions
 }
 
@@ -73,16 +73,16 @@ func (_runtime *RuntimeBehavior) ResolveContext() util.IfaceCache {
 	return util.Iface2Cache[runtime.Context](_runtime.ctx)
 }
 
-func (_runtime *RuntimeBehavior) init(runtimeCtx runtime.Context, opts *RuntimeOptions) {
-	if runtimeCtx == nil {
-		panic("nil runtimeCtx")
+func (_runtime *RuntimeBehavior) init(ctx runtime.Context, opts *RuntimeOptions) {
+	if ctx == nil {
+		panic("nil ctx")
 	}
 
 	if opts == nil {
 		panic("nil opts")
 	}
 
-	if !internal.UnsafeContext(runtimeCtx).Paired() {
+	if !internal.UnsafeContext(ctx).Paired() {
 		panic("runtime context already paired")
 	}
 
@@ -92,11 +92,11 @@ func (_runtime *RuntimeBehavior) init(runtimeCtx runtime.Context, opts *RuntimeO
 		_runtime.opts.CompositeFace = util.NewFace[Runtime](_runtime)
 	}
 
-	_runtime.ctx = runtimeCtx
+	_runtime.ctx = ctx
 	_runtime.hooksMap = make(map[_HookKey][3]localevent.Hook)
 
-	_runtime.eventUpdate.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Disallow, runtimeCtx.GetHookAllocator(), nil)
-	_runtime.eventLateUpdate.Init(runtimeCtx.GetAutoRecover(), runtimeCtx.GetReportError(), localevent.EventRecursion_Disallow, runtimeCtx.GetHookAllocator(), nil)
+	_runtime.eventUpdate.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Disallow, ctx.GetHookAllocator(), nil)
+	_runtime.eventLateUpdate.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Disallow, ctx.GetHookAllocator(), nil)
 
 	if _runtime.opts.EnableAutoRun {
 		_runtime.opts.CompositeFace.Iface.Run()

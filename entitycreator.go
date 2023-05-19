@@ -11,9 +11,9 @@ import (
 )
 
 // NewEntityCreator 创建实体构建器
-func NewEntityCreator(runtimeCtx runtime.Context, options ...pt.Option) EntityCreator {
-	if runtimeCtx == nil {
-		panic("nil runtimeCtx")
+func NewEntityCreator(ctx runtime.Context, options ...pt.Option) EntityCreator {
+	if ctx == nil {
+		panic("nil ctx")
 	}
 
 	opts := pt.Options{}
@@ -24,23 +24,23 @@ func NewEntityCreator(runtimeCtx runtime.Context, options ...pt.Option) EntityCr
 	}
 
 	if opts.FaceAnyAllocator == nil {
-		opts.FaceAnyAllocator = runtimeCtx.GetFaceAnyAllocator()
+		opts.FaceAnyAllocator = ctx.GetFaceAnyAllocator()
 	}
 	if opts.HookAllocator == nil {
-		opts.HookAllocator = runtimeCtx.GetHookAllocator()
+		opts.HookAllocator = ctx.GetHookAllocator()
 	}
 
 	return EntityCreator{
-		runtimeCtx: runtimeCtx,
-		options:    opts,
-		inited:     true,
+		ctx:     ctx,
+		options: opts,
+		inited:  true,
 	}
 }
 
 type EntityCreator struct {
-	runtimeCtx runtime.Context
-	options    pt.Options
-	inited     bool
+	ctx     runtime.Context
+	options pt.Options
+	inited  bool
 }
 
 // Spawn 创建实体
@@ -60,7 +60,7 @@ func (creator EntityCreator) spawn(modifyOptions func(options *pt.Options)) (ec.
 		return nil, errors.New("not inited")
 	}
 
-	runtimeCtx := creator.runtimeCtx
+	runtimeCtx := creator.ctx
 	serviceCtx := service.Get(runtimeCtx)
 
 	entityLib := service.UnsafeContext(serviceCtx).GetOptions().EntityLib

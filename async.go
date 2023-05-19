@@ -3,12 +3,12 @@ package golaxy
 import (
 	"errors"
 	"kit.golaxy.org/golaxy/ec"
-	. "kit.golaxy.org/golaxy/runtime"
+	"kit.golaxy.org/golaxy/runtime"
 	"sync/atomic"
 )
 
-func Await(ctxResolver ec.ContextResolver, asyncWait func(ctx Context, ret Ret), asyncRet AsyncRet) {
-	ctx := Get(ctxResolver)
+func Await(ctxResolver ec.ContextResolver, asyncWait func(ctx runtime.Context, ret runtime.Ret), asyncRet runtime.AsyncRet) {
+	ctx := runtime.Get(ctxResolver)
 
 	if asyncWait == nil {
 		panic("nil asyncWait")
@@ -25,7 +25,7 @@ func Await(ctxResolver ec.ContextResolver, asyncWait func(ctx Context, ret Ret),
 
 		ret, ok := <-asyncRet
 		if !ok {
-			ret = NewRet(errors.New("asyncRet closed"), nil)
+			ret = runtime.NewRet(errors.New("asyncRet closed"), nil)
 		}
 
 		ctx.AsyncCallNoRet(func() {
@@ -34,8 +34,8 @@ func Await(ctxResolver ec.ContextResolver, asyncWait func(ctx Context, ret Ret),
 	}()
 }
 
-func AwaitAny(ctxResolver ec.ContextResolver, asyncWait func(ctx Context, ret Ret), asyncRets ...AsyncRet) {
-	ctx := Get(ctxResolver)
+func AwaitAny(ctxResolver ec.ContextResolver, asyncWait func(ctx runtime.Context, ret runtime.Ret), asyncRets ...runtime.AsyncRet) {
+	ctx := runtime.Get(ctxResolver)
 
 	if asyncWait == nil {
 		panic("nil asyncWait")
@@ -77,8 +77,8 @@ func AwaitAny(ctxResolver ec.ContextResolver, asyncWait func(ctx Context, ret Re
 	}
 }
 
-func AwaitAll(ctxResolver ec.ContextResolver, asyncWait func(ctx Context, ret Ret), asyncRets ...AsyncRet) {
-	ctx := Get(ctxResolver)
+func AwaitAll(ctxResolver ec.ContextResolver, asyncWait func(ctx runtime.Context, ret runtime.Ret), asyncRets ...runtime.AsyncRet) {
+	ctx := runtime.Get(ctxResolver)
 
 	if asyncWait == nil {
 		panic("nil asyncWait")
@@ -100,7 +100,7 @@ func AwaitAll(ctxResolver ec.ContextResolver, asyncWait func(ctx Context, ret Re
 
 			ret, ok := <-asyncRet
 			if !ok {
-				ret = NewRet(errors.New("asyncRet closed"), nil)
+				ret = runtime.NewRet(errors.New("asyncRet closed"), nil)
 			}
 
 			ctx.AsyncCallNoRet(func() {
@@ -110,27 +110,27 @@ func AwaitAll(ctxResolver ec.ContextResolver, asyncWait func(ctx Context, ret Re
 	}
 }
 
-func Async(ctxResolver ec.ContextResolver, segment func(ctx Context) Ret) AsyncRet {
-	ctx := Get(ctxResolver)
+func Async(ctxResolver ec.ContextResolver, segment func(ctx runtime.Context) runtime.Ret) runtime.AsyncRet {
+	ctx := runtime.Get(ctxResolver)
 
 	if segment == nil {
 		panic("nil segment")
 	}
 
-	return ctx.AsyncCall(func() Ret {
+	return ctx.AsyncCall(func() runtime.Ret {
 		return segment(ctx)
 	})
 }
 
-func AsyncVoid(ctxResolver ec.ContextResolver, segment func(ctx Context)) AsyncRet {
-	ctx := Get(ctxResolver)
+func AsyncVoid(ctxResolver ec.ContextResolver, segment func(ctx runtime.Context)) runtime.AsyncRet {
+	ctx := runtime.Get(ctxResolver)
 
 	if segment == nil {
 		panic("nil segment")
 	}
 
-	return ctx.AsyncCall(func() Ret {
+	return ctx.AsyncCall(func() runtime.Ret {
 		segment(ctx)
-		return NewRet(nil, nil)
+		return runtime.NewRet(nil, nil)
 	})
 }

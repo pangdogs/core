@@ -12,8 +12,8 @@ type _UnsafeRuntime struct {
 	Runtime
 }
 
-func (ur _UnsafeRuntime) Init(runtimeCtx runtime.Context, opts *RuntimeOptions) {
-	ur.init(runtimeCtx, opts)
+func (ur _UnsafeRuntime) Init(ctx runtime.Context, opts *RuntimeOptions) {
+	ur.init(ctx, opts)
 }
 
 func (ur _UnsafeRuntime) GetOptions() *RuntimeOptions {

@@ -12,8 +12,8 @@ type _UnsafeService struct {
 	Service
 }
 
-func (us _UnsafeService) Init(serviceCtx service.Context, opts *ServiceOptions) {
-	us.init(serviceCtx, opts)
+func (us _UnsafeService) Init(ctx service.Context, opts *ServiceOptions) {
+	us.init(ctx, opts)
 }
 
 func (us _UnsafeService) GetOptions() *ServiceOptions {

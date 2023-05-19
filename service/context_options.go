@@ -10,17 +10,17 @@ import (
 
 // Options 创建服务上下文的所有选项
 type Options struct {
-	CompositeFace    util.Face[Context]       // 扩展者，需要扩展服务上下文自身能力时需要使用
-	Context          context.Context          // 父Context
-	AutoRecover      bool                     // 是否开启panic时自动恢复
-	ReportError      chan error               // panic时错误写入的error channel
-	Name             string                   // 服务名称
-	PersistId        uid.Id                   // 服务持久化Id
-	EntityLib        pt.EntityLib             // 实体原型库
-	PluginBundle     plugin.PluginBundle      // 插件包
-	StartedCallback  func(serviceCtx Context) // 启动运行时回调函数
-	StoppingCallback func(serviceCtx Context) // 开始停止运行时回调函数
-	StoppedCallback  func(serviceCtx Context) // 完全停止运行时回调函数
+	CompositeFace    util.Face[Context]  // 扩展者，需要扩展服务上下文自身能力时需要使用
+	Context          context.Context     // 父Context
+	AutoRecover      bool                // 是否开启panic时自动恢复
+	ReportError      chan error          // panic时错误写入的error channel
+	Name             string              // 服务名称
+	PersistId        uid.Id              // 服务持久化Id
+	EntityLib        pt.EntityLib        // 实体原型库
+	PluginBundle     plugin.PluginBundle // 插件包
+	StartedCallback  func(ctx Context)   // 启动运行时回调函数
+	StoppingCallback func(ctx Context)   // 开始停止运行时回调函数
+	StoppedCallback  func(ctx Context)   // 完全停止运行时回调函数
 }
 
 // Option 创建服务上下文的选项设置器
@@ -103,21 +103,21 @@ func (WithOption) PluginBundle(bundle plugin.PluginBundle) Option {
 }
 
 // StartedCallback 启动运行时回调函数
-func (WithOption) StartedCallback(fn func(serviceCtx Context)) Option {
+func (WithOption) StartedCallback(fn func(ctx Context)) Option {
 	return func(o *Options) {
 		o.StartedCallback = fn
 	}
 }
 
 // StoppingCallback 开始停止运行时回调函数
-func (WithOption) StoppingCallback(fn func(serviceCtx Context)) Option {
+func (WithOption) StoppingCallback(fn func(ctx Context)) Option {
 	return func(o *Options) {
 		o.StoppingCallback = fn
 	}
 }
 
 // StoppedCallback 完全停止运行时回调函数
-func (WithOption) StoppedCallback(fn func(serviceCtx Context)) Option {
+func (WithOption) StoppedCallback(fn func(ctx Context)) Option {
 	return func(o *Options) {
 		o.StoppedCallback = fn
 	}
