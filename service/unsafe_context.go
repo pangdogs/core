@@ -23,3 +23,7 @@ func (uc _UnsafeContext) GetOptions() *Options {
 func (uc _UnsafeContext) MarkRunning(v bool) bool {
 	return internal.UnsafeRunningState(uc.Context).MarkRunning(v)
 }
+
+func (uc _UnsafeContext) MarkPaired(v bool) bool {
+	return internal.UnsafeContext(uc.Context).MarkPaired(v)
+}

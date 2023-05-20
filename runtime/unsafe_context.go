@@ -35,10 +35,14 @@ func (uc _UnsafeContext) GetServiceCtx() service.Context {
 	return uc.getServiceCtx()
 }
 
+func (uc _UnsafeContext) GC() {
+	uc.gc()
+}
+
 func (uc _UnsafeContext) MarkRunning(v bool) bool {
 	return internal.UnsafeRunningState(uc.Context).MarkRunning(v)
 }
 
-func (uc _UnsafeContext) GC() {
-	uc.gc()
+func (uc _UnsafeContext) MarkPaired(v bool) bool {
+	return internal.UnsafeContext(uc.Context).MarkPaired(v)
 }

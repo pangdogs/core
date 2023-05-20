@@ -63,7 +63,7 @@ func (_service *ServiceBehavior) init(ctx service.Context, opts *ServiceOptions)
 		panic("nil opts")
 	}
 
-	if !internal.UnsafeContext(ctx).MarkPaired(true) {
+	if !service.UnsafeContext(ctx).MarkPaired(true) {
 		panic("service context already paired")
 	}
 
