@@ -5,8 +5,10 @@ import (
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/runtime"
 	"sync/atomic"
+	"time"
 )
 
+// Async 异步执行代码，有返回值，返回的异步结果（async ret）可以给Await()等待并继续后续逻辑运行
 func Async(ctxResolver ec.ContextResolver, segment func(ctx runtime.Context) runtime.Ret) runtime.AsyncRet {
 	ctx := runtime.Get(ctxResolver)
 
@@ -19,6 +21,7 @@ func Async(ctxResolver ec.ContextResolver, segment func(ctx runtime.Context) run
 	})
 }
 
+// AsyncVoid 异步执行代码，无返回值，返回的异步结果（async ret）可以给Await()等待并继续后续逻辑运行
 func AsyncVoid(ctxResolver ec.ContextResolver, segment func(ctx runtime.Context)) runtime.AsyncRet {
 	ctx := runtime.Get(ctxResolver)
 
@@ -32,6 +35,7 @@ func AsyncVoid(ctxResolver ec.ContextResolver, segment func(ctx runtime.Context)
 	})
 }
 
+// Await 等待异步结果（async ret）返回，并继续运行后续逻辑
 func Await(ctxResolver ec.ContextResolver, asyncRet runtime.AsyncRet, asyncWait func(ctx runtime.Context, ret runtime.Ret)) {
 	ctx := runtime.Get(ctxResolver)
 
@@ -59,6 +63,7 @@ func Await(ctxResolver ec.ContextResolver, asyncRet runtime.AsyncRet, asyncWait 
 	}()
 }
 
+// AwaitAny 等待任意一个异步结果（async ret）返回，并继续运行后续逻辑
 func AwaitAny(ctxResolver ec.ContextResolver, asyncRets []runtime.AsyncRet, asyncWait func(ctx runtime.Context, ret runtime.Ret)) {
 	ctx := runtime.Get(ctxResolver)
 
@@ -102,6 +107,7 @@ func AwaitAny(ctxResolver ec.ContextResolver, asyncRets []runtime.AsyncRet, asyn
 	}
 }
 
+// AwaitAll 等待所有异步结果（async ret）返回，并继续运行后续逻辑
 func AwaitAll(ctxResolver ec.ContextResolver, asyncRets []runtime.AsyncRet, asyncWait func(ctx runtime.Context, ret runtime.Ret)) {
 	ctx := runtime.Get(ctxResolver)
 
@@ -133,4 +139,10 @@ func AwaitAll(ctxResolver ec.ContextResolver, asyncRets []runtime.AsyncRet, asyn
 			})
 		}()
 	}
+}
+
+// AwaitTimeAfterFunc 等待一段时间，并继续运行后续逻辑
+func AwaitTimeAfterFunc(ctxResolver ec.ContextResolver, dur time.Duration, segment func(ctx runtime.Context)) {
+	ctx := runtime.Get(ctxResolver)
+	time.AfterFunc(dur, func() { AsyncVoid(ctx, segment) })
 }
