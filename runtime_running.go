@@ -210,9 +210,7 @@ func (_runtime *RuntimeBehavior) loopWithFrame() {
 					select {
 					case _runtime.processQueue <- _runtime.frameUpdate:
 						curFrames++
-						return
 					default:
-						panic("process queue is full")
 					}
 				})
 

@@ -13,7 +13,7 @@ type RuntimeOptions struct {
 	ProcessQueueCapacity int                // 任务处理流水线大小
 	ProcessQueueTimeout  time.Duration      // 当任务处理流水线满时，向其插入代码片段的超时时间，为0表示不等待直接报错
 	SyncCallTimeout      time.Duration      // 同步调用超时时间，为0表示不处理超时，此时两个运行时互相同步调用会死锁
-	Frame                runtime.Frame      // 帧
+	Frame                runtime.Frame      // 帧，设置为nil表示不使用帧更新特性
 	GCInterval           time.Duration      // GC间隔时长
 	CustomGC             func(rt Runtime)   // 自定义GC
 }
@@ -76,7 +76,7 @@ func (WithRuntimeOption) SyncCallTimeout(dur time.Duration) RuntimeOption {
 	}
 }
 
-// Frame 帧
+// Frame 帧，设置为nil表示不使用帧更新特性
 func (WithRuntimeOption) Frame(frame runtime.Frame) RuntimeOption {
 	return func(o *RuntimeOptions) {
 		o.Frame = frame

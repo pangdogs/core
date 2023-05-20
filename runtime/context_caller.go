@@ -106,14 +106,14 @@ func (ctx *ContextBehavior) AsyncCall(segment func() Ret) AsyncRet {
 //	- 当运行时的SyncCallTimeout选项设置为0时，在代码片段中，如果向调用方所在的运行时发起同步调用，那么会造成线程死锁。
 //	- 调用过程中的panic信息，均会抛弃。
 func (ctx *ContextBehavior) SyncCallNoRet(segment func()) {
+	if segment == nil {
+		return
+	}
+
 	func() {
 		defer func() {
 			recover()
 		}()
-
-		if segment == nil {
-			panic("nil segment")
-		}
 
 		ctx.callee.PushCall(segment)
 	}()
@@ -125,14 +125,14 @@ func (ctx *ContextBehavior) SyncCallNoRet(segment func()) {
 //	- 代码片段中的线程安全问题。
 //	- 调用过程中的panic信息，均会抛弃。
 func (ctx *ContextBehavior) AsyncCallNoRet(segment func()) {
+	if segment == nil {
+		return
+	}
+
 	go func() {
 		defer func() {
 			recover()
 		}()
-
-		if segment == nil {
-			panic("nil segment")
-		}
 
 		ctx.callee.PushCall(segment)
 	}()
