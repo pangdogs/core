@@ -9,7 +9,7 @@ import (
 
 // Run 运行，返回的channel用于线程同步，可以阻塞等待至运行结束
 func (_service *ServiceBehavior) Run() <-chan struct{} {
-	if !service.UnsafeContext(_service.ctx).MarkRunning() {
+	if !service.UnsafeContext(_service.ctx).MarkRunning(true) {
 		panic("service already running")
 	}
 
@@ -71,7 +71,7 @@ func (_service *ServiceBehavior) running(shutChan chan struct{}) {
 			})
 		}
 
-		service.UnsafeContext(_service.ctx).MarkShutdown()
+		service.UnsafeContext(_service.ctx).MarkRunning(false)
 		shutChan <- struct{}{}
 	}()
 

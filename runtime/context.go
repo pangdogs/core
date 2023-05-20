@@ -42,7 +42,7 @@ type Context interface {
 	ec.ContextResolver
 	container.GCCollector
 	internal.Context
-	internal.RunningMark
+	internal.RunningState
 	plugin.PluginResolver
 	Caller
 
@@ -76,7 +76,7 @@ type _Context interface {
 // ContextBehavior 运行时上下文行为，在需要扩展运行时上下文能力时，匿名嵌入至运行时上下文结构体中
 type ContextBehavior struct {
 	internal.ContextBehavior
-	internal.RunningMarkBehavior
+	internal.RunningStateBehavior
 	opts       Options
 	serviceCtx service.Context
 	frame      Frame

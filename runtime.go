@@ -82,7 +82,7 @@ func (_runtime *RuntimeBehavior) init(ctx runtime.Context, opts *RuntimeOptions)
 		panic("nil opts")
 	}
 
-	if !internal.UnsafeContext(ctx).Paired() {
+	if !internal.UnsafeContext(ctx).MarkPaired(true) {
 		panic("runtime context already paired")
 	}
 

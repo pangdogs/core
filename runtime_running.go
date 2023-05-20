@@ -11,8 +11,8 @@ import (
 
 // Run 运行，返回的channel用于线程同步，可以阻塞等待至运行结束
 func (_runtime *RuntimeBehavior) Run() <-chan struct{} {
-	if !runtime.UnsafeContext(_runtime.ctx).MarkRunning() {
-		panic("_runtime already running")
+	if !runtime.UnsafeContext(_runtime.ctx).MarkRunning(true) {
+		panic("runtime already running")
 	}
 
 	shutChan := make(chan struct{}, 1)
@@ -81,7 +81,7 @@ func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
 			})
 		}
 
-		runtime.UnsafeContext(_runtime.ctx).MarkShutdown()
+		runtime.UnsafeContext(_runtime.ctx).MarkRunning(false)
 		shutChan <- struct{}{}
 	}()
 

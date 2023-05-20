@@ -21,7 +21,7 @@ type Context interface {
 	GetCancelFunc() context.CancelFunc
 
 	init(parentCtx context.Context, autoRecover bool, reportError chan error)
-	paired() bool
+	markPaired(v bool) bool
 }
 
 // ContextBehavior 上下文行为
@@ -32,7 +32,7 @@ type ContextBehavior struct {
 	reportError chan error
 	cancel      context.CancelFunc
 	wg          sync.WaitGroup
-	_paired     atomic.Bool
+	paired      atomic.Bool
 }
 
 // GetParentContext 获取父上下文
@@ -73,6 +73,6 @@ func (ctx *ContextBehavior) init(parentCtx context.Context, autoRecover bool, re
 	ctx.Context, ctx.cancel = context.WithCancel(ctx.parentCtx)
 }
 
-func (ctx *ContextBehavior) paired() bool {
-	return ctx._paired.CompareAndSwap(false, true)
+func (ctx *ContextBehavior) markPaired(v bool) bool {
+	return ctx.paired.CompareAndSwap(!v, v)
 }

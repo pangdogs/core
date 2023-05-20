@@ -20,10 +20,6 @@ func (uc _UnsafeContext) GetOptions() *Options {
 	return uc.getOptions()
 }
 
-func (uc _UnsafeContext) MarkRunning() bool {
-	return internal.UnsafeRunningMark(uc.Context).MarkRunning()
-}
-
-func (uc _UnsafeContext) MarkShutdown() bool {
-	return internal.UnsafeRunningMark(uc.Context).MarkShutdown()
+func (uc _UnsafeContext) MarkRunning(v bool) bool {
+	return internal.UnsafeRunningState(uc.Context).MarkRunning(v)
 }

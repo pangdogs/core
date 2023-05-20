@@ -35,12 +35,8 @@ func (uc _UnsafeContext) GetServiceCtx() service.Context {
 	return uc.getServiceCtx()
 }
 
-func (uc _UnsafeContext) MarkRunning() bool {
-	return internal.UnsafeRunningMark(uc.Context).MarkRunning()
-}
-
-func (uc _UnsafeContext) MarkShutdown() bool {
-	return internal.UnsafeRunningMark(uc.Context).MarkShutdown()
+func (uc _UnsafeContext) MarkRunning(v bool) bool {
+	return internal.UnsafeRunningState(uc.Context).MarkRunning(v)
 }
 
 func (uc _UnsafeContext) GC() {

@@ -16,6 +16,6 @@ func (uc _UnsafeContext) Init(parentCtx context.Context, autoRecover bool, repor
 	uc.init(parentCtx, autoRecover, reportError)
 }
 
-func (uc _UnsafeContext) Paired() bool {
-	return uc.paired()
+func (uc _UnsafeContext) MarkPaired(v bool) bool {
+	return uc.markPaired(v)
 }

@@ -40,7 +40,7 @@ func UnsafeNewContext(options Options) Context {
 type Context interface {
 	_Context
 	internal.Context
-	internal.RunningMark
+	internal.RunningState
 	plugin.PluginResolver
 	pt.EntityPtResolver
 	Caller
@@ -65,7 +65,7 @@ type _Context interface {
 // ContextBehavior 服务上下文行为，在需要扩展服务上下文能力时，匿名嵌入至服务上下文结构体中
 type ContextBehavior struct {
 	internal.ContextBehavior
-	internal.RunningMarkBehavior
+	internal.RunningStateBehavior
 	opts        Options
 	snGenerator int64
 	entityMgr   _EntityMgr
