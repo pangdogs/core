@@ -7,7 +7,32 @@ import (
 	"sync/atomic"
 )
 
-func Await(ctxResolver ec.ContextResolver, asyncWait func(ctx runtime.Context, ret runtime.Ret), asyncRet runtime.AsyncRet) {
+func Async(ctxResolver ec.ContextResolver, segment func(ctx runtime.Context) runtime.Ret) runtime.AsyncRet {
+	ctx := runtime.Get(ctxResolver)
+
+	if segment == nil {
+		panic("nil segment")
+	}
+
+	return ctx.AsyncCall(func() runtime.Ret {
+		return segment(ctx)
+	})
+}
+
+func AsyncVoid(ctxResolver ec.ContextResolver, segment func(ctx runtime.Context)) runtime.AsyncRet {
+	ctx := runtime.Get(ctxResolver)
+
+	if segment == nil {
+		panic("nil segment")
+	}
+
+	return ctx.AsyncCall(func() runtime.Ret {
+		segment(ctx)
+		return runtime.NewRet(nil, nil)
+	})
+}
+
+func Await(ctxResolver ec.ContextResolver, asyncRet runtime.AsyncRet, asyncWait func(ctx runtime.Context, ret runtime.Ret)) {
 	ctx := runtime.Get(ctxResolver)
 
 	if asyncWait == nil {
@@ -34,7 +59,7 @@ func Await(ctxResolver ec.ContextResolver, asyncWait func(ctx runtime.Context, r
 	}()
 }
 
-func AwaitAny(ctxResolver ec.ContextResolver, asyncWait func(ctx runtime.Context, ret runtime.Ret), asyncRets ...runtime.AsyncRet) {
+func AwaitAny(ctxResolver ec.ContextResolver, asyncRets []runtime.AsyncRet, asyncWait func(ctx runtime.Context, ret runtime.Ret)) {
 	ctx := runtime.Get(ctxResolver)
 
 	if asyncWait == nil {
@@ -77,7 +102,7 @@ func AwaitAny(ctxResolver ec.ContextResolver, asyncWait func(ctx runtime.Context
 	}
 }
 
-func AwaitAll(ctxResolver ec.ContextResolver, asyncWait func(ctx runtime.Context, ret runtime.Ret), asyncRets ...runtime.AsyncRet) {
+func AwaitAll(ctxResolver ec.ContextResolver, asyncRets []runtime.AsyncRet, asyncWait func(ctx runtime.Context, ret runtime.Ret)) {
 	ctx := runtime.Get(ctxResolver)
 
 	if asyncWait == nil {
@@ -108,29 +133,4 @@ func AwaitAll(ctxResolver ec.ContextResolver, asyncWait func(ctx runtime.Context
 			})
 		}()
 	}
-}
-
-func Async(ctxResolver ec.ContextResolver, segment func(ctx runtime.Context) runtime.Ret) runtime.AsyncRet {
-	ctx := runtime.Get(ctxResolver)
-
-	if segment == nil {
-		panic("nil segment")
-	}
-
-	return ctx.AsyncCall(func() runtime.Ret {
-		return segment(ctx)
-	})
-}
-
-func AsyncVoid(ctxResolver ec.ContextResolver, segment func(ctx runtime.Context)) runtime.AsyncRet {
-	ctx := runtime.Get(ctxResolver)
-
-	if segment == nil {
-		panic("nil segment")
-	}
-
-	return ctx.AsyncCall(func() runtime.Ret {
-		segment(ctx)
-		return runtime.NewRet(nil, nil)
-	})
 }
