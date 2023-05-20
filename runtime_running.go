@@ -200,20 +200,17 @@ func (_runtime *RuntimeBehavior) loopWithFrame() {
 
 		for curFrames := uint64(1); ; {
 			if totalFrames > 0 && curFrames >= totalFrames {
-				_runtime.opts.CompositeFace.Iface.Stop()
+				_runtime.ctx.GetCancelFunc()()
 				return
 			}
 
 			select {
 			case <-updateTicker.C:
-				internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-					select {
-					case _runtime.processQueue <- _runtime.frameUpdate:
-						curFrames++
-					default:
-					}
-				})
-
+				select {
+				case _runtime.processQueue <- _runtime.frameUpdate:
+					curFrames++
+				default:
+				}
 			case <-_runtime.ctx.Done():
 				return
 			}
