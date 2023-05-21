@@ -1,6 +1,7 @@
 package golaxy
 
 import (
+	"context"
 	"errors"
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/runtime"
@@ -141,8 +142,41 @@ func AwaitAll(ctxResolver ec.ContextResolver, asyncRets []runtime.AsyncRet, asyn
 	}
 }
 
-// AwaitTimeAfterFunc 等待一段时间，并继续运行后续逻辑
-func AwaitTimeAfterFunc(ctxResolver ec.ContextResolver, dur time.Duration, segment func(ctx runtime.Context)) {
+// AwaitTimeAfter 等待一段时间后，运行指定逻辑
+func AwaitTimeAfter(ctxResolver ec.ContextResolver, dur time.Duration, segment func(ctx runtime.Context)) {
 	ctx := runtime.Get(ctxResolver)
+	if segment == nil {
+		panic("nil segment")
+	}
 	time.AfterFunc(dur, func() { AsyncVoid(ctx, segment) })
+}
+
+// AwaitTimeTick 每隔一段时间，运行指定逻辑
+func AwaitTimeTick(ctxResolver ec.ContextResolver, ctx context.Context, dur time.Duration, segment func(ctx runtime.Context)) {
+	runtimeCtx := runtime.Get(ctxResolver)
+
+	if ctx == nil {
+		panic("nil ctx")
+	}
+
+	if segment == nil {
+		panic("nil segment")
+	}
+
+	tick := time.NewTicker(dur)
+
+	go func() {
+		defer func() {
+			recover()
+		}()
+
+		for {
+			select {
+			case <-tick.C:
+				AsyncVoid(runtimeCtx, segment)
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
 }
