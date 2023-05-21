@@ -156,7 +156,7 @@ func AwaitTimeTick(ctxResolver ec.ContextResolver, ctx context.Context, dur time
 	runtimeCtx := runtime.Get(ctxResolver)
 
 	if ctx == nil {
-		panic("nil ctx")
+		ctx = context.Background()
 	}
 
 	if segment == nil {
