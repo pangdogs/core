@@ -206,11 +206,17 @@ func (_runtime *RuntimeBehavior) loopWithFrame() {
 
 			select {
 			case <-updateTicker.C:
-				select {
-				case _runtime.processQueue <- _runtime.frameUpdate:
-					curFrames++
-				default:
-				}
+				func() {
+					defer func() {
+						recover()
+					}()
+
+					select {
+					case _runtime.processQueue <- _runtime.frameUpdate:
+						curFrames++
+					default:
+					}
+				}()
 			case <-_runtime.ctx.Done():
 				return
 			}
