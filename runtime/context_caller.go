@@ -91,8 +91,8 @@ func (ctx *ContextBehavior) AsyncCall(segment func() Ret) AsyncRet {
 		}
 
 		ctx.callee.PushCall(func() {
+			defer close(asyncRet)
 			asyncRet <- segment()
-			close(asyncRet)
 		})
 	}()
 
