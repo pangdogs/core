@@ -18,10 +18,10 @@ type Cmd struct {
 }
 
 // ServiceCtxInitFunc 服务上下文初始化函数
-type ServiceCtxInitFunc = func(entityLib pt.EntityLib, pluginBundle plugin.PluginBundle) []service.Option
+type ServiceCtxInitFunc = func(serviceName string, entityLib pt.EntityLib, pluginBundle plugin.PluginBundle) []service.Option
 
 // ServiceInitFunc 服务初始化函数
-type ServiceInitFunc = func() []golaxy.ServiceOption
+type ServiceInitFunc = func(serviceName string) []golaxy.ServiceOption
 
 // Options 创建应用的所有选项
 type Options struct {
