@@ -180,3 +180,35 @@ func AwaitTimeTick(ctxResolver ec.ContextResolver, ctx context.Context, dur time
 		}
 	}()
 }
+
+// AwaitChanRet 等待chan返回数据，运行指定逻辑
+func AwaitChanRet[T any](ctxResolver ec.ContextResolver, ctx context.Context, ch <-chan T, segment func(ctx runtime.Context, ret T, ok bool)) {
+	runtimeCtx := runtime.Get(ctxResolver)
+
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	if ch == nil {
+		panic("nil ch")
+	}
+
+	if segment == nil {
+		panic("nil segment")
+	}
+
+	go func() {
+		defer func() {
+			recover()
+		}()
+
+		select {
+		case ret, ok := <-ch:
+			AsyncVoid(runtimeCtx, func(ctx runtime.Context) {
+				segment(ctx, ret, ok)
+			})
+		case <-ctx.Done():
+			return
+		}
+	}()
+}
