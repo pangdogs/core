@@ -51,8 +51,8 @@ func (WithOption) PersistId(id uid.Id) EntityOption {
 	}
 }
 
-// EnableComponentAwakeByAccess 开启组件被访问时，检测并调用Awake()
-func (WithOption) EnableComponentAwakeByAccess(b bool) EntityOption {
+// ComponentAwakeByAccess 开启组件被访问时，检测并调用Awake()
+func (WithOption) ComponentAwakeByAccess(b bool) EntityOption {
 	return func(o *EntityOptions) {
 		ec.WithOption{}.ComponentAwakeByAccess(b)(&o.EntityOptions)
 	}
