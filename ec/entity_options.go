@@ -7,6 +7,9 @@ import (
 	"kit.golaxy.org/golaxy/util/container"
 )
 
+// WithOption 所有选项设置器
+type WithOption struct{}
+
 // EntityOptions 创建实体的所有选项
 type EntityOptions struct {
 	CompositeFace                util.Face[Entity]                    // 扩展者，在扩展实体自身能力时使用

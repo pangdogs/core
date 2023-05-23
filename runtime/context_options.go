@@ -9,6 +9,9 @@ import (
 	"kit.golaxy.org/golaxy/util/container"
 )
 
+// WithOption 所有选项设置器
+type WithOption struct{}
+
 // ContextOptions 创建运行时上下文的所有选项
 type ContextOptions struct {
 	CompositeFace      util.Face[Context]                   // 扩展者，需要扩展运行时上下文自身能力时需要使用
