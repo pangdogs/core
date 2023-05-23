@@ -12,7 +12,7 @@ import (
 // NewRuntime 创建运行时
 func NewRuntime(ctx runtime.Context, options ...RuntimeOption) Runtime {
 	opts := RuntimeOptions{}
-	WithRuntimeOption{}.Default()(&opts)
+	WithOption{}.RuntimeDefault()(&opts)
 
 	for i := range options {
 		options[i](&opts)
