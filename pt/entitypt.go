@@ -12,8 +12,8 @@ type EntityPt struct {
 }
 
 // Construct 创建实体
-func (pt *EntityPt) Construct(options ...Option) ec.Entity {
-	opts := Options{}
+func (pt *EntityPt) Construct(options ...EntityOption) ec.Entity {
+	opts := EntityOptions{}
 	WithOption{}.Default()(&opts)
 
 	for i := range options {
@@ -24,9 +24,9 @@ func (pt *EntityPt) Construct(options ...Option) ec.Entity {
 }
 
 // UnsafeConstruct 不安全的创建实体，需要自己初始化所有选项
-func (pt *EntityPt) UnsafeConstruct(options Options) ec.Entity {
+func (pt *EntityPt) UnsafeConstruct(options EntityOptions) ec.Entity {
 	options.Prototype = pt.Prototype
-	return pt.Assemble(ec.UnsafeNewEntity(options.Options), options.AssignCompId)
+	return pt.Assemble(ec.UnsafeNewEntity(options.EntityOptions), options.AssignCompId)
 }
 
 // Assemble 向实体安装组件

@@ -13,8 +13,8 @@ import (
 )
 
 // NewContext 创建服务上下文
-func NewContext(options ...Option) Context {
-	opts := Options{}
+func NewContext(options ...ContextOption) Context {
+	opts := ContextOptions{}
 	WithOption{}.Default()(&opts)
 
 	for i := range options {
@@ -24,7 +24,7 @@ func NewContext(options ...Option) Context {
 	return UnsafeNewContext(opts)
 }
 
-func UnsafeNewContext(options Options) Context {
+func UnsafeNewContext(options ContextOptions) Context {
 	if !options.CompositeFace.IsNil() {
 		options.CompositeFace.Iface.init(&options)
 		return options.CompositeFace.Iface
@@ -58,15 +58,15 @@ type Context interface {
 }
 
 type _Context interface {
-	init(opts *Options)
-	getOptions() *Options
+	init(opts *ContextOptions)
+	getOptions() *ContextOptions
 }
 
 // ContextBehavior 服务上下文行为，在需要扩展服务上下文能力时，匿名嵌入至服务上下文结构体中
 type ContextBehavior struct {
 	internal.ContextBehavior
 	internal.RunningStateBehavior
-	opts        Options
+	opts        ContextOptions
 	snGenerator int64
 	entityMgr   _EntityMgr
 }
@@ -96,7 +96,7 @@ func (ctx *ContextBehavior) String() string {
 	return fmt.Sprintf("[Id:%s Name:%s]", ctx.GetId(), ctx.GetName())
 }
 
-func (ctx *ContextBehavior) init(opts *Options) {
+func (ctx *ContextBehavior) init(opts *ContextOptions) {
 	if opts == nil {
 		panic("nil opts")
 	}
@@ -121,6 +121,6 @@ func (ctx *ContextBehavior) init(opts *Options) {
 	ctx.entityMgr.init(ctx.opts.CompositeFace.Iface)
 }
 
-func (ctx *ContextBehavior) getOptions() *Options {
+func (ctx *ContextBehavior) getOptions() *ContextOptions {
 	return &ctx.opts
 }

@@ -15,11 +15,11 @@ type _UnsafeContext struct {
 	Context
 }
 
-func (uc _UnsafeContext) Init(serviceCtx service.Context, opts *Options) {
+func (uc _UnsafeContext) Init(serviceCtx service.Context, opts *ContextOptions) {
 	uc.Context.init(serviceCtx, opts)
 }
 
-func (uc _UnsafeContext) GetOptions() *Options {
+func (uc _UnsafeContext) GetOptions() *ContextOptions {
 	return uc.getOptions()
 }
 

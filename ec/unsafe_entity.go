@@ -17,11 +17,11 @@ type _UnsafeEntity struct {
 	Entity
 }
 
-func (ue _UnsafeEntity) Init(opts *Options) {
+func (ue _UnsafeEntity) Init(opts *EntityOptions) {
 	ue.init(opts)
 }
 
-func (ue _UnsafeEntity) GetOptions() *Options {
+func (ue _UnsafeEntity) GetOptions() *EntityOptions {
 	return ue.getOptions()
 }
 

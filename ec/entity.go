@@ -9,8 +9,8 @@ import (
 )
 
 // NewEntity 创建实体
-func NewEntity(options ...Option) Entity {
-	opts := Options{}
+func NewEntity(options ...EntityOption) Entity {
+	opts := EntityOptions{}
 	WithOption{}.Default()(&opts)
 
 	for i := range options {
@@ -20,7 +20,7 @@ func NewEntity(options ...Option) Entity {
 	return UnsafeNewEntity(opts)
 }
 
-func UnsafeNewEntity(options Options) Entity {
+func UnsafeNewEntity(options EntityOptions) Entity {
 	if !options.CompositeFace.IsNil() {
 		options.CompositeFace.Iface.init(&options)
 		return options.CompositeFace.Iface
@@ -55,8 +55,8 @@ type Entity interface {
 }
 
 type _Entity interface {
-	init(opts *Options)
-	getOptions() *Options
+	init(opts *EntityOptions)
+	getOptions() *EntityOptions
 	setId(id uid.Id)
 	setSerialNo(sn int64)
 	setContext(ctx util.IfaceCache)
@@ -71,7 +71,7 @@ type _Entity interface {
 // EntityBehavior 实体行为，在需要扩展实体能力时，匿名嵌入至实体结构体中
 type EntityBehavior struct {
 	serialNo                         int64
-	opts                             Options
+	opts                             EntityOptions
 	context                          util.IfaceCache
 	parent                           Entity
 	componentList                    container.List[util.FaceAny]
@@ -138,7 +138,7 @@ func (entity *EntityBehavior) ResolveContext() util.IfaceCache {
 	return entity.context
 }
 
-func (entity *EntityBehavior) init(opts *Options) {
+func (entity *EntityBehavior) init(opts *EntityOptions) {
 	if opts == nil {
 		panic("nil opts")
 	}
@@ -157,7 +157,7 @@ func (entity *EntityBehavior) init(opts *Options) {
 	entity.eventCompMgrFirstAccessComponent.Init(false, nil, localevent.EventRecursion_Allow, entity.opts.HookAllocator, entity.opts.GCCollector)
 }
 
-func (entity *EntityBehavior) getOptions() *Options {
+func (entity *EntityBehavior) getOptions() *EntityOptions {
 	return &entity.opts
 }
 
