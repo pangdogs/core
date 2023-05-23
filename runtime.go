@@ -98,7 +98,7 @@ func (_runtime *RuntimeBehavior) init(ctx runtime.Context, opts *RuntimeOptions)
 	_runtime.eventUpdate.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Disallow, ctx.GetHookAllocator(), nil)
 	_runtime.eventLateUpdate.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Disallow, ctx.GetHookAllocator(), nil)
 
-	if _runtime.opts.EnableAutoRun {
+	if _runtime.opts.AutoRun {
 		_runtime.opts.CompositeFace.Iface.Run()
 	}
 }

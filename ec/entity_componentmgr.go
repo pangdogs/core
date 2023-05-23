@@ -39,7 +39,7 @@ func (entity *EntityBehavior) GetComponent(name string) Component {
 	if e, ok := entity.getComponentElement(name); ok {
 		comp := util.Cache2Iface[Component](e.Value.Cache)
 
-		if entity.opts.EnableComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
+		if entity.opts.ComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
 			switch entity.GetState() {
 			case EntityState_Init, EntityState_Inited, EntityState_Living:
 				emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.CompositeFace.Iface, comp)
@@ -57,7 +57,7 @@ func (entity *EntityBehavior) GetComponentById(id uid.Id) Component {
 	if e, ok := entity.getComponentElementById(id); ok {
 		comp := util.Cache2Iface[Component](e.Value.Cache)
 
-		if entity.opts.EnableComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
+		if entity.opts.ComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
 			switch entity.GetState() {
 			case EntityState_Init, EntityState_Inited, EntityState_Living:
 				emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.CompositeFace.Iface, comp)
@@ -84,7 +84,7 @@ func (entity *EntityBehavior) GetComponents(name string) []Component {
 			return false
 		}, e)
 
-		if entity.opts.EnableComponentAwakeByAccess {
+		if entity.opts.ComponentAwakeByAccess {
 			for i := range components {
 				if components[i].GetState() == ComponentState_Attach {
 					switch entity.GetState() {
@@ -110,7 +110,7 @@ func (entity *EntityBehavior) RangeComponents(fun func(component Component) bool
 	entity.componentList.Traversal(func(e *container.Element[util.FaceAny]) bool {
 		comp := util.Cache2Iface[Component](e.Value.Cache)
 
-		if entity.opts.EnableComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
+		if entity.opts.ComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
 			switch entity.GetState() {
 			case EntityState_Init, EntityState_Inited, EntityState_Living:
 				emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.CompositeFace.Iface, comp)

@@ -9,7 +9,7 @@ import (
 // RuntimeOptions 创建运行时的所有选项
 type RuntimeOptions struct {
 	CompositeFace        util.Face[Runtime] // 扩展者，需要扩展运行时自身功能时需要使用
-	EnableAutoRun        bool               // 是否开启自动运行
+	AutoRun              bool               // 是否开启自动运行
 	ProcessQueueCapacity int                // 任务处理流水线大小
 	ProcessQueueTimeout  time.Duration      // 当任务处理流水线满时，向其插入代码片段的超时时间，为0表示不等待直接报错
 	SyncCallTimeout      time.Duration      // 同步调用超时时间，为0表示不处理超时，此时两个运行时互相同步调用会死锁
@@ -25,7 +25,7 @@ type RuntimeOption func(o *RuntimeOptions)
 func (WithOption) RuntimeDefault() RuntimeOption {
 	return func(o *RuntimeOptions) {
 		WithOption{}.RuntimeCompositeFace(util.Face[Runtime]{})(o)
-		WithOption{}.RuntimeEnableAutoRun(false)(o)
+		WithOption{}.RuntimeAutoRun(false)(o)
 		WithOption{}.RuntimeProcessQueueCapacity(128)(o)
 		WithOption{}.RuntimeProcessQueueTimeout(0)(o)
 		WithOption{}.RuntimeSyncCallTimeout(3 * time.Second)(o)
@@ -42,10 +42,10 @@ func (WithOption) RuntimeCompositeFace(face util.Face[Runtime]) RuntimeOption {
 	}
 }
 
-// RuntimeEnableAutoRun 运行时是否开启自动运行
-func (WithOption) RuntimeEnableAutoRun(b bool) RuntimeOption {
+// RuntimeAutoRun 运行时是否开启自动运行
+func (WithOption) RuntimeAutoRun(b bool) RuntimeOption {
 	return func(o *RuntimeOptions) {
-		o.EnableAutoRun = b
+		o.AutoRun = b
 	}
 }
 

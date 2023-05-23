@@ -177,7 +177,7 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 	entityInfo.Element = entityMgr.entityList.PushBack(util.NewFacePair[any](entity, entity))
 	entityInfo.Hooks[0] = localevent.BindEvent[ec.EventCompMgrAddComponents](entity.EventCompMgrAddComponents(), entityMgr)
 	entityInfo.Hooks[1] = localevent.BindEvent[ec.EventCompMgrRemoveComponent](entity.EventCompMgrRemoveComponent(), entityMgr)
-	if _entity.GetOptions().EnableComponentAwakeByAccess {
+	if _entity.GetOptions().ComponentAwakeByAccess {
 		entityInfo.Hooks[2] = localevent.BindEvent[ec.EventCompMgrFirstAccessComponent](entity.EventCompMgrFirstAccessComponent(), entityMgr)
 	}
 	entityInfo.GlobalMark = scope == ec.Scope_Global

@@ -12,13 +12,13 @@ type WithOption struct{}
 
 // EntityOptions 创建实体的所有选项
 type EntityOptions struct {
-	CompositeFace                util.Face[Entity]                    // 扩展者，在扩展实体自身能力时使用
-	Prototype                    string                               // 实体原型名称
-	PersistId                    uid.Id                               // 实体持久化Id
-	EnableComponentAwakeByAccess bool                                 // 开启组件被访问时，检测并调用Awake()
-	FaceAnyAllocator             container.Allocator[util.FaceAny]    // 自定义FaceAny内存分配器，用于提高性能，通常传入运行时上下文中的FaceAnyAllocator
-	HookAllocator                container.Allocator[localevent.Hook] // 自定义Hook内存分配器，用于提高性能，通常传入运行时上下文中的HookAllocator
-	GCCollector                  container.GCCollector                // 自定义GC收集器，通常不传或者传入运行时上下文
+	CompositeFace          util.Face[Entity]                    // 扩展者，在扩展实体自身能力时使用
+	Prototype              string                               // 实体原型名称
+	PersistId              uid.Id                               // 实体持久化Id
+	ComponentAwakeByAccess bool                                 // 开启组件被访问时，检测并调用Awake()
+	FaceAnyAllocator       container.Allocator[util.FaceAny]    // 自定义FaceAny内存分配器，用于提高性能，通常传入运行时上下文中的FaceAnyAllocator
+	HookAllocator          container.Allocator[localevent.Hook] // 自定义Hook内存分配器，用于提高性能，通常传入运行时上下文中的HookAllocator
+	GCCollector            container.GCCollector                // 自定义GC收集器，通常不传或者传入运行时上下文
 }
 
 // EntityOption 创建实体的选项设置器
@@ -30,7 +30,7 @@ func (WithOption) Default() EntityOption {
 		WithOption{}.CompositeFace(util.Face[Entity]{})(o)
 		WithOption{}.Prototype("")(o)
 		WithOption{}.PersistId(util.Zero[uid.Id]())(o)
-		WithOption{}.EnableComponentAwakeByAccess(true)(o)
+		WithOption{}.ComponentAwakeByAccess(true)(o)
 		WithOption{}.FaceAnyAllocator(container.DefaultAllocator[util.FaceAny]())(o)
 		WithOption{}.HookAllocator(container.DefaultAllocator[localevent.Hook]())(o)
 		WithOption{}.GCCollector(nil)(o)
@@ -58,10 +58,10 @@ func (WithOption) PersistId(id uid.Id) EntityOption {
 	}
 }
 
-// EnableComponentAwakeByAccess 开启组件被访问时，检测并调用Awake()
-func (WithOption) EnableComponentAwakeByAccess(b bool) EntityOption {
+// ComponentAwakeByAccess 开启组件被访问时，检测并调用Awake()
+func (WithOption) ComponentAwakeByAccess(b bool) EntityOption {
 	return func(o *EntityOptions) {
-		o.EnableComponentAwakeByAccess = b
+		o.ComponentAwakeByAccess = b
 	}
 }
 
