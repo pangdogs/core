@@ -2,6 +2,7 @@ package golaxy
 
 import (
 	"context"
+	"fmt"
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/runtime"
 	"sync/atomic"
@@ -33,6 +34,61 @@ func AsyncVoid(ctxResolver ec.ContextResolver, segment func(ctx runtime.Context)
 		segment(ctx)
 		return runtime.NewRet(nil, nil)
 	})
+}
+
+// AsyncGo 使用新协程异步执行代码，最多返回一次，有返回值，返回的异步结果（async ret）可以给Await()等待并继续后续逻辑运行
+func AsyncGo(ctxResolver ec.ContextResolver, segment func(ctx runtime.Context) runtime.Ret) runtime.AsyncRet {
+	ctx := runtime.Get(ctxResolver)
+
+	if segment == nil {
+		panic("nil segment")
+	}
+
+	asyncRet := make(chan runtime.Ret, 1)
+
+	go func() {
+		defer func() {
+			if info := recover(); info != nil {
+				err, ok := info.(error)
+				if !ok {
+					err = fmt.Errorf("%v", info)
+				}
+				asyncRet <- runtime.NewRet(err, nil)
+			}
+			close(asyncRet)
+		}()
+		asyncRet <- segment(ctx)
+	}()
+
+	return asyncRet
+}
+
+// AsyncGoVoid 使用新协程异步执行代码，最多返回一次，无返回值，返回的异步结果（async ret）可以给Await()等待并继续后续逻辑运行
+func AsyncGoVoid(ctxResolver ec.ContextResolver, segment func(ctx runtime.Context)) runtime.AsyncRet {
+	ctx := runtime.Get(ctxResolver)
+
+	if segment == nil {
+		panic("nil segment")
+	}
+
+	asyncRet := make(chan runtime.Ret, 1)
+
+	go func() {
+		defer func() {
+			if info := recover(); info != nil {
+				err, ok := info.(error)
+				if !ok {
+					err = fmt.Errorf("%v", info)
+				}
+				asyncRet <- runtime.NewRet(err, nil)
+			}
+			close(asyncRet)
+		}()
+		segment(ctx)
+		asyncRet <- runtime.NewRet(nil, nil)
+	}()
+
+	return asyncRet
 }
 
 // AsyncTimeAfter 异步等待一段时间后返回，最多返回一次，无返回值，返回的异步结果（async ret）可以给Await()等待并继续后续逻辑运行
@@ -80,7 +136,11 @@ func AsyncTimeTick(ctx context.Context, dur time.Duration) runtime.AsyncRet {
 		for {
 			select {
 			case <-tick.C:
-				asyncRet <- runtime.NewRet(nil, nil)
+				select {
+				case asyncRet <- runtime.NewRet(nil, nil):
+				case <-ctx.Done():
+					return
+				}
 			case <-ctx.Done():
 				return
 			}
@@ -114,7 +174,11 @@ func AsyncChanRet[T any](ctx context.Context, ch <-chan T) runtime.AsyncRet {
 				if !ok {
 					return
 				}
-				asyncRet <- runtime.NewRet(nil, v)
+				select {
+				case asyncRet <- runtime.NewRet(nil, v):
+				case <-ctx.Done():
+					return
+				}
 			case <-ctx.Done():
 				return
 			}
@@ -190,9 +254,7 @@ func AwaitAny(ctxResolver ec.ContextResolver, asyncRets []runtime.AsyncRet, asyn
 
 			cancel()
 
-			ctx.AsyncCallNoRet(func() {
-				asyncWait(ctx, ret)
-			})
+			ctx.AsyncCallNoRet(func() { asyncWait(ctx, ret) })
 		}(asyncRet)
 	}
 }
