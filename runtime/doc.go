@@ -2,5 +2,5 @@
 //   - 运行时上下文（Context）
 //   - 实体管理器（IEntityMgr）
 //   - EC树（IECTree）
-//   - 帧（RuntimeFrame）
+//   - 帧（Frame）
 package runtime
