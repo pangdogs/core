@@ -17,8 +17,12 @@ const (
 	EventRecursion_Deepest                        // 深度优先处理递归事件，如果在订阅者中再次发送这个事件，那么会中断上次事件发送过程，并在本次事件发送过程中，不会再次进入这个订阅者
 )
 
-// EventRecursionLimit 事件递归次数上限
-var EventRecursionLimit = 128
+var (
+	// EventRecursionLimit 事件递归次数上限，超过此上限会panic
+	EventRecursionLimit = int32(128)
+	// EventCheckEmitBatch 是否检测事件的发送的批次，在事件回调中再次订阅该事件的订阅者，开启此选项时需要等下次发送该事件时，才能收到事件回调，关闭此选项则本次就能立即收到
+	EventCheckEmitBatch = true
+)
 
 // IEvent 本地事件接口，非线程安全，不能用于跨线程事件通知
 type IEvent interface {
@@ -35,8 +39,9 @@ type Event struct {
 	autoRecover    bool
 	reportError    chan error
 	eventRecursion EventRecursion
-	emitted        int
-	depth          int
+	emitted        int32
+	emitBatch      int64
+	depth          int32
 	opened         bool
 	inited         bool
 }
@@ -100,6 +105,7 @@ func (event *Event) emit(fun func(delegate util.IfaceCache) bool) {
 		event.emitted--
 	}()
 
+	event.emitBatch++
 	event.depth = event.emitted
 
 	event.subscribers.Traversal(func(e *container.Element[Hook]) bool {
@@ -108,6 +114,10 @@ func (event *Event) emit(fun func(delegate util.IfaceCache) bool) {
 		}
 
 		if e.Value.delegateFace.IsNil() {
+			return true
+		}
+
+		if EventCheckEmitBatch && e.Value.emitBatch == event.emitBatch {
 			return true
 		}
 
@@ -156,6 +166,7 @@ func (event *Event) newHook(delegateFace util.FaceAny, priority int32) Hook {
 	hook := Hook{
 		delegateFace: delegateFace,
 		priority:     priority,
+		emitBatch:    event.emitBatch,
 	}
 
 	var mark *container.Element[Hook]

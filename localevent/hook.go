@@ -10,7 +10,8 @@ type Hook struct {
 	delegateFace util.FaceAny
 	priority     int32
 	element      *container.Element[Hook]
-	received     int
+	received     int32
+	emitBatch    int64
 }
 
 // Bind 重新绑定事件与订阅者
