@@ -17,7 +17,6 @@ type Component interface {
 	fmt.Stringer
 	internal.TextSerialization
 	internal.BinarySerialization
-	internal.SqlValue
 
 	// GetId 获取组件Id
 	GetId() uid.Id

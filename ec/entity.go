@@ -41,7 +41,6 @@ type Entity interface {
 	fmt.Stringer
 	internal.TextSerialization
 	internal.BinarySerialization
-	internal.SqlValue
 
 	// GetId 获取实体Id
 	GetId() uid.Id
