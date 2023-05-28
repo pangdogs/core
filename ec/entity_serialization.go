@@ -3,13 +3,8 @@ package ec
 import (
 	"database/sql/driver"
 	"errors"
-	"fmt"
 	"kit.golaxy.org/golaxy/internal"
 )
-
-func (entity *EntityBehavior) String() string {
-	return EntitySerializer.String(entity.opts.CompositeFace.Iface)
-}
 
 func (entity *EntityBehavior) MarshalText() ([]byte, error) {
 	return EntitySerializer.MarshalText(entity.opts.CompositeFace.Iface)
@@ -38,18 +33,6 @@ func (entity *EntityBehavior) Scan(src interface{}) error {
 var EntitySerializer internal.Serializer[Entity] = DefaultEntitySerializer{}
 
 type DefaultEntitySerializer struct{}
-
-func (DefaultEntitySerializer) String(entity Entity) string {
-	var parentInfo string
-	if parent, ok := entity.GetParent(); ok {
-		parentInfo = parent.GetId().String()
-	} else {
-		parentInfo = "nil"
-	}
-
-	return fmt.Sprintf("{Id:%s SerialNo:%d Prototype:%s Parent:%s State:%s}",
-		entity.GetId(), entity.GetSerialNo(), entity.GetPrototype(), parentInfo, entity.GetState())
-}
 
 func (DefaultEntitySerializer) MarshalText(entity Entity) ([]byte, error) {
 	return nil, errors.New("not support")

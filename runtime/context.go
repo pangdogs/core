@@ -133,10 +133,6 @@ func (ctx *ContextBehavior) CollectGC(gc container.GC) {
 	ctx.gcList = append(ctx.gcList, gc)
 }
 
-func (ctx *ContextBehavior) String() string {
-	return fmt.Sprintf("{Id:%s Name:%s}", ctx.GetId(), ctx.GetName())
-}
-
 func (ctx *ContextBehavior) init(serviceCtx service.Context, opts *ContextOptions) {
 	if serviceCtx == nil {
 		panic("nil serviceCtx")

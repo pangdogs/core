@@ -16,13 +16,3 @@ type SqlValue interface {
 	Value() (driver.Value, error)
 	Scan(src interface{}) error
 }
-
-type Serializer[T any] interface {
-	String(t T) string
-	MarshalText(t T) ([]byte, error)
-	UnmarshalText(t T, b []byte) error
-	MarshalBinary(t T) ([]byte, error)
-	UnmarshalBinary(t T, b []byte) error
-	Value(t T) (driver.Value, error)
-	Scan(t T, src interface{}) error
-}

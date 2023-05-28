@@ -90,10 +90,6 @@ func (ctx *ContextBehavior) GetEntityMgr() IEntityMgr {
 	return &ctx.entityMgr
 }
 
-func (ctx *ContextBehavior) String() string {
-	return fmt.Sprintf("{Id:%s Name:%s}", ctx.GetId(), ctx.GetName())
-}
-
 func (ctx *ContextBehavior) init(opts *ContextOptions) {
 	if opts == nil {
 		panic("nil opts")
