@@ -35,9 +35,7 @@ func (comp *ComponentBehavior) Scan(src interface{}) error {
 	return ComponentSerializer.Scan(comp.composite, src)
 }
 
-type IComponentSerializer = internal.Serializer[Component]
-
-var ComponentSerializer IComponentSerializer = DefaultComponentSerializer{}
+var ComponentSerializer internal.Serializer[Component] = DefaultComponentSerializer{}
 
 type DefaultComponentSerializer struct{}
 

@@ -35,9 +35,7 @@ func (entity *EntityBehavior) Scan(src interface{}) error {
 	return EntitySerializer.Scan(entity.opts.CompositeFace.Iface, src)
 }
 
-type IEntitySerializer = internal.Serializer[Entity]
-
-var EntitySerializer IEntitySerializer = DefaultEntitySerializer{}
+var EntitySerializer internal.Serializer[Entity] = DefaultEntitySerializer{}
 
 type DefaultEntitySerializer struct{}
 
