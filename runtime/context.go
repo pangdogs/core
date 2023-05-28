@@ -2,7 +2,6 @@ package runtime
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/localevent"
 	"kit.golaxy.org/golaxy/plugin"
@@ -39,12 +38,13 @@ func UnsafeNewContext(serviceCtx service.Context, options ContextOptions) Contex
 // Context 运行时上下文接口
 type Context interface {
 	_Context
-	ec.ContextResolver
+	internal.ContextResolver
 	container.GCCollector
 	internal.Context
 	internal.RunningState
 	plugin.PluginResolver
 	Caller
+	fmt.Stringer
 
 	// GetName 获取名称
 	GetName() string
@@ -60,8 +60,6 @@ type Context interface {
 	GetFaceAnyAllocator() container.Allocator[util.FaceAny]
 	// GetHookAllocator 获取Hook内存分配器
 	GetHookAllocator() container.Allocator[localevent.Hook]
-	// String 字符串化
-	String() string
 }
 
 type _Context interface {
@@ -121,11 +119,6 @@ func (ctx *ContextBehavior) GetHookAllocator() container.Allocator[localevent.Ho
 	return ctx.opts.HookAllocator
 }
 
-// String 字符串化
-func (ctx *ContextBehavior) String() string {
-	return fmt.Sprintf("[Id:%s Name:%s]", ctx.GetId(), ctx.GetName())
-}
-
 // ResolveContext 解析上下文
 func (ctx *ContextBehavior) ResolveContext() util.IfaceCache {
 	return util.Iface2Cache[Context](ctx.opts.CompositeFace.Iface)
@@ -138,6 +131,10 @@ func (ctx *ContextBehavior) CollectGC(gc container.GC) {
 	}
 
 	ctx.gcList = append(ctx.gcList, gc)
+}
+
+func (ctx *ContextBehavior) String() string {
+	return fmt.Sprintf("{Id:%s Name:%s}", ctx.GetId(), ctx.GetName())
 }
 
 func (ctx *ContextBehavior) init(serviceCtx service.Context, opts *ContextOptions) {

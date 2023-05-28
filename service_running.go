@@ -42,7 +42,7 @@ func (_service *ServiceBehavior) running(shutChan chan struct{}) {
 	}
 
 	defer func() {
-		if callback := service.UnsafeContext(_service.ctx).GetOptions().StoppingCallback; callback != nil {
+		if callback := service.UnsafeContext(_service.ctx).GetOptions().StoppingCb; callback != nil {
 			internal.CallOuterNoRet(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
 				callback(_service.ctx)
 			})
@@ -50,7 +50,7 @@ func (_service *ServiceBehavior) running(shutChan chan struct{}) {
 
 		_service.ctx.GetWaitGroup().Wait()
 
-		if callback := service.UnsafeContext(_service.ctx).GetOptions().StoppedCallback; callback != nil {
+		if callback := service.UnsafeContext(_service.ctx).GetOptions().StoppedCb; callback != nil {
 			internal.CallOuterNoRet(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
 				callback(_service.ctx)
 			})
@@ -75,7 +75,7 @@ func (_service *ServiceBehavior) running(shutChan chan struct{}) {
 		shutChan <- struct{}{}
 	}()
 
-	if callback := service.UnsafeContext(_service.ctx).GetOptions().StartedCallback; callback != nil {
+	if callback := service.UnsafeContext(_service.ctx).GetOptions().StartedCb; callback != nil {
 		internal.CallOuterNoRet(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
 			callback(_service.ctx)
 		})

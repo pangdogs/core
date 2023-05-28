@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/localevent"
 	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/golaxy/uid"
@@ -13,7 +14,7 @@ import (
 
 // IEntityMgr 实体管理器接口
 type IEntityMgr interface {
-	ec.ContextResolver
+	internal.ContextResolver
 	// GetEntity 查询实体
 	GetEntity(id uid.Id) (ec.Entity, bool)
 	// RangeEntities 遍历所有实体

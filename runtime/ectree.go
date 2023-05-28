@@ -3,6 +3,7 @@ package runtime
 import (
 	"errors"
 	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/localevent"
 	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util"
@@ -11,7 +12,7 @@ import (
 
 // IECTree EC树接口
 type IECTree interface {
-	ec.ContextResolver
+	internal.ContextResolver
 	// AddChild 子实体加入父实体，在实体加入运行时上下文后调用，切换父实体时，先调用RemoveChild()离开旧父实体，再调用AddChild()加入新父实体
 	AddChild(parentId, childId uid.Id) error
 	// RemoveChild 子实体离开父实体，在实体从运行时上下文中删除前调用，切换父实体时，先调用RemoveChild()离开旧父实体，再调用AddChild()加入新父实体

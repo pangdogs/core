@@ -44,6 +44,7 @@ type Context interface {
 	plugin.PluginResolver
 	pt.EntityPtResolver
 	Caller
+	fmt.Stringer
 
 	// GetName 获取名称
 	GetName() string
@@ -53,8 +54,6 @@ type Context interface {
 	GenSerialNo() int64
 	// GetEntityMgr 获取实体管理器
 	GetEntityMgr() IEntityMgr
-	// String 字符串化
-	String() string
 }
 
 type _Context interface {
@@ -91,9 +90,8 @@ func (ctx *ContextBehavior) GetEntityMgr() IEntityMgr {
 	return &ctx.entityMgr
 }
 
-// String 字符串化
 func (ctx *ContextBehavior) String() string {
-	return fmt.Sprintf("[Id:%s Name:%s]", ctx.GetId(), ctx.GetName())
+	return fmt.Sprintf("{Id:%s Name:%s}", ctx.GetId(), ctx.GetName())
 }
 
 func (ctx *ContextBehavior) init(opts *ContextOptions) {

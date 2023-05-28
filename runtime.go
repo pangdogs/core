@@ -36,7 +36,7 @@ func UnsafeNewRuntime(ctx runtime.Context, options RuntimeOptions) Runtime {
 // Runtime 运行时接口
 type Runtime interface {
 	_Runtime
-	ec.ContextResolver
+	internal.ContextResolver
 	internal.Running
 
 	// GetContext 获取运行时上下文

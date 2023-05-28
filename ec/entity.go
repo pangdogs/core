@@ -2,6 +2,7 @@ package ec
 
 import (
 	"fmt"
+	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/localevent"
 	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util"
@@ -36,7 +37,11 @@ func UnsafeNewEntity(options EntityOptions) Entity {
 type Entity interface {
 	_Entity
 	_ComponentMgr
-	ContextResolver
+	internal.ContextResolver
+	fmt.Stringer
+	internal.TextSerialization
+	internal.BinarySerialization
+	internal.SqlValue
 
 	// GetId 获取实体Id
 	GetId() uid.Id
@@ -50,8 +55,6 @@ type Entity interface {
 	GetState() EntityState
 	// DestroySelf 销毁自身
 	DestroySelf()
-	// String 字符串化
-	String() string
 }
 
 type _Entity interface {
@@ -114,23 +117,6 @@ func (entity *EntityBehavior) DestroySelf() {
 	case EntityState_Init, EntityState_Inited, EntityState_Living:
 		emitEventEntityDestroySelf(&entity._eventEntityDestroySelf, entity.opts.CompositeFace.Iface)
 	}
-}
-
-// String 字符串化
-func (entity *EntityBehavior) String() string {
-	var parentInfo string
-	if parent, ok := entity.GetParent(); ok {
-		parentInfo = parent.GetId().String()
-	} else {
-		parentInfo = "nil"
-	}
-
-	return fmt.Sprintf("[Id:%s SerialNo:%d Prototype:%s Parent:%s State:%s]",
-		entity.GetId(),
-		entity.GetSerialNo(),
-		entity.GetPrototype(),
-		parentInfo,
-		entity.GetState())
 }
 
 // ResolveContext 解析上下文

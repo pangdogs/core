@@ -2,6 +2,7 @@ package ec
 
 import (
 	"fmt"
+	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/localevent"
 	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util"
@@ -12,7 +13,11 @@ import (
 // Component 组件接口
 type Component interface {
 	_Component
-	ContextResolver
+	internal.ContextResolver
+	fmt.Stringer
+	internal.TextSerialization
+	internal.BinarySerialization
+	internal.SqlValue
 
 	// GetId 获取组件Id
 	GetId() uid.Id
@@ -26,8 +31,6 @@ type Component interface {
 	GetState() ComponentState
 	// DestroySelf 销毁自身
 	DestroySelf()
-	// String 字符串化
-	String() string
 }
 
 type _Component interface {
@@ -88,23 +91,6 @@ func (comp *ComponentBehavior) DestroySelf() {
 	case ComponentState_Awake, ComponentState_Start, ComponentState_Living:
 		emitEventComponentDestroySelf(&comp._eventComponentDestroySelf, comp.composite)
 	}
-}
-
-// String 字符串化
-func (comp *ComponentBehavior) String() string {
-	var entityInfo string
-	if entity := comp.GetEntity(); entity != nil {
-		entityInfo = entity.GetId().String()
-	} else {
-		entityInfo = "nil"
-	}
-
-	return fmt.Sprintf("[Id:%s SerialNo:%d Name:%s Entity:%s State:%s]",
-		comp.GetId(),
-		comp.GetSerialNo(),
-		comp.GetName(),
-		entityInfo,
-		comp.GetState())
 }
 
 // ResolveContext 解析上下文
