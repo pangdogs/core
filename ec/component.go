@@ -15,8 +15,6 @@ type Component interface {
 	_Component
 	internal.ContextResolver
 	fmt.Stringer
-	internal.TextSerialization
-	internal.BinarySerialization
 
 	// GetId 获取组件Id
 	GetId() uid.Id

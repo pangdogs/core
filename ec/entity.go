@@ -39,8 +39,6 @@ type Entity interface {
 	_ComponentMgr
 	internal.ContextResolver
 	fmt.Stringer
-	internal.TextSerialization
-	internal.BinarySerialization
 
 	// GetId 获取实体Id
 	GetId() uid.Id

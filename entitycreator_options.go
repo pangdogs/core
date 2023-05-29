@@ -23,60 +23,62 @@ type EntityOption func(o *EntityOptions)
 func (WithOption) EntityDefault() EntityOption {
 	return func(o *EntityOptions) {
 		pt.WithOption{}.Default()(&o.EntityOptions)
+		WithOption{}.EntityParentId(uid.Nil)(o)
+		WithOption{}.EntityScope(ec.Scope_Local)(o)
 	}
 }
 
-// CompositeFace 扩展者，在扩展实体自身能力时使用
-func (WithOption) CompositeFace(face util.Face[ec.Entity]) EntityOption {
+// EntityCompositeFace 扩展者，在扩展实体自身能力时使用
+func (WithOption) EntityCompositeFace(face util.Face[ec.Entity]) EntityOption {
 	return func(o *EntityOptions) {
 		pt.WithOption{}.CompositeFace(face)(&o.EntityOptions)
 	}
 }
 
-// ComponentAwakeByAccess 开启组件被访问时，检测并调用Awake()
-func (WithOption) ComponentAwakeByAccess(b bool) EntityOption {
+// EntityComponentAwakeByAccess 开启组件被访问时，检测并调用Awake()
+func (WithOption) EntityComponentAwakeByAccess(b bool) EntityOption {
 	return func(o *EntityOptions) {
 		pt.WithOption{}.ComponentAwakeByAccess(b)(&o.EntityOptions)
 	}
 }
 
-// FaceAnyAllocator 自定义FaceAny内存分配器，用于提高性能，通常传入运行时上下文中的FaceAnyAllocator
-func (WithOption) FaceAnyAllocator(allocator container.Allocator[util.FaceAny]) EntityOption {
+// EntityFaceAnyAllocator 自定义FaceAny内存分配器，用于提高性能，通常传入运行时上下文中的FaceAnyAllocator
+func (WithOption) EntityFaceAnyAllocator(allocator container.Allocator[util.FaceAny]) EntityOption {
 	return func(o *EntityOptions) {
 		pt.WithOption{}.FaceAnyAllocator(allocator)(&o.EntityOptions)
 	}
 }
 
-// HookAllocator 自定义Hook内存分配器，用于提高性能，通常传入运行时上下文中的HookAllocator
-func (WithOption) HookAllocator(allocator container.Allocator[localevent.Hook]) EntityOption {
+// EntityHookAllocator 自定义Hook内存分配器，用于提高性能，通常传入运行时上下文中的HookAllocator
+func (WithOption) EntityHookAllocator(allocator container.Allocator[localevent.Hook]) EntityOption {
 	return func(o *EntityOptions) {
 		pt.WithOption{}.HookAllocator(allocator)(&o.EntityOptions)
 	}
 }
 
-// GCCollector 自定义GC收集器，通常不传或者传入运行时上下文
-func (WithOption) GCCollector(collector container.GCCollector) EntityOption {
+// EntityGCCollector 自定义GC收集器，通常不传或者传入运行时上下文
+func (WithOption) EntityGCCollector(collector container.GCCollector) EntityOption {
 	return func(o *EntityOptions) {
 		pt.WithOption{}.GCCollector(collector)(&o.EntityOptions)
 	}
 }
 
-// ParentId 父实体Id
-func (WithOption) ParentId(id uid.Id) EntityOption {
+// EntityAssignCompId 设置组件Id函数
+func (WithOption) EntityAssignCompId(fn func(entity ec.Entity, compPt pt.ComponentPt) uid.Id) EntityOption {
+	return func(o *EntityOptions) {
+		pt.WithOption{}.AssignCompId(fn)(&o.EntityOptions)
+	}
+}
+
+// EntityParentId 父实体Id
+func (WithOption) EntityParentId(id uid.Id) EntityOption {
 	return func(o *EntityOptions) {
 		o.ParentID = id
 	}
 }
 
-// AssignCompId 设置组件Id函数
-func (WithOption) AssignCompId(fn func(entity ec.Entity, compPt pt.ComponentPt) uid.Id) EntityOption {
-	return func(o *EntityOptions) {
-		o.AssignCompId = fn
-	}
-}
-
-// Scope 实体的可访问作用域
-func (WithOption) Scope(scope ec.Scope) EntityOption {
+// EntityScope 实体的可访问作用域
+func (WithOption) EntityScope(scope ec.Scope) EntityOption {
 	return func(o *EntityOptions) {
 		o.Scope = scope
 	}
