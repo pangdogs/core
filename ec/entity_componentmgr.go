@@ -18,6 +18,10 @@ type _ComponentMgr interface {
 	GetComponents(name string) []Component
 	// RangeComponents 遍历所有组件
 	RangeComponents(fun func(component Component) bool)
+	// ReverseRangeComponents 反向遍历所有组件
+	ReverseRangeComponents(fun func(component Component) bool)
+	// CountComponents 统计所有组件数量
+	CountComponents() int
 	// AddComponents 使用同个名称添加多个组件，一般情况下名称指组件接口名称，也可以自定义名称
 	AddComponents(name string, components []Component) error
 	// AddComponent 添加单个组件，因为同个名称可以指向多个组件，所以名称指向的组件已存在时，不会返回错误
@@ -119,6 +123,31 @@ func (entity *EntityBehavior) RangeComponents(fun func(component Component) bool
 
 		return fun(comp)
 	})
+}
+
+// ReverseRangeComponents 反向遍历所有组件
+func (entity *EntityBehavior) ReverseRangeComponents(fun func(component Component) bool) {
+	if fun == nil {
+		return
+	}
+
+	entity.componentList.ReverseTraversal(func(e *container.Element[util.FaceAny]) bool {
+		comp := util.Cache2Iface[Component](e.Value.Cache)
+
+		if entity.opts.ComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
+			switch entity.GetState() {
+			case EntityState_Init, EntityState_Inited, EntityState_Living:
+				emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.CompositeFace.Iface, comp)
+			}
+		}
+
+		return fun(comp)
+	})
+}
+
+// CountComponents 统计所有组件数量
+func (entity *EntityBehavior) CountComponents() int {
+	return entity.componentList.Len()
 }
 
 // AddComponents 使用同个名称添加多个组件，一般情况下名称指组件接口名称，也可以自定义名称

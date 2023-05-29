@@ -5,6 +5,8 @@ import (
 	"kit.golaxy.org/golaxy/internal"
 )
 
+var EntitySerializer internal.Serializer[Entity] = DefaultEntitySerializer{}
+
 func (entity *EntityBehavior) MarshalText() ([]byte, error) {
 	return EntitySerializer.MarshalText(entity.opts.CompositeFace.Iface)
 }
@@ -20,8 +22,6 @@ func (entity *EntityBehavior) MarshalBinary() ([]byte, error) {
 func (entity *EntityBehavior) UnmarshalBinary(b []byte) error {
 	return EntitySerializer.UnmarshalBinary(entity.opts.CompositeFace.Iface, b)
 }
-
-var EntitySerializer internal.Serializer[Entity] = DefaultEntitySerializer{}
 
 type DefaultEntitySerializer struct{}
 

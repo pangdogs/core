@@ -21,8 +21,8 @@ type IEntityMgr interface {
 	RangeEntities(func(entity ec.Entity) bool)
 	// ReverseRangeEntities 反向遍历所有实体
 	ReverseRangeEntities(func(entity ec.Entity) bool)
-	// GetEntityCount 获取实体数量
-	GetEntityCount() int
+	// CountEntities 获取实体数量
+	CountEntities() int
 	// AddEntity 添加实体
 	AddEntity(entity ec.Entity, scope ec.Scope) error
 	// RemoveEntity 删除实体
@@ -117,8 +117,8 @@ func (entityMgr *_EntityMgr) ReverseRangeEntities(fun func(entity ec.Entity) boo
 	})
 }
 
-// GetEntityCount 获取实体数量
-func (entityMgr *_EntityMgr) GetEntityCount() int {
+// CountEntities 获取实体数量
+func (entityMgr *_EntityMgr) CountEntities() int {
 	return entityMgr.entityList.Len()
 }
 

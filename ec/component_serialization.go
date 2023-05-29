@@ -5,6 +5,8 @@ import (
 	"kit.golaxy.org/golaxy/internal"
 )
 
+var ComponentSerializer internal.Serializer[Component] = DefaultComponentSerializer{}
+
 func (comp *ComponentBehavior) MarshalText() ([]byte, error) {
 	return ComponentSerializer.MarshalText(comp.composite)
 }
@@ -20,8 +22,6 @@ func (comp *ComponentBehavior) MarshalBinary() ([]byte, error) {
 func (comp *ComponentBehavior) UnmarshalBinary(b []byte) error {
 	return ComponentSerializer.UnmarshalBinary(comp.composite, b)
 }
-
-var ComponentSerializer internal.Serializer[Component] = DefaultComponentSerializer{}
 
 type DefaultComponentSerializer struct{}
 
