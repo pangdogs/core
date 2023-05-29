@@ -1,13 +1,12 @@
 package runtime
 
 import (
-	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/golaxy/util"
 )
 
 // Get 获取运行时上下文
-func Get(ctxResolver internal.ContextResolver) Context {
+func Get(ctxResolver ContextResolver) Context {
 	if ctxResolver == nil {
 		panic("nil ctxResolver")
 	}
@@ -15,6 +14,6 @@ func Get(ctxResolver internal.ContextResolver) Context {
 	return util.Cache2Iface[Context](ctxResolver.ResolveContext())
 }
 
-func getServiceContext(ctxResolver internal.ContextResolver) service.Context {
+func getServiceContext(ctxResolver ContextResolver) service.Context {
 	return Get(ctxResolver).getServiceCtx()
 }

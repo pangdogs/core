@@ -3,14 +3,13 @@ package golaxy
 import (
 	"context"
 	"fmt"
-	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/runtime"
 	"sync/atomic"
 	"time"
 )
 
 // Async 异步执行代码，最多返回一次，有返回值，返回的异步结果（async ret）可以给Await()等待并继续后续逻辑运行
-func Async(ctxResolver internal.ContextResolver, segment func(ctx runtime.Context) runtime.Ret) runtime.AsyncRet {
+func Async(ctxResolver runtime.ContextResolver, segment func(ctx runtime.Context) runtime.Ret) runtime.AsyncRet {
 	ctx := runtime.Get(ctxResolver)
 
 	if segment == nil {
@@ -23,7 +22,7 @@ func Async(ctxResolver internal.ContextResolver, segment func(ctx runtime.Contex
 }
 
 // AsyncVoid 异步执行代码，最多返回一次，无返回值，返回的异步结果（async ret）可以给Await()等待并继续后续逻辑运行
-func AsyncVoid(ctxResolver internal.ContextResolver, segment func(ctx runtime.Context)) runtime.AsyncRet {
+func AsyncVoid(ctxResolver runtime.ContextResolver, segment func(ctx runtime.Context)) runtime.AsyncRet {
 	ctx := runtime.Get(ctxResolver)
 
 	if segment == nil {
@@ -37,7 +36,7 @@ func AsyncVoid(ctxResolver internal.ContextResolver, segment func(ctx runtime.Co
 }
 
 // AsyncGo 使用新协程异步执行代码，最多返回一次，有返回值，返回的异步结果（async ret）可以给Await()等待并继续后续逻辑运行
-func AsyncGo(ctxResolver internal.ContextResolver, segment func(ctx runtime.Context) runtime.Ret) runtime.AsyncRet {
+func AsyncGo(ctxResolver runtime.ContextResolver, segment func(ctx runtime.Context) runtime.Ret) runtime.AsyncRet {
 	ctx := runtime.Get(ctxResolver)
 
 	if segment == nil {
@@ -64,7 +63,7 @@ func AsyncGo(ctxResolver internal.ContextResolver, segment func(ctx runtime.Cont
 }
 
 // AsyncGoVoid 使用新协程异步执行代码，最多返回一次，无返回值，返回的异步结果（async ret）可以给Await()等待并继续后续逻辑运行
-func AsyncGoVoid(ctxResolver internal.ContextResolver, segment func(ctx runtime.Context)) runtime.AsyncRet {
+func AsyncGoVoid(ctxResolver runtime.ContextResolver, segment func(ctx runtime.Context)) runtime.AsyncRet {
 	ctx := runtime.Get(ctxResolver)
 
 	if segment == nil {
@@ -189,7 +188,7 @@ func AsyncChanRet[T any](ctx context.Context, ch <-chan T) runtime.AsyncRet {
 }
 
 // Await 等待异步结果（async ret）返回，并继续运行后续逻辑
-func Await(ctxResolver internal.ContextResolver, asyncRet runtime.AsyncRet, onAsyncRet func(ctx runtime.Context, ret runtime.Ret)) {
+func Await(ctxResolver runtime.ContextResolver, asyncRet runtime.AsyncRet, onAsyncRet func(ctx runtime.Context, ret runtime.Ret)) {
 	ctx := runtime.Get(ctxResolver)
 
 	if asyncRet == nil {
@@ -212,7 +211,7 @@ func Await(ctxResolver internal.ContextResolver, asyncRet runtime.AsyncRet, onAs
 }
 
 // AwaitAny 等待任意一个异步结果（async ret）成功的一次返回，并继续运行后续逻辑
-func AwaitAny(ctxResolver internal.ContextResolver, asyncRets []runtime.AsyncRet, onAsyncRet func(ctx runtime.Context, ret runtime.Ret)) {
+func AwaitAny(ctxResolver runtime.ContextResolver, asyncRets []runtime.AsyncRet, onAsyncRet func(ctx runtime.Context, ret runtime.Ret)) {
 	ctx := runtime.Get(ctxResolver)
 
 	if len(asyncRets) <= 0 {
@@ -260,7 +259,7 @@ func AwaitAny(ctxResolver internal.ContextResolver, asyncRets []runtime.AsyncRet
 }
 
 // AwaitAll 等待所有异步结果（async ret）返回，并继续运行后续逻辑
-func AwaitAll(ctxResolver internal.ContextResolver, asyncRets []runtime.AsyncRet, onAsyncRet func(ctx runtime.Context, ret runtime.Ret)) {
+func AwaitAll(ctxResolver runtime.ContextResolver, asyncRets []runtime.AsyncRet, onAsyncRet func(ctx runtime.Context, ret runtime.Ret)) {
 	ctx := runtime.Get(ctxResolver)
 
 	if len(asyncRets) <= 0 {
