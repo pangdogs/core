@@ -35,14 +35,13 @@ func (pt *EntityPt) Assemble(entity ec.Entity, assignCompId func(entity ec.Entit
 		return nil
 	}
 
+	if assignCompId == nil {
+		assignCompId = func(entity ec.Entity, compPt ComponentPt) uid.Id { return uid.Nil }
+	}
+
 	for i := range pt.compPts {
-		var id uid.Id
-
-		if assignCompId != nil {
-			id = assignCompId(entity, pt.compPts[i])
-		}
-
-		entity.AddComponent(pt.compPts[i].Name, pt.compPts[i].Construct(id))
+		compPt := pt.compPts[i]
+		entity.AddComponent(compPt.Name, compPt.Construct(assignCompId(entity, compPt)))
 	}
 
 	return entity

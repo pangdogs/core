@@ -15,7 +15,6 @@ type WithOption struct{}
 type EntityOptions struct {
 	ec.EntityOptions
 	AssignCompId func(entity ec.Entity, compPt ComponentPt) uid.Id // 设置组件Id函数
-	Scope        ec.Scope                                          // 实体的可访问作用域
 }
 
 // EntityOption 创建实体的选项设置器
@@ -26,7 +25,6 @@ func (WithOption) Default() EntityOption {
 	return func(o *EntityOptions) {
 		ec.WithOption{}.Default()(&o.EntityOptions)
 		WithOption{}.AssignCompId(nil)(o)
-		WithOption{}.Scope(ec.Scope_Local)(o)
 	}
 }
 
@@ -34,13 +32,6 @@ func (WithOption) Default() EntityOption {
 func (WithOption) CompositeFace(face util.Face[ec.Entity]) EntityOption {
 	return func(o *EntityOptions) {
 		ec.WithOption{}.CompositeFace(face)(&o.EntityOptions)
-	}
-}
-
-// Prototype 实体原型名称
-func (WithOption) Prototype(pt string) EntityOption {
-	return func(o *EntityOptions) {
-		ec.WithOption{}.Prototype(pt)(&o.EntityOptions)
 	}
 }
 
@@ -72,16 +63,16 @@ func (WithOption) HookAllocator(allocator container.Allocator[localevent.Hook]) 
 	}
 }
 
+// GCCollector 自定义GC收集器，通常不传或者传入运行时上下文
+func (WithOption) GCCollector(collector container.GCCollector) EntityOption {
+	return func(o *EntityOptions) {
+		ec.WithOption{}.GCCollector(collector)(&o.EntityOptions)
+	}
+}
+
 // AssignCompId 设置组件Id函数
 func (WithOption) AssignCompId(fn func(entity ec.Entity, compPt ComponentPt) uid.Id) EntityOption {
 	return func(o *EntityOptions) {
 		o.AssignCompId = fn
-	}
-}
-
-// Scope 实体的可访问作用域
-func (WithOption) Scope(scope ec.Scope) EntityOption {
-	return func(o *EntityOptions) {
-		o.Scope = scope
 	}
 }
