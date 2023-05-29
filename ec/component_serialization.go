@@ -1,42 +1,17 @@
 package ec
 
-import (
-	"errors"
-	"kit.golaxy.org/golaxy/internal"
-)
-
-var ComponentSerializer internal.Serializer[Component] = DefaultComponentSerializer{}
-
 func (comp *ComponentBehavior) MarshalText() ([]byte, error) {
-	return ComponentSerializer.MarshalText(comp.composite)
+	return nil, nil
 }
 
-func (comp *ComponentBehavior) UnmarshalText(b []byte) error {
-	return ComponentSerializer.UnmarshalText(comp.composite, b)
+func (comp *ComponentBehavior) UnmarshalText(bs []byte) error {
+	return nil
 }
 
 func (comp *ComponentBehavior) MarshalBinary() ([]byte, error) {
-	return ComponentSerializer.MarshalBinary(comp.composite)
+	return nil, nil
 }
 
-func (comp *ComponentBehavior) UnmarshalBinary(b []byte) error {
-	return ComponentSerializer.UnmarshalBinary(comp.composite, b)
-}
-
-type DefaultComponentSerializer struct{}
-
-func (DefaultComponentSerializer) MarshalText(comp Component) ([]byte, error) {
-	return nil, errors.New("not support")
-}
-
-func (DefaultComponentSerializer) UnmarshalText(comp Component, b []byte) error {
-	return errors.New("not support")
-}
-
-func (DefaultComponentSerializer) MarshalBinary(comp Component) ([]byte, error) {
-	return nil, errors.New("not support")
-}
-
-func (DefaultComponentSerializer) UnmarshalBinary(comp Component, b []byte) error {
-	return errors.New("not support")
+func (comp *ComponentBehavior) UnmarshalBinary(bs []byte) error {
+	return nil
 }
