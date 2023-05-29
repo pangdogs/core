@@ -21,8 +21,8 @@ type IECTree interface {
 	RangeChildren(parentId uid.Id, fun func(child ec.Entity) bool)
 	// ReverseRangeChildren 反向遍历子实体
 	ReverseRangeChildren(parentId uid.Id, fun func(child ec.Entity) bool)
-	// GetChildCount 获取子实体数量
-	GetChildCount(parentId uid.Id) int
+	// CountChildren 获取子实体数量
+	CountChildren(parentId uid.Id) int
 	// GetParent 获取子实体的父实体
 	GetParent(childId uid.Id) (ec.Entity, bool)
 	// EventECTreeAddChild 事件：EC树中子实体加入父实体
@@ -219,8 +219,8 @@ func (ecTree *ECTree) ReverseRangeChildren(parentId uid.Id, fun func(child ec.En
 	})
 }
 
-// GetChildCount 获取子实体数量
-func (ecTree *ECTree) GetChildCount(parentId uid.Id) int {
+// CountChildren 获取子实体数量
+func (ecTree *ECTree) CountChildren(parentId uid.Id) int {
 	node, ok := ecTree.ecTree[parentId]
 	if !ok || node.Children == nil {
 		return 0
