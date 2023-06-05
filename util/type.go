@@ -11,6 +11,29 @@ func Zero[T any]() T {
 	return zero
 }
 
+// New new并初始化
+func New[T any](v T) *T {
+	var rv T
+	rv = v
+	return &rv
+}
+
+// Bool2Int bool转int
+func Bool2Int(b bool) int {
+	if b {
+		return 1
+	}
+	return 0
+}
+
+// Int2Bool int转bool
+func Int2Bool(v int) bool {
+	if v != 0 {
+		return true
+	}
+	return false
+}
+
 // TypeName 类型名
 func TypeName[T any]() string {
 	return reflect.TypeOf((*T)(nil)).Elem().Name()
