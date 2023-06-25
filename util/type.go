@@ -3,6 +3,7 @@ package util
 import (
 	"reflect"
 	"strings"
+	"unsafe"
 )
 
 // Zero 创建零值
@@ -32,6 +33,22 @@ func Int2Bool(v int) bool {
 		return true
 	}
 	return false
+}
+
+// String2Bytes string转bytes
+func String2Bytes(s string) []byte {
+	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
+	bh := reflect.SliceHeader{
+		Data: sh.Data,
+		Len:  sh.Len,
+		Cap:  sh.Len,
+	}
+	return *(*[]byte)(unsafe.Pointer(&bh))
+}
+
+// Bytes2String bytes转string
+func Bytes2String(b []byte) string {
+	return *(*string)(unsafe.Pointer(&b))
 }
 
 // TypeName 类型名
