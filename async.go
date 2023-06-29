@@ -2,8 +2,8 @@ package golaxy
 
 import (
 	"context"
-	"fmt"
 	"kit.golaxy.org/golaxy/runtime"
+	"kit.golaxy.org/golaxy/util"
 	"sync/atomic"
 	"time"
 )
@@ -47,12 +47,8 @@ func AsyncGo(ctxResolver runtime.ContextResolver, segment func(ctx runtime.Conte
 
 	go func() {
 		defer func() {
-			if info := recover(); info != nil {
-				err, ok := info.(error)
-				if !ok {
-					err = fmt.Errorf("%v", info)
-				}
-				asyncRet <- runtime.NewRet(err, nil)
+			if panicErr := util.Panic2Err(); panicErr != nil {
+				asyncRet <- runtime.NewRet(panicErr, nil)
 			}
 			close(asyncRet)
 		}()
@@ -74,12 +70,8 @@ func AsyncGoVoid(ctxResolver runtime.ContextResolver, segment func(ctx runtime.C
 
 	go func() {
 		defer func() {
-			if info := recover(); info != nil {
-				err, ok := info.(error)
-				if !ok {
-					err = fmt.Errorf("%v", info)
-				}
-				asyncRet <- runtime.NewRet(err, nil)
+			if panicErr := util.Panic2Err(); panicErr != nil {
+				asyncRet <- runtime.NewRet(panicErr, nil)
 			}
 			close(asyncRet)
 		}()

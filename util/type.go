@@ -1,6 +1,8 @@
 package util
 
 import (
+	"errors"
+	"fmt"
 	"reflect"
 	"strings"
 	"unsafe"
@@ -49,6 +51,20 @@ func String2Bytes(s string) []byte {
 // Bytes2String bytes转string
 func Bytes2String(b []byte) string {
 	return *(*string)(unsafe.Pointer(&b))
+}
+
+// Panic2Err panic转换为error
+func Panic2Err() error {
+	switch info := recover().(type) {
+	case nil:
+		return nil
+	case error:
+		return info
+	case string:
+		return errors.New(info)
+	default:
+		return fmt.Errorf("%v", info)
+	}
 }
 
 // TypeName 类型名

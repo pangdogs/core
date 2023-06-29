@@ -1,9 +1,9 @@
 package runtime
 
 import (
-	"fmt"
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/util"
 )
 
 // NewRet 创建调用结果
@@ -39,17 +39,11 @@ func entityExist(entity ec.Entity) bool {
 //	- 代码片段中的线程安全问题。
 //	- 当运行时的SyncCallTimeout选项设置为0时，在代码片段中，如果向调用方所在的运行时发起同步调用，那么会造成线程死锁。
 //	- 调用过程中的panic信息，均会转换为error返回。
-func (ctx *ContextBehavior) SyncCall(segment func() Ret) Ret {
-	var ret Ret
-
+func (ctx *ContextBehavior) SyncCall(segment func() Ret) (ret Ret) {
 	func() {
 		defer func() {
-			if info := recover(); info != nil {
-				err, ok := info.(error)
-				if !ok {
-					err = fmt.Errorf("%v", info)
-				}
-				ret = NewRet(err, nil)
+			if panicErr := util.Panic2Err(); panicErr != nil {
+				ret = NewRet(panicErr, nil)
 			}
 		}()
 
@@ -76,12 +70,8 @@ func (ctx *ContextBehavior) AsyncCall(segment func() Ret) AsyncRet {
 
 	go func() {
 		defer func() {
-			if info := recover(); info != nil {
-				err, ok := info.(error)
-				if !ok {
-					err = fmt.Errorf("%v", info)
-				}
-				asyncRet <- NewRet(err, nil)
+			if panicErr := util.Panic2Err(); panicErr != nil {
+				asyncRet <- NewRet(panicErr, nil)
 				close(asyncRet)
 			}
 		}()
