@@ -63,10 +63,17 @@ func (WithOption) EntityGCCollector(collector container.GCCollector) EntityOptio
 	}
 }
 
-// EntityAssignCompId 设置组件Id函数
-func (WithOption) EntityAssignCompId(fn func(entity ec.Entity, compPt pt.ComponentPt) uid.Id) EntityOption {
+// ComponentConstructor 组件构造函数
+func (WithOption) ComponentConstructor(fn pt.ComponentConstructor) EntityOption {
 	return func(o *EntityOptions) {
-		pt.WithOption{}.AssignCompId(fn)(&o.EntityOptions)
+		pt.WithOption{}.ComponentConstructor(fn)(&o.EntityOptions)
+	}
+}
+
+// EntityConstructor 实体构造函数
+func (WithOption) EntityConstructor(fn pt.EntityConstructor) EntityOption {
+	return func(o *EntityOptions) {
+		pt.WithOption{}.EntityConstructor(fn)(&o.EntityOptions)
 	}
 }
 

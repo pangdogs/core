@@ -6,6 +6,10 @@ import (
 	"time"
 )
 
+type (
+	CustomGC = func(rt Runtime) // 自定义GC函数
+)
+
 // RuntimeOptions 创建运行时的所有选项
 type RuntimeOptions struct {
 	CompositeFace        util.Face[Runtime] // 扩展者，需要扩展运行时自身功能时需要使用
@@ -15,7 +19,7 @@ type RuntimeOptions struct {
 	SyncCallTimeout      time.Duration      // 同步调用超时时间，为0表示不处理超时，此时两个运行时互相同步调用会死锁
 	Frame                runtime.Frame      // 帧，设置为nil表示不使用帧更新特性
 	GCInterval           time.Duration      // GC间隔时长
-	CustomGC             func(rt Runtime)   // 自定义GC
+	CustomGC             CustomGC           // 自定义GC
 }
 
 // RuntimeOption 创建运行时的选项设置器
@@ -91,7 +95,7 @@ func (WithOption) RuntimeGCInterval(dur time.Duration) RuntimeOption {
 }
 
 // RuntimeCustomGC 运行时的自定义GC
-func (WithOption) RuntimeCustomGC(fn func(rt Runtime)) RuntimeOption {
+func (WithOption) RuntimeCustomGC(fn CustomGC) RuntimeOption {
 	return func(o *RuntimeOptions) {
 		o.CustomGC = fn
 	}

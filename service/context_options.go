@@ -11,6 +11,10 @@ import (
 // WithOption 所有选项设置器
 type WithOption struct{}
 
+type (
+	Callback = func(ctx Context) // 回调函数
+)
+
 // ContextOptions 创建服务上下文的所有选项
 type ContextOptions struct {
 	CompositeFace util.Face[Context]  // 扩展者，需要扩展服务上下文自身能力时需要使用
@@ -21,9 +25,9 @@ type ContextOptions struct {
 	PersistId     uid.Id              // 服务持久化Id
 	EntityLib     pt.EntityLib        // 实体原型库
 	PluginBundle  plugin.PluginBundle // 插件包
-	StartedCb     func(ctx Context)   // 启动运行时回调函数
-	StoppingCb    func(ctx Context)   // 开始停止运行时回调函数
-	StoppedCb     func(ctx Context)   // 完全停止运行时回调函数
+	StartedCb     Callback            // 启动运行时回调函数
+	StoppingCb    Callback            // 开始停止运行时回调函数
+	StoppedCb     Callback            // 完全停止运行时回调函数
 }
 
 // ContextOption 创建服务上下文的选项设置器
@@ -103,21 +107,21 @@ func (WithOption) PluginBundle(bundle plugin.PluginBundle) ContextOption {
 }
 
 // StartedCb 启动运行时回调函数
-func (WithOption) StartedCb(fn func(ctx Context)) ContextOption {
+func (WithOption) StartedCb(fn Callback) ContextOption {
 	return func(o *ContextOptions) {
 		o.StartedCb = fn
 	}
 }
 
 // StoppingCb 开始停止运行时回调函数
-func (WithOption) StoppingCb(fn func(ctx Context)) ContextOption {
+func (WithOption) StoppingCb(fn Callback) ContextOption {
 	return func(o *ContextOptions) {
 		o.StoppingCb = fn
 	}
 }
 
 // StoppedCb 完全停止运行时回调函数
-func (WithOption) StoppedCb(fn func(ctx Context)) ContextOption {
+func (WithOption) StoppedCb(fn Callback) ContextOption {
 	return func(o *ContextOptions) {
 		o.StoppedCb = fn
 	}

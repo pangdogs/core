@@ -20,18 +20,18 @@ type Cmd struct {
 	Run    func(flags []interface{}) // run cmd
 }
 
-// ServiceCtxInitFunc 服务上下文初始化函数
-type ServiceCtxInitFunc = func(serviceName string, entityLib pt.EntityLib, pluginBundle plugin.PluginBundle) []service.ContextOption
-
-// ServiceInitFunc 服务初始化函数
-type ServiceInitFunc = func(serviceName string) []golaxy.ServiceOption
+type (
+	Commands       = func() []Cmd                                                                                               // 自定义应用指令函数
+	ServiceCtxInit = func(serviceName string, entityLib pt.EntityLib, pluginBundle plugin.PluginBundle) []service.ContextOption // 服务上下文初始化函数
+	ServiceInit    = func(serviceName string) []golaxy.ServiceOption                                                            // 服务初始化函数
+)
 
 // AppOptions 创建应用的所有选项
 type AppOptions struct {
-	Commands          func() []Cmd                  // 自定义应用指令
-	QuitSignals       []os.Signal                   // 退出信号
-	ServiceCtxInitTab map[string]ServiceCtxInitFunc // 所有服务上下文初始化函数
-	ServiceInitTab    map[string]ServiceInitFunc    // 所有服务初始化函数
+	Commands          Commands                  // 自定义应用指令
+	QuitSignals       []os.Signal               // 退出信号
+	ServiceCtxInitTab map[string]ServiceCtxInit // 所有服务上下文初始化函数
+	ServiceInitTab    map[string]ServiceInit    // 所有服务初始化函数
 }
 
 // AppOption 创建应用的选项设置器
@@ -47,8 +47,8 @@ func (WithOption) Default() AppOption {
 	}
 }
 
-// Commands 自定义应用指令
-func (WithOption) Commands(fn func() []Cmd) AppOption {
+// Commands 自定义应用指令函数
+func (WithOption) Commands(fn Commands) AppOption {
 	return func(o *AppOptions) {
 		o.Commands = fn
 	}
@@ -62,14 +62,14 @@ func (WithOption) QuitSignals(signals ...os.Signal) AppOption {
 }
 
 // ServiceCtxInitTab 所有服务上下文初始化函数
-func (WithOption) ServiceCtxInitTab(tab map[string]ServiceCtxInitFunc) AppOption {
+func (WithOption) ServiceCtxInitTab(tab map[string]ServiceCtxInit) AppOption {
 	return func(o *AppOptions) {
 		o.ServiceCtxInitTab = tab
 	}
 }
 
 // ServiceInitTab 所有服务初始化函数
-func (WithOption) ServiceInitTab(tab map[string]ServiceInitFunc) AppOption {
+func (WithOption) ServiceInitTab(tab map[string]ServiceInit) AppOption {
 	return func(o *AppOptions) {
 		o.ServiceInitTab = tab
 	}

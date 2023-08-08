@@ -12,6 +12,10 @@ import (
 // WithOption 所有选项设置器
 type WithOption struct{}
 
+type (
+	Callback = func(ctx Context) // 回调函数
+)
+
 // ContextOptions 创建运行时上下文的所有选项
 type ContextOptions struct {
 	CompositeFace    util.Face[Context]                   // 扩展者，需要扩展运行时上下文自身能力时需要使用
@@ -21,11 +25,11 @@ type ContextOptions struct {
 	Name             string                               // 运行时名称
 	PersistId        uid.Id                               // 运行时持久化Id
 	PluginBundle     plugin.PluginBundle                  // 插件包
-	StartedCb        func(ctx Context)                    // 启动运行时回调函数
-	StoppingCb       func(ctx Context)                    // 开始停止运行时回调函数
-	StoppedCb        func(ctx Context)                    // 完全停止运行时回调函数
-	FrameBeginCb     func(ctx Context)                    // 帧开始时的回调函数
-	FrameEndCb       func(ctx Context)                    // 帧结束时的回调函数
+	StartedCb        Callback                             // 启动运行时回调函数
+	StoppingCb       Callback                             // 开始停止运行时回调函数
+	StoppedCb        Callback                             // 完全停止运行时回调函数
+	FrameBeginCb     Callback                             // 帧开始时的回调函数
+	FrameEndCb       Callback                             // 帧结束时的回调函数
 	FaceAnyAllocator container.Allocator[util.FaceAny]    // 自定义FaceAny内存分配器，用于提高性能
 	HookAllocator    container.Allocator[localevent.Hook] // 自定义Hook内存分配器，用于提高性能
 }
@@ -103,35 +107,35 @@ func (WithOption) PluginBundle(bundle plugin.PluginBundle) ContextOption {
 }
 
 // StartedCb 启动运行时回调函数
-func (WithOption) StartedCb(fn func(ctx Context)) ContextOption {
+func (WithOption) StartedCb(fn Callback) ContextOption {
 	return func(o *ContextOptions) {
 		o.StartedCb = fn
 	}
 }
 
 // StoppingCb 开始停止运行时回调函数
-func (WithOption) StoppingCb(fn func(ctx Context)) ContextOption {
+func (WithOption) StoppingCb(fn Callback) ContextOption {
 	return func(o *ContextOptions) {
 		o.StoppingCb = fn
 	}
 }
 
 // StoppedCb 完全停止运行时回调函数
-func (WithOption) StoppedCb(fn func(ctx Context)) ContextOption {
+func (WithOption) StoppedCb(fn Callback) ContextOption {
 	return func(o *ContextOptions) {
 		o.StoppedCb = fn
 	}
 }
 
 // FrameBeginCb 帧更新开始时的回调函数
-func (WithOption) FrameBeginCb(fn func(ctx Context)) ContextOption {
+func (WithOption) FrameBeginCb(fn Callback) ContextOption {
 	return func(o *ContextOptions) {
 		o.FrameBeginCb = fn
 	}
 }
 
 // FrameEndCb 帧更新结束时的回调函数
-func (WithOption) FrameEndCb(fn func(ctx Context)) ContextOption {
+func (WithOption) FrameEndCb(fn Callback) ContextOption {
 	return func(o *ContextOptions) {
 		o.FrameEndCb = fn
 	}

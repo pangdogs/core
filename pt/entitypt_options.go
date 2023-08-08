@@ -11,10 +11,16 @@ import (
 // WithOption 所有选项设置器
 type WithOption struct{}
 
+type (
+	ComponentConstructor = func(entity ec.Entity, comp ec.Component) // 组件构造函数
+	EntityConstructor    = func(entity ec.Entity)                    // 实体构造函数
+)
+
 // EntityOptions 创建实体的所有选项
 type EntityOptions struct {
 	ec.EntityOptions
-	AssignCompId func(entity ec.Entity, compPt ComponentPt) uid.Id // 设置组件Id函数
+	ComponentConstructor ComponentConstructor // 组件构造函数
+	EntityConstructor    EntityConstructor    // 实体构造函数
 }
 
 // EntityOption 创建实体的选项设置器
@@ -24,7 +30,8 @@ type EntityOption func(o *EntityOptions)
 func (WithOption) Default() EntityOption {
 	return func(o *EntityOptions) {
 		ec.WithOption{}.Default()(&o.EntityOptions)
-		WithOption{}.AssignCompId(nil)(o)
+		WithOption{}.ComponentConstructor(nil)
+		WithOption{}.EntityConstructor(nil)
 	}
 }
 
@@ -70,9 +77,16 @@ func (WithOption) GCCollector(collector container.GCCollector) EntityOption {
 	}
 }
 
-// AssignCompId 设置组件Id函数
-func (WithOption) AssignCompId(fn func(entity ec.Entity, compPt ComponentPt) uid.Id) EntityOption {
+// ComponentConstructor 组件构造函数
+func (WithOption) ComponentConstructor(fn ComponentConstructor) EntityOption {
 	return func(o *EntityOptions) {
-		o.AssignCompId = fn
+		o.ComponentConstructor = fn
+	}
+}
+
+// EntityConstructor 实体构造函数
+func (WithOption) EntityConstructor(fn EntityConstructor) EntityOption {
+	return func(o *EntityOptions) {
+		o.EntityConstructor = fn
 	}
 }
