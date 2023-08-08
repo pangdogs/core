@@ -40,11 +40,6 @@ func (app *_App) Run() {
 	var printPt = printInfo.Command("pt", "打印所有服务原型。")
 	var printComp = printInfo.Command("comp", "打印所有组件。")
 
-	var customCmds []Cmd
-	if app.options.Commands != nil {
-		customCmds = app.options.Commands()
-	}
-
 	cmd := kingpin.Parse()
 
 	switch cmd {
@@ -61,7 +56,7 @@ func (app *_App) Run() {
 		return
 	}
 
-	for _, customCmd := range customCmds {
+	for _, customCmd := range app.options.Commands {
 		if cmd == customCmd.Clause.FullCommand() {
 			customCmd.Run(customCmd.Flags)
 			return
