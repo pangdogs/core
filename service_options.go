@@ -13,14 +13,14 @@ type ServiceOptions struct {
 type ServiceOption func(o *ServiceOptions)
 
 // ServiceDefault 默认值
-func (WithOption) ServiceDefault() ServiceOption {
+func (Option) ServiceDefault() ServiceOption {
 	return func(o *ServiceOptions) {
-		WithOption{}.ServiceCompositeFace(util.Face[Service]{})(o)
+		Option{}.ServiceCompositeFace(util.Face[Service]{})(o)
 	}
 }
 
 // ServiceCompositeFace 扩展者，需要扩展服务自身功能时需要使用
-func (WithOption) ServiceCompositeFace(face util.Face[Service]) ServiceOption {
+func (Option) ServiceCompositeFace(face util.Face[Service]) ServiceOption {
 	return func(o *ServiceOptions) {
 		o.CompositeFace = face
 	}

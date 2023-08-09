@@ -13,7 +13,7 @@ type EntityPt struct {
 // Construct 创建实体
 func (pt *EntityPt) Construct(options ...EntityOption) ec.Entity {
 	opts := EntityOptions{}
-	WithOption{}.Default()(&opts)
+	Option{}.Default()(&opts)
 
 	for i := range options {
 		options[i](&opts)

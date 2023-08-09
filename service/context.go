@@ -15,7 +15,7 @@ import (
 // NewContext 创建服务上下文
 func NewContext(options ...ContextOption) Context {
 	opts := ContextOptions{}
-	WithOption{}.Default()(&opts)
+	Option{}.Default()(&opts)
 
 	for i := range options {
 		options[i](&opts)

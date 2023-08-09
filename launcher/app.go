@@ -7,7 +7,7 @@ import (
 // NewApp 创建应用
 func NewApp(options ...AppOption) App {
 	opts := AppOptions{}
-	WithOption{}.Default()(&opts)
+	Option{}.Default()(&opts)
 
 	for i := range options {
 		options[i](&opts)

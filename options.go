@@ -1,4 +1,4 @@
 package golaxy
 
-// WithOption 所有选项设置器
-type WithOption struct{}
+// Option 所有选项设置器
+type Option struct{}

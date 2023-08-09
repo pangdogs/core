@@ -20,72 +20,72 @@ type EntityOptions struct {
 type EntityOption func(o *EntityOptions)
 
 // EntityDefault 默认值
-func (WithOption) EntityDefault() EntityOption {
+func (Option) EntityDefault() EntityOption {
 	return func(o *EntityOptions) {
-		pt.WithOption{}.Default()(&o.EntityOptions)
-		WithOption{}.EntityParentId(uid.Nil)(o)
-		WithOption{}.EntityScope(ec.Scope_Local)(o)
+		pt.Option{}.Default()(&o.EntityOptions)
+		Option{}.EntityParentId(uid.Nil)(o)
+		Option{}.EntityScope(ec.Scope_Local)(o)
 	}
 }
 
 // EntityCompositeFace 扩展者，在扩展实体自身能力时使用
-func (WithOption) EntityCompositeFace(face util.Face[ec.Entity]) EntityOption {
+func (Option) EntityCompositeFace(face util.Face[ec.Entity]) EntityOption {
 	return func(o *EntityOptions) {
-		pt.WithOption{}.CompositeFace(face)(&o.EntityOptions)
+		pt.Option{}.CompositeFace(face)(&o.EntityOptions)
 	}
 }
 
 // EntityComponentAwakeByAccess 开启组件被访问时，检测并调用Awake()
-func (WithOption) EntityComponentAwakeByAccess(b bool) EntityOption {
+func (Option) EntityComponentAwakeByAccess(b bool) EntityOption {
 	return func(o *EntityOptions) {
-		pt.WithOption{}.ComponentAwakeByAccess(b)(&o.EntityOptions)
+		pt.Option{}.ComponentAwakeByAccess(b)(&o.EntityOptions)
 	}
 }
 
 // EntityFaceAnyAllocator 自定义FaceAny内存分配器，用于提高性能，通常传入运行时上下文中的FaceAnyAllocator
-func (WithOption) EntityFaceAnyAllocator(allocator container.Allocator[util.FaceAny]) EntityOption {
+func (Option) EntityFaceAnyAllocator(allocator container.Allocator[util.FaceAny]) EntityOption {
 	return func(o *EntityOptions) {
-		pt.WithOption{}.FaceAnyAllocator(allocator)(&o.EntityOptions)
+		pt.Option{}.FaceAnyAllocator(allocator)(&o.EntityOptions)
 	}
 }
 
 // EntityHookAllocator 自定义Hook内存分配器，用于提高性能，通常传入运行时上下文中的HookAllocator
-func (WithOption) EntityHookAllocator(allocator container.Allocator[localevent.Hook]) EntityOption {
+func (Option) EntityHookAllocator(allocator container.Allocator[localevent.Hook]) EntityOption {
 	return func(o *EntityOptions) {
-		pt.WithOption{}.HookAllocator(allocator)(&o.EntityOptions)
+		pt.Option{}.HookAllocator(allocator)(&o.EntityOptions)
 	}
 }
 
 // EntityGCCollector 自定义GC收集器，通常不传或者传入运行时上下文
-func (WithOption) EntityGCCollector(collector container.GCCollector) EntityOption {
+func (Option) EntityGCCollector(collector container.GCCollector) EntityOption {
 	return func(o *EntityOptions) {
-		pt.WithOption{}.GCCollector(collector)(&o.EntityOptions)
+		pt.Option{}.GCCollector(collector)(&o.EntityOptions)
 	}
 }
 
 // ComponentConstructor 组件构造函数
-func (WithOption) ComponentConstructor(fn pt.ComponentConstructor) EntityOption {
+func (Option) ComponentConstructor(fn pt.ComponentConstructor) EntityOption {
 	return func(o *EntityOptions) {
-		pt.WithOption{}.ComponentConstructor(fn)(&o.EntityOptions)
+		pt.Option{}.ComponentConstructor(fn)(&o.EntityOptions)
 	}
 }
 
 // EntityConstructor 实体构造函数
-func (WithOption) EntityConstructor(fn pt.EntityConstructor) EntityOption {
+func (Option) EntityConstructor(fn pt.EntityConstructor) EntityOption {
 	return func(o *EntityOptions) {
-		pt.WithOption{}.EntityConstructor(fn)(&o.EntityOptions)
+		pt.Option{}.EntityConstructor(fn)(&o.EntityOptions)
 	}
 }
 
 // EntityParentId 父实体Id
-func (WithOption) EntityParentId(id uid.Id) EntityOption {
+func (Option) EntityParentId(id uid.Id) EntityOption {
 	return func(o *EntityOptions) {
 		o.ParentID = id
 	}
 }
 
 // EntityScope 实体的可访问作用域
-func (WithOption) EntityScope(scope ec.Scope) EntityOption {
+func (Option) EntityScope(scope ec.Scope) EntityOption {
 	return func(o *EntityOptions) {
 		o.Scope = scope
 	}

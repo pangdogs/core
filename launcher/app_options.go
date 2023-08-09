@@ -10,8 +10,8 @@ import (
 	"syscall"
 )
 
-// WithOption 所有选项设置器
-type WithOption struct{}
+// Option 所有选项设置器
+type Option struct{}
 
 type (
 	ServiceCtxInit = func(serviceName string, entityLib pt.EntityLib, pluginBundle plugin.PluginBundle) []service.ContextOption // 服务上下文初始化函数
@@ -37,38 +37,38 @@ type AppOptions struct {
 type AppOption func(o *AppOptions)
 
 // Default 默认值
-func (WithOption) Default() AppOption {
+func (Option) Default() AppOption {
 	return func(o *AppOptions) {
-		WithOption{}.Commands(nil)(o)
-		WithOption{}.QuitSignals(syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGKILL)(o)
-		WithOption{}.ServiceCtxInitTab(nil)(o)
-		WithOption{}.ServiceInitTab(nil)(o)
+		Option{}.Commands(nil)(o)
+		Option{}.QuitSignals(syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGKILL)(o)
+		Option{}.ServiceCtxInitTab(nil)(o)
+		Option{}.ServiceInitTab(nil)(o)
 	}
 }
 
 // Commands 自定义应用指令
-func (WithOption) Commands(cmds []Cmd) AppOption {
+func (Option) Commands(cmds []Cmd) AppOption {
 	return func(o *AppOptions) {
 		o.Commands = cmds
 	}
 }
 
 // QuitSignals 退出信号
-func (WithOption) QuitSignals(signals ...os.Signal) AppOption {
+func (Option) QuitSignals(signals ...os.Signal) AppOption {
 	return func(o *AppOptions) {
 		o.QuitSignals = signals
 	}
 }
 
 // ServiceCtxInitTab 所有服务上下文初始化函数
-func (WithOption) ServiceCtxInitTab(tab map[string]ServiceCtxInit) AppOption {
+func (Option) ServiceCtxInitTab(tab map[string]ServiceCtxInit) AppOption {
 	return func(o *AppOptions) {
 		o.ServiceCtxInitTab = tab
 	}
 }
 
 // ServiceInitTab 所有服务初始化函数
-func (WithOption) ServiceInitTab(tab map[string]ServiceInit) AppOption {
+func (Option) ServiceInitTab(tab map[string]ServiceInit) AppOption {
 	return func(o *AppOptions) {
 		o.ServiceInitTab = tab
 	}

@@ -12,7 +12,7 @@ import (
 // NewEntity 创建实体
 func NewEntity(options ...EntityOption) Entity {
 	opts := EntityOptions{}
-	WithOption{}.Default()(&opts)
+	Option{}.Default()(&opts)
 
 	for i := range options {
 		options[i](&opts)

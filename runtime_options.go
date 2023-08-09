@@ -26,35 +26,35 @@ type RuntimeOptions struct {
 type RuntimeOption func(o *RuntimeOptions)
 
 // RuntimeDefault 运行时的默认值
-func (WithOption) RuntimeDefault() RuntimeOption {
+func (Option) RuntimeDefault() RuntimeOption {
 	return func(o *RuntimeOptions) {
-		WithOption{}.RuntimeCompositeFace(util.Face[Runtime]{})(o)
-		WithOption{}.RuntimeAutoRun(false)(o)
-		WithOption{}.RuntimeProcessQueueCapacity(128)(o)
-		WithOption{}.RuntimeProcessQueueTimeout(0)(o)
-		WithOption{}.RuntimeSyncCallTimeout(3 * time.Second)(o)
-		WithOption{}.RuntimeFrame(nil)(o)
-		WithOption{}.RuntimeGCInterval(10 * time.Second)(o)
-		WithOption{}.RuntimeCustomGC(nil)(o)
+		Option{}.RuntimeCompositeFace(util.Face[Runtime]{})(o)
+		Option{}.RuntimeAutoRun(false)(o)
+		Option{}.RuntimeProcessQueueCapacity(128)(o)
+		Option{}.RuntimeProcessQueueTimeout(0)(o)
+		Option{}.RuntimeSyncCallTimeout(3 * time.Second)(o)
+		Option{}.RuntimeFrame(nil)(o)
+		Option{}.RuntimeGCInterval(10 * time.Second)(o)
+		Option{}.RuntimeCustomGC(nil)(o)
 	}
 }
 
 // RuntimeCompositeFace 运行时的扩展者，需要扩展运行时自身功能时需要使用
-func (WithOption) RuntimeCompositeFace(face util.Face[Runtime]) RuntimeOption {
+func (Option) RuntimeCompositeFace(face util.Face[Runtime]) RuntimeOption {
 	return func(o *RuntimeOptions) {
 		o.CompositeFace = face
 	}
 }
 
 // RuntimeAutoRun 运行时是否开启自动运行
-func (WithOption) RuntimeAutoRun(b bool) RuntimeOption {
+func (Option) RuntimeAutoRun(b bool) RuntimeOption {
 	return func(o *RuntimeOptions) {
 		o.AutoRun = b
 	}
 }
 
 // RuntimeProcessQueueCapacity 运行时的任务处理流水线大小
-func (WithOption) RuntimeProcessQueueCapacity(cap int) RuntimeOption {
+func (Option) RuntimeProcessQueueCapacity(cap int) RuntimeOption {
 	return func(o *RuntimeOptions) {
 		if cap <= 0 {
 			panic("RuntimeProcessQueueCapacity less equal 0 is invalid")
@@ -64,28 +64,28 @@ func (WithOption) RuntimeProcessQueueCapacity(cap int) RuntimeOption {
 }
 
 // RuntimeProcessQueueTimeout 运行时的当任务处理流水线满时，向其插入代码片段的超时时间，为0表示不等待直接报错
-func (WithOption) RuntimeProcessQueueTimeout(dur time.Duration) RuntimeOption {
+func (Option) RuntimeProcessQueueTimeout(dur time.Duration) RuntimeOption {
 	return func(o *RuntimeOptions) {
 		o.ProcessQueueTimeout = dur
 	}
 }
 
 // RuntimeSyncCallTimeout 运行时的同步调用超时时间，为0表示不处理超时，此时两个运行时互相同步调用会死锁
-func (WithOption) RuntimeSyncCallTimeout(dur time.Duration) RuntimeOption {
+func (Option) RuntimeSyncCallTimeout(dur time.Duration) RuntimeOption {
 	return func(o *RuntimeOptions) {
 		o.SyncCallTimeout = dur
 	}
 }
 
 // RuntimeFrame 运行时的帧，设置为nil表示不使用帧更新特性
-func (WithOption) RuntimeFrame(frame runtime.Frame) RuntimeOption {
+func (Option) RuntimeFrame(frame runtime.Frame) RuntimeOption {
 	return func(o *RuntimeOptions) {
 		o.Frame = frame
 	}
 }
 
 // RuntimeGCInterval 运行时的GC间隔时长
-func (WithOption) RuntimeGCInterval(dur time.Duration) RuntimeOption {
+func (Option) RuntimeGCInterval(dur time.Duration) RuntimeOption {
 	return func(o *RuntimeOptions) {
 		if dur <= 0 {
 			panic("RuntimeGCInterval less equal 0 is invalid")
@@ -95,7 +95,7 @@ func (WithOption) RuntimeGCInterval(dur time.Duration) RuntimeOption {
 }
 
 // RuntimeCustomGC 运行时的自定义GC
-func (WithOption) RuntimeCustomGC(fn CustomGC) RuntimeOption {
+func (Option) RuntimeCustomGC(fn CustomGC) RuntimeOption {
 	return func(o *RuntimeOptions) {
 		o.CustomGC = fn
 	}

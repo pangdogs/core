@@ -17,7 +17,7 @@ func NewEntityCreator(ctx runtime.Context, prototype string, options ...EntityOp
 	}
 
 	opts := EntityOptions{}
-	WithOption{}.EntityDefault()(&opts)
+	Option{}.EntityDefault()(&opts)
 
 	for i := range options {
 		options[i](&opts)
