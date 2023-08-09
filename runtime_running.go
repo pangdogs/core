@@ -39,7 +39,7 @@ func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
 	if pluginBundle := runtime.UnsafeContext(_runtime.ctx).GetOptions().PluginBundle; pluginBundle != nil {
 		pluginBundle.Range(func(pluginName string, pluginFace util.FaceAny) bool {
 			if pluginInit, ok := pluginFace.Iface.(LifecycleRuntimePluginInit); ok {
-				internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+				internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 					pluginInit.InitRP(_runtime.ctx)
 				})
 			}
@@ -51,7 +51,7 @@ func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
 
 	defer func() {
 		if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().StoppingCb; callback != nil {
-			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 				callback(_runtime.ctx)
 			})
 		}
@@ -61,7 +61,7 @@ func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
 		_runtime.ctx.GetWaitGroup().Wait()
 
 		if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().StoppedCb; callback != nil {
-			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 				callback(_runtime.ctx)
 			})
 		}
@@ -73,7 +73,7 @@ func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
 		if pluginBundle := runtime.UnsafeContext(_runtime.ctx).GetOptions().PluginBundle; pluginBundle != nil {
 			pluginBundle.ReverseRange(func(pluginName string, pluginFace util.FaceAny) bool {
 				if pluginShut, ok := pluginFace.Iface.(LifecycleRuntimePluginShut); ok {
-					internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+					internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 						pluginShut.ShutRP(_runtime.ctx)
 					})
 				}
@@ -116,14 +116,14 @@ func (_runtime *RuntimeBehavior) loopStarted() (hooks [5]localevent.Hook) {
 	hooks[4] = localevent.BindEvent[runtime.EventEntityMgrEntityFirstAccessComponent](ctx.GetEntityMgr().EventEntityMgrEntityFirstAccessComponent(), _runtime)
 
 	ctx.GetEntityMgr().RangeEntities(func(entity ec.Entity) bool {
-		internal.CallOuterNoRet(ctx.GetAutoRecover(), ctx.GetReportError(), func() {
+		internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), func() {
 			_runtime.OnEntityMgrAddEntity(ctx.GetEntityMgr(), entity)
 		})
 		return true
 	})
 
 	if callback := runtime.UnsafeContext(ctx).GetOptions().StartedCb; callback != nil {
-		internal.CallOuterNoRet(ctx.GetAutoRecover(), ctx.GetReportError(), func() {
+		internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), func() {
 			callback(ctx)
 		})
 	}
@@ -136,7 +136,7 @@ func (_runtime *RuntimeBehavior) loopStopped(hooks [5]localevent.Hook) {
 	frame := _runtime.opts.Frame
 
 	ctx.GetEntityMgr().ReverseRangeEntities(func(entity ec.Entity) bool {
-		internal.CallOuterNoRet(ctx.GetAutoRecover(), ctx.GetReportError(), func() {
+		internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), func() {
 			_runtime.OnEntityMgrRemoveEntity(ctx.GetEntityMgr(), entity)
 		})
 		return true
@@ -161,7 +161,7 @@ func (_runtime *RuntimeBehavior) loopNoFrame() {
 			if !ok {
 				return
 			}
-			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), process)
+			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), process)
 
 		case <-gcTicker.C:
 			_runtime.gc()
@@ -181,7 +181,7 @@ func (_runtime *RuntimeBehavior) loopNoFrameEnd() {
 			if !ok {
 				return
 			}
-			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), process)
+			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), process)
 
 		default:
 			return
@@ -235,7 +235,7 @@ func (_runtime *RuntimeBehavior) loopWithFrame() {
 			if !ok {
 				return
 			}
-			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), process)
+			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), process)
 
 		case <-gcTicker.C:
 			_runtime.gc()
@@ -258,7 +258,7 @@ func (_runtime *RuntimeBehavior) loopWithFrameEnd() {
 				if !ok {
 					return
 				}
-				internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), process)
+				internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), process)
 
 			default:
 				return
@@ -274,7 +274,7 @@ func (_runtime *RuntimeBehavior) frameUpdate() {
 	frame := runtime.UnsafeFrame(_runtime.opts.Frame)
 
 	if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().FrameEndCb; callback != nil {
-		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+		internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 			callback(_runtime.ctx)
 		})
 	}
@@ -292,7 +292,7 @@ func (_runtime *RuntimeBehavior) firstFrameUpdate() {
 	frame.FrameBegin()
 
 	if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().FrameBeginCb; callback != nil {
-		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+		internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 			callback(_runtime.ctx)
 		})
 	}
@@ -338,7 +338,7 @@ func (_runtime *RuntimeBehavior) loopWithBlinkFrameEnd() {
 			if !ok {
 				return
 			}
-			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), process)
+			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), process)
 
 		default:
 			break
@@ -352,14 +352,14 @@ func (_runtime *RuntimeBehavior) blinkFrameUpdate() bool {
 	frame.FrameBegin()
 
 	if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().FrameBeginCb; callback != nil {
-		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+		internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 			callback(_runtime.ctx)
 		})
 	}
 
 	defer func() {
 		if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().FrameEndCb; callback != nil {
-			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 				callback(_runtime.ctx)
 			})
 		}

@@ -31,8 +31,8 @@ func CallOuter[T any](autoRecover bool, reportError chan error, fun func() T) (r
 	return
 }
 
-// CallOuterNoRet 调用外部代码，没有返回值
-func CallOuterNoRet(autoRecover bool, reportError chan error, fun func()) (exception error) {
+// CallOuterVoid 调用外部代码，没有返回值
+func CallOuterVoid(autoRecover bool, reportError chan error, fun func()) (exception error) {
 	if fun == nil {
 		return nil
 	}

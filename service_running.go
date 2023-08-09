@@ -33,7 +33,7 @@ func (_service *ServiceBehavior) running(shutChan chan struct{}) {
 	if pluginBundle := service.UnsafeContext(_service.ctx).GetOptions().PluginBundle; pluginBundle != nil {
 		pluginBundle.Range(func(pluginName string, pluginFace util.FaceAny) bool {
 			if pluginInit, ok := pluginFace.Iface.(LifecycleServicePluginInit); ok {
-				internal.CallOuterNoRet(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
+				internal.CallOuterVoid(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
 					pluginInit.InitSP(_service.ctx)
 				})
 			}
@@ -43,7 +43,7 @@ func (_service *ServiceBehavior) running(shutChan chan struct{}) {
 
 	defer func() {
 		if callback := service.UnsafeContext(_service.ctx).GetOptions().StoppingCb; callback != nil {
-			internal.CallOuterNoRet(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
+			internal.CallOuterVoid(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
 				callback(_service.ctx)
 			})
 		}
@@ -51,7 +51,7 @@ func (_service *ServiceBehavior) running(shutChan chan struct{}) {
 		_service.ctx.GetWaitGroup().Wait()
 
 		if callback := service.UnsafeContext(_service.ctx).GetOptions().StoppedCb; callback != nil {
-			internal.CallOuterNoRet(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
+			internal.CallOuterVoid(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
 				callback(_service.ctx)
 			})
 		}
@@ -63,7 +63,7 @@ func (_service *ServiceBehavior) running(shutChan chan struct{}) {
 		if pluginBundle := service.UnsafeContext(_service.ctx).GetOptions().PluginBundle; pluginBundle != nil {
 			pluginBundle.ReverseRange(func(pluginName string, pluginFace util.FaceAny) bool {
 				if pluginShut, ok := pluginFace.Iface.(LifecycleServicePluginShut); ok {
-					internal.CallOuterNoRet(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
+					internal.CallOuterVoid(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
 						pluginShut.ShutSP(_service.ctx)
 					})
 				}
@@ -76,7 +76,7 @@ func (_service *ServiceBehavior) running(shutChan chan struct{}) {
 	}()
 
 	if callback := service.UnsafeContext(_service.ctx).GetOptions().StartedCb; callback != nil {
-		internal.CallOuterNoRet(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
+		internal.CallOuterVoid(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
 			callback(_service.ctx)
 		})
 	}

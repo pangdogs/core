@@ -130,7 +130,7 @@ func (_runtime *RuntimeBehavior) OnEntityMgrEntityFirstAccessComponent(entityMgr
 	_comp.SetState(ec.ComponentState_Awake)
 
 	if compAwake, ok := component.(LifecycleComponentAwake); ok {
-		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+		internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 			compAwake.Awake()
 		})
 	}
@@ -177,7 +177,7 @@ func (_runtime *RuntimeBehavior) addComponents(entity ec.Entity, components []ec
 		}
 
 		if compAwake, ok := components[i].(LifecycleComponentAwake); ok {
-			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 				compAwake.Awake()
 			})
 		}
@@ -199,7 +199,7 @@ func (_runtime *RuntimeBehavior) addComponents(entity ec.Entity, components []ec
 		}
 
 		if compStart, ok := components[i].(LifecycleComponentStart); ok {
-			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 				compStart.Start()
 			})
 		}
@@ -216,7 +216,7 @@ func (_runtime *RuntimeBehavior) removeComponent(component ec.Component) {
 	}
 
 	if compShut, ok := component.(LifecycleComponentShut); ok {
-		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+		internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 			compShut.Shut()
 		})
 	}
@@ -322,7 +322,7 @@ func (_runtime *RuntimeBehavior) initEntity(entity ec.Entity) {
 	}
 
 	if entityInit, ok := entity.(LifecycleEntityInit); ok {
-		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+		internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 			entityInit.Init()
 		})
 	}
@@ -339,7 +339,7 @@ func (_runtime *RuntimeBehavior) initEntity(entity ec.Entity) {
 		}
 
 		if compAwake, ok := comp.(LifecycleComponentAwake); ok {
-			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 				compAwake.Awake()
 			})
 		}
@@ -361,7 +361,7 @@ func (_runtime *RuntimeBehavior) initEntity(entity ec.Entity) {
 		}
 
 		if compStart, ok := comp.(LifecycleComponentStart); ok {
-			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 				compStart.Start()
 			})
 		}
@@ -378,7 +378,7 @@ func (_runtime *RuntimeBehavior) initEntity(entity ec.Entity) {
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Inited)
 
 	if entityInited, ok := entity.(LifecycleEntityInited); ok {
-		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+		internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 			entityInited.Inited()
 		})
 	}
@@ -396,7 +396,7 @@ func (_runtime *RuntimeBehavior) shutEntity(entity ec.Entity) {
 	}
 
 	if entityShut, ok := entity.(LifecycleEntityShut); ok {
-		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+		internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 			entityShut.Shut()
 		})
 	}
@@ -409,7 +409,7 @@ func (_runtime *RuntimeBehavior) shutEntity(entity ec.Entity) {
 		}
 
 		if compShut, ok := comp.(LifecycleComponentShut); ok {
-			internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 				compShut.Shut()
 			})
 		}
@@ -422,7 +422,7 @@ func (_runtime *RuntimeBehavior) shutEntity(entity ec.Entity) {
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Death)
 
 	if entityDestroy, ok := entity.(LifecycleEntityDestroy); ok {
-		internal.CallOuterNoRet(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+		internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 			entityDestroy.Destroy()
 		})
 	}

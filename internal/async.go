@@ -50,18 +50,18 @@ type Caller interface {
 	//  - 调用过程中的panic信息，均会转换为error返回。
 	AsyncCall(segment func() Ret) AsyncRet
 
-	// SyncCallNoRet 同步调用，无返回值。在运行时中，将代码片段压入任务流水线，串行化的进行调用，会阻塞，没有返回值。
+	// SyncCallVoid 同步调用，无返回值。在运行时中，将代码片段压入任务流水线，串行化的进行调用，会阻塞，没有返回值。
 	//
 	//	注意：
 	//	- 代码片段中的线程安全问题。
 	//	- 当运行时的SyncCallTimeout选项设置为0时，在代码片段中，如果向调用方所在的运行时发起同步调用，那么会造成线程死锁。
 	//  - 调用过程中的panic信息，均会抛弃。
-	SyncCallNoRet(segment func())
+	SyncCallVoid(segment func())
 
-	// AsyncCallNoRet 异步调用，无返回值。在运行时中，将代码片段压入任务流水线，串行化的进行调用，不会阻塞，没有返回值。
+	// AsyncCallVoid 异步调用，无返回值。在运行时中，将代码片段压入任务流水线，串行化的进行调用，不会阻塞，没有返回值。
 	//
 	//	注意：
 	//	- 代码片段中的线程安全问题。
 	//  - 调用过程中的panic信息，均会抛弃。
-	AsyncCallNoRet(segment func())
+	AsyncCallVoid(segment func())
 }

@@ -197,7 +197,7 @@ func Await(ctxResolver runtime.ContextResolver, asyncRet runtime.AsyncRet, onAsy
 		}()
 
 		for ret := range asyncRet {
-			ctx.AsyncCallNoRet(func() { onAsyncRet(ctx, ret) })
+			ctx.AsyncCallVoid(func() { onAsyncRet(ctx, ret) })
 		}
 	}()
 }
@@ -245,7 +245,7 @@ func AwaitAny(ctxResolver runtime.ContextResolver, asyncRets []runtime.AsyncRet,
 
 			cancel()
 
-			ctx.AsyncCallNoRet(func() { onAsyncRet(ctx, ret) })
+			ctx.AsyncCallVoid(func() { onAsyncRet(ctx, ret) })
 		}(asyncRet)
 	}
 }
@@ -273,7 +273,7 @@ func AwaitAll(ctxResolver runtime.ContextResolver, asyncRets []runtime.AsyncRet,
 			}()
 
 			for ret := range asyncRet {
-				ctx.AsyncCallNoRet(func() { onAsyncRet(ctx, ret) })
+				ctx.AsyncCallVoid(func() { onAsyncRet(ctx, ret) })
 			}
 		}(asyncRet)
 	}
