@@ -9,84 +9,86 @@ import (
 	"kit.golaxy.org/golaxy/util/container"
 )
 
-// EntityOptions 创建实体的所有选项
-type EntityOptions struct {
-	pt.EntityOptions
+type _EntityCreatorOption struct{}
+
+// EntityCreatorOptions 实体构建器的所有选项
+type EntityCreatorOptions struct {
+	pt.ConstructEntityOptions
 	ParentID uid.Id   // 父实体Id
 	Scope    ec.Scope // 实体的可访问作用域
 }
 
-// EntityOption 创建实体的选项设置器
-type EntityOption func(o *EntityOptions)
+// EntityCreatorOption 实体构建器的选项设置器
+type EntityCreatorOption func(o *EntityCreatorOptions)
 
-// EntityDefault 默认值
-func (Option) EntityDefault() EntityOption {
-	return func(o *EntityOptions) {
-		pt.Option{}.Default()(&o.EntityOptions)
-		Option{}.EntityParentId(uid.Nil)(o)
-		Option{}.EntityScope(ec.Scope_Local)(o)
+// Default 默认值
+func (_EntityCreatorOption) Default() EntityCreatorOption {
+	return func(o *EntityCreatorOptions) {
+		pt.Option{}.Default()(&o.ConstructEntityOptions)
+		_EntityCreatorOption{}.ParentId(uid.Nil)(o)
+		_EntityCreatorOption{}.Scope(ec.Scope_Local)(o)
 	}
 }
 
-// EntityCompositeFace 扩展者，在扩展实体自身能力时使用
-func (Option) EntityCompositeFace(face util.Face[ec.Entity]) EntityOption {
-	return func(o *EntityOptions) {
-		pt.Option{}.CompositeFace(face)(&o.EntityOptions)
+// CompositeFace 扩展者，在扩展实体自身能力时使用
+func (_EntityCreatorOption) CompositeFace(face util.Face[ec.Entity]) EntityCreatorOption {
+	return func(o *EntityCreatorOptions) {
+		pt.Option{}.CompositeFace(face)(&o.ConstructEntityOptions)
 	}
 }
 
-// EntityComponentAwakeByAccess 开启组件被访问时，检测并调用Awake()
-func (Option) EntityComponentAwakeByAccess(b bool) EntityOption {
-	return func(o *EntityOptions) {
-		pt.Option{}.ComponentAwakeByAccess(b)(&o.EntityOptions)
+// ComponentAwakeByAccess 开启组件被访问时，检测并调用Awake()
+func (_EntityCreatorOption) ComponentAwakeByAccess(b bool) EntityCreatorOption {
+	return func(o *EntityCreatorOptions) {
+		pt.Option{}.ComponentAwakeByAccess(b)(&o.ConstructEntityOptions)
 	}
 }
 
-// EntityFaceAnyAllocator 自定义FaceAny内存分配器，用于提高性能，通常传入运行时上下文中的FaceAnyAllocator
-func (Option) EntityFaceAnyAllocator(allocator container.Allocator[util.FaceAny]) EntityOption {
-	return func(o *EntityOptions) {
-		pt.Option{}.FaceAnyAllocator(allocator)(&o.EntityOptions)
+// FaceAnyAllocator 自定义FaceAny内存分配器，用于提高性能，通常传入运行时上下文中的FaceAnyAllocator
+func (_EntityCreatorOption) FaceAnyAllocator(allocator container.Allocator[util.FaceAny]) EntityCreatorOption {
+	return func(o *EntityCreatorOptions) {
+		pt.Option{}.FaceAnyAllocator(allocator)(&o.ConstructEntityOptions)
 	}
 }
 
-// EntityHookAllocator 自定义Hook内存分配器，用于提高性能，通常传入运行时上下文中的HookAllocator
-func (Option) EntityHookAllocator(allocator container.Allocator[localevent.Hook]) EntityOption {
-	return func(o *EntityOptions) {
-		pt.Option{}.HookAllocator(allocator)(&o.EntityOptions)
+// HookAllocator 自定义Hook内存分配器，用于提高性能，通常传入运行时上下文中的HookAllocator
+func (_EntityCreatorOption) HookAllocator(allocator container.Allocator[localevent.Hook]) EntityCreatorOption {
+	return func(o *EntityCreatorOptions) {
+		pt.Option{}.HookAllocator(allocator)(&o.ConstructEntityOptions)
 	}
 }
 
-// EntityGCCollector 自定义GC收集器，通常不传或者传入运行时上下文
-func (Option) EntityGCCollector(collector container.GCCollector) EntityOption {
-	return func(o *EntityOptions) {
-		pt.Option{}.GCCollector(collector)(&o.EntityOptions)
+// GCCollector 自定义GC收集器，通常不传或者传入运行时上下文
+func (_EntityCreatorOption) GCCollector(collector container.GCCollector) EntityCreatorOption {
+	return func(o *EntityCreatorOptions) {
+		pt.Option{}.GCCollector(collector)(&o.ConstructEntityOptions)
 	}
 }
 
 // ComponentConstructor 组件构造函数
-func (Option) ComponentConstructor(fn pt.ComponentConstructor) EntityOption {
-	return func(o *EntityOptions) {
-		pt.Option{}.ComponentConstructor(fn)(&o.EntityOptions)
+func (_EntityCreatorOption) ComponentConstructor(fn pt.ComponentConstructor) EntityCreatorOption {
+	return func(o *EntityCreatorOptions) {
+		pt.Option{}.ComponentConstructor(fn)(&o.ConstructEntityOptions)
 	}
 }
 
 // EntityConstructor 实体构造函数
-func (Option) EntityConstructor(fn pt.EntityConstructor) EntityOption {
-	return func(o *EntityOptions) {
-		pt.Option{}.EntityConstructor(fn)(&o.EntityOptions)
+func (_EntityCreatorOption) EntityConstructor(fn pt.EntityConstructor) EntityCreatorOption {
+	return func(o *EntityCreatorOptions) {
+		pt.Option{}.EntityConstructor(fn)(&o.ConstructEntityOptions)
 	}
 }
 
-// EntityParentId 父实体Id
-func (Option) EntityParentId(id uid.Id) EntityOption {
-	return func(o *EntityOptions) {
+// ParentId 父实体Id
+func (_EntityCreatorOption) ParentId(id uid.Id) EntityCreatorOption {
+	return func(o *EntityCreatorOptions) {
 		o.ParentID = id
 	}
 }
 
-// EntityScope 实体的可访问作用域
-func (Option) EntityScope(scope ec.Scope) EntityOption {
-	return func(o *EntityOptions) {
+// Scope 实体的可访问作用域
+func (_EntityCreatorOption) Scope(scope ec.Scope) EntityCreatorOption {
+	return func(o *EntityCreatorOptions) {
 		o.Scope = scope
 	}
 }

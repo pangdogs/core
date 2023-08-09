@@ -7,74 +7,46 @@ import (
 	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/service"
-	"kit.golaxy.org/golaxy/uid"
 )
 
-// NewEntityCreator 创建实体构建器
-func NewEntityCreator(ctx runtime.Context, prototype string, options ...EntityOption) EntityCreator {
-	if ctx == nil {
-		panic("nil ctx")
-	}
-
-	opts := EntityOptions{}
-	Option{}.EntityDefault()(&opts)
-
-	for i := range options {
-		options[i](&opts)
-	}
-
-	opts.Prototype = prototype
-
-	if opts.FaceAnyAllocator == nil {
-		opts.FaceAnyAllocator = ctx.GetFaceAnyAllocator()
-	}
-	if opts.HookAllocator == nil {
-		opts.HookAllocator = ctx.GetHookAllocator()
-	}
-
-	return EntityCreator{
-		ctx:     ctx,
-		options: opts,
-		inited:  true,
-	}
+// EntityCreator 实体构建器
+type EntityCreator struct {
+	Context runtime.Context      // 运行时上下文
+	options EntityCreatorOptions // 实体构建器的所有选项
+	mutable bool                 // 是否已改变选项
 }
 
-type EntityCreator struct {
-	ctx     runtime.Context
-	options EntityOptions
-	inited  bool
+// Options 创建实体的选项
+func (creator EntityCreator) Options(options ...EntityCreatorOption) EntityCreator {
+	if !creator.mutable {
+		Option{}.EntityCreator.Default()(&creator.options)
+		creator.mutable = true
+	}
+	for i := range options {
+		options[i](&creator.options)
+	}
+	return creator
 }
 
 // Spawn 创建实体
 func (creator EntityCreator) Spawn() (ec.Entity, error) {
-	return creator.spawn(nil)
-}
-
-// SpawnWithId 使用指定Id创建实体
-func (creator EntityCreator) SpawnWithId(id uid.Id) (ec.Entity, error) {
-	return creator.spawn(func(options *EntityOptions) {
-		options.PersistId = id
-	})
-}
-
-func (creator EntityCreator) spawn(modifyOptions func(options *EntityOptions)) (ec.Entity, error) {
-	if !creator.inited {
-		return nil, errors.New("not inited")
+	if creator.Context == nil {
+		return nil, errors.New("nil context")
 	}
 
-	runtimeCtx := creator.ctx
+	runtimeCtx := creator.Context
 	serviceCtx := service.Get(runtimeCtx)
+
+	if !creator.mutable {
+		Option{}.EntityCreator.Default()(&creator.options)
+	}
 
 	entityPt, ok := pt.TryGetEntityPt(serviceCtx, creator.options.Prototype)
 	if !ok {
 		return nil, fmt.Errorf("entity prototype %q not registered", creator.options.Prototype)
 	}
 
-	if modifyOptions != nil {
-		modifyOptions(&creator.options)
-	}
-
-	entity := entityPt.UnsafeConstruct(creator.options.EntityOptions)
+	entity := entityPt.UnsafeConstruct(creator.options.ConstructEntityOptions)
 
 	if err := runtimeCtx.GetEntityMgr().AddEntity(entity, creator.options.Scope); err != nil {
 		return nil, fmt.Errorf("add entity to runtime context failed, %v", err)
