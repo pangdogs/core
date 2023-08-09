@@ -41,6 +41,14 @@ func (creator EntityCreator) Spawn() (ec.Entity, error) {
 		Option{}.EntityCreator.Default()(&creator.options)
 	}
 
+	if creator.options.FaceAnyAllocator == nil {
+		creator.options.FaceAnyAllocator = runtimeCtx.GetFaceAnyAllocator()
+	}
+
+	if creator.options.HookAllocator == nil {
+		creator.options.HookAllocator = runtimeCtx.GetHookAllocator()
+	}
+
 	entityPt, ok := pt.TryGetEntityPt(serviceCtx, creator.options.Prototype)
 	if !ok {
 		return nil, fmt.Errorf("entity prototype %q not registered", creator.options.Prototype)

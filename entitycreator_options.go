@@ -37,6 +37,20 @@ func (_EntityCreatorOption) CompositeFace(face util.Face[ec.Entity]) EntityCreat
 	}
 }
 
+// Prototype 实体原型名称
+func (_EntityCreatorOption) Prototype(pt string) EntityCreatorOption {
+	return func(o *EntityCreatorOptions) {
+		o.Prototype = pt
+	}
+}
+
+// PersistId 实体持久化Id
+func (_EntityCreatorOption) PersistId(id uid.Id) EntityCreatorOption {
+	return func(o *EntityCreatorOptions) {
+		ec.Option{}.PersistId(id)(&o.EntityOptions)
+	}
+}
+
 // ComponentAwakeByAccess 开启组件被访问时，检测并调用Awake()
 func (_EntityCreatorOption) ComponentAwakeByAccess(b bool) EntityCreatorOption {
 	return func(o *EntityCreatorOptions) {
