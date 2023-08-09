@@ -20,6 +20,10 @@ type EntityCreator struct {
 func (creator EntityCreator) Options(options ...EntityCreatorOption) EntityCreator {
 	if !creator.mutable {
 		Option{}.EntityCreator.Default()(&creator.options)
+		if creator.Context != nil {
+			creator.options.FaceAnyAllocator = creator.Context.GetFaceAnyAllocator()
+			creator.options.HookAllocator = creator.Context.GetHookAllocator()
+		}
 		creator.mutable = true
 	}
 	for i := range options {
@@ -39,13 +43,7 @@ func (creator EntityCreator) Spawn() (ec.Entity, error) {
 
 	if !creator.mutable {
 		Option{}.EntityCreator.Default()(&creator.options)
-	}
-
-	if creator.options.FaceAnyAllocator == nil {
 		creator.options.FaceAnyAllocator = runtimeCtx.GetFaceAnyAllocator()
-	}
-
-	if creator.options.HookAllocator == nil {
 		creator.options.HookAllocator = runtimeCtx.GetHookAllocator()
 	}
 
