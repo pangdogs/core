@@ -49,35 +49,31 @@ func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
 
 	_runtime.changeRunningState(runtime.RunningState_Started)
 
-	defer func() {
-		_runtime.changeRunningState(runtime.RunningState_Terminating)
-
-		_runtime.loopStop(hooks)
-		ctx.GetWaitGroup().Wait()
-		_runtime.shutPlugin()
-
-		_runtime.changeRunningState(runtime.RunningState_Terminated)
-
-		if parentCtx, ok := ctx.GetParentContext().(internal.Context); ok {
-			parentCtx.GetWaitGroup().Done()
-		}
-
-		runtime.UnsafeContext(ctx).MarkRunning(false)
-		shutChan <- struct{}{}
-	}()
-
 	if frame == nil {
-		defer _runtime.loopingNoFrameEnd()
 		_runtime.loopingNoFrame()
-
+		_runtime.loopingNoFrameEnd()
 	} else if frame.Blink() {
-		defer _runtime.loopingBlinkFrameEnd()
 		_runtime.loopingBlinkFrame()
-
+		_runtime.loopingBlinkFrameEnd()
 	} else {
-		defer _runtime.loopingFrameEnd()
 		_runtime.loopingFrame()
+		_runtime.loopingFrameEnd()
 	}
+
+	_runtime.changeRunningState(runtime.RunningState_Terminating)
+
+	_runtime.loopStop(hooks)
+	ctx.GetWaitGroup().Wait()
+	_runtime.shutPlugin()
+
+	_runtime.changeRunningState(runtime.RunningState_Terminated)
+
+	if parentCtx, ok := ctx.GetParentContext().(internal.Context); ok {
+		parentCtx.GetWaitGroup().Done()
+	}
+
+	runtime.UnsafeContext(ctx).MarkRunning(false)
+	shutChan <- struct{}{}
 }
 
 func (_runtime *RuntimeBehavior) loopStart() (hooks [5]localevent.Hook) {
@@ -127,6 +123,8 @@ func (_runtime *RuntimeBehavior) loopStop(hooks [5]localevent.Hook) {
 func (_runtime *RuntimeBehavior) loopingNoFrame() {
 	ctx := _runtime.ctx
 
+	defer close(_runtime.processQueue)
+
 	gcTicker := time.NewTicker(_runtime.opts.GCInterval)
 	defer gcTicker.Stop()
 
@@ -149,8 +147,6 @@ func (_runtime *RuntimeBehavior) loopingNoFrame() {
 
 func (_runtime *RuntimeBehavior) loopingNoFrameEnd() {
 	ctx := _runtime.ctx
-
-	close(_runtime.processQueue)
 
 	for {
 		select {
@@ -197,6 +193,8 @@ func (_runtime *RuntimeBehavior) loopingFrame() {
 		}
 	}(frame.GetCurFrames()+1, frame.GetTotalFrames(), frame.GetTargetFPS())
 
+	defer close(_runtime.processQueue)
+
 	gcTicker := time.NewTicker(_runtime.opts.GCInterval)
 	defer gcTicker.Stop()
 
@@ -220,22 +218,19 @@ func (_runtime *RuntimeBehavior) loopingFrame() {
 func (_runtime *RuntimeBehavior) loopingFrameEnd() {
 	ctx := _runtime.ctx
 
-	close(_runtime.processQueue)
-
-	func() {
-		for {
-			select {
-			case process, ok := <-_runtime.processQueue:
-				if !ok {
-					return
-				}
-				internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), process)
-
-			default:
-				return
+loop:
+	for {
+		select {
+		case process, ok := <-_runtime.processQueue:
+			if !ok {
+				break loop
 			}
+			internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), process)
+
+		default:
+			break loop
 		}
-	}()
+	}
 
 	_runtime.frameLoopEnd()
 }
@@ -254,15 +249,13 @@ func (_runtime *RuntimeBehavior) frameLoopBegin() {
 	frame.UpdateBegin()
 	_runtime.changeRunningState(runtime.RunningState_FrameUpdateBegin)
 
-	defer func() {
-		frame.UpdateEnd()
-		_runtime.changeRunningState(runtime.RunningState_FrameUpdateEnd)
-
-		_runtime.changeRunningState(runtime.RunningState_AsyncProcessingBegin)
-	}()
-
 	emitEventUpdate(&_runtime.eventUpdate)
 	emitEventLateUpdate(&_runtime.eventLateUpdate)
+
+	frame.UpdateEnd()
+	_runtime.changeRunningState(runtime.RunningState_FrameUpdateEnd)
+
+	_runtime.changeRunningState(runtime.RunningState_AsyncProcessingBegin)
 }
 
 func (_runtime *RuntimeBehavior) frameLoopEnd() {
@@ -308,20 +301,19 @@ func (_runtime *RuntimeBehavior) loopingBlinkFrameEnd() {
 
 	_runtime.changeRunningState(runtime.RunningState_AsyncProcessingBegin)
 
-	func() {
-		for {
-			select {
-			case process, ok := <-_runtime.processQueue:
-				if !ok {
-					return
-				}
-				internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), process)
-
-			default:
-				return
+loop:
+	for {
+		select {
+		case process, ok := <-_runtime.processQueue:
+			if !ok {
+				break loop
 			}
+			internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), process)
+
+		default:
+			break loop
 		}
-	}()
+	}
 
 	_runtime.changeRunningState(runtime.RunningState_AsyncProcessingEnd)
 }
@@ -334,26 +326,23 @@ func (_runtime *RuntimeBehavior) blinkFrameLoop() bool {
 	case <-ctx.Done():
 		return false
 	default:
-		func() {
-			frame.LoopBegin()
-			_runtime.changeRunningState(runtime.RunningState_FrameLoopBegin)
+		frame.LoopBegin()
+		_runtime.changeRunningState(runtime.RunningState_FrameLoopBegin)
 
-			frame.UpdateBegin()
-			_runtime.changeRunningState(runtime.RunningState_FrameUpdateBegin)
+		frame.UpdateBegin()
+		_runtime.changeRunningState(runtime.RunningState_FrameUpdateBegin)
 
-			defer func() {
-				frame.UpdateEnd()
-				_runtime.changeRunningState(runtime.RunningState_FrameUpdateEnd)
+		emitEventUpdate(&_runtime.eventUpdate)
+		emitEventLateUpdate(&_runtime.eventLateUpdate)
 
-				frame.LoopEnd()
-				_runtime.changeRunningState(runtime.RunningState_FrameLoopEnd)
-			}()
+		frame.UpdateEnd()
+		_runtime.changeRunningState(runtime.RunningState_FrameUpdateEnd)
 
-			emitEventUpdate(&_runtime.eventUpdate)
-			emitEventLateUpdate(&_runtime.eventLateUpdate)
-		}()
-		return true
+		frame.LoopEnd()
+		_runtime.changeRunningState(runtime.RunningState_FrameLoopEnd)
 	}
+
+	return true
 }
 
 func (_runtime *RuntimeBehavior) changeRunningState(state runtime.RunningState) {
