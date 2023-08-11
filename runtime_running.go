@@ -189,6 +189,7 @@ func (_runtime *RuntimeBehavior) loopingFrame() {
 				}()
 			case <-ctx.Done():
 				return
+			default:
 			}
 		}
 	}(frame.GetCurFrames()+1, frame.GetTotalFrames(), frame.GetTargetFPS())
