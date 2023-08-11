@@ -74,6 +74,8 @@ func (_service *ServiceBehavior) init(ctx service.Context, opts *ServiceOptions)
 	}
 
 	_service.ctx = ctx
+
+	_service.changeRunningState(service.RunningState_Birth)
 }
 
 func (_service *ServiceBehavior) getOptions() *ServiceOptions {
