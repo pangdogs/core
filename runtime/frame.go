@@ -34,10 +34,10 @@ type Frame interface {
 	GetRunningBeginTime() time.Time
 	// GetRunningElapseTime 获取运行持续时间
 	GetRunningElapseTime() time.Duration
-	// GetFrameBeginTime 获取当前帧开始时间
-	GetFrameBeginTime() time.Time
-	// GetLastFrameElapseTime 获取上一帧耗时
-	GetLastFrameElapseTime() time.Duration
+	// GetLoopBeginTime 获取当前帧循环开始时间（包含异步调用）
+	GetLoopBeginTime() time.Time
+	// GetLastLoopElapseTime 获取上一帧循环耗时（包含异步调用）
+	GetLastLoopElapseTime() time.Duration
 	// GetUpdateBeginTime 获取当前帧更新开始时间
 	GetUpdateBeginTime() time.Time
 	// GetLastUpdateElapseTime 获取上一次帧更新耗时
@@ -48,8 +48,8 @@ type _Frame interface {
 	setCurFrames(v uint64)
 	runningBegin()
 	runningEnd()
-	frameBegin()
-	frameEnd()
+	loopBegin()
+	loopEnd()
 	updateBegin()
 	updateEnd()
 }
@@ -61,8 +61,8 @@ type _FrameBehavior struct {
 	blinkFrameTime         time.Duration
 	runningBeginTime       time.Time
 	runningElapseTime      time.Duration
-	frameBeginTime         time.Time
-	lastFrameElapseTime    time.Duration
+	loopBeginTime          time.Time
+	lastLoopElapseTime     time.Duration
 	updateBeginTime        time.Time
 	lastUpdateElapseTime   time.Duration
 	statFPSBeginTime       time.Time
@@ -104,14 +104,14 @@ func (frame *_FrameBehavior) GetRunningElapseTime() time.Duration {
 	return frame.runningElapseTime
 }
 
-// GetFrameBeginTime 获取当前帧开始时间
-func (frame *_FrameBehavior) GetFrameBeginTime() time.Time {
-	return frame.frameBeginTime
+// GetLoopBeginTime 获取当前帧循环开始时间（包含异步调用）
+func (frame *_FrameBehavior) GetLoopBeginTime() time.Time {
+	return frame.loopBeginTime
 }
 
-// GetLastFrameElapseTime 获取上一帧耗时
-func (frame *_FrameBehavior) GetLastFrameElapseTime() time.Duration {
-	return frame.lastFrameElapseTime
+// GetLastLoopElapseTime 获取上一帧循环耗时（包含异步调用）
+func (frame *_FrameBehavior) GetLastLoopElapseTime() time.Duration {
+	return frame.lastLoopElapseTime
 }
 
 // GetUpdateBeginTime 获取当前帧更新开始时间
@@ -158,8 +158,8 @@ func (frame *_FrameBehavior) runningBegin() {
 	frame.runningBeginTime = now
 	frame.runningElapseTime = 0
 
-	frame.frameBeginTime = now
-	frame.lastFrameElapseTime = 0
+	frame.loopBeginTime = now
+	frame.lastLoopElapseTime = 0
 
 	frame.updateBeginTime = now
 	frame.lastUpdateElapseTime = 0
@@ -171,10 +171,10 @@ func (frame *_FrameBehavior) runningEnd() {
 	}
 }
 
-func (frame *_FrameBehavior) frameBegin() {
+func (frame *_FrameBehavior) loopBegin() {
 	now := time.Now()
 
-	frame.frameBeginTime = now
+	frame.loopBeginTime = now
 
 	if !frame.blink {
 		statInterval := now.Sub(frame.statFPSBeginTime).Seconds()
@@ -186,12 +186,12 @@ func (frame *_FrameBehavior) frameBegin() {
 	}
 }
 
-func (frame *_FrameBehavior) frameEnd() {
+func (frame *_FrameBehavior) loopEnd() {
 	if frame.blink {
 		frame.runningElapseTime += frame.blinkFrameTime
 	} else {
-		frame.lastFrameElapseTime = time.Now().Sub(frame.frameBeginTime)
-		frame.runningElapseTime += frame.lastFrameElapseTime
+		frame.lastLoopElapseTime = time.Now().Sub(frame.loopBeginTime)
+		frame.runningElapseTime += frame.lastLoopElapseTime
 		frame.statFPSFrames++
 	}
 }

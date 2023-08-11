@@ -1,3 +1,4 @@
+//go:generate stringer -type RunningState
 package runtime
 
 import (
@@ -12,8 +13,25 @@ import (
 // Option 所有选项设置器
 type Option struct{}
 
+// RunningState 运行状态
+type RunningState int32
+
+const (
+	RunningState_Birth                RunningState = iota // 出生
+	RunningState_Starting                                 // 开始启动
+	RunningState_Started                                  // 已启动
+	RunningState_FrameLoopBegin                           // 帧循环开始
+	RunningState_FrameUpdateBegin                         // 帧更新开始
+	RunningState_FrameUpdateEnd                           // 帧更新结束
+	RunningState_FrameLoopEnd                             // 帧循环结束
+	RunningState_AsyncProcessingBegin                     // 异步调用处理开始
+	RunningState_AsyncProcessingEnd                       // 异步调用处理结束
+	RunningState_Terminating                              // 开始停止
+	RunningState_Terminated                               // 已停止
+)
+
 type (
-	Callback = func(ctx Context) // 回调函数
+	RunningHandler = func(ctx Context, state RunningState) // 运行状态变化处理器
 )
 
 // ContextOptions 创建运行时上下文的所有选项
@@ -25,11 +43,7 @@ type ContextOptions struct {
 	Name             string                               // 运行时名称
 	PersistId        uid.Id                               // 运行时持久化Id
 	PluginBundle     plugin.PluginBundle                  // 插件包
-	StartedCb        Callback                             // 启动运行时回调函数
-	StoppingCb       Callback                             // 开始停止运行时回调函数
-	StoppedCb        Callback                             // 完全停止运行时回调函数
-	FrameBeginCb     Callback                             // 帧开始时的回调函数
-	FrameEndCb       Callback                             // 帧结束时的回调函数
+	RunningHandler   RunningHandler                       // 运行状态变化处理器
 	FaceAnyAllocator container.Allocator[util.FaceAny]    // 自定义FaceAny内存分配器，用于提高性能
 	HookAllocator    container.Allocator[localevent.Hook] // 自定义Hook内存分配器，用于提高性能
 }
@@ -47,11 +61,7 @@ func (Option) Default() ContextOption {
 		Option{}.Name("")(o)
 		Option{}.PersistId(util.Zero[uid.Id]())(o)
 		Option{}.PluginBundle(nil)(o)
-		Option{}.StartedCb(nil)(o)
-		Option{}.StoppingCb(nil)(o)
-		Option{}.StoppedCb(nil)(o)
-		Option{}.FrameBeginCb(nil)(o)
-		Option{}.FrameEndCb(nil)(o)
+		Option{}.RunningHandler(nil)(o)
 		Option{}.FaceAnyAllocator(container.DefaultAllocator[util.FaceAny]())(o)
 		Option{}.HookAllocator(container.DefaultAllocator[localevent.Hook]())(o)
 	}
@@ -106,38 +116,10 @@ func (Option) PluginBundle(bundle plugin.PluginBundle) ContextOption {
 	}
 }
 
-// StartedCb 启动运行时回调函数
-func (Option) StartedCb(fn Callback) ContextOption {
+// RunningHandler 运行状态变化处理器
+func (Option) RunningHandler(fn RunningHandler) ContextOption {
 	return func(o *ContextOptions) {
-		o.StartedCb = fn
-	}
-}
-
-// StoppingCb 开始停止运行时回调函数
-func (Option) StoppingCb(fn Callback) ContextOption {
-	return func(o *ContextOptions) {
-		o.StoppingCb = fn
-	}
-}
-
-// StoppedCb 完全停止运行时回调函数
-func (Option) StoppedCb(fn Callback) ContextOption {
-	return func(o *ContextOptions) {
-		o.StoppedCb = fn
-	}
-}
-
-// FrameBeginCb 帧更新开始时的回调函数
-func (Option) FrameBeginCb(fn Callback) ContextOption {
-	return func(o *ContextOptions) {
-		o.FrameBeginCb = fn
-	}
-}
-
-// FrameEndCb 帧更新结束时的回调函数
-func (Option) FrameEndCb(fn Callback) ContextOption {
-	return func(o *ContextOptions) {
-		o.FrameEndCb = fn
+		o.RunningHandler = fn
 	}
 }
 

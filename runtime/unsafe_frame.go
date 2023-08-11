@@ -22,12 +22,12 @@ func (uf _UnsafeFrame) RunningEnd() {
 	uf.runningEnd()
 }
 
-func (uf _UnsafeFrame) FrameBegin() {
-	uf.frameBegin()
+func (uf _UnsafeFrame) LoopBegin() {
+	uf.loopBegin()
 }
 
-func (uf _UnsafeFrame) FrameEnd() {
-	uf.frameEnd()
+func (uf _UnsafeFrame) LoopEnd() {
+	uf.loopEnd()
 }
 
 func (uf _UnsafeFrame) UpdateBegin() {

@@ -24,12 +24,55 @@ func (_service *ServiceBehavior) Run() <-chan struct{} {
 	return shutChan
 }
 
-// Stop 停止
-func (_service *ServiceBehavior) Stop() {
+// Terminate 停止
+func (_service *ServiceBehavior) Terminate() {
 	_service.ctx.GetCancelFunc()()
 }
 
 func (_service *ServiceBehavior) running(shutChan chan struct{}) {
+	ctx := _service.ctx
+
+	_service.changeRunningState(service.RunningState_Starting)
+
+	_service.initPlugin()
+
+	_service.changeRunningState(service.RunningState_Started)
+
+	defer func() {
+		_service.changeRunningState(service.RunningState_Terminating)
+
+		ctx.GetWaitGroup().Wait()
+		_service.shutPlugin()
+
+		_service.changeRunningState(service.RunningState_Terminated)
+
+		if parentCtx, ok := ctx.GetParentContext().(internal.Context); ok {
+			parentCtx.GetWaitGroup().Done()
+		}
+
+		service.UnsafeContext(ctx).MarkRunning(false)
+		shutChan <- struct{}{}
+	}()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			time.Sleep(1 * time.Second)
+		}
+	}
+}
+
+func (_service *ServiceBehavior) changeRunningState(state service.RunningState) {
+	if handler := service.UnsafeContext(_service.ctx).GetOptions().RunningHandler; handler != nil {
+		internal.CallOuterVoid(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
+			handler(_service.ctx, state)
+		})
+	}
+}
+
+func (_service *ServiceBehavior) initPlugin() {
 	if pluginBundle := service.UnsafeContext(_service.ctx).GetOptions().PluginBundle; pluginBundle != nil {
 		pluginBundle.Range(func(pluginName string, pluginFace util.FaceAny) bool {
 			if pluginInit, ok := pluginFace.Iface.(LifecycleServicePluginInit); ok {
@@ -40,53 +83,17 @@ func (_service *ServiceBehavior) running(shutChan chan struct{}) {
 			return true
 		})
 	}
+}
 
-	defer func() {
-		if callback := service.UnsafeContext(_service.ctx).GetOptions().StoppingCb; callback != nil {
-			internal.CallOuterVoid(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
-				callback(_service.ctx)
-			})
-		}
-
-		_service.ctx.GetWaitGroup().Wait()
-
-		if callback := service.UnsafeContext(_service.ctx).GetOptions().StoppedCb; callback != nil {
-			internal.CallOuterVoid(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
-				callback(_service.ctx)
-			})
-		}
-
-		if parentCtx, ok := _service.ctx.GetParentContext().(internal.Context); ok {
-			parentCtx.GetWaitGroup().Done()
-		}
-
-		if pluginBundle := service.UnsafeContext(_service.ctx).GetOptions().PluginBundle; pluginBundle != nil {
-			pluginBundle.ReverseRange(func(pluginName string, pluginFace util.FaceAny) bool {
-				if pluginShut, ok := pluginFace.Iface.(LifecycleServicePluginShut); ok {
-					internal.CallOuterVoid(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
-						pluginShut.ShutSP(_service.ctx)
-					})
-				}
-				return true
-			})
-		}
-
-		service.UnsafeContext(_service.ctx).MarkRunning(false)
-		shutChan <- struct{}{}
-	}()
-
-	if callback := service.UnsafeContext(_service.ctx).GetOptions().StartedCb; callback != nil {
-		internal.CallOuterVoid(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
-			callback(_service.ctx)
+func (_service *ServiceBehavior) shutPlugin() {
+	if pluginBundle := service.UnsafeContext(_service.ctx).GetOptions().PluginBundle; pluginBundle != nil {
+		pluginBundle.ReverseRange(func(pluginName string, pluginFace util.FaceAny) bool {
+			if pluginShut, ok := pluginFace.Iface.(LifecycleServicePluginShut); ok {
+				internal.CallOuterVoid(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
+					pluginShut.ShutSP(_service.ctx)
+				})
+			}
+			return true
 		})
-	}
-
-	for {
-		select {
-		case <-_service.ctx.Done():
-			return
-		default:
-			time.Sleep(1 * time.Second)
-		}
 	}
 }

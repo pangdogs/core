@@ -11,17 +11,20 @@ import (
 
 // Run 运行，返回的channel用于线程同步，可以阻塞等待至运行结束
 func (_runtime *RuntimeBehavior) Run() <-chan struct{} {
-	if !runtime.UnsafeContext(_runtime.ctx).MarkRunning(true) {
+	ctx := _runtime.ctx
+
+	if !runtime.UnsafeContext(ctx).MarkRunning(true) {
 		panic("runtime already running")
 	}
 
 	shutChan := make(chan struct{}, 1)
 
-	runtime.UnsafeContext(_runtime.ctx).SetFrame(_runtime.opts.Frame)
-	_runtime.processQueue = make(chan func(), _runtime.opts.ProcessQueueCapacity)
-	runtime.UnsafeContext(_runtime.ctx).SetCallee(_runtime)
+	runtime.UnsafeContext(ctx).SetFrame(_runtime.opts.Frame)
 
-	if parentCtx, ok := _runtime.ctx.GetParentContext().(internal.Context); ok {
+	_runtime.processQueue = make(chan func(), _runtime.opts.ProcessQueueCapacity)
+	runtime.UnsafeContext(ctx).SetCallee(_runtime)
+
+	if parentCtx, ok := ctx.GetParentContext().(internal.Context); ok {
 		parentCtx.GetWaitGroup().Add(1)
 	}
 
@@ -30,78 +33,54 @@ func (_runtime *RuntimeBehavior) Run() <-chan struct{} {
 	return shutChan
 }
 
-// Stop 停止
-func (_runtime *RuntimeBehavior) Stop() {
+// Terminate 停止
+func (_runtime *RuntimeBehavior) Terminate() {
 	_runtime.ctx.GetCancelFunc()()
 }
 
 func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
-	if pluginBundle := runtime.UnsafeContext(_runtime.ctx).GetOptions().PluginBundle; pluginBundle != nil {
-		pluginBundle.Range(func(pluginName string, pluginFace util.FaceAny) bool {
-			if pluginInit, ok := pluginFace.Iface.(LifecycleRuntimePluginInit); ok {
-				internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-					pluginInit.InitRP(_runtime.ctx)
-				})
-			}
-			return true
-		})
-	}
+	ctx := _runtime.ctx
+	frame := _runtime.opts.Frame
 
-	hooks := _runtime.loopStarted()
+	_runtime.changeRunningState(runtime.RunningState_Starting)
+
+	_runtime.initPlugin()
+	hooks := _runtime.loopStart()
+
+	_runtime.changeRunningState(runtime.RunningState_Started)
 
 	defer func() {
-		if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().StoppingCb; callback != nil {
-			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-				callback(_runtime.ctx)
-			})
-		}
+		_runtime.changeRunningState(runtime.RunningState_Terminating)
 
-		_runtime.loopStopped(hooks)
+		_runtime.loopStop(hooks)
+		ctx.GetWaitGroup().Wait()
+		_runtime.shutPlugin()
 
-		_runtime.ctx.GetWaitGroup().Wait()
+		_runtime.changeRunningState(runtime.RunningState_Terminated)
 
-		if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().StoppedCb; callback != nil {
-			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-				callback(_runtime.ctx)
-			})
-		}
-
-		if parentCtx, ok := _runtime.ctx.GetParentContext().(internal.Context); ok {
+		if parentCtx, ok := ctx.GetParentContext().(internal.Context); ok {
 			parentCtx.GetWaitGroup().Done()
 		}
 
-		if pluginBundle := runtime.UnsafeContext(_runtime.ctx).GetOptions().PluginBundle; pluginBundle != nil {
-			pluginBundle.ReverseRange(func(pluginName string, pluginFace util.FaceAny) bool {
-				if pluginShut, ok := pluginFace.Iface.(LifecycleRuntimePluginShut); ok {
-					internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-						pluginShut.ShutRP(_runtime.ctx)
-					})
-				}
-				return true
-			})
-		}
-
-		runtime.UnsafeContext(_runtime.ctx).MarkRunning(false)
+		runtime.UnsafeContext(ctx).MarkRunning(false)
 		shutChan <- struct{}{}
 	}()
 
-	frame := _runtime.opts.Frame
-
 	if frame == nil {
-		defer _runtime.loopNoFrameEnd()
-		_runtime.loopNoFrame()
+		defer _runtime.loopingNoFrameEnd()
+		_runtime.loopingNoFrame()
 
 	} else if frame.Blink() {
-		defer _runtime.loopWithBlinkFrameEnd()
-		_runtime.loopWithBlinkFrame()
+		defer _runtime.loopingBlinkFrameEnd()
+		_runtime.loopingBlinkFrame()
 
 	} else {
-		defer _runtime.loopWithFrameEnd()
-		_runtime.loopWithFrame()
+		defer _runtime.loopingFrameEnd()
+		_runtime.loopingFrame()
 	}
 }
 
-func (_runtime *RuntimeBehavior) loopStarted() (hooks [5]localevent.Hook) {
+func (_runtime *RuntimeBehavior) loopStart() (hooks [5]localevent.Hook) {
 	ctx := _runtime.ctx
 	frame := _runtime.opts.Frame
 
@@ -122,16 +101,10 @@ func (_runtime *RuntimeBehavior) loopStarted() (hooks [5]localevent.Hook) {
 		return true
 	})
 
-	if callback := runtime.UnsafeContext(ctx).GetOptions().StartedCb; callback != nil {
-		internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), func() {
-			callback(ctx)
-		})
-	}
-
 	return
 }
 
-func (_runtime *RuntimeBehavior) loopStopped(hooks [5]localevent.Hook) {
+func (_runtime *RuntimeBehavior) loopStop(hooks [5]localevent.Hook) {
 	ctx := _runtime.ctx
 	frame := _runtime.opts.Frame
 
@@ -151,7 +124,9 @@ func (_runtime *RuntimeBehavior) loopStopped(hooks [5]localevent.Hook) {
 	}
 }
 
-func (_runtime *RuntimeBehavior) loopNoFrame() {
+func (_runtime *RuntimeBehavior) loopingNoFrame() {
+	ctx := _runtime.ctx
+
 	gcTicker := time.NewTicker(_runtime.opts.GCInterval)
 	defer gcTicker.Stop()
 
@@ -161,18 +136,20 @@ func (_runtime *RuntimeBehavior) loopNoFrame() {
 			if !ok {
 				return
 			}
-			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), process)
+			internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), process)
 
 		case <-gcTicker.C:
 			_runtime.gc()
 
-		case <-_runtime.ctx.Done():
+		case <-ctx.Done():
 			return
 		}
 	}
 }
 
-func (_runtime *RuntimeBehavior) loopNoFrameEnd() {
+func (_runtime *RuntimeBehavior) loopingNoFrameEnd() {
+	ctx := _runtime.ctx
+
 	close(_runtime.processQueue)
 
 	for {
@@ -181,7 +158,7 @@ func (_runtime *RuntimeBehavior) loopNoFrameEnd() {
 			if !ok {
 				return
 			}
-			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), process)
+			internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), process)
 
 		default:
 			return
@@ -189,18 +166,17 @@ func (_runtime *RuntimeBehavior) loopNoFrameEnd() {
 	}
 }
 
-func (_runtime *RuntimeBehavior) loopWithFrame() {
+func (_runtime *RuntimeBehavior) loopingFrame() {
+	ctx := _runtime.ctx
 	frame := runtime.UnsafeFrame(_runtime.opts.Frame)
 
-	go func() {
-		updateTicker := time.NewTicker(time.Duration(float64(time.Second) / float64(frame.GetTargetFPS())))
+	go func(curFrames, totalFrames uint64, targetFPS float32) {
+		updateTicker := time.NewTicker(time.Duration(float64(time.Second) / float64(targetFPS)))
 		defer updateTicker.Stop()
 
-		totalFrames := frame.GetTotalFrames()
-
-		for curFrames := uint64(1); ; {
+		for {
 			if totalFrames > 0 && curFrames >= totalFrames {
-				_runtime.ctx.GetCancelFunc()()
+				ctx.GetCancelFunc()()
 				return
 			}
 
@@ -210,44 +186,39 @@ func (_runtime *RuntimeBehavior) loopWithFrame() {
 					defer func() {
 						recover()
 					}()
-
 					select {
-					case _runtime.processQueue <- _runtime.frameUpdate:
-						curFrames++
+					case _runtime.processQueue <- _runtime.frameLoop:
 					default:
 					}
 				}()
-			case <-_runtime.ctx.Done():
+			case <-ctx.Done():
 				return
 			}
 		}
-	}()
-
-	frame.SetCurFrames(0)
-	_runtime.firstFrameUpdate()
+	}(frame.GetCurFrames()+1, frame.GetTotalFrames(), frame.GetTargetFPS())
 
 	gcTicker := time.NewTicker(_runtime.opts.GCInterval)
 	defer gcTicker.Stop()
 
-	for {
+	for _runtime.frameLoopBegin(); ; {
 		select {
 		case process, ok := <-_runtime.processQueue:
 			if !ok {
 				return
 			}
-			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), process)
+			internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), process)
 
 		case <-gcTicker.C:
 			_runtime.gc()
 
-		case <-_runtime.ctx.Done():
+		case <-ctx.Done():
 			return
 		}
 	}
 }
 
-func (_runtime *RuntimeBehavior) loopWithFrameEnd() {
-	frame := runtime.UnsafeFrame(_runtime.opts.Frame)
+func (_runtime *RuntimeBehavior) loopingFrameEnd() {
+	ctx := _runtime.ctx
 
 	close(_runtime.processQueue)
 
@@ -258,7 +229,7 @@ func (_runtime *RuntimeBehavior) loopWithFrameEnd() {
 				if !ok {
 					return
 				}
-				internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), process)
+				internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), process)
 
 			default:
 				return
@@ -266,58 +237,59 @@ func (_runtime *RuntimeBehavior) loopWithFrameEnd() {
 		}
 	}()
 
-	frame.FrameEnd()
-	frame.SetCurFrames(frame.GetCurFrames() + 1)
+	_runtime.frameLoopEnd()
 }
 
-func (_runtime *RuntimeBehavior) frameUpdate() {
-	frame := runtime.UnsafeFrame(_runtime.opts.Frame)
-
-	if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().FrameEndCb; callback != nil {
-		internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-			callback(_runtime.ctx)
-		})
-	}
-
-	frame.FrameEnd()
-
-	frame.SetCurFrames(frame.GetCurFrames() + 1)
-
-	_runtime.firstFrameUpdate()
+func (_runtime *RuntimeBehavior) frameLoop() {
+	_runtime.frameLoopEnd()
+	_runtime.frameLoopBegin()
 }
 
-func (_runtime *RuntimeBehavior) firstFrameUpdate() {
+func (_runtime *RuntimeBehavior) frameLoopBegin() {
 	frame := runtime.UnsafeFrame(_runtime.opts.Frame)
 
-	frame.FrameBegin()
-
-	if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().FrameBeginCb; callback != nil {
-		internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-			callback(_runtime.ctx)
-		})
-	}
+	frame.LoopBegin()
+	_runtime.changeRunningState(runtime.RunningState_FrameLoopBegin)
 
 	frame.UpdateBegin()
-	defer frame.UpdateEnd()
+	_runtime.changeRunningState(runtime.RunningState_FrameUpdateBegin)
+
+	defer func() {
+		frame.UpdateEnd()
+		_runtime.changeRunningState(runtime.RunningState_FrameUpdateEnd)
+
+		_runtime.changeRunningState(runtime.RunningState_AsyncProcessingBegin)
+	}()
 
 	emitEventUpdate(&_runtime.eventUpdate)
 	emitEventLateUpdate(&_runtime.eventLateUpdate)
 }
 
-func (_runtime *RuntimeBehavior) loopWithBlinkFrame() {
+func (_runtime *RuntimeBehavior) frameLoopEnd() {
 	frame := runtime.UnsafeFrame(_runtime.opts.Frame)
-	totalFrames := frame.GetTotalFrames()
 
+	_runtime.changeRunningState(runtime.RunningState_AsyncProcessingEnd)
+
+	frame.LoopEnd()
+	_runtime.changeRunningState(runtime.RunningState_FrameLoopEnd)
+
+	frame.SetCurFrames(frame.GetCurFrames() + 1)
+}
+
+func (_runtime *RuntimeBehavior) loopingBlinkFrame() {
+	frame := runtime.UnsafeFrame(_runtime.opts.Frame)
+
+	totalFrames := frame.GetTotalFrames()
 	gcFrames := uint64(_runtime.opts.GCInterval.Seconds() * float64(frame.GetTargetFPS()))
 
-	for frame.SetCurFrames(0); ; {
+	for {
 		curFrames := frame.GetCurFrames()
 
 		if totalFrames > 0 && curFrames >= totalFrames {
 			return
 		}
 
-		if !_runtime.blinkFrameUpdate() {
+		if !_runtime.blinkFrameLoop() {
 			return
 		}
 
@@ -329,58 +301,91 @@ func (_runtime *RuntimeBehavior) loopWithBlinkFrame() {
 	}
 }
 
-func (_runtime *RuntimeBehavior) loopWithBlinkFrameEnd() {
+func (_runtime *RuntimeBehavior) loopingBlinkFrameEnd() {
+	ctx := _runtime.ctx
+
 	close(_runtime.processQueue)
 
-	for {
-		select {
-		case process, ok := <-_runtime.processQueue:
-			if !ok {
+	_runtime.changeRunningState(runtime.RunningState_AsyncProcessingBegin)
+
+	func() {
+		for {
+			select {
+			case process, ok := <-_runtime.processQueue:
+				if !ok {
+					return
+				}
+				internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), process)
+
+			default:
 				return
 			}
-			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), process)
-
-		default:
-			break
 		}
+	}()
+
+	_runtime.changeRunningState(runtime.RunningState_AsyncProcessingEnd)
+}
+
+func (_runtime *RuntimeBehavior) blinkFrameLoop() bool {
+	ctx := _runtime.ctx
+	frame := runtime.UnsafeFrame(_runtime.opts.Frame)
+
+	select {
+	case <-ctx.Done():
+		return false
+	default:
+		func() {
+			frame.LoopBegin()
+			_runtime.changeRunningState(runtime.RunningState_FrameLoopBegin)
+
+			frame.UpdateBegin()
+			_runtime.changeRunningState(runtime.RunningState_FrameUpdateBegin)
+
+			defer func() {
+				frame.UpdateEnd()
+				_runtime.changeRunningState(runtime.RunningState_FrameUpdateEnd)
+
+				frame.LoopEnd()
+				_runtime.changeRunningState(runtime.RunningState_FrameLoopEnd)
+			}()
+
+			emitEventUpdate(&_runtime.eventUpdate)
+			emitEventLateUpdate(&_runtime.eventLateUpdate)
+		}()
+		return true
 	}
 }
 
-func (_runtime *RuntimeBehavior) blinkFrameUpdate() bool {
-	frame := runtime.UnsafeFrame(_runtime.opts.Frame)
-
-	frame.FrameBegin()
-
-	if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().FrameBeginCb; callback != nil {
+func (_runtime *RuntimeBehavior) changeRunningState(state runtime.RunningState) {
+	if handler := runtime.UnsafeContext(_runtime.ctx).GetOptions().RunningHandler; handler != nil {
 		internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-			callback(_runtime.ctx)
+			handler(_runtime.ctx, state)
 		})
 	}
+}
 
-	defer func() {
-		if callback := runtime.UnsafeContext(_runtime.ctx).GetOptions().FrameEndCb; callback != nil {
-			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-				callback(_runtime.ctx)
-			})
-		}
-
-		frame.FrameEnd()
-	}()
-
-	for {
-		select {
-		case <-_runtime.ctx.Done():
-			return false
-
-		default:
-			func() {
-				frame.UpdateBegin()
-				defer frame.UpdateEnd()
-
-				emitEventUpdate(&_runtime.eventUpdate)
-				emitEventLateUpdate(&_runtime.eventLateUpdate)
-			}()
+func (_runtime *RuntimeBehavior) initPlugin() {
+	if pluginBundle := runtime.UnsafeContext(_runtime.ctx).GetOptions().PluginBundle; pluginBundle != nil {
+		pluginBundle.Range(func(pluginName string, pluginFace util.FaceAny) bool {
+			if pluginInit, ok := pluginFace.Iface.(LifecycleRuntimePluginInit); ok {
+				internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+					pluginInit.InitRP(_runtime.ctx)
+				})
+			}
 			return true
-		}
+		})
+	}
+}
+
+func (_runtime *RuntimeBehavior) shutPlugin() {
+	if pluginBundle := runtime.UnsafeContext(_runtime.ctx).GetOptions().PluginBundle; pluginBundle != nil {
+		pluginBundle.ReverseRange(func(pluginName string, pluginFace util.FaceAny) bool {
+			if pluginShut, ok := pluginFace.Iface.(LifecycleRuntimePluginShut); ok {
+				internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
+					pluginShut.ShutRP(_runtime.ctx)
+				})
+			}
+			return true
+		})
 	}
 }

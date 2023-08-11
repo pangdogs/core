@@ -98,6 +98,12 @@ func (_runtime *RuntimeBehavior) init(ctx runtime.Context, opts *RuntimeOptions)
 	_runtime.eventUpdate.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Disallow, ctx.GetHookAllocator(), nil)
 	_runtime.eventLateUpdate.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Disallow, ctx.GetHookAllocator(), nil)
 
+	if handler := runtime.UnsafeContext(ctx).GetOptions().RunningHandler; handler != nil {
+		internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), func() {
+			handler(ctx, runtime.RunningState_Birth)
+		})
+	}
+
 	if _runtime.opts.AutoRun {
 		_runtime.opts.CompositeFace.Iface.Run()
 	}

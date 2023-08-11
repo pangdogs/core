@@ -1,3 +1,4 @@
+//go:generate stringer -type RunningState
 package service
 
 import (
@@ -11,23 +12,32 @@ import (
 // Option 所有选项设置器
 type Option struct{}
 
+// RunningState 运行状态
+type RunningState int32
+
+const (
+	RunningState_Birth       RunningState = iota // 出生
+	RunningState_Starting                        // 开始启动
+	RunningState_Started                         // 已启动
+	RunningState_Terminating                     // 开始停止
+	RunningState_Terminated                      // 已停止
+)
+
 type (
-	Callback = func(ctx Context) // 回调函数
+	RunningHandler = func(ctx Context, state RunningState) // 运行状态变化处理器
 )
 
 // ContextOptions 创建服务上下文的所有选项
 type ContextOptions struct {
-	CompositeFace util.Face[Context]  // 扩展者，需要扩展服务上下文自身能力时需要使用
-	Context       context.Context     // 父Context
-	AutoRecover   bool                // 是否开启panic时自动恢复
-	ReportError   chan error          // panic时错误写入的error channel
-	Name          string              // 服务名称
-	PersistId     uid.Id              // 服务持久化Id
-	EntityLib     pt.EntityLib        // 实体原型库
-	PluginBundle  plugin.PluginBundle // 插件包
-	StartedCb     Callback            // 启动运行时回调函数
-	StoppingCb    Callback            // 开始停止运行时回调函数
-	StoppedCb     Callback            // 完全停止运行时回调函数
+	CompositeFace  util.Face[Context]  // 扩展者，需要扩展服务上下文自身能力时需要使用
+	Context        context.Context     // 父Context
+	AutoRecover    bool                // 是否开启panic时自动恢复
+	ReportError    chan error          // panic时错误写入的error channel
+	Name           string              // 服务名称
+	PersistId      uid.Id              // 服务持久化Id
+	EntityLib      pt.EntityLib        // 实体原型库
+	PluginBundle   plugin.PluginBundle // 插件包
+	RunningHandler RunningHandler      // 运行状态变化处理器
 }
 
 // ContextOption 创建服务上下文的选项设置器
@@ -44,9 +54,7 @@ func (Option) Default() ContextOption {
 		Option{}.PersistId(util.Zero[uid.Id]())(o)
 		Option{}.EntityLib(nil)(o)
 		Option{}.PluginBundle(nil)(o)
-		Option{}.StartedCb(nil)(o)
-		Option{}.StoppingCb(nil)(o)
-		Option{}.StoppedCb(nil)(o)
+		Option{}.RunningHandler(nil)(o)
 	}
 }
 
@@ -106,23 +114,9 @@ func (Option) PluginBundle(bundle plugin.PluginBundle) ContextOption {
 	}
 }
 
-// StartedCb 启动运行时回调函数
-func (Option) StartedCb(fn Callback) ContextOption {
+// RunningHandler 运行状态变化处理器
+func (Option) RunningHandler(fn RunningHandler) ContextOption {
 	return func(o *ContextOptions) {
-		o.StartedCb = fn
-	}
-}
-
-// StoppingCb 开始停止运行时回调函数
-func (Option) StoppingCb(fn Callback) ContextOption {
-	return func(o *ContextOptions) {
-		o.StoppingCb = fn
-	}
-}
-
-// StoppedCb 完全停止运行时回调函数
-func (Option) StoppedCb(fn Callback) ContextOption {
-	return func(o *ContextOptions) {
-		o.StoppedCb = fn
+		o.RunningHandler = fn
 	}
 }
