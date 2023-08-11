@@ -14,16 +14,16 @@ func _() {
 	_ = x[RunningState_FrameLoopBegin-3]
 	_ = x[RunningState_FrameUpdateBegin-4]
 	_ = x[RunningState_FrameUpdateEnd-5]
-	_ = x[RunningState_AsyncProcessingBegin-6]
-	_ = x[RunningState_AsyncProcessingEnd-7]
-	_ = x[RunningState_FrameLoopEnd-8]
+	_ = x[RunningState_FrameLoopEnd-6]
+	_ = x[RunningState_AsyncProcessingBegin-7]
+	_ = x[RunningState_AsyncProcessingEnd-8]
 	_ = x[RunningState_Terminating-9]
 	_ = x[RunningState_Terminated-10]
 }
 
-const _RunningState_name = "RunningState_BirthRunningState_StartingRunningState_StartedRunningState_FrameLoopBeginRunningState_FrameUpdateBeginRunningState_FrameUpdateEndRunningState_FrameAsyncProcessingBeginRunningState_FrameAsyncProcessingEndRunningState_FrameLoopEndRunningState_TerminatingRunningState_Terminated"
+const _RunningState_name = "RunningState_BirthRunningState_StartingRunningState_StartedRunningState_FrameLoopBeginRunningState_FrameUpdateBeginRunningState_FrameUpdateEndRunningState_FrameLoopEndRunningState_AsyncProcessingBeginRunningState_AsyncProcessingEndRunningState_TerminatingRunningState_Terminated"
 
-var _RunningState_index = [...]uint16{0, 18, 39, 59, 86, 115, 142, 180, 216, 241, 265, 288}
+var _RunningState_index = [...]uint16{0, 18, 39, 59, 86, 115, 142, 167, 200, 231, 255, 278}
 
 func (i RunningState) String() string {
 	if i < 0 || i >= RunningState(len(_RunningState_index)-1) {
