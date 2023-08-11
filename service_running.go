@@ -38,30 +38,28 @@ func (_service *ServiceBehavior) running(shutChan chan struct{}) {
 
 	_service.changeRunningState(service.RunningState_Started)
 
-	defer func() {
-		_service.changeRunningState(service.RunningState_Terminating)
-
-		ctx.GetWaitGroup().Wait()
-		_service.shutPlugin()
-
-		_service.changeRunningState(service.RunningState_Terminated)
-
-		if parentCtx, ok := ctx.GetParentContext().(internal.Context); ok {
-			parentCtx.GetWaitGroup().Done()
-		}
-
-		service.UnsafeContext(ctx).MarkRunning(false)
-		shutChan <- struct{}{}
-	}()
-
 	for {
 		select {
 		case <-ctx.Done():
-			return
+			break
 		default:
 			time.Sleep(1 * time.Second)
 		}
 	}
+
+	_service.changeRunningState(service.RunningState_Terminating)
+
+	ctx.GetWaitGroup().Wait()
+	_service.shutPlugin()
+
+	_service.changeRunningState(service.RunningState_Terminated)
+
+	if parentCtx, ok := ctx.GetParentContext().(internal.Context); ok {
+		parentCtx.GetWaitGroup().Done()
+	}
+
+	service.UnsafeContext(ctx).MarkRunning(false)
+	shutChan <- struct{}{}
 }
 
 func (_service *ServiceBehavior) changeRunningState(state service.RunningState) {

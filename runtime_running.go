@@ -326,21 +326,22 @@ func (_runtime *RuntimeBehavior) blinkFrameLoop() bool {
 	case <-ctx.Done():
 		return false
 	default:
-		frame.LoopBegin()
-		_runtime.changeRunningState(runtime.RunningState_FrameLoopBegin)
-
-		frame.UpdateBegin()
-		_runtime.changeRunningState(runtime.RunningState_FrameUpdateBegin)
-
-		emitEventUpdate(&_runtime.eventUpdate)
-		emitEventLateUpdate(&_runtime.eventLateUpdate)
-
-		frame.UpdateEnd()
-		_runtime.changeRunningState(runtime.RunningState_FrameUpdateEnd)
-
-		frame.LoopEnd()
-		_runtime.changeRunningState(runtime.RunningState_FrameLoopEnd)
 	}
+
+	frame.LoopBegin()
+	_runtime.changeRunningState(runtime.RunningState_FrameLoopBegin)
+
+	frame.UpdateBegin()
+	_runtime.changeRunningState(runtime.RunningState_FrameUpdateBegin)
+
+	emitEventUpdate(&_runtime.eventUpdate)
+	emitEventLateUpdate(&_runtime.eventLateUpdate)
+
+	frame.UpdateEnd()
+	_runtime.changeRunningState(runtime.RunningState_FrameUpdateEnd)
+
+	frame.LoopEnd()
+	_runtime.changeRunningState(runtime.RunningState_FrameLoopEnd)
 
 	return true
 }
