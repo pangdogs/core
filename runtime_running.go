@@ -184,12 +184,12 @@ func (_runtime *RuntimeBehavior) loopingFrame() {
 					}()
 					select {
 					case _runtime.processQueue <- _runtime.frameLoop:
+						curFrames++
 					default:
 					}
 				}()
 			case <-ctx.Done():
 				return
-			default:
 			}
 		}
 	}(frame.GetCurFrames()+1, frame.GetTotalFrames(), frame.GetTargetFPS())
