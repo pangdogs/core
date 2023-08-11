@@ -38,10 +38,11 @@ func (_service *ServiceBehavior) running(shutChan chan struct{}) {
 
 	_service.changeRunningState(service.RunningState_Started)
 
+loop:
 	for {
 		select {
 		case <-ctx.Done():
-			break
+			break loop
 		default:
 			time.Sleep(1 * time.Second)
 		}
