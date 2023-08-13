@@ -16,8 +16,13 @@ type EntityCreator struct {
 	mutable bool                 // 是否已改变选项
 }
 
+// Clone 克隆
+func (creator EntityCreator) Clone() *EntityCreator {
+	return &creator
+}
+
 // Options 创建实体的选项
-func (creator EntityCreator) Options(options ...EntityCreatorOption) EntityCreator {
+func (creator *EntityCreator) Options(options ...EntityCreatorOption) *EntityCreator {
 	if !creator.mutable {
 		Option{}.EntityCreator.Default()(&creator.options)
 		if creator.Context != nil {
@@ -33,7 +38,7 @@ func (creator EntityCreator) Options(options ...EntityCreatorOption) EntityCreat
 }
 
 // Spawn 创建实体
-func (creator EntityCreator) Spawn(options ...EntityCreatorOption) (ec.Entity, error) {
+func (creator *EntityCreator) Spawn(options ...EntityCreatorOption) (ec.Entity, error) {
 	if creator.Context == nil {
 		return nil, errors.New("nil context")
 	}
@@ -41,29 +46,30 @@ func (creator EntityCreator) Spawn(options ...EntityCreatorOption) (ec.Entity, e
 	runtimeCtx := creator.Context
 	serviceCtx := service.Get(runtimeCtx)
 
-	if !creator.mutable {
-		Option{}.EntityCreator.Default()(&creator.options)
-		creator.options.FaceAnyAllocator = runtimeCtx.GetFaceAnyAllocator()
-		creator.options.HookAllocator = runtimeCtx.GetHookAllocator()
+	creator.Options()
+
+	opts := &creator.options
+	if len(options) > 0 {
+		copyOpts := creator.options
+		for i := range options {
+			options[i](&copyOpts)
+		}
+		opts = &copyOpts
 	}
 
-	for i := range options {
-		options[i](&creator.options)
-	}
-
-	entityPt, ok := pt.TryGetEntityPt(serviceCtx, creator.options.Prototype)
+	entityPt, ok := pt.TryGetEntityPt(serviceCtx, opts.Prototype)
 	if !ok {
-		return nil, fmt.Errorf("entity prototype %q not registered", creator.options.Prototype)
+		return nil, fmt.Errorf("entity prototype %q not registered", opts.Prototype)
 	}
 
-	entity := entityPt.UnsafeConstruct(creator.options.ConstructEntityOptions)
+	entity := entityPt.UnsafeConstruct(opts.ConstructEntityOptions)
 
-	if err := runtimeCtx.GetEntityMgr().AddEntity(entity, creator.options.Scope); err != nil {
+	if err := runtimeCtx.GetEntityMgr().AddEntity(entity, opts.Scope); err != nil {
 		return nil, fmt.Errorf("add entity to runtime context failed, %v", err)
 	}
 
-	if !creator.options.ParentID.IsNil() {
-		err := runtimeCtx.GetECTree().AddChild(creator.options.ParentID, entity.GetId())
+	if !opts.ParentID.IsNil() {
+		err := runtimeCtx.GetECTree().AddChild(opts.ParentID, entity.GetId())
 		if err != nil {
 			runtimeCtx.GetEntityMgr().RemoveEntity(entity.GetId())
 			return nil, fmt.Errorf("add entity to ec-tree failed, %v", err)
