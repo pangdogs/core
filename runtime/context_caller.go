@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"fmt"
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/util"
@@ -43,7 +44,7 @@ func (ctx *ContextBehavior) SyncCall(segment func() Ret) (ret Ret) {
 	func() {
 		defer func() {
 			if panicErr := util.Panic2Err(recover()); panicErr != nil {
-				ret = NewRet(panicErr, nil)
+				ret = NewRet(fmt.Errorf("panicked: %w", panicErr), nil)
 			}
 		}()
 
@@ -71,7 +72,7 @@ func (ctx *ContextBehavior) AsyncCall(segment func() Ret) AsyncRet {
 	go func() {
 		defer func() {
 			if panicErr := util.Panic2Err(recover()); panicErr != nil {
-				asyncRet <- NewRet(panicErr, nil)
+				asyncRet <- NewRet(fmt.Errorf("panicked: %w", panicErr), nil)
 				close(asyncRet)
 			}
 		}()
