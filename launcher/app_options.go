@@ -20,9 +20,9 @@ type (
 
 // Cmd 应用指令
 type Cmd struct {
-	Clause *kingpin.CmdClause        // cmd clause
-	Flags  []interface{}             // cmd flags
-	Run    func(flags []interface{}) // run cmd
+	Clause *kingpin.CmdClause // cmd clause
+	Flags  []any              // cmd flags
+	Run    func(flags []any)  // run cmd
 }
 
 // AppOptions 创建应用的所有选项

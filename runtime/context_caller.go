@@ -42,7 +42,7 @@ func entityExist(entity ec.Entity) bool {
 func (ctx *ContextBehavior) SyncCall(segment func() Ret) (ret Ret) {
 	func() {
 		defer func() {
-			if panicErr := util.Panic2Err(); panicErr != nil {
+			if panicErr := util.Panic2Err(recover()); panicErr != nil {
 				ret = NewRet(panicErr, nil)
 			}
 		}()
@@ -70,7 +70,7 @@ func (ctx *ContextBehavior) AsyncCall(segment func() Ret) AsyncRet {
 
 	go func() {
 		defer func() {
-			if panicErr := util.Panic2Err(); panicErr != nil {
+			if panicErr := util.Panic2Err(recover()); panicErr != nil {
 				asyncRet <- NewRet(panicErr, nil)
 				close(asyncRet)
 			}

@@ -47,7 +47,7 @@ func AsyncGo(ctxResolver runtime.ContextResolver, segment func(ctx runtime.Conte
 
 	go func() {
 		defer func() {
-			if panicErr := util.Panic2Err(); panicErr != nil {
+			if panicErr := util.Panic2Err(recover()); panicErr != nil {
 				asyncRet <- runtime.NewRet(panicErr, nil)
 			}
 			close(asyncRet)
@@ -70,7 +70,7 @@ func AsyncGoVoid(ctxResolver runtime.ContextResolver, segment func(ctx runtime.C
 
 	go func() {
 		defer func() {
-			if panicErr := util.Panic2Err(); panicErr != nil {
+			if panicErr := util.Panic2Err(recover()); panicErr != nil {
 				asyncRet <- runtime.NewRet(panicErr, nil)
 			}
 			close(asyncRet)

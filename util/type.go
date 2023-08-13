@@ -54,8 +54,8 @@ func Bytes2String(b []byte) string {
 }
 
 // Panic2Err panic转换为error
-func Panic2Err() error {
-	switch info := recover().(type) {
+func Panic2Err(panicInfo any) error {
+	switch info := panicInfo.(type) {
 	case nil:
 		return nil
 	case error:
@@ -63,7 +63,7 @@ func Panic2Err() error {
 	case string:
 		return errors.New(info)
 	default:
-		return fmt.Errorf("%v", info)
+		return fmt.Errorf("%v", panicInfo)
 	}
 }
 

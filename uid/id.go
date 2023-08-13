@@ -37,7 +37,7 @@ var Id_Value = func(id Id) (driver.Value, error) {
 	return ksuid.KSUID(id).Value()
 }
 
-var Id_Scan = func(id *Id, src interface{}) error {
+var Id_Scan = func(id *Id, src any) error {
 	return ((*ksuid.KSUID)(id)).Scan(src)
 }
 
@@ -63,7 +63,7 @@ func (id Id) IsNil() bool {
 	return id == Nil
 }
 
-func (id Id) Get() interface{} {
+func (id Id) Get() any {
 	return id
 }
 
@@ -91,6 +91,6 @@ func (id Id) Value() (driver.Value, error) {
 	return Id_Value(id)
 }
 
-func (id *Id) Scan(src interface{}) error {
+func (id *Id) Scan(src any) error {
 	return Id_Scan(id, src)
 }

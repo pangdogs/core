@@ -16,7 +16,7 @@ func CallOuter[T any](autoRecover bool, reportError chan error, fun func() T) (r
 		defer func() {
 			if info := recover(); info != nil {
 				if reportError != nil {
-					exception = errorAddStackTrace(info)
+					exception = printStackTrace(info)
 					select {
 					case reportError <- exception:
 					default:
@@ -41,7 +41,7 @@ func CallOuterVoid(autoRecover bool, reportError chan error, fun func()) (except
 		defer func() {
 			if info := recover(); info != nil {
 				if reportError != nil {
-					exception = errorAddStackTrace(info)
+					exception = printStackTrace(info)
 					select {
 					case reportError <- exception:
 					default:
@@ -56,8 +56,8 @@ func CallOuterVoid(autoRecover bool, reportError chan error, fun func()) (except
 	return
 }
 
-func errorAddStackTrace(info any) error {
+func printStackTrace(info any) error {
 	stackBuf := make([]byte, 4096)
 	n := runtime.Stack(stackBuf, false)
-	return fmt.Errorf("Error: %v\nStack: %s\n", info, stackBuf[:n])
+	return fmt.Errorf("panicked: %v\nstack: %s\n", info, stackBuf[:n])
 }
