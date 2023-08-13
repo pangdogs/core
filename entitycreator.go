@@ -33,7 +33,7 @@ func (creator EntityCreator) Options(options ...EntityCreatorOption) EntityCreat
 }
 
 // Spawn 创建实体
-func (creator EntityCreator) Spawn() (ec.Entity, error) {
+func (creator EntityCreator) Spawn(options ...EntityCreatorOption) (ec.Entity, error) {
 	if creator.Context == nil {
 		return nil, errors.New("nil context")
 	}
@@ -45,6 +45,10 @@ func (creator EntityCreator) Spawn() (ec.Entity, error) {
 		Option{}.EntityCreator.Default()(&creator.options)
 		creator.options.FaceAnyAllocator = runtimeCtx.GetFaceAnyAllocator()
 		creator.options.HookAllocator = runtimeCtx.GetHookAllocator()
+	}
+
+	for i := range options {
+		options[i](&creator.options)
 	}
 
 	entityPt, ok := pt.TryGetEntityPt(serviceCtx, creator.options.Prototype)
