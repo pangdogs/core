@@ -198,7 +198,7 @@ func as(entity ec.Entity, vfComplexIface reflect.Value) bool {
 			tfCompIface := vfCompIface.Type()
 
 			sb.Reset()
-			util.WriteFullName(sb, tfCompIface)
+			util.WriteFullName(&sb, tfCompIface)
 
 			comp := entity.GetComponent(sb.String())
 			if comp == nil {
@@ -214,7 +214,7 @@ func as(entity ec.Entity, vfComplexIface reflect.Value) bool {
 		tfComplexIface := vfComplexIface.Type()
 
 		sb.Reset()
-		util.WriteFullName(sb, tfComplexIface)
+		util.WriteFullName(&sb, tfComplexIface)
 
 		comp := entity.GetComponent(sb.String())
 		if comp == nil {

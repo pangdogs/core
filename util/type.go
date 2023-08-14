@@ -93,7 +93,7 @@ func TypeOfFullName(t reflect.Type) string {
 }
 
 // WriteFullName 写入类型全名
-func WriteFullName(sb strings.Builder, t reflect.Type) {
+func WriteFullName(sb *strings.Builder, t reflect.Type) {
 	sb.WriteString(t.PkgPath())
 	sb.WriteString("/")
 	sb.WriteString(t.Name())
