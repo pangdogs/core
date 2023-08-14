@@ -221,6 +221,8 @@ func as(entity ec.Entity, vfComplexIface reflect.Value) bool {
 			return false
 		}
 
+		vfComplexIface.Set(ec.UnsafeComponent(comp).GetReflectValue())
+
 		return true
 
 	default:
