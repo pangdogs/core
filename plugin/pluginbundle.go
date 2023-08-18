@@ -82,6 +82,10 @@ func (bundle *_PluginBundle) init() {
 	bundle.pluginMap = map[string]util.FaceAny{}
 }
 
+// Install 安装插件。
+//
+//	@param pluginName 插件名称。
+//	@param pluginFace 插件Face。
 func (bundle *_PluginBundle) Install(pluginName string, pluginFace util.FaceAny) {
 	if pluginFace.IsNil() {
 		panic("nil pluginFace")
@@ -99,6 +103,9 @@ func (bundle *_PluginBundle) Install(pluginName string, pluginFace util.FaceAny)
 	bundle.pluginList = append(bundle.pluginList, _PluginInfo{Name: pluginName, Plugin: pluginFace})
 }
 
+// Uninstall 卸载插件。
+//
+//	@param pluginName 插件名称。
 func (bundle *_PluginBundle) Uninstall(pluginName string) {
 	bundle.mutex.Lock()
 	defer bundle.mutex.Unlock()
@@ -111,9 +118,13 @@ func (bundle *_PluginBundle) Uninstall(pluginName string) {
 			return
 		}
 	}
-
 }
 
+// Get 获取插件。
+//
+//	@param pluginName 插件名称。
+//	@return 插件Face。
+//	@return 是否存在。
 func (bundle *_PluginBundle) Get(pluginName string) (util.FaceAny, bool) {
 	bundle.mutex.RLock()
 	defer bundle.mutex.RUnlock()
@@ -122,6 +133,9 @@ func (bundle *_PluginBundle) Get(pluginName string) (util.FaceAny, bool) {
 	return pluginFace, ok
 }
 
+// Range 遍历所有已注册的插件
+//
+//	@param fun 遍历函数。
 func (bundle *_PluginBundle) Range(fun func(pluginName string, pluginFace util.FaceAny) bool) {
 	if fun == nil {
 		return
@@ -139,6 +153,9 @@ func (bundle *_PluginBundle) Range(fun func(pluginName string, pluginFace util.F
 	}
 }
 
+// ReverseRange 反向遍历所有已注册的插件
+//
+//	@param fun 遍历函数。
 func (bundle *_PluginBundle) ReverseRange(fun func(pluginName string, pluginFace util.FaceAny) bool) {
 	if fun == nil {
 		return

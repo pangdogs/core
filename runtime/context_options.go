@@ -51,8 +51,8 @@ type ContextOptions struct {
 // ContextOption 创建运行时上下文的选项设置器
 type ContextOption func(o *ContextOptions)
 
-// Default 默认值
-func (Option) Default() ContextOption {
+// DefaultContext 默认值
+func (Option) DefaultContext() ContextOption {
 	return func(o *ContextOptions) {
 		Option{}.Composite(util.Face[Context]{})(o)
 		Option{}.Context(nil)(o)

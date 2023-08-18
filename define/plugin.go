@@ -99,7 +99,7 @@ func (p _Plugin[PLUGIN_IFACE, OPTION]) Plugin(creator func(...OPTION) PLUGIN_IFA
 	}
 }
 
-// DefinePlugin 定义插件，可以用于向插件包安装插件
+// DefinePlugin 定义通用插件，可以用于向插件包安装插件
 func DefinePlugin[PLUGIN_IFACE, OPTION any](creator func(...OPTION) PLUGIN_IFACE) Plugin[PLUGIN_IFACE, OPTION] {
 	return _Plugin[PLUGIN_IFACE, OPTION]{
 		_name: util.TypeFullName[PLUGIN_IFACE](),

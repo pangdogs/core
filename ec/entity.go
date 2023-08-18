@@ -21,6 +21,7 @@ func NewEntity(options ...EntityOption) Entity {
 	return UnsafeNewEntity(opts)
 }
 
+// Deprecated: UnsafeNewEntity 内部创建实体
 func UnsafeNewEntity(options EntityOptions) Entity {
 	if !options.CompositeFace.IsNil() {
 		options.CompositeFace.Iface.init(&options)
@@ -42,8 +43,6 @@ type Entity interface {
 
 	// GetId 获取实体Id
 	GetId() uid.Id
-	// GetSerialNo 获取序列号
-	GetSerialNo() int64
 	// GetPrototype 获取实体原型
 	GetPrototype() string
 	// GetParent 获取在运行时上下文的主EC树上的父实体
@@ -58,7 +57,6 @@ type _Entity interface {
 	init(opts *EntityOptions)
 	getOptions() *EntityOptions
 	setId(id uid.Id)
-	setSerialNo(sn int64)
 	setContext(ctx util.IfaceCache)
 	getChangedVersion() int64
 	setGCCollector(gcCollector container.GCCollector)
@@ -70,7 +68,6 @@ type _Entity interface {
 
 // EntityBehavior 实体行为，在需要扩展实体能力时，匿名嵌入至实体结构体中
 type EntityBehavior struct {
-	serialNo                         int64
 	opts                             EntityOptions
 	context                          util.IfaceCache
 	parent                           Entity
@@ -86,11 +83,6 @@ type EntityBehavior struct {
 // GetId 获取实体Id
 func (entity *EntityBehavior) GetId() uid.Id {
 	return entity.opts.PersistId
-}
-
-// GetSerialNo 获取序列号
-func (entity *EntityBehavior) GetSerialNo() int64 {
-	return entity.serialNo
 }
 
 // GetPrototype 获取实体原型
@@ -146,10 +138,6 @@ func (entity *EntityBehavior) getOptions() *EntityOptions {
 
 func (entity *EntityBehavior) setId(id uid.Id) {
 	entity.opts.PersistId = id
-}
-
-func (entity *EntityBehavior) setSerialNo(sn int64) {
-	entity.serialNo = sn
 }
 
 func (entity *EntityBehavior) setContext(ctx util.IfaceCache) {

@@ -22,7 +22,7 @@ func (pt *EntityPt) Construct(options ...ConstructEntityOption) ec.Entity {
 	return pt.UnsafeConstruct(opts)
 }
 
-// UnsafeConstruct 不安全的创建实体，需要自己初始化所有选项
+// Deprecated: UnsafeConstruct 内部创建实体
 func (pt *EntityPt) UnsafeConstruct(options ConstructEntityOptions) ec.Entity {
 	options.Prototype = pt.Prototype
 	return pt.Assemble(ec.UnsafeNewEntity(options.EntityOptions), options.ComponentConstructor, options.EntityConstructor)

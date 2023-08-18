@@ -52,7 +52,7 @@ func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
 	if frame == nil {
 		_runtime.loopingNoFrame()
 		_runtime.loopingNoFrameEnd()
-	} else if frame.Blink() {
+	} else if frame.GetBlink() {
 		_runtime.loopingBlinkFrame()
 		_runtime.loopingBlinkFrameEnd()
 	} else {

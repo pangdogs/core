@@ -59,14 +59,14 @@ func (p _PluginInterface[PLUGIN_IFACE]) RuntimePluginInterface() RuntimePluginIn
 	}
 }
 
-// PluginInterface 插件接口
+// PluginInterface 通用插件接口
 type PluginInterface[PLUGIN_IFACE any] struct {
 	Name   string                                           // 插件名称
 	Get    func(plugin.PluginResolver) PLUGIN_IFACE         // 获取插件
 	TryGet func(plugin.PluginResolver) (PLUGIN_IFACE, bool) // 尝试获取插件
 }
 
-// PluginInterface 生成插件接口定义
+// PluginInterface 生成通用插件接口定义
 func (p _PluginInterface[PLUGIN_IFACE]) PluginInterface() PluginInterface[PLUGIN_IFACE] {
 	return PluginInterface[PLUGIN_IFACE]{
 		Name:   p.name(),
@@ -75,7 +75,7 @@ func (p _PluginInterface[PLUGIN_IFACE]) PluginInterface() PluginInterface[PLUGIN
 	}
 }
 
-// DefinePluginInterface 定义插件接口，因为仅有接口没有实现，所以不能用于向插件包安装插件
+// DefinePluginInterface 定义通用插件接口，因为仅有接口没有实现，所以不能用于向插件包安装插件
 func DefinePluginInterface[PLUGIN_IFACE any]() PluginInterface[PLUGIN_IFACE] {
 	return _PluginInterface[PLUGIN_IFACE]{
 		_name: util.TypeFullName[PLUGIN_IFACE](),

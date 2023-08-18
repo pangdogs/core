@@ -59,6 +59,11 @@ func (lib *_ComponentLib) init() {
 	lib.compPtMap = map[string]ComponentPt{}
 }
 
+// RegisterComponent 注册组件原型，一般在init()函数中使用，线程安全。
+//
+//	@param compName 组件名称，一般是组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
+//	@param COMP 组件对象。
+//	@param descr 组件功能的描述说明。
 func (lib *_ComponentLib) RegisterComponent(compName string, comp any, descr string) {
 	if comp == nil {
 		panic("nil comp")
@@ -71,6 +76,9 @@ func (lib *_ComponentLib) RegisterComponent(compName string, comp any, descr str
 	}
 }
 
+// DeregisterComponent 取消注册组件原型，线程安全。
+//
+//	@param compImpl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld/HelloWorld`。
 func (lib *_ComponentLib) DeregisterComponent(compImpl string) {
 	lib.mutex.Lock()
 	defer lib.mutex.Unlock()
@@ -78,6 +86,11 @@ func (lib *_ComponentLib) DeregisterComponent(compImpl string) {
 	delete(lib.compPtMap, compImpl)
 }
 
+// Get 获取组件原型，线程安全。
+//
+//	@param compImpl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld/HelloWorld`。
+//	@return 组件原型，可以用于创建组件。
+//	@return 是否存在。
 func (lib *_ComponentLib) Get(compImpl string) (ComponentPt, bool) {
 	lib.mutex.RLock()
 	defer lib.mutex.RUnlock()
@@ -86,6 +99,9 @@ func (lib *_ComponentLib) Get(compImpl string) (ComponentPt, bool) {
 	return compPt, ok
 }
 
+// Range 遍历所有已注册的组件原型，线程安全。
+//
+//	@param fun 遍历函数。
 func (lib *_ComponentLib) Range(fun func(compPt ComponentPt) bool) {
 	if fun == nil {
 		return

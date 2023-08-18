@@ -11,7 +11,7 @@ import (
 
 // Async 异步执行代码，最多返回一次，有返回值，返回的异步结果（async ret）可以给Await()等待并继续后续逻辑运行
 func Async(ctxResolver runtime.ContextResolver, segment func(ctx runtime.Context) runtime.Ret) runtime.AsyncRet {
-	ctx := runtime.Get(ctxResolver)
+	ctx := runtime.Current(ctxResolver)
 
 	if segment == nil {
 		panic("nil segment")
@@ -24,7 +24,7 @@ func Async(ctxResolver runtime.ContextResolver, segment func(ctx runtime.Context
 
 // AsyncVoid 异步执行代码，最多返回一次，无返回值，返回的异步结果（async ret）可以给Await()等待并继续后续逻辑运行
 func AsyncVoid(ctxResolver runtime.ContextResolver, segment func(ctx runtime.Context)) runtime.AsyncRet {
-	ctx := runtime.Get(ctxResolver)
+	ctx := runtime.Current(ctxResolver)
 
 	if segment == nil {
 		panic("nil segment")
@@ -38,7 +38,7 @@ func AsyncVoid(ctxResolver runtime.ContextResolver, segment func(ctx runtime.Con
 
 // AsyncGo 使用新协程异步执行代码，最多返回一次，有返回值，返回的异步结果（async ret）可以给Await()等待并继续后续逻辑运行
 func AsyncGo(ctxResolver runtime.ContextResolver, segment func(ctx runtime.Context) runtime.Ret) runtime.AsyncRet {
-	ctx := runtime.Get(ctxResolver)
+	ctx := runtime.Current(ctxResolver)
 
 	if segment == nil {
 		panic("nil segment")
@@ -61,7 +61,7 @@ func AsyncGo(ctxResolver runtime.ContextResolver, segment func(ctx runtime.Conte
 
 // AsyncGoVoid 使用新协程异步执行代码，最多返回一次，无返回值，返回的异步结果（async ret）可以给Await()等待并继续后续逻辑运行
 func AsyncGoVoid(ctxResolver runtime.ContextResolver, segment func(ctx runtime.Context)) runtime.AsyncRet {
-	ctx := runtime.Get(ctxResolver)
+	ctx := runtime.Current(ctxResolver)
 
 	if segment == nil {
 		panic("nil segment")
@@ -182,7 +182,7 @@ func AsyncChanRet[T any](ctx context.Context, ch <-chan T) runtime.AsyncRet {
 
 // Await 等待异步结果（async ret）返回，并继续运行后续逻辑
 func Await(ctxResolver runtime.ContextResolver, asyncRet runtime.AsyncRet, onAsyncRet func(ctx runtime.Context, ret runtime.Ret)) {
-	ctx := runtime.Get(ctxResolver)
+	ctx := runtime.Current(ctxResolver)
 
 	if asyncRet == nil {
 		return
@@ -205,7 +205,7 @@ func Await(ctxResolver runtime.ContextResolver, asyncRet runtime.AsyncRet, onAsy
 
 // AwaitAny 等待任意一个异步结果（async ret）成功的一次返回，并继续运行后续逻辑
 func AwaitAny(ctxResolver runtime.ContextResolver, asyncRets []runtime.AsyncRet, onAsyncRet func(ctx runtime.Context, ret runtime.Ret)) {
-	ctx := runtime.Get(ctxResolver)
+	ctx := runtime.Current(ctxResolver)
 
 	if len(asyncRets) <= 0 {
 		return
@@ -253,7 +253,7 @@ func AwaitAny(ctxResolver runtime.ContextResolver, asyncRets []runtime.AsyncRet,
 
 // AwaitAll 等待所有异步结果（async ret）返回，并继续运行后续逻辑
 func AwaitAll(ctxResolver runtime.ContextResolver, asyncRets []runtime.AsyncRet, onAsyncRet func(ctx runtime.Context, ret runtime.Ret)) {
-	ctx := runtime.Get(ctxResolver)
+	ctx := runtime.Current(ctxResolver)
 
 	if len(asyncRets) <= 0 {
 		return

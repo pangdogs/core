@@ -5,14 +5,9 @@ import (
 )
 
 // NewFrame 创建帧，在运行时初始化时可以设置帧，用于设置运行时帧更新方式，在逻辑运行过程中可以在运行时上下文中获取帧信息。
-//
-//	@param targetFPS 目标FPS。
-//	@param totalFrames 运行帧数上限。
-//	@param blink 是否是瞬时运行。
-//	@return 帧。
-func NewFrame(targetFPS float32, totalFrames uint64, blink bool) Frame {
+func NewFrame(options ...FrameOption) Frame {
 	frame := &_FrameBehavior{}
-	frame.init(targetFPS, totalFrames, blink)
+	frame.init(options...)
 	return frame
 }
 
@@ -28,8 +23,8 @@ type Frame interface {
 	GetTotalFrames() uint64
 	// GetCurFrames 获取当前帧数
 	GetCurFrames() uint64
-	// Blink 是否是瞬时运行
-	Blink() bool
+	// GetBlink 获取是否是瞬时运行
+	GetBlink() bool
 	// GetRunningBeginTime 获取运行开始时间
 	GetRunningBeginTime() time.Time
 	// GetRunningElapseTime 获取运行持续时间
@@ -55,23 +50,23 @@ type _Frame interface {
 }
 
 type _FrameBehavior struct {
-	targetFPS, curFPS      float32
-	totalFrames, curFrames uint64
-	blink                  bool
-	blinkFrameTime         time.Duration
-	runningBeginTime       time.Time
-	runningElapseTime      time.Duration
-	loopBeginTime          time.Time
-	lastLoopElapseTime     time.Duration
-	updateBeginTime        time.Time
-	lastUpdateElapseTime   time.Duration
-	statFPSBeginTime       time.Time
-	statFPSFrames          uint64
+	options              FrameOptions
+	curFPS               float32
+	curFrames            uint64
+	blinkFrameTime       time.Duration
+	runningBeginTime     time.Time
+	runningElapseTime    time.Duration
+	loopBeginTime        time.Time
+	lastLoopElapseTime   time.Duration
+	updateBeginTime      time.Time
+	lastUpdateElapseTime time.Duration
+	statFPSBeginTime     time.Time
+	statFPSFrames        uint64
 }
 
 // GetTargetFPS 获取目标FPS
 func (frame *_FrameBehavior) GetTargetFPS() float32 {
-	return frame.targetFPS
+	return frame.options.TargetFPS
 }
 
 // GetCurFPS 获取当前FPS
@@ -81,7 +76,7 @@ func (frame *_FrameBehavior) GetCurFPS() float32 {
 
 // GetTotalFrames 获取运行帧数上限
 func (frame *_FrameBehavior) GetTotalFrames() uint64 {
-	return frame.totalFrames
+	return frame.options.TotalFrames
 }
 
 // GetCurFrames 获取当前帧数
@@ -89,9 +84,9 @@ func (frame *_FrameBehavior) GetCurFrames() uint64 {
 	return frame.curFrames
 }
 
-// Blink 是否是瞬时运行
-func (frame *_FrameBehavior) Blink() bool {
-	return frame.blink
+// GetBlink 获取是否是瞬时运行
+func (frame *_FrameBehavior) GetBlink() bool {
+	return frame.options.Blink
 }
 
 // GetRunningBeginTime 获取运行开始时间
@@ -124,21 +119,15 @@ func (frame *_FrameBehavior) GetLastUpdateElapseTime() time.Duration {
 	return frame.lastUpdateElapseTime
 }
 
-func (frame *_FrameBehavior) init(targetFPS float32, totalFrames uint64, blink bool) {
-	if targetFPS <= 0 {
-		panic("targetFPS less equal 0 is invalid")
+func (frame *_FrameBehavior) init(options ...FrameOption) {
+	Option{}.DefaultFrame()(&frame.options)
+
+	for i := range options {
+		options[i](&frame.options)
 	}
 
-	if totalFrames < 0 {
-		panic("totalFrames less 0 is invalid")
-	}
-
-	frame.targetFPS = targetFPS
-	frame.totalFrames = totalFrames
-	frame.blink = blink
-
-	if blink {
-		frame.blinkFrameTime = time.Duration(float64(time.Second) / float64(targetFPS))
+	if frame.options.Blink {
+		frame.blinkFrameTime = time.Duration(float64(time.Second) / float64(frame.options.TargetFPS))
 	}
 }
 
@@ -166,7 +155,7 @@ func (frame *_FrameBehavior) runningBegin() {
 }
 
 func (frame *_FrameBehavior) runningEnd() {
-	if frame.blink {
+	if frame.options.Blink {
 		frame.curFPS = float32(float64(frame.curFrames) / time.Now().Sub(frame.runningBeginTime).Seconds())
 	}
 }
@@ -176,7 +165,7 @@ func (frame *_FrameBehavior) loopBegin() {
 
 	frame.loopBeginTime = now
 
-	if !frame.blink {
+	if !frame.options.Blink {
 		statInterval := now.Sub(frame.statFPSBeginTime).Seconds()
 		if statInterval >= 1 {
 			frame.curFPS = float32(float64(frame.statFPSFrames) / statInterval)
@@ -187,7 +176,7 @@ func (frame *_FrameBehavior) loopBegin() {
 }
 
 func (frame *_FrameBehavior) loopEnd() {
-	if frame.blink {
+	if frame.options.Blink {
 		frame.runningElapseTime += frame.blinkFrameTime
 	} else {
 		frame.lastLoopElapseTime = time.Now().Sub(frame.loopBeginTime)

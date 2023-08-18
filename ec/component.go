@@ -18,8 +18,6 @@ type Component interface {
 
 	// GetId 获取组件Id
 	GetId() uid.Id
-	// GetSerialNo 获取序列号
-	GetSerialNo() int64
 	// GetName 获取组件名称
 	GetName() string
 	// GetEntity 获取组件依附的实体
@@ -33,7 +31,6 @@ type Component interface {
 type _Component interface {
 	init(name string, entity Entity, composite Component, hookAllocator container.Allocator[localevent.Hook], gcCollector container.GCCollector)
 	setId(id uid.Id)
-	setSerialNo(sn int64)
 	setFixed(v bool)
 	getFixed() bool
 	setState(state ComponentState)
@@ -47,7 +44,6 @@ type _Component interface {
 // ComponentBehavior 组件行为，需要在开发新组件时，匿名嵌入至组件结构体中
 type ComponentBehavior struct {
 	id                         uid.Id
-	serialNo                   int64
 	name                       string
 	entity                     Entity
 	composite                  Component
@@ -60,11 +56,6 @@ type ComponentBehavior struct {
 // GetId 获取组件Id
 func (comp *ComponentBehavior) GetId() uid.Id {
 	return comp.id
-}
-
-// GetSerialNo 获取序列号
-func (comp *ComponentBehavior) GetSerialNo() int64 {
-	return comp.serialNo
 }
 
 // GetName 获取组件名称
@@ -104,10 +95,6 @@ func (comp *ComponentBehavior) init(name string, entity Entity, composite Compon
 
 func (comp *ComponentBehavior) setId(id uid.Id) {
 	comp.id = id
-}
-
-func (comp *ComponentBehavior) setSerialNo(sn int64) {
-	comp.serialNo = sn
 }
 
 func (comp *ComponentBehavior) setFixed(v bool) {

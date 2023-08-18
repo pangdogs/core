@@ -1,5 +1,5 @@
-// Package define 利用模板特性，生成一些声明定义代码，简化代码编写。
-//   - 支持组件与接口定义。
-//   - 支持插件与接口定义。
-//   - 使用Goland作为IDE时，最好更新至2022.2.5版本以上，否则会有误报错.
+// Package define 利用泛型特性，简化代码编写。
+//   - 支持组件与组件接口定义，可以参考官方组件库：https://github.com/golaxy-kit/components，学习如何使用。
+//   - 支持插件与插件接口定义，注意插件共有运行时插件、服务插件、通用插件三种，可以参考官方插件库：https://github.com/golaxy-kit/plugins，学习如何使用。
+//   - 使用Goland作为IDE时，需要更新至2023.2版本以上，否则可能会有误报错。
 package define

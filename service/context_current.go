@@ -5,8 +5,8 @@ import (
 	_ "unsafe"
 )
 
-// Get 获取服务上下文
-func Get(ctxResolver internal.ContextResolver) Context {
+// Current 获取当前服务上下文
+func Current(ctxResolver internal.ContextResolver) Context {
 	return getServiceContext(ctxResolver)
 }
 

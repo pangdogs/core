@@ -18,6 +18,7 @@ func NewService(ctx service.Context, options ...ServiceOption) Service {
 	return UnsafeNewService(ctx, opts)
 }
 
+// Deprecated: UnsafeNewService 内部创建服务
 func UnsafeNewService(ctx service.Context, options ServiceOptions) Service {
 	if !options.CompositeFace.IsNil() {
 		options.CompositeFace.Iface.init(ctx, &options)

@@ -14,7 +14,7 @@ import (
 // NewContext 创建运行时上下文
 func NewContext(serviceCtx service.Context, options ...ContextOption) Context {
 	opts := ContextOptions{}
-	Option{}.Default()(&opts)
+	Option{}.DefaultContext()(&opts)
 
 	for i := range options {
 		options[i](&opts)
@@ -23,6 +23,7 @@ func NewContext(serviceCtx service.Context, options ...ContextOption) Context {
 	return UnsafeNewContext(serviceCtx, opts)
 }
 
+// Deprecated: UnsafeNewContext 内部创建运行时上下文
 func UnsafeNewContext(serviceCtx service.Context, options ContextOptions) Context {
 	if !options.CompositeFace.IsNil() {
 		options.CompositeFace.Iface.init(serviceCtx, &options)

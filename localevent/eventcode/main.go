@@ -1,15 +1,11 @@
 // Package eventcode 本地事件辅助代码生成器，使用Golang的代码生成功能（go generate）生成本地事件相关辅助代码。
 //
 //   - 可以生成发送事件（emit event）与事件表（event table）辅助代码。
-//
 //   - 用于生成发送事件辅助代码时，在事件定义代码源文件（*.go）头部，添加以下注释：
 //     `go:generate go run kit.golaxy.org/golaxy/localevent/eventcode --decl_file=$GOFILE gen_emit --package=$GOPACKAGE`
-//
 //   - 用于生成事件表辅助代码时，在事件定义代码源文件（*.go）头部，添加以下注释：
 //     `go:generate go run kit.golaxy.org/golaxy/localevent/eventcode --decl_file=$GOFILE gen_eventtab --package=$GOPACKAGE --name=XXXEventTab`
-//
 //   - 需要生成事件辅助代码时，在Cmd控制台中，定位到事件定义代码源文件（*.go）的路径下，输入`go generate`指令即可，也可以使用IDE提供的go generate功能。
-//
 //   - 本包可以编译并执行`eventcode --help`查看命令行参数，按需求调整参数改变生成的代码。
 package main
 

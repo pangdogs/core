@@ -5,8 +5,8 @@ import (
 	"kit.golaxy.org/golaxy/util"
 )
 
-// Get 获取运行时上下文
-func Get(ctxResolver ContextResolver) Context {
+// Current 获取当前运行时上下文
+func Current(ctxResolver ContextResolver) Context {
 	if ctxResolver == nil {
 		panic("nil ctxResolver")
 	}
@@ -15,5 +15,5 @@ func Get(ctxResolver ContextResolver) Context {
 }
 
 func getServiceContext(ctxResolver ContextResolver) service.Context {
-	return Get(ctxResolver).getServiceCtx()
+	return Current(ctxResolver).getServiceCtx()
 }

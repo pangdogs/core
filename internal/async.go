@@ -21,7 +21,7 @@ func (ret Ret) OK() bool {
 	return ret.Error == nil
 }
 
-// String 字符串化
+// String implements fmt.Stringer
 func (ret Ret) String() string {
 	if ret.Error != nil {
 		return ret.Error.Error()

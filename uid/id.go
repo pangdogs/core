@@ -5,45 +5,58 @@ import (
 	"github.com/segmentio/ksuid"
 )
 
-var Id_String = func(id Id) string {
-	return ksuid.KSUID(id).String()
-}
+// 唯一ID相关函数（可替换）
+var (
+	Id_String = func(id Id) string {
+		return ksuid.KSUID(id).String()
+	}
 
-var Id_Bytes = func(id Id) []byte {
-	return ksuid.KSUID(id).Bytes()
-}
+	Id_Bytes = func(id Id) []byte {
+		return ksuid.KSUID(id).Bytes()
+	}
 
-var Id_Set = func(id *Id, s string) error {
-	return ((*ksuid.KSUID)(id)).Set(s)
-}
+	Id_Set = func(id *Id, s string) error {
+		return ((*ksuid.KSUID)(id)).Set(s)
+	}
 
-var Id_MarshalText = func(id Id) ([]byte, error) {
-	return ksuid.KSUID(id).MarshalText()
-}
+	Id_MarshalText = func(id Id) ([]byte, error) {
+		return ksuid.KSUID(id).MarshalText()
+	}
 
-var Id_MarshalBinary = func(id Id) ([]byte, error) {
-	return ksuid.KSUID(id).MarshalBinary()
-}
+	Id_MarshalBinary = func(id Id) ([]byte, error) {
+		return ksuid.KSUID(id).MarshalBinary()
+	}
 
-var Id_UnmarshalText = func(id *Id, b []byte) error {
-	return ((*ksuid.KSUID)(id)).UnmarshalText(b)
-}
+	Id_UnmarshalText = func(id *Id, b []byte) error {
+		return ((*ksuid.KSUID)(id)).UnmarshalText(b)
+	}
 
-var Id_UnmarshalBinary = func(id *Id, b []byte) error {
-	return ((*ksuid.KSUID)(id)).UnmarshalBinary(b)
-}
+	Id_UnmarshalBinary = func(id *Id, b []byte) error {
+		return ((*ksuid.KSUID)(id)).UnmarshalBinary(b)
+	}
 
-var Id_Value = func(id Id) (driver.Value, error) {
-	return ksuid.KSUID(id).Value()
-}
+	Id_Value = func(id Id) (driver.Value, error) {
+		return ksuid.KSUID(id).Value()
+	}
 
-var Id_Scan = func(id *Id, src any) error {
-	return ((*ksuid.KSUID)(id)).Scan(src)
-}
+	Id_Scan = func(id *Id, src any) error {
+		return ((*ksuid.KSUID)(id)).Scan(src)
+	}
 
-var New = func() Id {
-	return Id(ksuid.New())
-}
+	New = func() Id {
+		return Id(ksuid.New())
+	}
+
+	UnmarshalText = func(v []byte) (id Id, err error) {
+		err = id.UnmarshalText(v)
+		return
+	}
+
+	UnmarshalBinary = func(v []byte) (id Id, err error) {
+		err = id.UnmarshalBinary(v)
+		return
+	}
+)
 
 // Nil nil id
 var Nil Id

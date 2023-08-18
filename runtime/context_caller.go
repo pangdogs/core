@@ -19,18 +19,18 @@ type AsyncRet = internal.AsyncRet
 // Caller 异步调用发起者
 type Caller = internal.Caller
 
-// Callee 调用接收者
+// Callee 调用接受者
 type Callee interface {
-	// PushCall 将代码片段压入接收者的任务处理流水线，串行化的进行调用。
+	// PushCall 将代码片段压入接受者的任务处理流水线，串行化的进行调用。
 	PushCall(segment func())
 }
 
 func entityCaller(entity ec.Entity) Caller {
-	return Get(entity)
+	return Current(entity)
 }
 
 func entityExist(entity ec.Entity) bool {
-	_, ok := Get(entity).GetEntityMgr().GetEntity(entity.GetId())
+	_, ok := Current(entity).GetEntityMgr().GetEntity(entity.GetId())
 	return ok
 }
 

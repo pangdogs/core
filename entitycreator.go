@@ -44,7 +44,7 @@ func (creator *EntityCreator) Spawn(options ...EntityCreatorOption) (ec.Entity, 
 	}
 
 	runtimeCtx := creator.Context
-	serviceCtx := service.Get(runtimeCtx)
+	serviceCtx := service.Current(runtimeCtx)
 
 	creator.Options()
 

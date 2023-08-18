@@ -2,18 +2,10 @@ package ec
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal"
 )
 
+// String implements fmt.Stringer
 func (comp *ComponentBehavior) String() string {
-	return ComponentStringer.String(comp.composite)
-}
-
-var ComponentStringer internal.Stringer[Component] = DefaultComponentStringer{}
-
-type DefaultComponentStringer struct{}
-
-func (DefaultComponentStringer) String(comp Component) string {
 	var entityInfo string
 	if entity := comp.GetEntity(); entity != nil {
 		entityInfo = entity.GetId().String()
@@ -21,6 +13,6 @@ func (DefaultComponentStringer) String(comp Component) string {
 		entityInfo = "nil"
 	}
 
-	return fmt.Sprintf("{Id:%s SerialNo:%d Name:%s Entity:%s State:%s}",
-		comp.GetId(), comp.GetSerialNo(), comp.GetName(), entityInfo, comp.GetState())
+	return fmt.Sprintf("{Id:%s Name:%s Entity:%s State:%s}",
+		comp.GetId(), comp.GetName(), entityInfo, comp.GetState())
 }

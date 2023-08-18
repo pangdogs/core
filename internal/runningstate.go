@@ -14,6 +14,6 @@ type RunningStateBehavior struct {
 	running atomic.Bool
 }
 
-func (state *RunningStateBehavior) markRunning(v bool) bool {
-	return state.running.CompareAndSwap(!v, v)
+func (rs *RunningStateBehavior) markRunning(v bool) bool {
+	return rs.running.CompareAndSwap(!v, v)
 }

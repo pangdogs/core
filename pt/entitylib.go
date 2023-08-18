@@ -47,6 +47,10 @@ func (lib *_EntityLib) init() {
 	lib.entityPtMap = map[string]EntityPt{}
 }
 
+// Register 注册实体原型。
+//
+//	@param prototype 实体原型名称。
+//	@param compImpls 组件实现列表。
 func (lib *_EntityLib) Register(prototype string, compImpls []string) {
 	lib.mutex.Lock()
 	defer lib.mutex.Unlock()
@@ -71,6 +75,9 @@ func (lib *_EntityLib) Register(prototype string, compImpls []string) {
 	lib.entityPtMap[prototype] = entityPt
 }
 
+// Deregister 取消注册实体原型。
+//
+//	@param prototype 实体原型名称。
 func (lib *_EntityLib) Deregister(prototype string) {
 	lib.mutex.Lock()
 	defer lib.mutex.Unlock()
@@ -78,6 +85,11 @@ func (lib *_EntityLib) Deregister(prototype string) {
 	delete(lib.entityPtMap, prototype)
 }
 
+// Get 获取实体原型
+//
+//	@param prototype 实体原型名称。
+//	@return 实体原型。
+//	@return 是否存在。
 func (lib *_EntityLib) Get(prototype string) (EntityPt, bool) {
 	lib.mutex.RLock()
 	defer lib.mutex.RUnlock()
@@ -86,6 +98,9 @@ func (lib *_EntityLib) Get(prototype string) (EntityPt, bool) {
 	return entityPt, ok
 }
 
+// Range 遍历所有已注册的实体原型
+//
+//	@param fun 遍历函数。
 func (lib *_EntityLib) Range(fun func(entityPt EntityPt) bool) {
 	if fun == nil {
 		return

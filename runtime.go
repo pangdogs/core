@@ -21,6 +21,7 @@ func NewRuntime(ctx runtime.Context, options ...RuntimeOption) Runtime {
 	return UnsafeNewRuntime(ctx, opts)
 }
 
+// Deprecated: UnsafeNewRuntime 内部创建运行时
 func UnsafeNewRuntime(ctx runtime.Context, options RuntimeOptions) Runtime {
 	if !options.CompositeFace.IsNil() {
 		options.CompositeFace.Iface.init(ctx, &options)
@@ -48,16 +49,11 @@ type _Runtime interface {
 	getOptions() *RuntimeOptions
 }
 
-type _HookKey struct {
-	Id uid.Id
-	SN int64
-}
-
 // RuntimeBehavior 运行时行为，在需要扩展运行时能力时，匿名嵌入至运行时结构体中
 type RuntimeBehavior struct {
 	opts            RuntimeOptions
 	ctx             runtime.Context
-	hooksMap        map[_HookKey][3]localevent.Hook
+	hooksMap        map[uid.Id][3]localevent.Hook
 	processQueue    chan func()
 	eventUpdate     localevent.Event
 	eventLateUpdate localevent.Event
@@ -93,7 +89,7 @@ func (_runtime *RuntimeBehavior) init(ctx runtime.Context, opts *RuntimeOptions)
 	}
 
 	_runtime.ctx = ctx
-	_runtime.hooksMap = make(map[_HookKey][3]localevent.Hook)
+	_runtime.hooksMap = make(map[uid.Id][3]localevent.Hook)
 
 	_runtime.eventUpdate.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Disallow, ctx.GetHookAllocator(), nil)
 	_runtime.eventLateUpdate.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Disallow, ctx.GetHookAllocator(), nil)
@@ -109,19 +105,19 @@ func (_runtime *RuntimeBehavior) getOptions() *RuntimeOptions {
 	return &_runtime.opts
 }
 
-// OnEntityMgrAddEntity 事件回调：实体管理器添加实体
+// OnEntityMgrAddEntity 事件处理器：实体管理器添加实体
 func (_runtime *RuntimeBehavior) OnEntityMgrAddEntity(entityMgr runtime.IEntityMgr, entity ec.Entity) {
 	_runtime.connectEntity(entity)
 	_runtime.initEntity(entity)
 }
 
-// OnEntityMgrRemoveEntity 事件回调：实体管理器删除实体
+// OnEntityMgrRemoveEntity 事件处理器：实体管理器删除实体
 func (_runtime *RuntimeBehavior) OnEntityMgrRemoveEntity(entityMgr runtime.IEntityMgr, entity ec.Entity) {
 	_runtime.disconnectEntity(entity)
 	_runtime.shutEntity(entity)
 }
 
-// OnEntityMgrEntityFirstAccessComponent 事件回调：实体管理器中的实体首次访问组件
+// OnEntityMgrEntityFirstAccessComponent 事件处理器：实体管理器中的实体首次访问组件
 func (_runtime *RuntimeBehavior) OnEntityMgrEntityFirstAccessComponent(entityMgr runtime.IEntityMgr, entity ec.Entity, component ec.Component) {
 	_comp := ec.UnsafeComponent(component)
 
@@ -140,22 +136,22 @@ func (_runtime *RuntimeBehavior) OnEntityMgrEntityFirstAccessComponent(entityMgr
 	_comp.SetState(ec.ComponentState_Start)
 }
 
-// OnEntityMgrEntityAddComponents 事件回调：实体管理器中的实体添加组件
+// OnEntityMgrEntityAddComponents 事件处理器：实体管理器中的实体添加组件
 func (_runtime *RuntimeBehavior) OnEntityMgrEntityAddComponents(entityMgr runtime.IEntityMgr, entity ec.Entity, components []ec.Component) {
 	_runtime.addComponents(entity, components)
 }
 
-// OnEntityMgrEntityRemoveComponent 事件回调：实体管理器中的实体删除组件
+// OnEntityMgrEntityRemoveComponent 事件处理器：实体管理器中的实体删除组件
 func (_runtime *RuntimeBehavior) OnEntityMgrEntityRemoveComponent(entityMgr runtime.IEntityMgr, entity ec.Entity, component ec.Component) {
 	_runtime.removeComponent(component)
 }
 
-// OnEntityDestroySelf 事件回调：实体销毁自身
+// OnEntityDestroySelf 事件处理器：实体销毁自身
 func (_runtime *RuntimeBehavior) OnEntityDestroySelf(entity ec.Entity) {
 	_runtime.ctx.GetEntityMgr().RemoveEntity(entity.GetId())
 }
 
-// OnComponentDestroySelf 事件回调：组件销毁自身
+// OnComponentDestroySelf 事件处理器：组件销毁自身
 func (_runtime *RuntimeBehavior) OnComponentDestroySelf(comp ec.Component) {
 	comp.GetEntity().RemoveComponentById(comp.GetId())
 }
@@ -241,10 +237,7 @@ func (_runtime *RuntimeBehavior) connectEntity(entity ec.Entity) {
 	}
 	hooks[2] = localevent.BindEvent[ec.EventEntityDestroySelf](ec.UnsafeEntity(entity).EventEntityDestroySelf(), _runtime)
 
-	_runtime.hooksMap[_HookKey{
-		Id: entity.GetId(),
-		SN: entity.GetSerialNo(),
-	}] = hooks
+	_runtime.hooksMap[entity.GetId()] = hooks
 
 	entity.RangeComponents(func(comp ec.Component) bool {
 		_runtime.connectComponent(comp)
@@ -260,14 +253,11 @@ func (_runtime *RuntimeBehavior) disconnectEntity(entity ec.Entity) {
 		return true
 	})
 
-	hookKey := _HookKey{
-		Id: entity.GetId(),
-		SN: entity.GetSerialNo(),
-	}
+	entityId := entity.GetId()
 
-	hooks, ok := _runtime.hooksMap[hookKey]
+	hooks, ok := _runtime.hooksMap[entityId]
 	if ok {
-		delete(_runtime.hooksMap, hookKey)
+		delete(_runtime.hooksMap, entityId)
 
 		for i := range hooks {
 			hooks[i].Unbind()
@@ -292,23 +282,17 @@ func (_runtime *RuntimeBehavior) connectComponent(comp ec.Component) {
 	}
 	hooks[2] = localevent.BindEvent[ec.EventComponentDestroySelf](ec.UnsafeComponent(comp).EventComponentDestroySelf(), _runtime)
 
-	_runtime.hooksMap[_HookKey{
-		Id: comp.GetId(),
-		SN: comp.GetSerialNo(),
-	}] = hooks
+	_runtime.hooksMap[comp.GetId()] = hooks
 
 	ec.UnsafeComponent(comp).SetState(ec.ComponentState_Awake)
 }
 
 func (_runtime *RuntimeBehavior) disconnectComponent(comp ec.Component) {
-	hookKey := _HookKey{
-		Id: comp.GetId(),
-		SN: comp.GetSerialNo(),
-	}
+	compId := comp.GetId()
 
-	hooks, ok := _runtime.hooksMap[hookKey]
+	hooks, ok := _runtime.hooksMap[compId]
 	if ok {
-		delete(_runtime.hooksMap, hookKey)
+		delete(_runtime.hooksMap, compId)
 
 		for i := range hooks {
 			hooks[i].Unbind()
