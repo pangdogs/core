@@ -17,12 +17,12 @@ import (
 //		MethodB()
 //	}
 //	...
-//	type ComplexAB struct {
+//	type CompositeAB struct {
 //		A
 //		B
 //	}
 //	...
-//	v, ok := As[ComplexAB](entity)
+//	v, ok := As[CompositeAB](entity)
 //	if ok {
 //		v.MethodA()
 //		v.MethodB()
@@ -33,14 +33,14 @@ import (
 //	1.内部逻辑有使用反射，为了提高性能，可以使用一次后存储转换结果重复使用。
 //	2.实体更新组件后，需要重新提取。
 func As[T comparable](entity ec.Entity) (T, bool) {
-	complexIface := util.Zero[T]()
-	vfComplexIface := reflect.ValueOf(&complexIface).Elem()
+	compositeIface := util.Zero[T]()
+	vfCompositeIface := reflect.ValueOf(&compositeIface).Elem()
 
-	if !as(entity, vfComplexIface) {
+	if !as(entity, vfCompositeIface) {
 		return util.Zero[T](), false
 	}
 
-	return complexIface, true
+	return compositeIface, true
 }
 
 // Cast 从实体提取一些需要的组件接口，复合在一起直接使用，提取失败会panic，示例：
@@ -53,13 +53,13 @@ func As[T comparable](entity ec.Entity) (T, bool) {
 //		MethodB()
 //	}
 //	...
-//	type ComplexAB struct {
+//	type CompositeAB struct {
 //		A
 //		B
 //	}
 //	...
-//	Cast[ComplexAB](entity).MethodA()
-//	Cast[ComplexAB](entity).MethodB()
+//	Cast[CompositeAB](entity).MethodA()
+//	Cast[CompositeAB](entity).MethodB()
 //
 // 注意：
 //
@@ -73,7 +73,7 @@ func Cast[T comparable](entity ec.Entity) T {
 	return entityFace
 }
 
-// Complex 创建组件复合提取器，直接使用As()或Cast()时，无法检测提取后实体是否又更新组件，使用提取器可以解决此问题，示例：
+// Composite 创建组件复合提取器，直接使用As()或Cast()时，无法检测提取后实体是否又更新组件，使用提取器可以解决此问题，示例：
 //
 //	type A interface {
 //		MethodA()
@@ -83,12 +83,12 @@ func Cast[T comparable](entity ec.Entity) T {
 //		MethodB()
 //	}
 //	...
-//	type ComplexAB struct {
+//	type CompositeAB struct {
 //		A
 //		B
 //	}
 //	...
-//	cx := Complex[ComplexAB]{Entity: entity}
+//	cx := Composite[CompositeAB]{Entity: entity}
 //	...
 //	if v, ok := cx.As(); ok {
 //		v.MethodA()
@@ -109,19 +109,19 @@ func Cast[T comparable](entity ec.Entity) T {
 //	...
 //	cx.Cast().MethodA()
 //	cx.Cast().MethodB()
-type Complex[T comparable] struct {
+type Composite[T comparable] struct {
 	Entity         ec.Entity
 	changedVersion int64
 	iface          T
 }
 
 // Clone 克隆
-func (c Complex[T]) Clone() *Complex[T] {
+func (c Composite[T]) Clone() *Composite[T] {
 	return &c
 }
 
 // Changed 实体是否已更新组件
-func (c *Complex[T]) Changed() bool {
+func (c *Composite[T]) Changed() bool {
 	if c.Entity == nil {
 		return false
 	}
@@ -129,7 +129,7 @@ func (c *Complex[T]) Changed() bool {
 }
 
 // As 从实体提取一些需要的组件接口，复合在一起直接使用（实体更新组件后，会自动重新提取）
-func (c *Complex[T]) As() (T, bool) {
+func (c *Composite[T]) As() (T, bool) {
 	if c.Entity == nil {
 		return util.Zero[T](), false
 	}
@@ -148,7 +148,7 @@ func (c *Complex[T]) As() (T, bool) {
 }
 
 // Cast 从实体提取一些需要的组件接口，复合在一起直接使用，提取失败会panic（实体更新组件后，会自动重新提取）
-func (c *Complex[T]) Cast() T {
+func (c *Composite[T]) Cast() T {
 	iface, ok := c.As()
 	if !ok {
 		panic("incorrect cast")
@@ -185,10 +185,10 @@ func as(entity ec.Entity, vfIface reflect.Value) bool {
 		return true
 
 	case reflect.Interface:
-		tfComplexIface := vfIface.Type()
+		tfCompositeIface := vfIface.Type()
 
 		sb.Reset()
-		util.WriteFullName(&sb, tfComplexIface)
+		util.WriteFullName(&sb, tfCompositeIface)
 
 		comp := entity.GetComponent(sb.String())
 		if comp == nil {
