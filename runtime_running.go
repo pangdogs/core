@@ -363,6 +363,7 @@ func (_runtime *RuntimeBehavior) initPlugin() {
 					pluginInit.InitRP(_runtime.ctx)
 				})
 			}
+			plugin.UnsafePluginBundle(pluginBundle).Activate(info.Name, true)
 			return true
 		})
 	}
@@ -371,6 +372,7 @@ func (_runtime *RuntimeBehavior) initPlugin() {
 func (_runtime *RuntimeBehavior) shutPlugin() {
 	if pluginBundle := runtime.UnsafeContext(_runtime.ctx).GetOptions().PluginBundle; pluginBundle != nil {
 		pluginBundle.ReverseRange(func(info plugin.PluginInfo) bool {
+			plugin.UnsafePluginBundle(pluginBundle).Activate(info.Name, false)
 			if pluginShut, ok := info.Face.Iface.(LifecycleRuntimePluginShut); ok {
 				internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 					pluginShut.ShutRP(_runtime.ctx)

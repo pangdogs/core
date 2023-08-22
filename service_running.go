@@ -79,6 +79,7 @@ func (_service *ServiceBehavior) initPlugin() {
 					pluginInit.InitSP(_service.ctx)
 				})
 			}
+			plugin.UnsafePluginBundle(pluginBundle).Activate(info.Name, true)
 			return true
 		})
 	}
@@ -87,6 +88,7 @@ func (_service *ServiceBehavior) initPlugin() {
 func (_service *ServiceBehavior) shutPlugin() {
 	if pluginBundle := service.UnsafeContext(_service.ctx).GetOptions().PluginBundle; pluginBundle != nil {
 		pluginBundle.ReverseRange(func(info plugin.PluginInfo) bool {
+			plugin.UnsafePluginBundle(pluginBundle).Activate(info.Name, false)
 			if pluginShut, ok := info.Face.Iface.(LifecycleServicePluginShut); ok {
 				internal.CallOuterVoid(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
 					pluginShut.ShutSP(_service.ctx)

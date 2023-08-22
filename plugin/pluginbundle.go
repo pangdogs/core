@@ -43,6 +43,8 @@ type PluginBundle interface {
 	//
 	//	@param fun 遍历函数。
 	ReverseRange(fun func(info PluginInfo) bool)
+
+	activate(name string, b bool)
 }
 
 // Install 安装插件。
@@ -181,4 +183,16 @@ func (bundle *_PluginBundle) ReverseRange(fun func(info PluginInfo) bool) {
 			return
 		}
 	}
+}
+
+func (bundle *_PluginBundle) activate(name string, b bool) {
+	bundle.Lock()
+	defer bundle.Unlock()
+
+	pluginInfo, ok := bundle.pluginMap[name]
+	if !ok {
+		return
+	}
+
+	pluginInfo.Active = b
 }

@@ -6,9 +6,9 @@ import (
 )
 
 // Deprecated: UnsafeEvent 访问本地事件内部方法
-func UnsafeEvent(v IEvent) _UnsafeEvent {
+func UnsafeEvent(event IEvent) _UnsafeEvent {
 	return _UnsafeEvent{
-		IEvent: v,
+		IEvent: event,
 	}
 }
 
