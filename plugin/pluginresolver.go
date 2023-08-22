@@ -8,39 +8,47 @@ import (
 // PluginResolver 插件解析器
 type PluginResolver interface {
 	// ResolvePlugin 解析插件
-	ResolvePlugin(pluginName string) (util.FaceAny, bool)
+	ResolvePlugin(name string) (PluginInfo, bool)
 }
 
-// GetPlugin 获取插件。
+// Fetch 获取插件。
 //
 //	@param pluginResolver 插件解析器。
-//	@param pluginName 插件名称。
-func GetPlugin[T any](pluginResolver PluginResolver, pluginName string) T {
+//	@param name 插件名称。
+func Fetch[T any](pluginResolver PluginResolver, name string) T {
 	if pluginResolver == nil {
 		panic("nil pluginResolver")
 	}
 
-	pluginFace, ok := pluginResolver.ResolvePlugin(pluginName)
+	pluginInfo, ok := pluginResolver.ResolvePlugin(name)
 	if !ok {
-		panic(fmt.Errorf("plugin %q not installed", pluginName))
+		panic(fmt.Errorf("plugin %q not installed", name))
 	}
 
-	return util.Cache2Iface[T](pluginFace.Cache)
+	if !pluginInfo.Active {
+		panic(fmt.Errorf("plugin %q not actived", name))
+	}
+
+	return util.Cache2Iface[T](pluginInfo.Face.Cache)
 }
 
-// TryGetPlugin 尝试获取插件
+// Access 访问插件
 //
 //	@param pluginResolver 插件解析器。
-//	@param pluginName 插件名称。
-func TryGetPlugin[T any](pluginResolver PluginResolver, pluginName string) (T, bool) {
+//	@param name 插件名称。
+func Access[T any](pluginResolver PluginResolver, name string) (T, bool) {
 	if pluginResolver == nil {
 		return util.Zero[T](), false
 	}
 
-	pluginFace, ok := pluginResolver.ResolvePlugin(pluginName)
+	pluginInfo, ok := pluginResolver.ResolvePlugin(name)
 	if !ok {
 		return util.Zero[T](), false
 	}
 
-	return util.Cache2Iface[T](pluginFace.Cache), true
+	if !pluginInfo.Active {
+		return util.Zero[T](), false
+	}
+
+	return util.Cache2Iface[T](pluginInfo.Face.Cache), true
 }

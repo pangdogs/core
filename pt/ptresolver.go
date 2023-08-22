@@ -10,11 +10,11 @@ type EntityPtResolver interface {
 	ResolveEntityPt(prototype string) (EntityPt, bool)
 }
 
-// GetEntityPt 获取实体原型。
+// FetchEntityPt 获取实体原型。
 //
 //	@param entityPtResolver 实体原型解析器。
 //	@param prototype 实体原型名称。
-func GetEntityPt(entityPtResolver EntityPtResolver, prototype string) EntityPt {
+func FetchEntityPt(entityPtResolver EntityPtResolver, prototype string) EntityPt {
 	if entityPtResolver == nil {
 		panic("nil entityPtResolver")
 	}
@@ -27,11 +27,11 @@ func GetEntityPt(entityPtResolver EntityPtResolver, prototype string) EntityPt {
 	return entityPt
 }
 
-// TryGetEntityPt 尝试获取实体原型
+// AccessEntityPt 尝试获取实体原型
 //
 //	@param entityPtResolver 实体原型解析器。
 //	@param prototype 实体原型名称。
-func TryGetEntityPt(entityPtResolver EntityPtResolver, prototype string) (EntityPt, bool) {
+func AccessEntityPt(entityPtResolver EntityPtResolver, prototype string) (EntityPt, bool) {
 	if entityPtResolver == nil {
 		return EntityPt{}, false
 	}

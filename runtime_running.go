@@ -4,8 +4,8 @@ import (
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/localevent"
+	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/runtime"
-	"kit.golaxy.org/golaxy/util"
 	"time"
 )
 
@@ -357,8 +357,8 @@ func (_runtime *RuntimeBehavior) changeRunningState(state runtime.RunningState) 
 
 func (_runtime *RuntimeBehavior) initPlugin() {
 	if pluginBundle := runtime.UnsafeContext(_runtime.ctx).GetOptions().PluginBundle; pluginBundle != nil {
-		pluginBundle.Range(func(pluginName string, pluginFace util.FaceAny) bool {
-			if pluginInit, ok := pluginFace.Iface.(LifecycleRuntimePluginInit); ok {
+		pluginBundle.Range(func(info plugin.PluginInfo) bool {
+			if pluginInit, ok := info.Face.Iface.(LifecycleRuntimePluginInit); ok {
 				internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 					pluginInit.InitRP(_runtime.ctx)
 				})
@@ -370,8 +370,8 @@ func (_runtime *RuntimeBehavior) initPlugin() {
 
 func (_runtime *RuntimeBehavior) shutPlugin() {
 	if pluginBundle := runtime.UnsafeContext(_runtime.ctx).GetOptions().PluginBundle; pluginBundle != nil {
-		pluginBundle.ReverseRange(func(pluginName string, pluginFace util.FaceAny) bool {
-			if pluginShut, ok := pluginFace.Iface.(LifecycleRuntimePluginShut); ok {
+		pluginBundle.ReverseRange(func(info plugin.PluginInfo) bool {
+			if pluginShut, ok := info.Face.Iface.(LifecycleRuntimePluginShut); ok {
 				internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
 					pluginShut.ShutRP(_runtime.ctx)
 				})

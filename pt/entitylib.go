@@ -39,12 +39,13 @@ func NewEntityLib() EntityLib {
 }
 
 type _EntityLib struct {
-	entityPtMap map[string]EntityPt
-	mutex       sync.RWMutex
+	sync.RWMutex
+	entityPtMap  map[string]*EntityPt
+	entityPtList []*EntityPt
 }
 
 func (lib *_EntityLib) init() {
-	lib.entityPtMap = map[string]EntityPt{}
+	lib.entityPtMap = map[string]*EntityPt{}
 }
 
 // Register 注册实体原型。
@@ -52,20 +53,20 @@ func (lib *_EntityLib) init() {
 //	@param prototype 实体原型名称。
 //	@param compImpls 组件实现列表。
 func (lib *_EntityLib) Register(prototype string, compImpls []string) {
-	lib.mutex.Lock()
-	defer lib.mutex.Unlock()
+	lib.Lock()
+	defer lib.Unlock()
 
 	_, ok := lib.entityPtMap[prototype]
 	if ok {
 		panic(fmt.Errorf("entity %q is already registered", prototype))
 	}
 
-	entityPt := EntityPt{
+	entityPt := &EntityPt{
 		Prototype: prototype,
 	}
 
 	for i := range compImpls {
-		compPt, ok := GetComponent(compImpls[i])
+		compPt, ok := AccessComponent(compImpls[i])
 		if !ok {
 			panic(fmt.Errorf("entity %q component %q not registered", prototype, compImpls[i]))
 		}
@@ -73,16 +74,24 @@ func (lib *_EntityLib) Register(prototype string, compImpls []string) {
 	}
 
 	lib.entityPtMap[prototype] = entityPt
+	lib.entityPtList = append(lib.entityPtList, entityPt)
 }
 
 // Deregister 取消注册实体原型。
 //
 //	@param prototype 实体原型名称。
 func (lib *_EntityLib) Deregister(prototype string) {
-	lib.mutex.Lock()
-	defer lib.mutex.Unlock()
+	lib.Lock()
+	defer lib.Unlock()
 
 	delete(lib.entityPtMap, prototype)
+
+	for i, entityPt := range lib.entityPtList {
+		if entityPt.Prototype == prototype {
+			lib.entityPtList = append(lib.entityPtList[:i], lib.entityPtList[i+1:]...)
+			return
+		}
+	}
 }
 
 // Get 获取实体原型
@@ -91,11 +100,15 @@ func (lib *_EntityLib) Deregister(prototype string) {
 //	@return 实体原型。
 //	@return 是否存在。
 func (lib *_EntityLib) Get(prototype string) (EntityPt, bool) {
-	lib.mutex.RLock()
-	defer lib.mutex.RUnlock()
+	lib.RLock()
+	defer lib.RUnlock()
 
 	entityPt, ok := lib.entityPtMap[prototype]
-	return entityPt, ok
+	if !ok {
+		return EntityPt{}, false
+	}
+
+	return *entityPt, ok
 }
 
 // Range 遍历所有已注册的实体原型
@@ -106,11 +119,12 @@ func (lib *_EntityLib) Range(fun func(entityPt EntityPt) bool) {
 		return
 	}
 
-	lib.mutex.RLock()
-	defer lib.mutex.RUnlock()
+	lib.RLock()
+	entityPtList := append(make([]*EntityPt, 0, len(lib.entityPtList)), lib.entityPtList...)
+	lib.RUnlock()
 
-	for _, entityPt := range lib.entityPtMap {
-		if !fun(entityPt) {
+	for _, entityPt := range entityPtList {
+		if !fun(*entityPt) {
 			return
 		}
 	}

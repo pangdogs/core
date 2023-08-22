@@ -7,57 +7,64 @@ import (
 	"sync"
 )
 
+// PluginInfo 插件信息
+type PluginInfo struct {
+	Name   string       // 插件名
+	Face   util.FaceAny // 插件Face
+	Active bool         // 是否激活
+}
+
 // PluginBundle 插件包
 type PluginBundle interface {
 	// Install 安装插件。
 	//
-	//	@param pluginName 插件名称。
-	//	@param pluginFace 插件Face。
-	Install(pluginName string, pluginFace util.FaceAny)
+	//	@param name 插件名称。
+	//	@param plugin 插件Face。
+	Install(name string, pluginFace util.FaceAny)
 
 	// Uninstall 卸载插件。
 	//
-	//	@param pluginName 插件名称。
-	Uninstall(pluginName string)
+	//	@param name 插件名称。
+	Uninstall(name string)
 
 	// Get 获取插件。
 	//
-	//	@param pluginName 插件名称。
-	//	@return 插件Face。
+	//	@param name 插件名称。
+	//	@return 插件信息。
 	//	@return 是否存在。
-	Get(pluginName string) (util.FaceAny, bool)
+	Get(name string) (PluginInfo, bool)
 
 	// Range 遍历所有已注册的插件
 	//
 	//	@param fun 遍历函数。
-	Range(fun func(pluginName string, pluginFace util.FaceAny) bool)
+	Range(fun func(info PluginInfo) bool)
 
 	// ReverseRange 反向遍历所有已注册的插件
 	//
 	//	@param fun 遍历函数。
-	ReverseRange(fun func(pluginName string, pluginFace util.FaceAny) bool)
+	ReverseRange(fun func(info PluginInfo) bool)
 }
 
-// InstallPlugin 安装插件。
+// Install 安装插件。
 //
 //	@param pluginBundle 插件包。
-//	@param pluginName 插件名称。
+//	@param name 插件名称。
 //	@param plugin 插件。
-func InstallPlugin[T any](pluginBundle PluginBundle, pluginName string, plugin T) {
+func Install[T any](pluginBundle PluginBundle, name string, plugin T) {
 	if pluginBundle == nil {
 		panic("nil pluginBundle")
 	}
-	pluginBundle.Install(pluginName, util.NewFacePair[any](plugin, plugin))
+	pluginBundle.Install(name, util.NewFacePair[any](plugin, plugin))
 }
 
-// UninstallPlugin 卸载插件。
+// Uninstall 卸载插件。
 //
 //	@param pluginBundle 插件包。
-func UninstallPlugin(pluginBundle PluginBundle, pluginName string) {
+func Uninstall(pluginBundle PluginBundle, name string) {
 	if pluginBundle == nil {
 		panic("nil pluginBundle")
 	}
-	pluginBundle.Uninstall(pluginName)
+	pluginBundle.Uninstall(name)
 }
 
 // NewPluginBundle 创建插件包
@@ -67,53 +74,54 @@ func NewPluginBundle() PluginBundle {
 	return pluginBundle
 }
 
-type _PluginInfo struct {
-	Name   string
-	Plugin util.FaceAny
-}
-
 type _PluginBundle struct {
-	pluginMap  map[string]util.FaceAny
-	pluginList []_PluginInfo
-	mutex      sync.RWMutex
+	sync.RWMutex
+	pluginMap  map[string]*PluginInfo
+	pluginList []*PluginInfo
 }
 
 func (bundle *_PluginBundle) init() {
-	bundle.pluginMap = map[string]util.FaceAny{}
+	bundle.pluginMap = map[string]*PluginInfo{}
 }
 
 // Install 安装插件。
 //
-//	@param pluginName 插件名称。
-//	@param pluginFace 插件Face。
-func (bundle *_PluginBundle) Install(pluginName string, pluginFace util.FaceAny) {
+//	@param name 插件名称。
+//	@param plugin 插件Face。
+func (bundle *_PluginBundle) Install(name string, pluginFace util.FaceAny) {
 	if pluginFace.IsNil() {
 		panic("nil pluginFace")
 	}
 
-	bundle.mutex.Lock()
-	defer bundle.mutex.Unlock()
+	bundle.Lock()
+	defer bundle.Unlock()
 
-	_, ok := bundle.pluginMap[pluginName]
+	_, ok := bundle.pluginMap[name]
 	if ok {
-		panic(fmt.Errorf("plugin %q is already installed", pluginName))
+		panic(fmt.Errorf("plugin %q is already installed", name))
 	}
 
-	bundle.pluginMap[pluginName] = pluginFace
-	bundle.pluginList = append(bundle.pluginList, _PluginInfo{Name: pluginName, Plugin: pluginFace})
+	pluginInfo := &PluginInfo{
+		Name:   name,
+		Face:   pluginFace,
+		Active: false,
+	}
+
+	bundle.pluginList = append(bundle.pluginList, pluginInfo)
+	bundle.pluginMap[name] = pluginInfo
 }
 
 // Uninstall 卸载插件。
 //
-//	@param pluginName 插件名称。
-func (bundle *_PluginBundle) Uninstall(pluginName string) {
-	bundle.mutex.Lock()
-	defer bundle.mutex.Unlock()
+//	@param name 插件名称。
+func (bundle *_PluginBundle) Uninstall(name string) {
+	bundle.Lock()
+	defer bundle.Unlock()
 
-	delete(bundle.pluginMap, pluginName)
+	delete(bundle.pluginMap, name)
 
 	for i, pluginInfo := range bundle.pluginList {
-		if pluginInfo.Name == pluginName {
+		if pluginInfo.Name == name {
 			bundle.pluginList = append(bundle.pluginList[:i], bundle.pluginList[i+1:]...)
 			return
 		}
@@ -122,32 +130,35 @@ func (bundle *_PluginBundle) Uninstall(pluginName string) {
 
 // Get 获取插件。
 //
-//	@param pluginName 插件名称。
+//	@param name 插件名称。
 //	@return 插件Face。
 //	@return 是否存在。
-func (bundle *_PluginBundle) Get(pluginName string) (util.FaceAny, bool) {
-	bundle.mutex.RLock()
-	defer bundle.mutex.RUnlock()
+func (bundle *_PluginBundle) Get(name string) (PluginInfo, bool) {
+	bundle.RLock()
+	defer bundle.RUnlock()
 
-	pluginFace, ok := bundle.pluginMap[pluginName]
-	return pluginFace, ok
+	pluginInfo, ok := bundle.pluginMap[name]
+	if !ok {
+		return PluginInfo{}, false
+	}
+
+	return *pluginInfo, ok
 }
 
 // Range 遍历所有已注册的插件
 //
 //	@param fun 遍历函数。
-func (bundle *_PluginBundle) Range(fun func(pluginName string, pluginFace util.FaceAny) bool) {
+func (bundle *_PluginBundle) Range(fun func(info PluginInfo) bool) {
 	if fun == nil {
 		return
 	}
 
-	bundle.mutex.RLock()
-	defer bundle.mutex.RUnlock()
-
-	pluginList := append(make([]_PluginInfo, 0, len(bundle.pluginList)), bundle.pluginList...)
+	bundle.RLock()
+	pluginList := append(make([]*PluginInfo, 0, len(bundle.pluginList)), bundle.pluginList...)
+	bundle.RUnlock()
 
 	for i := range pluginList {
-		if !fun(pluginList[i].Name, pluginList[i].Plugin) {
+		if !fun(*pluginList[i]) {
 			return
 		}
 	}
@@ -156,18 +167,17 @@ func (bundle *_PluginBundle) Range(fun func(pluginName string, pluginFace util.F
 // ReverseRange 反向遍历所有已注册的插件
 //
 //	@param fun 遍历函数。
-func (bundle *_PluginBundle) ReverseRange(fun func(pluginName string, pluginFace util.FaceAny) bool) {
+func (bundle *_PluginBundle) ReverseRange(fun func(info PluginInfo) bool) {
 	if fun == nil {
 		return
 	}
 
-	bundle.mutex.RLock()
-	defer bundle.mutex.RUnlock()
-
-	pluginList := append(make([]_PluginInfo, 0, len(bundle.pluginList)), bundle.pluginList...)
+	bundle.RLock()
+	pluginList := append(make([]*PluginInfo, 0, len(bundle.pluginList)), bundle.pluginList...)
+	bundle.RUnlock()
 
 	for i := len(pluginList) - 1; i >= 0; i-- {
-		if !fun(pluginList[i].Name, pluginList[i].Plugin) {
+		if !fun(*pluginList[i]) {
 			return
 		}
 	}

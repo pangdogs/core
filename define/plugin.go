@@ -17,25 +17,25 @@ func (p _Plugin[PLUGIN_IFACE, OPTION]) name() string {
 
 func (p _Plugin[PLUGIN_IFACE, OPTION]) install(creator func(...OPTION) PLUGIN_IFACE) func(plugin.PluginBundle, ...OPTION) {
 	return func(pluginBundle plugin.PluginBundle, options ...OPTION) {
-		plugin.InstallPlugin[PLUGIN_IFACE](pluginBundle, p.name(), creator(options...))
+		plugin.Install[PLUGIN_IFACE](pluginBundle, p.name(), creator(options...))
 	}
 }
 
 func (p _Plugin[PLUGIN_IFACE, OPTION]) uninstall() func(plugin.PluginBundle) {
 	return func(pluginBundle plugin.PluginBundle) {
-		plugin.UninstallPlugin(pluginBundle, p.name())
+		plugin.Uninstall(pluginBundle, p.name())
 	}
 }
 
-func (p _Plugin[PLUGIN_IFACE, OPTION]) get() func(pluginResolver plugin.PluginResolver) PLUGIN_IFACE {
+func (p _Plugin[PLUGIN_IFACE, OPTION]) fetch() func(pluginResolver plugin.PluginResolver) PLUGIN_IFACE {
 	return func(pluginResolver plugin.PluginResolver) PLUGIN_IFACE {
-		return plugin.GetPlugin[PLUGIN_IFACE](pluginResolver, p.name())
+		return plugin.Fetch[PLUGIN_IFACE](pluginResolver, p.name())
 	}
 }
 
-func (p _Plugin[PLUGIN_IFACE, OPTION]) tryGet() func(pluginResolver plugin.PluginResolver) (PLUGIN_IFACE, bool) {
+func (p _Plugin[PLUGIN_IFACE, OPTION]) access() func(pluginResolver plugin.PluginResolver) (PLUGIN_IFACE, bool) {
 	return func(pluginResolver plugin.PluginResolver) (PLUGIN_IFACE, bool) {
-		return plugin.TryGetPlugin[PLUGIN_IFACE](pluginResolver, p.name())
+		return plugin.Access[PLUGIN_IFACE](pluginResolver, p.name())
 	}
 }
 
@@ -44,8 +44,8 @@ type ServicePlugin[PLUGIN_IFACE, OPTION any] struct {
 	Name      string                                     // 插件名称
 	Install   func(plugin.PluginBundle, ...OPTION)       // 向插件包安装
 	Uninstall func(plugin.PluginBundle)                  // 从插件包卸载
-	Get       func(service.Context) PLUGIN_IFACE         // 从服务上下文获取插件
-	TryGet    func(service.Context) (PLUGIN_IFACE, bool) // 尝试从服务上下文获取插件
+	Fetch     func(service.Context) PLUGIN_IFACE         // 从服务上下文获取插件
+	Access    func(service.Context) (PLUGIN_IFACE, bool) // 从服务上下文访问插件
 }
 
 // ServicePlugin 生成服务插件定义
@@ -54,8 +54,8 @@ func (p _Plugin[PLUGIN_IFACE, OPTION]) ServicePlugin(creator func(...OPTION) PLU
 		Name:      p.name(),
 		Install:   p.install(creator),
 		Uninstall: p.uninstall(),
-		Get:       func(ctx service.Context) PLUGIN_IFACE { return p.get()(ctx) },
-		TryGet:    func(ctx service.Context) (PLUGIN_IFACE, bool) { return p.tryGet()(ctx) },
+		Fetch:     func(ctx service.Context) PLUGIN_IFACE { return p.fetch()(ctx) },
+		Access:    func(ctx service.Context) (PLUGIN_IFACE, bool) { return p.access()(ctx) },
 	}
 }
 
@@ -64,8 +64,8 @@ type RuntimePlugin[PLUGIN_IFACE, OPTION any] struct {
 	Name      string                                     // 插件名称
 	Install   func(plugin.PluginBundle, ...OPTION)       // 向插件包安装
 	Uninstall func(plugin.PluginBundle)                  // 从插件包卸载
-	Get       func(runtime.Context) PLUGIN_IFACE         // 从运行时上下文获取插件
-	TryGet    func(runtime.Context) (PLUGIN_IFACE, bool) // 尝试从运行时上下文获取插件
+	Fetch     func(runtime.Context) PLUGIN_IFACE         // 从运行时上下文获取插件
+	Access    func(runtime.Context) (PLUGIN_IFACE, bool) // 从运行时上下文访问插件
 }
 
 // RuntimePlugin 生成运行时插件定义
@@ -74,8 +74,8 @@ func (p _Plugin[PLUGIN_IFACE, OPTION]) RuntimePlugin(creator func(...OPTION) PLU
 		Name:      p.name(),
 		Install:   p.install(creator),
 		Uninstall: p.uninstall(),
-		Get:       func(ctx runtime.Context) PLUGIN_IFACE { return p.get()(ctx) },
-		TryGet:    func(ctx runtime.Context) (PLUGIN_IFACE, bool) { return p.tryGet()(ctx) },
+		Fetch:     func(ctx runtime.Context) PLUGIN_IFACE { return p.fetch()(ctx) },
+		Access:    func(ctx runtime.Context) (PLUGIN_IFACE, bool) { return p.access()(ctx) },
 	}
 }
 
@@ -84,8 +84,8 @@ type Plugin[PLUGIN_IFACE, OPTION any] struct {
 	Name      string                                           // 插件名称
 	Install   func(plugin.PluginBundle, ...OPTION)             // 向插件包安装
 	Uninstall func(plugin.PluginBundle)                        // 从插件包卸载
-	Get       func(plugin.PluginResolver) PLUGIN_IFACE         // 获取插件
-	TryGet    func(plugin.PluginResolver) (PLUGIN_IFACE, bool) // 尝试获取插件
+	Fetch     func(plugin.PluginResolver) PLUGIN_IFACE         // 获取插件
+	Access    func(plugin.PluginResolver) (PLUGIN_IFACE, bool) // 访问插件
 }
 
 // Plugin 生成插件定义
@@ -94,8 +94,8 @@ func (p _Plugin[PLUGIN_IFACE, OPTION]) Plugin(creator func(...OPTION) PLUGIN_IFA
 		Name:      p.name(),
 		Install:   p.install(creator),
 		Uninstall: p.uninstall(),
-		Get:       p.get(),
-		TryGet:    p.tryGet(),
+		Fetch:     p.fetch(),
+		Access:    p.access(),
 	}
 }
 

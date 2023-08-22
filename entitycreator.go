@@ -57,7 +57,7 @@ func (creator *EntityCreator) Spawn(options ...EntityCreatorOption) (ec.Entity, 
 		opts = &copyOpts
 	}
 
-	entityPt, ok := pt.TryGetEntityPt(serviceCtx, opts.Prototype)
+	entityPt, ok := pt.AccessEntityPt(serviceCtx, opts.Prototype)
 	if !ok {
 		return nil, fmt.Errorf("entity prototype %q not registered", opts.Prototype)
 	}

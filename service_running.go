@@ -2,8 +2,8 @@ package golaxy
 
 import (
 	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/service"
-	"kit.golaxy.org/golaxy/util"
 	"time"
 )
 
@@ -73,8 +73,8 @@ func (_service *ServiceBehavior) changeRunningState(state service.RunningState) 
 
 func (_service *ServiceBehavior) initPlugin() {
 	if pluginBundle := service.UnsafeContext(_service.ctx).GetOptions().PluginBundle; pluginBundle != nil {
-		pluginBundle.Range(func(pluginName string, pluginFace util.FaceAny) bool {
-			if pluginInit, ok := pluginFace.Iface.(LifecycleServicePluginInit); ok {
+		pluginBundle.Range(func(info plugin.PluginInfo) bool {
+			if pluginInit, ok := info.Face.Iface.(LifecycleServicePluginInit); ok {
 				internal.CallOuterVoid(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
 					pluginInit.InitSP(_service.ctx)
 				})
@@ -86,8 +86,8 @@ func (_service *ServiceBehavior) initPlugin() {
 
 func (_service *ServiceBehavior) shutPlugin() {
 	if pluginBundle := service.UnsafeContext(_service.ctx).GetOptions().PluginBundle; pluginBundle != nil {
-		pluginBundle.ReverseRange(func(pluginName string, pluginFace util.FaceAny) bool {
-			if pluginShut, ok := pluginFace.Iface.(LifecycleServicePluginShut); ok {
+		pluginBundle.ReverseRange(func(info plugin.PluginInfo) bool {
+			if pluginShut, ok := info.Face.Iface.(LifecycleServicePluginShut); ok {
 				internal.CallOuterVoid(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
 					pluginShut.ShutSP(_service.ctx)
 				})
