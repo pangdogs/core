@@ -31,7 +31,7 @@ func (p _PluginInterface[PLUGIN_IFACE]) access() func(pluginResolver plugin.Plug
 type ServicePluginInterface[PLUGIN_IFACE any] struct {
 	Name   string                                     // 插件名称
 	Fetch  func(service.Context) PLUGIN_IFACE         // 从服务上下文获取插件
-	Access func(service.Context) (PLUGIN_IFACE, bool) // 尝试从服务上下文获取插件
+	Access func(service.Context) (PLUGIN_IFACE, bool) // 从服务上下文访问插件
 }
 
 // ServicePluginInterface 生成服务插件接口定义
@@ -47,7 +47,7 @@ func (p _PluginInterface[PLUGIN_IFACE]) ServicePluginInterface() ServicePluginIn
 type RuntimePluginInterface[PLUGIN_IFACE any] struct {
 	Name   string                                     // 插件名称
 	Fetch  func(runtime.Context) PLUGIN_IFACE         // 从运行时上下文获取插件
-	Access func(runtime.Context) (PLUGIN_IFACE, bool) // 尝试从运行时上下文获取插件
+	Access func(runtime.Context) (PLUGIN_IFACE, bool) // 从运行时上下文访问插件
 }
 
 // RuntimePluginInterface 生成运行时插件接口定义
