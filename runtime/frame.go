@@ -120,7 +120,7 @@ func (frame *_FrameBehavior) GetLastUpdateElapseTime() time.Duration {
 }
 
 func (frame *_FrameBehavior) init(options ...FrameOption) {
-	Option{}.DefaultFrame()(&frame.options)
+	_FrameOption{}.Default()(&frame.options)
 
 	for i := range options {
 		options[i](&frame.options)

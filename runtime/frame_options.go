@@ -1,5 +1,7 @@
 package runtime
 
+type _FrameOption struct{}
+
 // FrameOptions 帧的所有选项
 type FrameOptions struct {
 	TargetFPS   float32 // 目标FPS
@@ -10,17 +12,17 @@ type FrameOptions struct {
 // FrameOption 实体构建器的选项设置器
 type FrameOption func(o *FrameOptions)
 
-// DefaultFrame 默认值
-func (Option) DefaultFrame() FrameOption {
+// Default 默认值
+func (_FrameOption) Default() FrameOption {
 	return func(o *FrameOptions) {
-		Option{}.TargetFPS(30)(o)
-		Option{}.TotalFrames(0)(o)
-		Option{}.Blink(false)(o)
+		_FrameOption{}.TargetFPS(30)(o)
+		_FrameOption{}.TotalFrames(0)(o)
+		_FrameOption{}.Blink(false)(o)
 	}
 }
 
 // TargetFPS 目标FPS
-func (Option) TargetFPS(fps float32) FrameOption {
+func (_FrameOption) TargetFPS(fps float32) FrameOption {
 	return func(o *FrameOptions) {
 		if fps <= 0 {
 			panic("TargetFPS less equal 0 is invalid")
@@ -30,7 +32,7 @@ func (Option) TargetFPS(fps float32) FrameOption {
 }
 
 // TotalFrames 运行帧数上限
-func (Option) TotalFrames(v uint64) FrameOption {
+func (_FrameOption) TotalFrames(v uint64) FrameOption {
 	return func(o *FrameOptions) {
 		if v < 0 {
 			panic("TotalFrames less 0 is invalid")
@@ -40,7 +42,7 @@ func (Option) TotalFrames(v uint64) FrameOption {
 }
 
 // Blink 是否是瞬时运行
-func (Option) Blink(blink bool) FrameOption {
+func (_FrameOption) Blink(blink bool) FrameOption {
 	return func(o *FrameOptions) {
 		o.Blink = blink
 	}

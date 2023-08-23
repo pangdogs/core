@@ -14,7 +14,7 @@ import (
 // NewContext 创建运行时上下文
 func NewContext(serviceCtx service.Context, options ...ContextOption) Context {
 	opts := ContextOptions{}
-	Option{}.DefaultContext()(&opts)
+	_ContextOption{}.Default()(&opts)
 
 	for i := range options {
 		options[i](&opts)

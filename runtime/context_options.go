@@ -10,8 +10,7 @@ import (
 	"kit.golaxy.org/golaxy/util/container"
 )
 
-// Option 所有选项设置器
-type Option struct{}
+type _ContextOption struct{}
 
 // RunningState 运行状态
 type RunningState int32
@@ -51,80 +50,80 @@ type ContextOptions struct {
 // ContextOption 创建运行时上下文的选项设置器
 type ContextOption func(o *ContextOptions)
 
-// DefaultContext 默认值
-func (Option) DefaultContext() ContextOption {
+// Default 默认值
+func (_ContextOption) Default() ContextOption {
 	return func(o *ContextOptions) {
-		Option{}.Composite(util.Face[Context]{})(o)
-		Option{}.Context(nil)(o)
-		Option{}.AutoRecover(false)(o)
-		Option{}.ReportError(nil)(o)
-		Option{}.Name("")(o)
-		Option{}.PersistId(util.Zero[uid.Id]())(o)
-		Option{}.PluginBundle(nil)(o)
-		Option{}.RunningHandler(nil)(o)
-		Option{}.FaceAnyAllocator(container.DefaultAllocator[util.FaceAny]())(o)
-		Option{}.HookAllocator(container.DefaultAllocator[localevent.Hook]())(o)
+		_ContextOption{}.Composite(util.Face[Context]{})(o)
+		_ContextOption{}.Context(nil)(o)
+		_ContextOption{}.AutoRecover(false)(o)
+		_ContextOption{}.ReportError(nil)(o)
+		_ContextOption{}.Name("")(o)
+		_ContextOption{}.PersistId(util.Zero[uid.Id]())(o)
+		_ContextOption{}.PluginBundle(nil)(o)
+		_ContextOption{}.RunningHandler(nil)(o)
+		_ContextOption{}.FaceAnyAllocator(container.DefaultAllocator[util.FaceAny]())(o)
+		_ContextOption{}.HookAllocator(container.DefaultAllocator[localevent.Hook]())(o)
 	}
 }
 
 // Composite 扩展者，需要扩展运行时上下文自身功能时需要使用
-func (Option) Composite(face util.Face[Context]) ContextOption {
+func (_ContextOption) Composite(face util.Face[Context]) ContextOption {
 	return func(o *ContextOptions) {
 		o.CompositeFace = face
 	}
 }
 
 // Context 父Context
-func (Option) Context(ctx context.Context) ContextOption {
+func (_ContextOption) Context(ctx context.Context) ContextOption {
 	return func(o *ContextOptions) {
 		o.Context = ctx
 	}
 }
 
 // AutoRecover 是否开启panic时自动恢复
-func (Option) AutoRecover(b bool) ContextOption {
+func (_ContextOption) AutoRecover(b bool) ContextOption {
 	return func(o *ContextOptions) {
 		o.AutoRecover = b
 	}
 }
 
 // ReportError panic时错误写入的error channel
-func (Option) ReportError(ch chan error) ContextOption {
+func (_ContextOption) ReportError(ch chan error) ContextOption {
 	return func(o *ContextOptions) {
 		o.ReportError = ch
 	}
 }
 
 // Name 运行时名称
-func (Option) Name(name string) ContextOption {
+func (_ContextOption) Name(name string) ContextOption {
 	return func(o *ContextOptions) {
 		o.Name = name
 	}
 }
 
 // PersistId 运行时持久化Id
-func (Option) PersistId(id uid.Id) ContextOption {
+func (_ContextOption) PersistId(id uid.Id) ContextOption {
 	return func(o *ContextOptions) {
 		o.PersistId = id
 	}
 }
 
 // PluginBundle 插件包
-func (Option) PluginBundle(bundle plugin.PluginBundle) ContextOption {
+func (_ContextOption) PluginBundle(bundle plugin.PluginBundle) ContextOption {
 	return func(o *ContextOptions) {
 		o.PluginBundle = bundle
 	}
 }
 
 // RunningHandler 运行状态变化处理器
-func (Option) RunningHandler(fn RunningHandler) ContextOption {
+func (_ContextOption) RunningHandler(fn RunningHandler) ContextOption {
 	return func(o *ContextOptions) {
 		o.RunningHandler = fn
 	}
 }
 
 // FaceAnyAllocator 自定义FaceAny内存分配器，用于提高性能
-func (Option) FaceAnyAllocator(allocator container.Allocator[util.FaceAny]) ContextOption {
+func (_ContextOption) FaceAnyAllocator(allocator container.Allocator[util.FaceAny]) ContextOption {
 	return func(o *ContextOptions) {
 		if allocator == nil {
 			panic("nil allocator")
@@ -134,7 +133,7 @@ func (Option) FaceAnyAllocator(allocator container.Allocator[util.FaceAny]) Cont
 }
 
 // HookAllocator 自定义Hook内存分配器，用于提高性能
-func (Option) HookAllocator(allocator container.Allocator[localevent.Hook]) ContextOption {
+func (_ContextOption) HookAllocator(allocator container.Allocator[localevent.Hook]) ContextOption {
 	return func(o *ContextOptions) {
 		if allocator == nil {
 			panic("nil allocator")
