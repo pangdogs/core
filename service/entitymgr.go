@@ -5,7 +5,7 @@ import (
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util"
-	"kit.golaxy.org/golaxy/util/concurrent"
+	"sync"
 )
 
 // IEntityMgr 实体管理器接口
@@ -26,7 +26,7 @@ type IEntityMgr interface {
 
 type _EntityMgr struct {
 	ctx       Context
-	entityMap concurrent.Map[uid.Id, ec.Entity]
+	entityMap sync.Map
 }
 
 func (entityMgr *_EntityMgr) init(ctx Context) {
@@ -44,12 +44,12 @@ func (entityMgr *_EntityMgr) GetContext() Context {
 
 // GetEntity 查询实体
 func (entityMgr *_EntityMgr) GetEntity(id uid.Id) (ec.Entity, bool) {
-	entity, ok := entityMgr.entityMap.Load(id)
+	v, ok := entityMgr.entityMap.Load(id)
 	if !ok {
 		return nil, false
 	}
 
-	return entity, true
+	return v.(ec.Entity), true
 }
 
 // GetOrAddEntity 查询或添加实体
@@ -67,7 +67,7 @@ func (entityMgr *_EntityMgr) GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, 
 	}
 
 	actual, loaded := entityMgr.entityMap.LoadOrStore(entity.GetId(), entity)
-	return actual, loaded, nil
+	return actual.(ec.Entity), loaded, nil
 }
 
 // AddEntity 添加实体
@@ -91,7 +91,11 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity) error {
 
 // GetAndRemoveEntity 查询并删除实体
 func (entityMgr *_EntityMgr) GetAndRemoveEntity(id uid.Id) (ec.Entity, bool) {
-	return entityMgr.entityMap.LoadAndDelete(id)
+	v, loaded := entityMgr.entityMap.LoadAndDelete(id)
+	if !loaded {
+		return nil, false
+	}
+	return v.(ec.Entity), true
 }
 
 // RemoveEntity 删除实体
