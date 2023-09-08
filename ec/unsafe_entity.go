@@ -38,9 +38,9 @@ func (ue _UnsafeEntity) SetContext(ctx util.IfaceCache) {
 	ue.setContext(ctx)
 }
 
-// GetChangedVersion 获取组件列表变化版本号
-func (ue _UnsafeEntity) GetChangedVersion() int64 {
-	return ue.getChangedVersion()
+// GetVersion 获取组件列表变化版本号
+func (ue _UnsafeEntity) GetVersion() int32 {
+	return ue.getVersion()
 }
 
 // SetGCCollector 设置GC收集器

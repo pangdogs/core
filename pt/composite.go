@@ -110,9 +110,9 @@ func Cast[T comparable](entity ec.Entity) T {
 //	cx.Cast().MethodA()
 //	cx.Cast().MethodB()
 type Composite[T comparable] struct {
-	Entity         ec.Entity
-	changedVersion int64
-	iface          T
+	Entity  ec.Entity
+	version int32
+	iface   T
 }
 
 // Clone 克隆
@@ -125,7 +125,7 @@ func (c *Composite[T]) Changed() bool {
 	if c.Entity == nil {
 		return false
 	}
-	return c.changedVersion != ec.UnsafeEntity(c.Entity).GetChangedVersion()
+	return c.version != ec.UnsafeEntity(c.Entity).GetVersion()
 }
 
 // As 从实体提取一些需要的组件接口，复合在一起直接使用（实体更新组件后，会自动重新提取）
@@ -142,7 +142,7 @@ func (c *Composite[T]) As() (T, bool) {
 		return util.Zero[T](), false
 	}
 
-	c.changedVersion = ec.UnsafeEntity(c.Entity).GetChangedVersion()
+	c.version = ec.UnsafeEntity(c.Entity).GetVersion()
 
 	return c.iface, true
 }

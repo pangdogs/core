@@ -192,7 +192,7 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 		other.Escape()
 		comp.setState(ComponentState_Detach)
 
-		entity.changedVersion++
+		entity.version++
 
 		emitEventCompMgrRemoveComponent(&entity.eventCompMgrRemoveComponent, entity.opts.CompositeFace.Iface, comp)
 
@@ -216,7 +216,7 @@ func (entity *EntityBehavior) RemoveComponentById(id uid.Id) {
 	e.Escape()
 	comp.setState(ComponentState_Detach)
 
-	entity.changedVersion++
+	entity.version++
 
 	emitEventCompMgrRemoveComponent(&entity.eventCompMgrRemoveComponent, entity.opts.CompositeFace.Iface, comp)
 }
@@ -266,7 +266,7 @@ func (entity *EntityBehavior) addSingleComponent(name string, component Componen
 
 	component.setState(ComponentState_Attach)
 
-	entity.changedVersion++
+	entity.version++
 
 	return nil
 }
