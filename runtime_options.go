@@ -34,7 +34,7 @@ func (_RuntimeOption) Default() RuntimeOption {
 		_RuntimeOption{}.AutoRun(false)(o)
 		_RuntimeOption{}.ProcessQueueCapacity(128)(o)
 		_RuntimeOption{}.ProcessQueueTimeout(0)(o)
-		_RuntimeOption{}.RuntimeSyncCallTimeout(3 * time.Second)(o)
+		_RuntimeOption{}.SyncCallTimeout(3 * time.Second)(o)
 		_RuntimeOption{}.Frame(nil)(o)
 		_RuntimeOption{}.GCInterval(10 * time.Second)(o)
 		_RuntimeOption{}.CustomGC(nil)(o)
@@ -72,8 +72,8 @@ func (_RuntimeOption) ProcessQueueTimeout(dur time.Duration) RuntimeOption {
 	}
 }
 
-// RuntimeSyncCallTimeout 运行时的同步调用超时时间，为0表示不处理超时，此时两个运行时互相同步调用会死锁
-func (_RuntimeOption) RuntimeSyncCallTimeout(dur time.Duration) RuntimeOption {
+// SyncCallTimeout 运行时的同步调用超时时间，为0表示不处理超时，此时两个运行时互相同步调用会死锁
+func (_RuntimeOption) SyncCallTimeout(dur time.Duration) RuntimeOption {
 	return func(o *RuntimeOptions) {
 		o.SyncCallTimeout = dur
 	}
