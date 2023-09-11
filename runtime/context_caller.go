@@ -44,7 +44,7 @@ func (ctx *ContextBehavior) SyncCall(segment func() Ret) (ret Ret) {
 	func() {
 		defer func() {
 			if panicErr := util.Panic2Err(recover()); panicErr != nil {
-				ret = NewRet(fmt.Errorf("panicked: %w", panicErr), nil)
+				ret = NewRet(nil, fmt.Errorf("panicked: %w", panicErr))
 			}
 		}()
 
@@ -72,7 +72,7 @@ func (ctx *ContextBehavior) AsyncCall(segment func() Ret) AsyncRet {
 	go func() {
 		defer func() {
 			if panicErr := util.Panic2Err(recover()); panicErr != nil {
-				asyncRet <- NewRet(fmt.Errorf("panicked: %w", panicErr), nil)
+				asyncRet <- NewRet(nil, fmt.Errorf("panicked: %w", panicErr))
 				close(asyncRet)
 			}
 		}()

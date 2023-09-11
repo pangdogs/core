@@ -49,7 +49,7 @@ func AsyncGo(ctxResolver runtime.ContextResolver, segment func(ctx runtime.Conte
 	go func() {
 		defer func() {
 			if panicErr := util.Panic2Err(recover()); panicErr != nil {
-				asyncRet <- runtime.NewRet(fmt.Errorf("panicked: %w", panicErr), nil)
+				asyncRet <- runtime.NewRet(nil, fmt.Errorf("panicked: %w", panicErr))
 			}
 			close(asyncRet)
 		}()
@@ -72,7 +72,7 @@ func AsyncGoVoid(ctxResolver runtime.ContextResolver, segment func(ctx runtime.C
 	go func() {
 		defer func() {
 			if panicErr := util.Panic2Err(recover()); panicErr != nil {
-				asyncRet <- runtime.NewRet(fmt.Errorf("panicked: %w", panicErr), nil)
+				asyncRet <- runtime.NewRet(nil, fmt.Errorf("panicked: %w", panicErr))
 			}
 			close(asyncRet)
 		}()
@@ -167,7 +167,7 @@ func AsyncChanRet[T any](ctx context.Context, ch <-chan T) runtime.AsyncRet {
 					return
 				}
 				select {
-				case asyncRet <- runtime.NewRet(nil, v):
+				case asyncRet <- runtime.NewRet(v, nil):
 				case <-ctx.Done():
 					return
 				}

@@ -106,16 +106,16 @@ func asyncCall(entity ec.Entity, segment func(entity ec.Entity) Ret) AsyncRet {
 //	- 调用过程中的panic信息，均会转换为error返回。
 func (ctx *ContextBehavior) SyncCall(entityId uid.Id, segment func(entity ec.Entity) Ret) Ret {
 	if err := checkEntityId(entityId); err != nil {
-		return internal.NewRet(err, nil)
+		return internal.NewRet(nil, err)
 	}
 
 	if err := checkSegment(segment); err != nil {
-		return internal.NewRet(err, nil)
+		return internal.NewRet(nil, err)
 	}
 
 	entity, err := getEntity(ctx.entityMgr, entityId)
 	if err != nil {
-		return internal.NewRet(err, nil)
+		return internal.NewRet(nil, err)
 	}
 
 	return syncCall(entity, segment)
@@ -128,24 +128,24 @@ func (ctx *ContextBehavior) SyncCall(entityId uid.Id, segment func(entity ec.Ent
 //	- 在代码片段中，如果向调用方所在的运行时发起同步调用，并且调用方也在阻塞AsyncRet等待返回值，那么会造成线程死锁。
 //	- 调用过程中的panic信息，均会转换为error返回。
 func (ctx *ContextBehavior) AsyncCall(entityId uid.Id, segment func(entity ec.Entity) Ret) AsyncRet {
-	returnAsyncRet := func(err error, val any) AsyncRet {
+	returnAsyncRet := func(val any, err error) AsyncRet {
 		asyncRet := make(chan Ret, 1)
-		asyncRet <- internal.NewRet(err, val)
+		asyncRet <- internal.NewRet(val, err)
 		close(asyncRet)
 		return asyncRet
 	}
 
 	if err := checkEntityId(entityId); err != nil {
-		return returnAsyncRet(err, nil)
+		return returnAsyncRet(nil, err)
 	}
 
 	if err := checkSegment(segment); err != nil {
-		return returnAsyncRet(err, nil)
+		return returnAsyncRet(nil, err)
 	}
 
 	entity, err := getEntity(ctx.entityMgr, entityId)
 	if err != nil {
-		return returnAsyncRet(err, nil)
+		return returnAsyncRet(nil, err)
 	}
 
 	return asyncCall(entity, segment)

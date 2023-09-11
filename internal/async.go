@@ -3,17 +3,17 @@ package internal
 import "fmt"
 
 // NewRet 创建调用结果
-func NewRet(err error, val any) Ret {
+func NewRet(val any, err error) Ret {
 	return Ret{
-		Error: err,
 		Value: val,
+		Error: err,
 	}
 }
 
 // Ret 调用结果
 type Ret struct {
-	Error error // error
 	Value any   // 返回值
+	Error error // error
 }
 
 // OK 是否成功
