@@ -2,11 +2,19 @@ package golaxy
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/elliotchance/pie/v2"
 	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/util"
+	"sync"
 	"sync/atomic"
 	"time"
+)
+
+var (
+	ErrAllOfAsyncRetFailures = errors.New("all of async result failures")
+	ErrAsyncRetClosed        = errors.New("async result closed")
 )
 
 // Async 异步执行代码，最多返回一次，有返回值，返回的异步结果（async ret）可以给Await()等待并继续后续逻辑运行
@@ -90,11 +98,11 @@ func AsyncTimeAfter(ctx context.Context, dur time.Duration) runtime.AsyncRet {
 	}
 
 	asyncRet := make(chan runtime.Ret, 1)
-	timer := time.NewTimer(dur)
 
 	go func() {
+		timer := time.NewTimer(dur)
+
 		defer func() {
-			recover()
 			timer.Stop()
 			close(asyncRet)
 		}()
@@ -116,11 +124,11 @@ func AsyncTimeTick(ctx context.Context, dur time.Duration) runtime.AsyncRet {
 	}
 
 	asyncRet := make(chan runtime.Ret, 1)
-	tick := time.NewTicker(dur)
 
 	go func() {
+		tick := time.NewTicker(dur)
+
 		defer func() {
-			recover()
 			tick.Stop()
 			close(asyncRet)
 		}()
@@ -155,10 +163,7 @@ func AsyncChanRet[T any](ctx context.Context, ch <-chan T) runtime.AsyncRet {
 	asyncRet := make(chan runtime.Ret, 1)
 
 	go func() {
-		defer func() {
-			recover()
-			close(asyncRet)
-		}()
+		defer close(asyncRet)
 
 		for {
 			select {
@@ -180,53 +185,52 @@ func AsyncChanRet[T any](ctx context.Context, ch <-chan T) runtime.AsyncRet {
 	return asyncRet
 }
 
-// Await 等待异步结果（async ret）返回，并继续运行后续逻辑
-func Await(ctxResolver runtime.ContextResolver, asyncRet runtime.AsyncRet, onAsyncRet func(ctx runtime.Context, ret runtime.Ret)) {
+// Await 异步等待异步结果（async ret）返回，并继续运行后续逻辑
+func Await(ctxResolver runtime.ContextResolver, asyncRet runtime.AsyncRet, segment func(ctx runtime.Context, ret runtime.Ret)) {
 	ctx := runtime.Current(ctxResolver)
 
 	if asyncRet == nil {
-		return
+		panic("nil asyncRet")
 	}
 
-	if onAsyncRet == nil {
-		panic("nil onAsyncRet")
+	if segment == nil {
+		panic("nil segment")
 	}
 
 	go func() {
-		defer func() {
-			recover()
-		}()
-
-		for ret := range asyncRet {
-			ctx.AsyncCallVoid(func() { onAsyncRet(ctx, ret) })
+		ret, ok := <-asyncRet
+		if !ok {
+			ret.Error = ErrAsyncRetClosed
 		}
+
+		ctx.AsyncCallVoid(func() { segment(ctx, ret) })
 	}()
 }
 
-// AwaitAny 等待任意一个异步结果（async ret）成功的一次返回，并继续运行后续逻辑
-func AwaitAny(ctxResolver runtime.ContextResolver, asyncRets []runtime.AsyncRet, onAsyncRet func(ctx runtime.Context, ret runtime.Ret)) {
+// AwaitAny 异步等待任意一个异步结果（async ret）成功的一次返回，并继续运行后续逻辑
+func AwaitAny(ctxResolver runtime.ContextResolver, asyncRets []runtime.AsyncRet, segment func(ctx runtime.Context, ret runtime.Ret)) {
 	ctx := runtime.Current(ctxResolver)
 
 	if len(asyncRets) <= 0 {
-		return
+		panic("empty asyncRets")
 	}
 
-	if onAsyncRet == nil {
-		panic("nil onAsyncRet")
+	if pie.Contains(asyncRets, nil) {
+		panic("exist nil asyncRet")
 	}
 
+	if segment == nil {
+		panic("nil segment")
+	}
+
+	var wg sync.WaitGroup
 	var b atomic.Bool
 	waitCtx, cancel := context.WithCancel(ctx)
 
 	for _, asyncRet := range asyncRets {
-		if asyncRet == nil {
-			continue
-		}
-
+		wg.Add(1)
 		go func(asyncRet runtime.AsyncRet) {
-			defer func() {
-				recover()
-			}()
+			defer wg.Done()
 
 			var ret runtime.Ret
 			var ok bool
@@ -246,36 +250,150 @@ func AwaitAny(ctxResolver runtime.ContextResolver, asyncRets []runtime.AsyncRet,
 
 			cancel()
 
-			ctx.AsyncCallVoid(func() { onAsyncRet(ctx, ret) })
+			ctx.AsyncCallVoid(func() { segment(ctx, ret) })
 		}(asyncRet)
 	}
+
+	go func() {
+		wg.Wait()
+		if !b.Load() {
+			ctx.AsyncCallVoid(func() { segment(ctx, runtime.NewRet(nil, ErrAllOfAsyncRetFailures)) })
+		}
+	}()
 }
 
-// AwaitAll 等待所有异步结果（async ret）返回，并继续运行后续逻辑
-func AwaitAll(ctxResolver runtime.ContextResolver, asyncRets []runtime.AsyncRet, onAsyncRet func(ctx runtime.Context, ret runtime.Ret)) {
+// AwaitAll 异步等待所有异步结果（async ret）返回，并继续运行后续逻辑
+func AwaitAll(ctxResolver runtime.ContextResolver, asyncRets []runtime.AsyncRet, segment func(ctx runtime.Context, rets []runtime.Ret)) {
 	ctx := runtime.Current(ctxResolver)
 
 	if len(asyncRets) <= 0 {
-		return
+		panic("empty asyncRets")
 	}
 
-	if onAsyncRet == nil {
-		panic("nil onAsyncRet")
+	if pie.Contains(asyncRets, nil) {
+		panic("exist nil asyncRet")
 	}
+
+	if segment == nil {
+		panic("nil segment")
+	}
+
+	var wg sync.WaitGroup
+	rets := make([]runtime.Ret, len(asyncRets))
+
+	for i, asyncRet := range asyncRets {
+		wg.Add(1)
+		go func(asyncRet runtime.AsyncRet, ret *runtime.Ret) {
+			defer wg.Done()
+
+			r, ok := <-asyncRet
+			if !ok {
+				r.Error = ErrAsyncRetClosed
+			}
+
+			*ret = r
+		}(asyncRet, &rets[i])
+	}
+
+	go func() {
+		wg.Wait()
+		ctx.AsyncCallVoid(func() { segment(ctx, rets) })
+	}()
+}
+
+// Wait 同步等待异步结果（async ret）返回，并继续运行后续逻辑
+func Wait(asyncRet runtime.AsyncRet) runtime.Ret {
+	if asyncRet == nil {
+		panic("nil asyncRet")
+	}
+
+	ret, ok := <-asyncRet
+	if !ok {
+		ret.Error = ErrAsyncRetClosed
+	}
+
+	return ret
+}
+
+// WaitAny 同步等待任意一个异步结果（async ret）成功的一次返回，并继续运行后续逻辑
+func WaitAny(asyncRets []runtime.AsyncRet) runtime.Ret {
+	if len(asyncRets) <= 0 {
+		panic("empty asyncRets")
+	}
+
+	if pie.Contains(asyncRets, nil) {
+		panic("exist nil asyncRet")
+	}
+
+	var wg sync.WaitGroup
+	var b atomic.Bool
+	waitCtx, cancel := context.WithCancel(context.Background())
+	var ret runtime.Ret
 
 	for _, asyncRet := range asyncRets {
-		if asyncRet == nil {
-			continue
-		}
-
+		wg.Add(1)
 		go func(asyncRet runtime.AsyncRet) {
-			defer func() {
-				recover()
-			}()
+			defer wg.Done()
 
-			for ret := range asyncRet {
-				ctx.AsyncCallVoid(func() { onAsyncRet(ctx, ret) })
+			var r runtime.Ret
+			var ok bool
+
+			select {
+			case r, ok = <-asyncRet:
+				if !ok || !r.OK() {
+					return
+				}
+			case <-waitCtx.Done():
+				return
 			}
+
+			if !b.CompareAndSwap(false, true) {
+				return
+			}
+
+			cancel()
+
+			ret = r
 		}(asyncRet)
 	}
+
+	wg.Wait()
+
+	if !b.Load() {
+		return runtime.NewRet(nil, ErrAllOfAsyncRetFailures)
+	}
+
+	return ret
+}
+
+// WaitAll 同步等待所有异步结果（async ret）返回，并继续运行后续逻辑
+func WaitAll(asyncRets []runtime.AsyncRet) []runtime.Ret {
+	if len(asyncRets) <= 0 {
+		panic("empty asyncRets")
+	}
+
+	if pie.Contains(asyncRets, nil) {
+		panic("exist nil asyncRet")
+	}
+
+	var wg sync.WaitGroup
+	rets := make([]runtime.Ret, len(asyncRets))
+
+	for i, asyncRet := range asyncRets {
+		wg.Add(1)
+		go func(asyncRet runtime.AsyncRet, ret *runtime.Ret) {
+			defer wg.Done()
+
+			r, ok := <-asyncRet
+			if !ok {
+				r.Error = ErrAsyncRetClosed
+			}
+
+			*ret = r
+		}(asyncRet, &rets[i])
+	}
+
+	wg.Wait()
+
+	return rets
 }
