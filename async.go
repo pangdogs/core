@@ -198,12 +198,10 @@ func Await(ctxResolver runtime.ContextResolver, asyncRet runtime.AsyncRet, segme
 	}
 
 	go func() {
-		ret, ok := <-asyncRet
-		if !ok {
-			ret.Error = ErrAsyncRetClosed
+		for ret := range asyncRet {
+			ctx.AsyncCallVoid(func() { segment(ctx, ret) })
 		}
-
-		ctx.AsyncCallVoid(func() { segment(ctx, ret) })
+		ctx.AsyncCallVoid(func() { segment(ctx, runtime.NewRet(nil, ErrAsyncRetClosed)) })
 	}()
 }
 
