@@ -1,6 +1,7 @@
 package pt
 
 import (
+	"fmt"
 	"kit.golaxy.org/golaxy/ec"
 )
 
@@ -40,7 +41,7 @@ func (pt *EntityPt) Assemble(entity ec.Entity, componentConstructor ComponentCon
 		comp := compPt.Construct()
 
 		if err := entity.AddComponent(compPt.Name, comp); err != nil {
-			panic(err)
+			panic(fmt.Errorf("%w: %w", ErrPt, err))
 		}
 
 		if componentConstructor != nil {

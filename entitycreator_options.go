@@ -2,11 +2,11 @@ package golaxy
 
 import (
 	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/localevent"
+	"kit.golaxy.org/golaxy/event"
 	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/uid"
-	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/golaxy/util/container"
+	"kit.golaxy.org/golaxy/util/iface"
 )
 
 type _EntityCreatorOption struct{}
@@ -31,7 +31,7 @@ func (_EntityCreatorOption) Default() EntityCreatorOption {
 }
 
 // CompositeFace 扩展者，在扩展实体自身能力时使用
-func (_EntityCreatorOption) CompositeFace(face util.Face[ec.Entity]) EntityCreatorOption {
+func (_EntityCreatorOption) CompositeFace(face iface.Face[ec.Entity]) EntityCreatorOption {
 	return func(o *EntityCreatorOptions) {
 		pt.Option{}.CompositeFace(face)(&o.ConstructEntityOptions)
 	}
@@ -59,14 +59,14 @@ func (_EntityCreatorOption) ComponentAwakeByAccess(b bool) EntityCreatorOption {
 }
 
 // FaceAnyAllocator 自定义FaceAny内存分配器，用于提高性能，通常传入运行时上下文中的FaceAnyAllocator
-func (_EntityCreatorOption) FaceAnyAllocator(allocator container.Allocator[util.FaceAny]) EntityCreatorOption {
+func (_EntityCreatorOption) FaceAnyAllocator(allocator container.Allocator[iface.FaceAny]) EntityCreatorOption {
 	return func(o *EntityCreatorOptions) {
 		pt.Option{}.FaceAnyAllocator(allocator)(&o.ConstructEntityOptions)
 	}
 }
 
 // HookAllocator 自定义Hook内存分配器，用于提高性能，通常传入运行时上下文中的HookAllocator
-func (_EntityCreatorOption) HookAllocator(allocator container.Allocator[localevent.Hook]) EntityCreatorOption {
+func (_EntityCreatorOption) HookAllocator(allocator container.Allocator[event.Hook]) EntityCreatorOption {
 	return func(o *EntityCreatorOptions) {
 		pt.Option{}.HookAllocator(allocator)(&o.ConstructEntityOptions)
 	}

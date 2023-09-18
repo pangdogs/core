@@ -2,11 +2,11 @@ package ec
 
 import (
 	"fmt"
+	"kit.golaxy.org/golaxy/event"
 	"kit.golaxy.org/golaxy/internal"
-	"kit.golaxy.org/golaxy/localevent"
 	"kit.golaxy.org/golaxy/uid"
-	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/golaxy/util/container"
+	"kit.golaxy.org/golaxy/util/iface"
 )
 
 // NewEntity 创建实体
@@ -57,27 +57,27 @@ type _Entity interface {
 	init(opts *EntityOptions)
 	getOptions() *EntityOptions
 	setId(id uid.Id)
-	setContext(ctx util.IfaceCache)
+	setContext(ctx iface.Cache)
 	getVersion() int32
 	setGCCollector(gcCollector container.GCCollector)
 	getGCCollector() container.GCCollector
 	setParent(parent Entity)
 	setState(state EntityState)
-	eventEntityDestroySelf() localevent.IEvent
+	eventEntityDestroySelf() event.IEvent
 }
 
 // EntityBehavior 实体行为，在需要扩展实体能力时，匿名嵌入至实体结构体中
 type EntityBehavior struct {
 	opts                             EntityOptions
-	context                          util.IfaceCache
+	context                          iface.Cache
 	parent                           Entity
-	componentList                    container.List[util.FaceAny]
+	componentList                    container.List[iface.FaceAny]
 	version                          int32
 	state                            EntityState
-	_eventEntityDestroySelf          localevent.Event
-	eventCompMgrAddComponents        localevent.Event
-	eventCompMgrRemoveComponent      localevent.Event
-	eventCompMgrFirstAccessComponent localevent.Event
+	_eventEntityDestroySelf          event.Event
+	eventCompMgrAddComponents        event.Event
+	eventCompMgrRemoveComponent      event.Event
+	eventCompMgrFirstAccessComponent event.Event
 }
 
 // GetId 获取实体Id
@@ -104,32 +104,44 @@ func (entity *EntityBehavior) GetState() EntityState {
 func (entity *EntityBehavior) DestroySelf() {
 	switch entity.GetState() {
 	case EntityState_Init, EntityState_Inited, EntityState_Living:
-		emitEventEntityDestroySelf(&entity._eventEntityDestroySelf, entity.opts.CompositeFace.Iface)
+		emitEventEntityDestroySelf(UnsafeEntity(entity), entity.opts.CompositeFace.Iface)
 	}
 }
 
 // ResolveContext 解析上下文
-func (entity *EntityBehavior) ResolveContext() util.IfaceCache {
+func (entity *EntityBehavior) ResolveContext() iface.Cache {
 	return entity.context
+}
+
+// String implements fmt.Stringer
+func (entity *EntityBehavior) String() string {
+	var parentInfo string
+	if parent, ok := entity.GetParent(); ok {
+		parentInfo = parent.GetId().String()
+	} else {
+		parentInfo = "nil"
+	}
+
+	return fmt.Sprintf("{Id:%s Prototype:%s Parent:%s State:%s}", entity.GetId(), entity.GetPrototype(), parentInfo, entity.GetState())
 }
 
 func (entity *EntityBehavior) init(opts *EntityOptions) {
 	if opts == nil {
-		panic("nil opts")
+		panic(fmt.Errorf("%w: %w: opts is nil", ErrEC, internal.ErrArgs))
 	}
 
 	entity.opts = *opts
 
 	if entity.opts.CompositeFace.IsNil() {
-		entity.opts.CompositeFace = util.NewFace[Entity](entity)
+		entity.opts.CompositeFace = iface.NewFace[Entity](entity)
 	}
 
 	entity.componentList.Init(entity.opts.FaceAnyAllocator, entity.opts.GCCollector)
 
-	entity._eventEntityDestroySelf.Init(false, nil, localevent.EventRecursion_NotEmit, entity.opts.HookAllocator, entity.opts.GCCollector)
-	entity.eventCompMgrAddComponents.Init(false, nil, localevent.EventRecursion_Allow, entity.opts.HookAllocator, entity.opts.GCCollector)
-	entity.eventCompMgrRemoveComponent.Init(false, nil, localevent.EventRecursion_Allow, entity.opts.HookAllocator, entity.opts.GCCollector)
-	entity.eventCompMgrFirstAccessComponent.Init(false, nil, localevent.EventRecursion_Allow, entity.opts.HookAllocator, entity.opts.GCCollector)
+	entity._eventEntityDestroySelf.Init(false, nil, event.EventRecursion_NotEmit, entity.opts.HookAllocator, entity.opts.GCCollector)
+	entity.eventCompMgrAddComponents.Init(false, nil, event.EventRecursion_Allow, entity.opts.HookAllocator, entity.opts.GCCollector)
+	entity.eventCompMgrRemoveComponent.Init(false, nil, event.EventRecursion_Allow, entity.opts.HookAllocator, entity.opts.GCCollector)
+	entity.eventCompMgrFirstAccessComponent.Init(false, nil, event.EventRecursion_Allow, entity.opts.HookAllocator, entity.opts.GCCollector)
 }
 
 func (entity *EntityBehavior) getOptions() *EntityOptions {
@@ -140,7 +152,7 @@ func (entity *EntityBehavior) setId(id uid.Id) {
 	entity.opts.PersistId = id
 }
 
-func (entity *EntityBehavior) setContext(ctx util.IfaceCache) {
+func (entity *EntityBehavior) setContext(ctx iface.Cache) {
 	entity.context = ctx
 }
 
@@ -156,15 +168,15 @@ func (entity *EntityBehavior) setGCCollector(gcCollector container.GCCollector) 
 	entity.opts.GCCollector = gcCollector
 
 	entity.componentList.SetGCCollector(gcCollector)
-	entity.componentList.Traversal(func(e *container.Element[util.FaceAny]) bool {
-		comp := util.Cache2Iface[Component](e.Value.Cache)
+	entity.componentList.Traversal(func(e *container.Element[iface.FaceAny]) bool {
+		comp := iface.Cache2Iface[Component](e.Value.Cache)
 		comp.setGCCollector(gcCollector)
 		return true
 	})
 
-	localevent.UnsafeEvent(&entity._eventEntityDestroySelf).SetGCCollector(gcCollector)
-	localevent.UnsafeEvent(&entity.eventCompMgrAddComponents).SetGCCollector(gcCollector)
-	localevent.UnsafeEvent(&entity.eventCompMgrRemoveComponent).SetGCCollector(gcCollector)
+	event.UnsafeEvent(&entity._eventEntityDestroySelf).SetGCCollector(gcCollector)
+	event.UnsafeEvent(&entity.eventCompMgrAddComponents).SetGCCollector(gcCollector)
+	event.UnsafeEvent(&entity.eventCompMgrRemoveComponent).SetGCCollector(gcCollector)
 }
 
 func (entity *EntityBehavior) getGCCollector() container.GCCollector {
@@ -182,6 +194,6 @@ func (entity *EntityBehavior) setState(state EntityState) {
 	entity.state = state
 }
 
-func (entity *EntityBehavior) eventEntityDestroySelf() localevent.IEvent {
+func (entity *EntityBehavior) eventEntityDestroySelf() event.IEvent {
 	return &entity._eventEntityDestroySelf
 }

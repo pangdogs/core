@@ -1,10 +1,11 @@
 package service
 
 import (
-	"errors"
+	"fmt"
 	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/uid"
-	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/iface"
 	"sync"
 )
 
@@ -31,7 +32,7 @@ type _EntityMgr struct {
 
 func (entityMgr *_EntityMgr) init(ctx Context) {
 	if ctx == nil {
-		panic("nil ctx")
+		panic(fmt.Errorf("%w: %w: ctx is nil", ErrEntityMgr, internal.ErrArgs))
 	}
 
 	entityMgr.ctx = ctx
@@ -55,15 +56,15 @@ func (entityMgr *_EntityMgr) GetEntity(id uid.Id) (ec.Entity, bool) {
 // GetOrAddEntity 查询或添加实体
 func (entityMgr *_EntityMgr) GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, error) {
 	if entity == nil {
-		return nil, false, errors.New("nil entity")
+		return nil, false, fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, internal.ErrArgs)
 	}
 
 	if entity.GetId().IsNil() {
-		return nil, false, errors.New("entity id equal zero is invalid")
+		return nil, false, fmt.Errorf("%w: entity id is nil", ErrEntityMgr)
 	}
 
-	if entity.ResolveContext() == util.NilIfaceCache {
-		return nil, false, errors.New("entity context can't be resolve")
+	if entity.ResolveContext() == iface.NilCache {
+		return nil, false, fmt.Errorf("%w: entity context can't be resolve", ErrEntityMgr)
 	}
 
 	actual, loaded := entityMgr.entityMap.LoadOrStore(entity.GetId(), entity)
@@ -73,15 +74,15 @@ func (entityMgr *_EntityMgr) GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, 
 // AddEntity 添加实体
 func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity) error {
 	if entity == nil {
-		return errors.New("nil entity")
+		return fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, internal.ErrArgs)
 	}
 
 	if entity.GetId().IsNil() {
-		return errors.New("entity id equal zero is invalid")
+		return fmt.Errorf("%w: entity id is nil", ErrEntityMgr)
 	}
 
-	if entity.ResolveContext() == util.NilIfaceCache {
-		return errors.New("entity context can't be resolve")
+	if entity.ResolveContext() == iface.NilCache {
+		return fmt.Errorf("%w: entity context can't be resolve", ErrEntityMgr)
 	}
 
 	entityMgr.entityMap.Store(entity.GetId(), entity)

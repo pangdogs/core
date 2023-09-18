@@ -1,9 +1,10 @@
 package golaxy
 
 import (
+	"fmt"
 	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/service"
-	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/iface"
 )
 
 // NewService 创建服务
@@ -57,21 +58,21 @@ func (_service *ServiceBehavior) GetContext() service.Context {
 
 func (_service *ServiceBehavior) init(ctx service.Context, opts *ServiceOptions) {
 	if ctx == nil {
-		panic("nil ctx")
+		panic(fmt.Errorf("%w: %w: ctx is nil", ErrService, ErrArgs))
 	}
 
 	if opts == nil {
-		panic("nil opts")
+		panic(fmt.Errorf("%w: %w: opts is nil", ErrService, ErrArgs))
 	}
 
 	if !service.UnsafeContext(ctx).MarkPaired(true) {
-		panic("service context already paired")
+		panic(fmt.Errorf("%w: ctx already paired", ErrService))
 	}
 
 	_service.opts = *opts
 
 	if _service.opts.CompositeFace.IsNil() {
-		_service.opts.CompositeFace = util.NewFace[Service](_service)
+		_service.opts.CompositeFace = iface.NewFace[Service](_service)
 	}
 
 	_service.ctx = ctx

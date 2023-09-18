@@ -3,15 +3,16 @@ package plugin
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/util/iface"
 	"sync"
 )
 
 // PluginInfo 插件信息
 type PluginInfo struct {
-	Name   string       // 插件名
-	Face   util.FaceAny // 插件Face
-	Active bool         // 是否激活
+	Name   string        // 插件名
+	Face   iface.FaceAny // 插件Face
+	Active bool          // 是否激活
 }
 
 // PluginBundle 插件包
@@ -20,7 +21,7 @@ type PluginBundle interface {
 	//
 	//	@param name 插件名称。
 	//	@param plugin 插件Face。
-	Install(name string, pluginFace util.FaceAny)
+	Install(name string, pluginFace iface.FaceAny)
 
 	// Uninstall 卸载插件。
 	//
@@ -54,9 +55,9 @@ type PluginBundle interface {
 //	@param plugin 插件。
 func Install[T any](pluginBundle PluginBundle, name string, plugin T) {
 	if pluginBundle == nil {
-		panic("nil pluginBundle")
+		panic(fmt.Errorf("%w: %w: pluginBundle is nil", ErrPlugin, internal.ErrArgs))
 	}
-	pluginBundle.Install(name, util.NewFacePair[any](plugin, plugin))
+	pluginBundle.Install(name, iface.NewFacePair[any](plugin, plugin))
 }
 
 // Uninstall 卸载插件。
@@ -64,7 +65,7 @@ func Install[T any](pluginBundle PluginBundle, name string, plugin T) {
 //	@param pluginBundle 插件包。
 func Uninstall(pluginBundle PluginBundle, name string) {
 	if pluginBundle == nil {
-		panic("nil pluginBundle")
+		panic(fmt.Errorf("%w: %w: pluginBundle is nil", ErrPlugin, internal.ErrArgs))
 	}
 	pluginBundle.Uninstall(name)
 }
@@ -90,9 +91,9 @@ func (bundle *_PluginBundle) init() {
 //
 //	@param name 插件名称。
 //	@param plugin 插件Face。
-func (bundle *_PluginBundle) Install(name string, pluginFace util.FaceAny) {
+func (bundle *_PluginBundle) Install(name string, pluginFace iface.FaceAny) {
 	if pluginFace.IsNil() {
-		panic("nil pluginFace")
+		panic(fmt.Errorf("%w: %w: pluginFace is nil", ErrPlugin, internal.ErrArgs))
 	}
 
 	bundle.Lock()
@@ -100,7 +101,7 @@ func (bundle *_PluginBundle) Install(name string, pluginFace util.FaceAny) {
 
 	_, ok := bundle.pluginMap[name]
 	if ok {
-		panic(fmt.Errorf("plugin %q is already installed", name))
+		panic(fmt.Errorf("%w: %q is already installed", ErrPlugin, name))
 	}
 
 	pluginInfo := &PluginInfo{

@@ -1,8 +1,10 @@
 package golaxy
 
-import "kit.golaxy.org/golaxy/util"
+import (
+	"kit.golaxy.org/golaxy/util/iface"
+)
 
 // GetRuntimeComposite 获取运行时的扩展者
 func GetRuntimeComposite[T any](runtime Runtime) T {
-	return util.Cache2Iface[T](runtime.getOptions().CompositeFace.Cache)
+	return iface.Cache2Iface[T](runtime.getOptions().CompositeFace.Cache)
 }

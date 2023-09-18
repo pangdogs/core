@@ -1,17 +1,18 @@
 package runtime
 
 import (
+	"fmt"
+	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/service"
-	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/iface"
 )
 
 // Current 获取当前运行时上下文
 func Current(ctxResolver ContextResolver) Context {
 	if ctxResolver == nil {
-		panic("nil ctxResolver")
+		panic(fmt.Errorf("%w: %w: ctxResolver is nil", ErrContext, internal.ErrArgs))
 	}
-
-	return util.Cache2Iface[Context](ctxResolver.ResolveContext())
+	return iface.Cache2Iface[Context](ctxResolver.ResolveContext())
 }
 
 func getServiceContext(ctxResolver ContextResolver) service.Context {

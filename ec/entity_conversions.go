@@ -1,10 +1,10 @@
 package ec
 
 import (
-	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/iface"
 )
 
 // GetComposite 获取实体的扩展者
 func GetComposite[T any](entity Entity) T {
-	return util.Cache2Iface[T](entity.getOptions().CompositeFace.Cache)
+	return iface.Cache2Iface[T](entity.getOptions().CompositeFace.Cache)
 }

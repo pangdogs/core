@@ -44,12 +44,12 @@ func (ctx *ContextBehavior) SyncCall(segment func() Ret) (ret Ret) {
 	func() {
 		defer func() {
 			if panicErr := util.Panic2Err(recover()); panicErr != nil {
-				ret = NewRet(nil, fmt.Errorf("panicked: %w", panicErr))
+				ret = NewRet(nil, fmt.Errorf("%w: %w", internal.ErrPanicked, panicErr))
 			}
 		}()
 
 		if segment == nil {
-			panic("nil segment")
+			panic(fmt.Errorf("%w: %w: segment is nil", ErrContext, internal.ErrArgs))
 		}
 
 		ctx.callee.PushCall(func() {
@@ -72,13 +72,13 @@ func (ctx *ContextBehavior) AsyncCall(segment func() Ret) AsyncRet {
 	go func() {
 		defer func() {
 			if panicErr := util.Panic2Err(recover()); panicErr != nil {
-				asyncRet <- NewRet(nil, fmt.Errorf("panicked: %w", panicErr))
+				asyncRet <- NewRet(nil, fmt.Errorf("%w: %w", internal.ErrPanicked, panicErr))
 				close(asyncRet)
 			}
 		}()
 
 		if segment == nil {
-			panic("nil segment")
+			panic(fmt.Errorf("%w: %w: segment is nil", ErrContext, internal.ErrArgs))
 		}
 
 		ctx.callee.PushCall(func() {

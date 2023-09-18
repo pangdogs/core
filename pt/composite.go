@@ -1,6 +1,7 @@
 package pt
 
 import (
+	"fmt"
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/util"
 	"reflect"
@@ -68,7 +69,7 @@ func As[T comparable](entity ec.Entity) (T, bool) {
 func Cast[T comparable](entity ec.Entity) T {
 	entityFace, ok := As[T](entity)
 	if !ok {
-		panic("incorrect cast")
+		panic(fmt.Errorf("%w: incorrect cast", ErrPt))
 	}
 	return entityFace
 }
@@ -151,7 +152,7 @@ func (c *Composite[T]) As() (T, bool) {
 func (c *Composite[T]) Cast() T {
 	iface, ok := c.As()
 	if !ok {
-		panic("incorrect cast")
+		panic(fmt.Errorf("%w: incorrect cast", ErrPt))
 	}
 	return iface
 }

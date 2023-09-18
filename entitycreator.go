@@ -1,12 +1,16 @@
 package golaxy
 
 import (
-	"errors"
 	"fmt"
 	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/service"
+)
+
+var (
+	ErrEntityCreator = fmt.Errorf("%w: entity-creator", internal.ErrGolaxy)
 )
 
 // EntityCreator 实体构建器
@@ -40,7 +44,7 @@ func (creator *EntityCreator) Options(options ...EntityCreatorOption) *EntityCre
 // Spawn 创建实体
 func (creator *EntityCreator) Spawn(options ...EntityCreatorOption) (ec.Entity, error) {
 	if creator.Context == nil {
-		return nil, errors.New("nil context")
+		return nil, fmt.Errorf("%w: context is nil", ErrEntityCreator)
 	}
 
 	runtimeCtx := creator.Context
@@ -59,20 +63,20 @@ func (creator *EntityCreator) Spawn(options ...EntityCreatorOption) (ec.Entity, 
 
 	entityPt, ok := pt.AccessEntityPt(serviceCtx, opts.Prototype)
 	if !ok {
-		return nil, fmt.Errorf("entity prototype %q not registered", opts.Prototype)
+		return nil, fmt.Errorf("%w: entity %q not registered", ErrEntityCreator, opts.Prototype)
 	}
 
 	entity := entityPt.UnsafeConstruct(opts.ConstructEntityOptions)
 
 	if err := runtimeCtx.GetEntityMgr().AddEntity(entity, opts.Scope); err != nil {
-		return nil, fmt.Errorf("add entity to runtime context failed, %v", err)
+		return nil, fmt.Errorf("%w: %w", ErrEntityCreator, err)
 	}
 
 	if !opts.ParentID.IsNil() {
 		err := runtimeCtx.GetECTree().AddChild(opts.ParentID, entity.GetId())
 		if err != nil {
 			runtimeCtx.GetEntityMgr().RemoveEntity(entity.GetId())
-			return nil, fmt.Errorf("add entity to ec-tree failed, %v", err)
+			return nil, fmt.Errorf("%w, %w", ErrEntityCreator, err)
 		}
 	}
 

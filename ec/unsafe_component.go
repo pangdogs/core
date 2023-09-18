@@ -1,7 +1,7 @@
 package ec
 
 import (
-	"kit.golaxy.org/golaxy/localevent"
+	"kit.golaxy.org/golaxy/event"
 	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util/container"
 	"reflect"
@@ -19,7 +19,7 @@ type _UnsafeComponent struct {
 }
 
 // Init 初始化
-func (uc _UnsafeComponent) Init(name string, entity Entity, composite Component, hookAllocator container.Allocator[localevent.Hook], gcCollector container.GCCollector) {
+func (uc _UnsafeComponent) Init(name string, entity Entity, composite Component, hookAllocator container.Allocator[event.Hook], gcCollector container.GCCollector) {
 	uc.init(name, entity, composite, hookAllocator, gcCollector)
 }
 
@@ -64,6 +64,6 @@ func (uc _UnsafeComponent) SetGCCollector(gcCollector container.GCCollector) {
 }
 
 // EventComponentDestroySelf 事件：组件销毁自身
-func (uc _UnsafeComponent) EventComponentDestroySelf() localevent.IEvent {
+func (uc _UnsafeComponent) EventComponentDestroySelf() event.IEvent {
 	return uc.eventComponentDestroySelf()
 }

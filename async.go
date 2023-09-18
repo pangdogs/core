@@ -2,9 +2,9 @@ package golaxy
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/elliotchance/pie/v2"
+	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/util"
 	"sync"
@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	ErrAllOfAsyncRetFailures = errors.New("all of async result failures")
-	ErrAsyncRetClosed        = errors.New("async result closed")
+	ErrAsyncAwait            = fmt.Errorf("%w: async/await", internal.ErrGolaxy)
+	ErrAllOfAsyncRetFailures = fmt.Errorf("%w: all of async result failures", ErrAsyncAwait)
+	ErrAsyncRetClosed        = fmt.Errorf("%w: async result closed", ErrAsyncAwait)
 )
 
 // Async 异步执行代码，最多返回一次，有返回值，返回的异步结果（async ret）可以给Await()等待并继续后续逻辑运行
@@ -22,7 +23,7 @@ func Async(ctxResolver runtime.ContextResolver, segment func(ctx runtime.Context
 	ctx := runtime.Current(ctxResolver)
 
 	if segment == nil {
-		panic("nil segment")
+		panic(fmt.Errorf("%w: %w: segment is nil", ErrAsyncAwait, internal.ErrArgs))
 	}
 
 	return ctx.AsyncCall(func() runtime.Ret {
@@ -35,7 +36,7 @@ func AsyncVoid(ctxResolver runtime.ContextResolver, segment func(ctx runtime.Con
 	ctx := runtime.Current(ctxResolver)
 
 	if segment == nil {
-		panic("nil segment")
+		panic(fmt.Errorf("%w: %w: segment is nil", ErrAsyncAwait, internal.ErrArgs))
 	}
 
 	return ctx.AsyncCall(func() runtime.Ret {
@@ -49,7 +50,7 @@ func AsyncGo(ctxResolver runtime.ContextResolver, segment func(ctx runtime.Conte
 	ctx := runtime.Current(ctxResolver)
 
 	if segment == nil {
-		panic("nil segment")
+		panic(fmt.Errorf("%w: %w: segment is nil", ErrAsyncAwait, internal.ErrArgs))
 	}
 
 	asyncRet := make(chan runtime.Ret, 1)
@@ -57,7 +58,7 @@ func AsyncGo(ctxResolver runtime.ContextResolver, segment func(ctx runtime.Conte
 	go func() {
 		defer func() {
 			if panicErr := util.Panic2Err(recover()); panicErr != nil {
-				asyncRet <- runtime.NewRet(nil, fmt.Errorf("panicked: %w", panicErr))
+				asyncRet <- runtime.NewRet(nil, fmt.Errorf("%w: %w: %w", internal.ErrPanicked, ErrAsyncAwait, panicErr))
 			}
 			close(asyncRet)
 		}()
@@ -72,7 +73,7 @@ func AsyncGoVoid(ctxResolver runtime.ContextResolver, segment func(ctx runtime.C
 	ctx := runtime.Current(ctxResolver)
 
 	if segment == nil {
-		panic("nil segment")
+		panic(fmt.Errorf("%w: %w: segment is nil", ErrAsyncAwait, internal.ErrArgs))
 	}
 
 	asyncRet := make(chan runtime.Ret, 1)
@@ -80,7 +81,7 @@ func AsyncGoVoid(ctxResolver runtime.ContextResolver, segment func(ctx runtime.C
 	go func() {
 		defer func() {
 			if panicErr := util.Panic2Err(recover()); panicErr != nil {
-				asyncRet <- runtime.NewRet(nil, fmt.Errorf("panicked: %w", panicErr))
+				asyncRet <- runtime.NewRet(nil, fmt.Errorf("%w: %w: %w", internal.ErrPanicked, ErrAsyncAwait, panicErr))
 			}
 			close(asyncRet)
 		}()
@@ -190,11 +191,11 @@ func Await(ctxResolver runtime.ContextResolver, asyncRet runtime.AsyncRet, segme
 	ctx := runtime.Current(ctxResolver)
 
 	if asyncRet == nil {
-		panic("nil asyncRet")
+		panic(fmt.Errorf("%w: %w: asyncRet is nil", ErrAsyncAwait, internal.ErrArgs))
 	}
 
 	if segment == nil {
-		panic("nil segment")
+		panic(fmt.Errorf("%w: %w: segment is nil", ErrAsyncAwait, internal.ErrArgs))
 	}
 
 	go func() {
@@ -210,15 +211,15 @@ func AwaitAny(ctxResolver runtime.ContextResolver, asyncRets []runtime.AsyncRet,
 	ctx := runtime.Current(ctxResolver)
 
 	if len(asyncRets) <= 0 {
-		panic("empty asyncRets")
+		panic(fmt.Errorf("%w: %w: asyncRets is empty", ErrAsyncAwait, internal.ErrArgs))
 	}
 
 	if pie.Contains(asyncRets, nil) {
-		panic("exist nil asyncRet")
+		panic(fmt.Errorf("%w: %w: asyncRets contain nil elements", ErrAsyncAwait, internal.ErrArgs))
 	}
 
 	if segment == nil {
-		panic("nil segment")
+		panic(fmt.Errorf("%w: %w: segment is nil", ErrAsyncAwait, internal.ErrArgs))
 	}
 
 	var wg sync.WaitGroup
@@ -265,15 +266,15 @@ func AwaitAll(ctxResolver runtime.ContextResolver, asyncRets []runtime.AsyncRet,
 	ctx := runtime.Current(ctxResolver)
 
 	if len(asyncRets) <= 0 {
-		panic("empty asyncRets")
+		panic(fmt.Errorf("%w: %w: asyncRets is empty", ErrAsyncAwait, internal.ErrArgs))
 	}
 
 	if pie.Contains(asyncRets, nil) {
-		panic("exist nil asyncRet")
+		panic(fmt.Errorf("%w: %w: asyncRets contain nil elements", ErrAsyncAwait, internal.ErrArgs))
 	}
 
 	if segment == nil {
-		panic("nil segment")
+		panic(fmt.Errorf("%w: %w: segment is nil", ErrAsyncAwait, internal.ErrArgs))
 	}
 
 	var wg sync.WaitGroup
@@ -302,7 +303,7 @@ func AwaitAll(ctxResolver runtime.ContextResolver, asyncRets []runtime.AsyncRet,
 // Wait 同步等待异步结果（async ret）返回，并继续运行后续逻辑
 func Wait(asyncRet runtime.AsyncRet) runtime.Ret {
 	if asyncRet == nil {
-		panic("nil asyncRet")
+		panic(fmt.Errorf("%w: %w: asyncRet is nil", ErrAsyncAwait, internal.ErrArgs))
 	}
 
 	ret, ok := <-asyncRet
@@ -316,11 +317,11 @@ func Wait(asyncRet runtime.AsyncRet) runtime.Ret {
 // WaitAny 同步等待任意一个异步结果（async ret）成功的一次返回，并继续运行后续逻辑
 func WaitAny(asyncRets []runtime.AsyncRet) runtime.Ret {
 	if len(asyncRets) <= 0 {
-		panic("empty asyncRets")
+		panic(fmt.Errorf("%w: %w: asyncRets is empty", ErrAsyncAwait, internal.ErrArgs))
 	}
 
 	if pie.Contains(asyncRets, nil) {
-		panic("exist nil asyncRet")
+		panic(fmt.Errorf("%w: %w: asyncRets contain nil elements", ErrAsyncAwait, internal.ErrArgs))
 	}
 
 	var wg sync.WaitGroup
@@ -367,11 +368,11 @@ func WaitAny(asyncRets []runtime.AsyncRet) runtime.Ret {
 // WaitAll 同步等待所有异步结果（async ret）返回，并继续运行后续逻辑
 func WaitAll(asyncRets []runtime.AsyncRet) []runtime.Ret {
 	if len(asyncRets) <= 0 {
-		panic("empty asyncRets")
+		panic(fmt.Errorf("%w: %w: asyncRets is empty", ErrAsyncAwait, internal.ErrArgs))
 	}
 
 	if pie.Contains(asyncRets, nil) {
-		panic("exist nil asyncRet")
+		panic(fmt.Errorf("%w: %w: asyncRets contain nil elements", ErrAsyncAwait, internal.ErrArgs))
 	}
 
 	var wg sync.WaitGroup

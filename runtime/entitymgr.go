@@ -1,15 +1,14 @@
 package runtime
 
 import (
-	"errors"
 	"fmt"
 	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/event"
 	"kit.golaxy.org/golaxy/internal"
-	"kit.golaxy.org/golaxy/localevent"
 	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/golaxy/uid"
-	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/golaxy/util/container"
+	"kit.golaxy.org/golaxy/util/iface"
 )
 
 // IEntityMgr 实体管理器接口
@@ -28,56 +27,56 @@ type IEntityMgr interface {
 	// RemoveEntity 删除实体
 	RemoveEntity(id uid.Id)
 	// EventEntityMgrAddEntity 事件：实体管理器添加实体
-	EventEntityMgrAddEntity() localevent.IEvent
+	EventEntityMgrAddEntity() event.IEvent
 	// EventEntityMgrRemovingEntity 事件：实体管理器开始删除实体
-	EventEntityMgrRemovingEntity() localevent.IEvent
+	EventEntityMgrRemovingEntity() event.IEvent
 	// EventEntityMgrRemoveEntity 事件：实体管理器删除实体
-	EventEntityMgrRemoveEntity() localevent.IEvent
+	EventEntityMgrRemoveEntity() event.IEvent
 	// EventEntityMgrEntityAddComponents 事件：实体管理器中的实体添加组件
-	EventEntityMgrEntityAddComponents() localevent.IEvent
+	EventEntityMgrEntityAddComponents() event.IEvent
 	// EventEntityMgrEntityRemoveComponent 事件：实体管理器中的实体删除组件
-	EventEntityMgrEntityRemoveComponent() localevent.IEvent
+	EventEntityMgrEntityRemoveComponent() event.IEvent
 	// EventEntityMgrEntityFirstAccessComponent 事件：实体管理器中的实体首次访问组件
-	EventEntityMgrEntityFirstAccessComponent() localevent.IEvent
+	EventEntityMgrEntityFirstAccessComponent() event.IEvent
 }
 
 type _EntityInfo struct {
-	Element    *container.Element[util.FaceAny]
-	Hooks      [3]localevent.Hook
+	Element    *container.Element[iface.FaceAny]
+	Hooks      [3]event.Hook
 	GlobalMark bool
 }
 
 type _EntityMgr struct {
 	ctx                                      Context
 	entityMap                                map[uid.Id]_EntityInfo
-	entityList                               container.List[util.FaceAny]
-	eventEntityMgrAddEntity                  localevent.Event
-	eventEntityMgrRemovingEntity             localevent.Event
-	eventEntityMgrRemoveEntity               localevent.Event
-	eventEntityMgrEntityAddComponents        localevent.Event
-	eventEntityMgrEntityRemoveComponent      localevent.Event
-	eventEntityMgrEntityFirstAccessComponent localevent.Event
+	entityList                               container.List[iface.FaceAny]
+	eventEntityMgrAddEntity                  event.Event
+	eventEntityMgrRemovingEntity             event.Event
+	eventEntityMgrRemoveEntity               event.Event
+	eventEntityMgrEntityAddComponents        event.Event
+	eventEntityMgrEntityRemoveComponent      event.Event
+	eventEntityMgrEntityFirstAccessComponent event.Event
 }
 
 func (entityMgr *_EntityMgr) Init(ctx Context) {
 	if ctx == nil {
-		panic("nil ctx")
+		panic(fmt.Errorf("%w: %w: ctx is nil", ErrEntityMgr, internal.ErrArgs))
 	}
 
 	entityMgr.ctx = ctx
 	entityMgr.entityList.Init(ctx.GetFaceAnyAllocator(), ctx)
 	entityMgr.entityMap = map[uid.Id]_EntityInfo{}
 
-	entityMgr.eventEntityMgrAddEntity.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Allow, ctx.GetHookAllocator(), ctx)
-	entityMgr.eventEntityMgrRemovingEntity.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Allow, ctx.GetHookAllocator(), ctx)
-	entityMgr.eventEntityMgrRemoveEntity.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Allow, ctx.GetHookAllocator(), ctx)
-	entityMgr.eventEntityMgrEntityAddComponents.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Allow, ctx.GetHookAllocator(), ctx)
-	entityMgr.eventEntityMgrEntityRemoveComponent.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Allow, ctx.GetHookAllocator(), ctx)
-	entityMgr.eventEntityMgrEntityFirstAccessComponent.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Allow, ctx.GetHookAllocator(), ctx)
+	entityMgr.eventEntityMgrAddEntity.Init(ctx.GetAutoRecover(), ctx.GetReportError(), event.EventRecursion_Allow, ctx.GetHookAllocator(), ctx)
+	entityMgr.eventEntityMgrRemovingEntity.Init(ctx.GetAutoRecover(), ctx.GetReportError(), event.EventRecursion_Allow, ctx.GetHookAllocator(), ctx)
+	entityMgr.eventEntityMgrRemoveEntity.Init(ctx.GetAutoRecover(), ctx.GetReportError(), event.EventRecursion_Allow, ctx.GetHookAllocator(), ctx)
+	entityMgr.eventEntityMgrEntityAddComponents.Init(ctx.GetAutoRecover(), ctx.GetReportError(), event.EventRecursion_Allow, ctx.GetHookAllocator(), ctx)
+	entityMgr.eventEntityMgrEntityRemoveComponent.Init(ctx.GetAutoRecover(), ctx.GetReportError(), event.EventRecursion_Allow, ctx.GetHookAllocator(), ctx)
+	entityMgr.eventEntityMgrEntityFirstAccessComponent.Init(ctx.GetAutoRecover(), ctx.GetReportError(), event.EventRecursion_Allow, ctx.GetHookAllocator(), ctx)
 }
 
 // ResolveContext 解析上下文
-func (entityMgr *_EntityMgr) ResolveContext() util.IfaceCache {
+func (entityMgr *_EntityMgr) ResolveContext() iface.Cache {
 	return entityMgr.ctx.ResolveContext()
 }
 
@@ -92,7 +91,7 @@ func (entityMgr *_EntityMgr) GetEntity(id uid.Id) (ec.Entity, bool) {
 		return nil, false
 	}
 
-	return util.Cache2Iface[ec.Entity](e.Element.Value.Cache), true
+	return iface.Cache2Iface[ec.Entity](e.Element.Value.Cache), true
 }
 
 // RangeEntities 遍历所有实体
@@ -101,8 +100,8 @@ func (entityMgr *_EntityMgr) RangeEntities(fun func(entity ec.Entity) bool) {
 		return
 	}
 
-	entityMgr.entityList.Traversal(func(e *container.Element[util.FaceAny]) bool {
-		return fun(util.Cache2Iface[ec.Entity](e.Value.Cache))
+	entityMgr.entityList.Traversal(func(e *container.Element[iface.FaceAny]) bool {
+		return fun(iface.Cache2Iface[ec.Entity](e.Value.Cache))
 	})
 }
 
@@ -112,8 +111,8 @@ func (entityMgr *_EntityMgr) ReverseRangeEntities(fun func(entity ec.Entity) boo
 		return
 	}
 
-	entityMgr.entityList.ReverseTraversal(func(e *container.Element[util.FaceAny]) bool {
-		return fun(util.Cache2Iface[ec.Entity](e.Value.Cache))
+	entityMgr.entityList.ReverseTraversal(func(e *container.Element[iface.FaceAny]) bool {
+		return fun(iface.Cache2Iface[ec.Entity](e.Value.Cache))
 	})
 }
 
@@ -125,22 +124,22 @@ func (entityMgr *_EntityMgr) CountEntities() int {
 // AddEntity 添加实体
 func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 	if entity == nil {
-		return errors.New("nil entity")
+		panic(fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, internal.ErrArgs))
 	}
 
 	switch scope {
 	case ec.Scope_Local, ec.Scope_Global:
 	default:
-		return errors.New("scope invalid")
+		return fmt.Errorf("%w: %w: invalid scope", ErrEntityMgr, internal.ErrArgs)
 	}
 
 	if entity.GetState() != ec.EntityState_Birth {
-		return errors.New("entity state not birth is invalid")
+		return fmt.Errorf("%w: invalid entity state %q", ErrEntityMgr, entity.GetState())
 	}
 
 	if !entity.GetId().IsNil() {
 		if _, ok := entityMgr.entityMap[entity.GetId()]; ok {
-			return fmt.Errorf("entity id already existed")
+			return fmt.Errorf("%w: entity already existed", ErrEntityMgr)
 		}
 	}
 
@@ -149,7 +148,7 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 	if _entity.GetId().IsNil() {
 		_entity.SetId(uid.New())
 	}
-	_entity.SetContext(util.Iface2Cache[Context](entityMgr.ctx))
+	_entity.SetContext(iface.Iface2Cache[Context](entityMgr.ctx))
 
 	_entity.RangeComponents(func(comp ec.Component) bool {
 		_comp := ec.UnsafeComponent(comp)
@@ -167,16 +166,16 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 			return err
 		}
 		if loaded {
-			return errors.New("add entity to service context failed, entity id already existed")
+			return fmt.Errorf("%w: %w", ErrEntityMgr, err)
 		}
 	}
 
 	entityInfo := _EntityInfo{}
-	entityInfo.Element = entityMgr.entityList.PushBack(util.NewFacePair[any](entity, entity))
-	entityInfo.Hooks[0] = localevent.BindEvent[ec.EventCompMgrAddComponents](entity.EventCompMgrAddComponents(), entityMgr)
-	entityInfo.Hooks[1] = localevent.BindEvent[ec.EventCompMgrRemoveComponent](entity.EventCompMgrRemoveComponent(), entityMgr)
+	entityInfo.Element = entityMgr.entityList.PushBack(iface.NewFacePair[any](entity, entity))
+	entityInfo.Hooks[0] = event.BindEvent[ec.EventCompMgrAddComponents](entity.EventCompMgrAddComponents(), entityMgr)
+	entityInfo.Hooks[1] = event.BindEvent[ec.EventCompMgrRemoveComponent](entity.EventCompMgrRemoveComponent(), entityMgr)
 	if _entity.GetOptions().ComponentAwakeByAccess {
-		entityInfo.Hooks[2] = localevent.BindEvent[ec.EventCompMgrFirstAccessComponent](entity.EventCompMgrFirstAccessComponent(), entityMgr)
+		entityInfo.Hooks[2] = event.BindEvent[ec.EventCompMgrFirstAccessComponent](entity.EventCompMgrFirstAccessComponent(), entityMgr)
 	}
 	entityInfo.GlobalMark = scope == ec.Scope_Global
 
@@ -188,7 +187,7 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 		_entity.SetGCCollector(entityMgr.ctx)
 	}
 
-	emitEventEntityMgrAddEntity(&entityMgr.eventEntityMgrAddEntity, entityMgr, entity)
+	emitEventEntityMgrAddEntity(entityMgr, entityMgr, entity)
 
 	return nil
 }
@@ -200,7 +199,7 @@ func (entityMgr *_EntityMgr) RemoveEntity(id uid.Id) {
 		return
 	}
 
-	entity := ec.UnsafeEntity(util.Cache2Iface[ec.Entity](entityInfo.Element.Value.Cache))
+	entity := ec.UnsafeEntity(iface.Cache2Iface[ec.Entity](entityInfo.Element.Value.Cache))
 	if entity.GetState() >= ec.EntityState_Leave {
 		return
 	}
@@ -211,7 +210,7 @@ func (entityMgr *_EntityMgr) RemoveEntity(id uid.Id) {
 		service.Current(entityMgr).GetEntityMgr().RemoveEntity(entity.GetId())
 	}
 
-	emitEventEntityMgrRemovingEntity(&entityMgr.eventEntityMgrRemovingEntity, entityMgr, entity.Entity)
+	emitEventEntityMgrRemovingEntity(entityMgr, entityMgr, entity.Entity)
 
 	delete(entityMgr.entityMap, id)
 	entityInfo.Element.Escape()
@@ -220,36 +219,36 @@ func (entityMgr *_EntityMgr) RemoveEntity(id uid.Id) {
 		entityInfo.Hooks[i].Unbind()
 	}
 
-	emitEventEntityMgrRemoveEntity(&entityMgr.eventEntityMgrRemoveEntity, entityMgr, entity.Entity)
+	emitEventEntityMgrRemoveEntity(entityMgr, entityMgr, entity.Entity)
 }
 
 // EventEntityMgrAddEntity 事件：实体管理器添加实体
-func (entityMgr *_EntityMgr) EventEntityMgrAddEntity() localevent.IEvent {
+func (entityMgr *_EntityMgr) EventEntityMgrAddEntity() event.IEvent {
 	return &entityMgr.eventEntityMgrAddEntity
 }
 
 // EventEntityMgrRemovingEntity 事件：实体管理器开始删除实体
-func (entityMgr *_EntityMgr) EventEntityMgrRemovingEntity() localevent.IEvent {
+func (entityMgr *_EntityMgr) EventEntityMgrRemovingEntity() event.IEvent {
 	return &entityMgr.eventEntityMgrRemovingEntity
 }
 
 // EventEntityMgrRemoveEntity 事件：实体管理器删除实体
-func (entityMgr *_EntityMgr) EventEntityMgrRemoveEntity() localevent.IEvent {
+func (entityMgr *_EntityMgr) EventEntityMgrRemoveEntity() event.IEvent {
 	return &entityMgr.eventEntityMgrRemoveEntity
 }
 
 // EventEntityMgrEntityAddComponents 事件：实体管理器中的实体添加组件
-func (entityMgr *_EntityMgr) EventEntityMgrEntityAddComponents() localevent.IEvent {
+func (entityMgr *_EntityMgr) EventEntityMgrEntityAddComponents() event.IEvent {
 	return &entityMgr.eventEntityMgrEntityAddComponents
 }
 
 // EventEntityMgrEntityRemoveComponent 事件：实体管理器中的实体删除组件
-func (entityMgr *_EntityMgr) EventEntityMgrEntityRemoveComponent() localevent.IEvent {
+func (entityMgr *_EntityMgr) EventEntityMgrEntityRemoveComponent() event.IEvent {
 	return &entityMgr.eventEntityMgrEntityRemoveComponent
 }
 
 // EventEntityMgrEntityFirstAccessComponent 事件：实体管理器中的实体首次访问组件
-func (entityMgr *_EntityMgr) EventEntityMgrEntityFirstAccessComponent() localevent.IEvent {
+func (entityMgr *_EntityMgr) EventEntityMgrEntityFirstAccessComponent() event.IEvent {
 	return &entityMgr.eventEntityMgrEntityFirstAccessComponent
 }
 
@@ -262,13 +261,13 @@ func (entityMgr *_EntityMgr) OnCompMgrAddComponents(entity ec.Entity, components
 		}
 	}
 
-	emitEventEntityMgrEntityAddComponents(&entityMgr.eventEntityMgrEntityAddComponents, entityMgr, entity, components)
+	emitEventEntityMgrEntityAddComponents(entityMgr, entityMgr, entity, components)
 }
 
 func (entityMgr *_EntityMgr) OnCompMgrRemoveComponent(entity ec.Entity, component ec.Component) {
-	emitEventEntityMgrEntityRemoveComponent(&entityMgr.eventEntityMgrEntityRemoveComponent, entityMgr, entity, component)
+	emitEventEntityMgrEntityRemoveComponent(entityMgr, entityMgr, entity, component)
 }
 
 func (entityMgr *_EntityMgr) OnCompMgrFirstAccessComponent(entity ec.Entity, component ec.Component) {
-	emitEventEntityMgrEntityFirstAccessComponent(&entityMgr.eventEntityMgrEntityFirstAccessComponent, entityMgr, entity, component)
+	emitEventEntityMgrEntityFirstAccessComponent(entityMgr, entityMgr, entity, component)
 }

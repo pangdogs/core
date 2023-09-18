@@ -1,11 +1,15 @@
 package golaxy
 
-import "time"
+import (
+	"fmt"
+	"kit.golaxy.org/golaxy/internal"
+	"time"
+)
 
 // PushCall 将代码片段压入接受者的任务处理流水线，串行化的进行调用。
 func (_runtime *RuntimeBehavior) PushCall(segment func()) {
 	if segment == nil {
-		panic("nil segment")
+		panic(fmt.Errorf("%w: %w: segment is nil", ErrRuntime, internal.ErrArgs))
 	}
 
 	if _runtime.opts.ProcessQueueTimeout > 0 {
@@ -16,14 +20,14 @@ func (_runtime *RuntimeBehavior) PushCall(segment func()) {
 		case _runtime.processQueue <- segment:
 			return
 		case <-timeoutTimer.C:
-			panic("process queue is full")
+			panic(fmt.Errorf("%w: process queue is full", ErrRuntime))
 		}
 	} else {
 		select {
 		case _runtime.processQueue <- segment:
 			return
 		default:
-			panic("process queue is full")
+			panic(fmt.Errorf("%w: process queue is full", ErrRuntime))
 		}
 	}
 }

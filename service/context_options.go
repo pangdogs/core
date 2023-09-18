@@ -6,7 +6,7 @@ import (
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/uid"
-	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/iface"
 )
 
 // Option 所有选项设置器
@@ -29,7 +29,7 @@ type (
 
 // ContextOptions 创建服务上下文的所有选项
 type ContextOptions struct {
-	CompositeFace  util.Face[Context]  // 扩展者，需要扩展服务上下文自身能力时需要使用
+	CompositeFace  iface.Face[Context] // 扩展者，需要扩展服务上下文自身能力时需要使用
 	Context        context.Context     // 父Context
 	AutoRecover    bool                // 是否开启panic时自动恢复
 	ReportError    chan error          // panic时错误写入的error channel
@@ -46,12 +46,12 @@ type ContextOption func(o *ContextOptions)
 // Default 默认值
 func (Option) Default() ContextOption {
 	return func(o *ContextOptions) {
-		Option{}.CompositeFace(util.Face[Context]{})(o)
+		Option{}.CompositeFace(iface.Face[Context]{})(o)
 		Option{}.Context(nil)(o)
 		Option{}.AutoRecover(false)(o)
 		Option{}.ReportError(nil)(o)
 		Option{}.Name("")(o)
-		Option{}.PersistId(util.Zero[uid.Id]())(o)
+		Option{}.PersistId(uid.Nil)(o)
 		Option{}.EntityLib(nil)(o)
 		Option{}.PluginBundle(nil)(o)
 		Option{}.RunningHandler(nil)(o)
@@ -59,7 +59,7 @@ func (Option) Default() ContextOption {
 }
 
 // CompositeFace 扩展者，需要扩展服务上下文自身能力时需要使用
-func (Option) CompositeFace(face util.Face[Context]) ContextOption {
+func (Option) CompositeFace(face iface.Face[Context]) ContextOption {
 	return func(o *ContextOptions) {
 		o.CompositeFace = face
 	}

@@ -1,11 +1,12 @@
 package ec
 
 import (
-	"errors"
-	"kit.golaxy.org/golaxy/localevent"
+	"fmt"
+	"kit.golaxy.org/golaxy/event"
+	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/uid"
-	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/golaxy/util/container"
+	"kit.golaxy.org/golaxy/util/iface"
 )
 
 // _ComponentMgr 组件管理器接口
@@ -31,22 +32,22 @@ type _ComponentMgr interface {
 	// RemoveComponentById 使用组件Id删除组件
 	RemoveComponentById(id uid.Id)
 	// EventCompMgrAddComponents 事件：实体的组件管理器加入一些组件
-	EventCompMgrAddComponents() localevent.IEvent
+	EventCompMgrAddComponents() event.IEvent
 	// EventCompMgrRemoveComponent 事件：实体的组件管理器删除组件
-	EventCompMgrRemoveComponent() localevent.IEvent
+	EventCompMgrRemoveComponent() event.IEvent
 	// EventCompMgrFirstAccessComponent 事件：实体的组件管理器首次访问组件
-	EventCompMgrFirstAccessComponent() localevent.IEvent
+	EventCompMgrFirstAccessComponent() event.IEvent
 }
 
 // GetComponent 使用名称查询组件，一般情况下名称指组件接口名称，也可以自定义名称，同个名称指向多个组件时，返回首个组件
 func (entity *EntityBehavior) GetComponent(name string) Component {
 	if e, ok := entity.getComponentElement(name); ok {
-		comp := util.Cache2Iface[Component](e.Value.Cache)
+		comp := iface.Cache2Iface[Component](e.Value.Cache)
 
 		if entity.opts.ComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
 			switch entity.GetState() {
 			case EntityState_Init, EntityState_Inited, EntityState_Living:
-				emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.CompositeFace.Iface, comp)
+				emitEventCompMgrFirstAccessComponent(entity, entity.opts.CompositeFace.Iface, comp)
 			}
 		}
 
@@ -59,12 +60,12 @@ func (entity *EntityBehavior) GetComponent(name string) Component {
 // GetComponentById 使用组件Id查询组件
 func (entity *EntityBehavior) GetComponentById(id uid.Id) Component {
 	if e, ok := entity.getComponentElementById(id); ok {
-		comp := util.Cache2Iface[Component](e.Value.Cache)
+		comp := iface.Cache2Iface[Component](e.Value.Cache)
 
 		if entity.opts.ComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
 			switch entity.GetState() {
 			case EntityState_Init, EntityState_Inited, EntityState_Living:
-				emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.CompositeFace.Iface, comp)
+				emitEventCompMgrFirstAccessComponent(entity, entity.opts.CompositeFace.Iface, comp)
 			}
 		}
 
@@ -79,8 +80,8 @@ func (entity *EntityBehavior) GetComponents(name string) []Component {
 	if e, ok := entity.getComponentElement(name); ok {
 		var components []Component
 
-		entity.componentList.TraversalAt(func(other *container.Element[util.FaceAny]) bool {
-			comp := util.Cache2Iface[Component](other.Value.Cache)
+		entity.componentList.TraversalAt(func(other *container.Element[iface.FaceAny]) bool {
+			comp := iface.Cache2Iface[Component](other.Value.Cache)
 			if comp.GetName() == name {
 				components = append(components, comp)
 				return true
@@ -93,7 +94,7 @@ func (entity *EntityBehavior) GetComponents(name string) []Component {
 				if components[i].GetState() == ComponentState_Attach {
 					switch entity.GetState() {
 					case EntityState_Init, EntityState_Inited, EntityState_Living:
-						emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.CompositeFace.Iface, components[i])
+						emitEventCompMgrFirstAccessComponent(entity, entity.opts.CompositeFace.Iface, components[i])
 					}
 				}
 			}
@@ -111,13 +112,13 @@ func (entity *EntityBehavior) RangeComponents(fun func(component Component) bool
 		return
 	}
 
-	entity.componentList.Traversal(func(e *container.Element[util.FaceAny]) bool {
-		comp := util.Cache2Iface[Component](e.Value.Cache)
+	entity.componentList.Traversal(func(e *container.Element[iface.FaceAny]) bool {
+		comp := iface.Cache2Iface[Component](e.Value.Cache)
 
 		if entity.opts.ComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
 			switch entity.GetState() {
 			case EntityState_Init, EntityState_Inited, EntityState_Living:
-				emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.CompositeFace.Iface, comp)
+				emitEventCompMgrFirstAccessComponent(entity, entity.opts.CompositeFace.Iface, comp)
 			}
 		}
 
@@ -131,13 +132,13 @@ func (entity *EntityBehavior) ReverseRangeComponents(fun func(component Componen
 		return
 	}
 
-	entity.componentList.ReverseTraversal(func(e *container.Element[util.FaceAny]) bool {
-		comp := util.Cache2Iface[Component](e.Value.Cache)
+	entity.componentList.ReverseTraversal(func(e *container.Element[iface.FaceAny]) bool {
+		comp := iface.Cache2Iface[Component](e.Value.Cache)
 
 		if entity.opts.ComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
 			switch entity.GetState() {
 			case EntityState_Init, EntityState_Inited, EntityState_Living:
-				emitEventCompMgrFirstAccessComponent(&entity.eventCompMgrFirstAccessComponent, entity.opts.CompositeFace.Iface, comp)
+				emitEventCompMgrFirstAccessComponent(entity, entity.opts.CompositeFace.Iface, comp)
 			}
 		}
 
@@ -158,7 +159,7 @@ func (entity *EntityBehavior) AddComponents(name string, components []Component)
 		}
 	}
 
-	emitEventCompMgrAddComponents(&entity.eventCompMgrAddComponents, entity.opts.CompositeFace.Iface, components)
+	emitEventCompMgrAddComponents(entity, entity.opts.CompositeFace.Iface, components)
 	return nil
 }
 
@@ -168,7 +169,7 @@ func (entity *EntityBehavior) AddComponent(name string, component Component) err
 		return err
 	}
 
-	emitEventCompMgrAddComponents(&entity.eventCompMgrAddComponents, entity.opts.CompositeFace.Iface, []Component{component})
+	emitEventCompMgrAddComponents(entity, entity.opts.CompositeFace.Iface, []Component{component})
 	return nil
 }
 
@@ -179,8 +180,8 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 		return
 	}
 
-	entity.componentList.TraversalAt(func(other *container.Element[util.FaceAny]) bool {
-		comp := util.Cache2Iface[Component](other.Value.Cache)
+	entity.componentList.TraversalAt(func(other *container.Element[iface.FaceAny]) bool {
+		comp := iface.Cache2Iface[Component](other.Value.Cache)
 		if comp.GetName() != name {
 			return false
 		}
@@ -194,7 +195,7 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 
 		entity.version++
 
-		emitEventCompMgrRemoveComponent(&entity.eventCompMgrRemoveComponent, entity.opts.CompositeFace.Iface, comp)
+		emitEventCompMgrRemoveComponent(entity, entity.opts.CompositeFace.Iface, comp)
 
 		return true
 	}, e)
@@ -207,7 +208,7 @@ func (entity *EntityBehavior) RemoveComponentById(id uid.Id) {
 		return
 	}
 
-	comp := util.Cache2Iface[Component](e.Value.Cache)
+	comp := iface.Cache2Iface[Component](e.Value.Cache)
 
 	if comp.getFixed() {
 		return
@@ -218,40 +219,40 @@ func (entity *EntityBehavior) RemoveComponentById(id uid.Id) {
 
 	entity.version++
 
-	emitEventCompMgrRemoveComponent(&entity.eventCompMgrRemoveComponent, entity.opts.CompositeFace.Iface, comp)
+	emitEventCompMgrRemoveComponent(entity, entity.opts.CompositeFace.Iface, comp)
 }
 
 // EventCompMgrAddComponents 事件：实体的组件管理器加入一些组件
-func (entity *EntityBehavior) EventCompMgrAddComponents() localevent.IEvent {
+func (entity *EntityBehavior) EventCompMgrAddComponents() event.IEvent {
 	return &entity.eventCompMgrAddComponents
 }
 
 // EventCompMgrRemoveComponent 事件：实体的组件管理器删除组件
-func (entity *EntityBehavior) EventCompMgrRemoveComponent() localevent.IEvent {
+func (entity *EntityBehavior) EventCompMgrRemoveComponent() event.IEvent {
 	return &entity.eventCompMgrRemoveComponent
 }
 
 // EventCompMgrFirstAccessComponent 事件：实体的组件管理器首次访问组件
-func (entity *EntityBehavior) EventCompMgrFirstAccessComponent() localevent.IEvent {
+func (entity *EntityBehavior) EventCompMgrFirstAccessComponent() event.IEvent {
 	return &entity.eventCompMgrFirstAccessComponent
 }
 
 func (entity *EntityBehavior) addSingleComponent(name string, component Component) error {
 	if component == nil {
-		return errors.New("nil component")
+		return fmt.Errorf("%w: %w: component is nil", ErrEC, internal.ErrArgs)
 	}
 
 	if component.GetState() != ComponentState_Birth {
-		return errors.New("component state not birth is invalid")
+		return fmt.Errorf("%w: invalid component state %q", ErrEC, component.GetState())
 	}
 
 	component.init(name, entity.opts.CompositeFace.Iface, component, entity.opts.HookAllocator, entity.opts.GCCollector)
 
-	face := util.NewFacePair[any](component, component)
+	face := iface.NewFacePair[any](component, component)
 
 	if e, ok := entity.getComponentElement(name); ok {
-		entity.componentList.TraversalAt(func(other *container.Element[util.FaceAny]) bool {
-			if util.Cache2Iface[Component](other.Value.Cache).GetName() == name {
+		entity.componentList.TraversalAt(func(other *container.Element[iface.FaceAny]) bool {
+			if iface.Cache2Iface[Component](other.Value.Cache).GetName() == name {
 				e = other
 				return true
 			}
@@ -271,11 +272,11 @@ func (entity *EntityBehavior) addSingleComponent(name string, component Componen
 	return nil
 }
 
-func (entity *EntityBehavior) getComponentElement(name string) (*container.Element[util.FaceAny], bool) {
-	var e *container.Element[util.FaceAny]
+func (entity *EntityBehavior) getComponentElement(name string) (*container.Element[iface.FaceAny], bool) {
+	var e *container.Element[iface.FaceAny]
 
-	entity.componentList.Traversal(func(other *container.Element[util.FaceAny]) bool {
-		if util.Cache2Iface[Component](other.Value.Cache).GetName() == name {
+	entity.componentList.Traversal(func(other *container.Element[iface.FaceAny]) bool {
+		if iface.Cache2Iface[Component](other.Value.Cache).GetName() == name {
 			e = other
 			return false
 		}
@@ -285,11 +286,11 @@ func (entity *EntityBehavior) getComponentElement(name string) (*container.Eleme
 	return e, e != nil
 }
 
-func (entity *EntityBehavior) getComponentElementById(id uid.Id) (*container.Element[util.FaceAny], bool) {
-	var e *container.Element[util.FaceAny]
+func (entity *EntityBehavior) getComponentElementById(id uid.Id) (*container.Element[iface.FaceAny], bool) {
+	var e *container.Element[iface.FaceAny]
 
-	entity.componentList.Traversal(func(other *container.Element[util.FaceAny]) bool {
-		if util.Cache2Iface[Component](other.Value.Cache).GetId() == id {
+	entity.componentList.Traversal(func(other *container.Element[iface.FaceAny]) bool {
+		if iface.Cache2Iface[Component](other.Value.Cache).GetId() == id {
 			e = other
 			return false
 		}

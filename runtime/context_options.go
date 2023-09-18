@@ -3,11 +3,13 @@ package runtime
 
 import (
 	"context"
-	"kit.golaxy.org/golaxy/localevent"
+	"fmt"
+	"kit.golaxy.org/golaxy/event"
+	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/uid"
-	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/golaxy/util/container"
+	"kit.golaxy.org/golaxy/util/iface"
 )
 
 type _ContextOption struct{}
@@ -35,16 +37,16 @@ type (
 
 // ContextOptions 创建运行时上下文的所有选项
 type ContextOptions struct {
-	CompositeFace    util.Face[Context]                   // 扩展者，需要扩展运行时上下文自身能力时需要使用
-	Context          context.Context                      // 父Context
-	AutoRecover      bool                                 // 是否开启panic时自动恢复
-	ReportError      chan error                           // panic时错误写入的error channel
-	Name             string                               // 运行时名称
-	PersistId        uid.Id                               // 运行时持久化Id
-	PluginBundle     plugin.PluginBundle                  // 插件包
-	RunningHandler   RunningHandler                       // 运行状态变化处理器
-	FaceAnyAllocator container.Allocator[util.FaceAny]    // 自定义FaceAny内存分配器，用于提高性能
-	HookAllocator    container.Allocator[localevent.Hook] // 自定义Hook内存分配器，用于提高性能
+	CompositeFace    iface.Face[Context]                // 扩展者，需要扩展运行时上下文自身能力时需要使用
+	Context          context.Context                    // 父Context
+	AutoRecover      bool                               // 是否开启panic时自动恢复
+	ReportError      chan error                         // panic时错误写入的error channel
+	Name             string                             // 运行时名称
+	PersistId        uid.Id                             // 运行时持久化Id
+	PluginBundle     plugin.PluginBundle                // 插件包
+	RunningHandler   RunningHandler                     // 运行状态变化处理器
+	FaceAnyAllocator container.Allocator[iface.FaceAny] // 自定义FaceAny内存分配器，用于提高性能
+	HookAllocator    container.Allocator[event.Hook]    // 自定义Hook内存分配器，用于提高性能
 }
 
 // ContextOption 创建运行时上下文的选项设置器
@@ -53,21 +55,21 @@ type ContextOption func(o *ContextOptions)
 // Default 默认值
 func (_ContextOption) Default() ContextOption {
 	return func(o *ContextOptions) {
-		_ContextOption{}.Composite(util.Face[Context]{})(o)
+		_ContextOption{}.Composite(iface.Face[Context]{})(o)
 		_ContextOption{}.Context(nil)(o)
 		_ContextOption{}.AutoRecover(false)(o)
 		_ContextOption{}.ReportError(nil)(o)
 		_ContextOption{}.Name("")(o)
-		_ContextOption{}.PersistId(util.Zero[uid.Id]())(o)
+		_ContextOption{}.PersistId(uid.Nil)(o)
 		_ContextOption{}.PluginBundle(nil)(o)
 		_ContextOption{}.RunningHandler(nil)(o)
-		_ContextOption{}.FaceAnyAllocator(container.DefaultAllocator[util.FaceAny]())(o)
-		_ContextOption{}.HookAllocator(container.DefaultAllocator[localevent.Hook]())(o)
+		_ContextOption{}.FaceAnyAllocator(container.DefaultAllocator[iface.FaceAny]())(o)
+		_ContextOption{}.HookAllocator(container.DefaultAllocator[event.Hook]())(o)
 	}
 }
 
 // Composite 扩展者，需要扩展运行时上下文自身功能时需要使用
-func (_ContextOption) Composite(face util.Face[Context]) ContextOption {
+func (_ContextOption) Composite(face iface.Face[Context]) ContextOption {
 	return func(o *ContextOptions) {
 		o.CompositeFace = face
 	}
@@ -123,20 +125,20 @@ func (_ContextOption) RunningHandler(fn RunningHandler) ContextOption {
 }
 
 // FaceAnyAllocator 自定义FaceAny内存分配器，用于提高性能
-func (_ContextOption) FaceAnyAllocator(allocator container.Allocator[util.FaceAny]) ContextOption {
+func (_ContextOption) FaceAnyAllocator(allocator container.Allocator[iface.FaceAny]) ContextOption {
 	return func(o *ContextOptions) {
 		if allocator == nil {
-			panic("nil allocator")
+			panic(fmt.Errorf("%w: %w: allocator is nil", ErrContext, internal.ErrArgs))
 		}
 		o.FaceAnyAllocator = allocator
 	}
 }
 
 // HookAllocator 自定义Hook内存分配器，用于提高性能
-func (_ContextOption) HookAllocator(allocator container.Allocator[localevent.Hook]) ContextOption {
+func (_ContextOption) HookAllocator(allocator container.Allocator[event.Hook]) ContextOption {
 	return func(o *ContextOptions) {
 		if allocator == nil {
-			panic("nil allocator")
+			panic(fmt.Errorf("%w: %w: allocator is nil", ErrContext, internal.ErrArgs))
 		}
 		o.HookAllocator = allocator
 	}

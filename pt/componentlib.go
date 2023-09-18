@@ -3,6 +3,7 @@ package pt
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/util"
 	"reflect"
 	"sync"
@@ -67,7 +68,7 @@ func (lib *_ComponentLib) init() {
 //	@param descr 组件功能的描述说明。
 func (lib *_ComponentLib) RegisterComponent(name string, comp any, descr string) {
 	if comp == nil {
-		panic("nil comp")
+		panic(fmt.Errorf("%w: %w: comp is nil", ErrPt, internal.ErrArgs))
 	}
 
 	if tfComp, ok := comp.(reflect.Type); ok {
@@ -139,18 +140,18 @@ func (lib *_ComponentLib) register(name string, tfComp reflect.Type, descr strin
 	}
 
 	if tfComp.Name() == "" {
-		panic("register anonymous component not allowed")
+		panic(fmt.Errorf("%w: anonymous component not allowed", ErrPt))
 	}
 
 	compImpl := util.TypeOfAnyFullName(tfComp)
 
 	if !reflect.PointerTo(tfComp).Implements(reflect.TypeOf((*ec.Component)(nil)).Elem()) {
-		panic(fmt.Errorf("component %q not implement ec.Component", compImpl))
+		panic(fmt.Errorf("%w: component %q not implement ec.Component", ErrPt, compImpl))
 	}
 
 	_, ok := lib.compPtMap[compImpl]
 	if ok {
-		panic(fmt.Errorf("component %q is already registered", compImpl))
+		panic(fmt.Errorf("%w: component %q is already registered", ErrPt, compImpl))
 	}
 
 	compPt := &ComponentPt{

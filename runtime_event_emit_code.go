@@ -3,16 +3,16 @@
 package golaxy
 
 import (
-	localevent "kit.golaxy.org/golaxy/localevent"
-	"kit.golaxy.org/golaxy/util"
+	localevent "kit.golaxy.org/golaxy/event"
+	"kit.golaxy.org/golaxy/util/iface"
 )
 
 func emitEventUpdate(event localevent.IEvent) {
 	if event == nil {
 		panic("nil event")
 	}
-	localevent.UnsafeEvent(event).Emit(func(delegate util.IfaceCache) bool {
-		util.Cache2Iface[eventUpdate](delegate).Update()
+	localevent.UnsafeEvent(event).Emit(func(delegate iface.Cache) bool {
+		iface.Cache2Iface[eventUpdate](delegate).Update()
 		return true
 	})
 }
@@ -21,8 +21,8 @@ func emitEventLateUpdate(event localevent.IEvent) {
 	if event == nil {
 		panic("nil event")
 	}
-	localevent.UnsafeEvent(event).Emit(func(delegate util.IfaceCache) bool {
-		util.Cache2Iface[eventLateUpdate](delegate).LateUpdate()
+	localevent.UnsafeEvent(event).Emit(func(delegate iface.Cache) bool {
+		iface.Cache2Iface[eventLateUpdate](delegate).LateUpdate()
 		return true
 	})
 }

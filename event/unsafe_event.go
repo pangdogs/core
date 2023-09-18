@@ -1,8 +1,8 @@
-package localevent
+package event
 
 import (
-	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/golaxy/util/container"
+	"kit.golaxy.org/golaxy/util/iface"
 )
 
 // Deprecated: UnsafeEvent 访问本地事件内部方法
@@ -17,12 +17,12 @@ type _UnsafeEvent struct {
 }
 
 // Emit 发送事件
-func (ue _UnsafeEvent) Emit(fun func(delegate util.IfaceCache) bool) {
+func (ue _UnsafeEvent) Emit(fun func(delegate iface.Cache) bool) {
 	ue.emit(fun)
 }
 
 // NewHook 创建事件绑定句柄
-func (ue _UnsafeEvent) NewHook(delegateFace util.FaceAny, priority int32) Hook {
+func (ue _UnsafeEvent) NewHook(delegateFace iface.FaceAny, priority int32) Hook {
 	return ue.newHook(delegateFace, priority)
 }
 

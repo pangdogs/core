@@ -3,6 +3,7 @@ package plugin
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/iface"
 )
 
 // PluginResolver 插件解析器
@@ -17,19 +18,19 @@ type PluginResolver interface {
 //	@param name 插件名称。
 func Fetch[T any](pluginResolver PluginResolver, name string) T {
 	if pluginResolver == nil {
-		panic("nil pluginResolver")
+		panic(fmt.Errorf("%w: pluginResolver is nil", ErrPlugin))
 	}
 
 	pluginInfo, ok := pluginResolver.ResolvePlugin(name)
 	if !ok {
-		panic(fmt.Errorf("plugin %q not installed", name))
+		panic(fmt.Errorf("%w: %q not installed", ErrPlugin, name))
 	}
 
 	if !pluginInfo.Active {
-		panic(fmt.Errorf("plugin %q not actived", name))
+		panic(fmt.Errorf("%w: %q not actived", ErrPlugin, name))
 	}
 
-	return util.Cache2Iface[T](pluginInfo.Face.Cache)
+	return iface.Cache2Iface[T](pluginInfo.Face.Cache)
 }
 
 // Access 访问插件
@@ -50,5 +51,5 @@ func Access[T any](pluginResolver PluginResolver, name string) (T, bool) {
 		return util.Zero[T](), false
 	}
 
-	return util.Cache2Iface[T](pluginInfo.Face.Cache), true
+	return iface.Cache2Iface[T](pluginInfo.Face.Cache), true
 }

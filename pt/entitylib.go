@@ -58,7 +58,7 @@ func (lib *_EntityLib) Register(prototype string, compImpls []string) {
 
 	_, ok := lib.entityPtMap[prototype]
 	if ok {
-		panic(fmt.Errorf("entity %q is already registered", prototype))
+		panic(fmt.Errorf("%w: entity %q is already registered", ErrPt, prototype))
 	}
 
 	entityPt := &EntityPt{
@@ -68,7 +68,7 @@ func (lib *_EntityLib) Register(prototype string, compImpls []string) {
 	for i := range compImpls {
 		compPt, ok := AccessComponent(compImpls[i])
 		if !ok {
-			panic(fmt.Errorf("entity %q component %q not registered", prototype, compImpls[i]))
+			panic(fmt.Errorf("%w: entity %q component %q not registered", ErrPt, prototype, compImpls[i]))
 		}
 		entityPt.compPts = append(entityPt.compPts, compPt)
 	}

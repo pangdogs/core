@@ -1,8 +1,10 @@
 package golaxy
 
 import (
+	"fmt"
+	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/runtime"
-	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/iface"
 	"time"
 )
 
@@ -14,14 +16,14 @@ type (
 
 // RuntimeOptions 创建运行时的所有选项
 type RuntimeOptions struct {
-	CompositeFace        util.Face[Runtime] // 扩展者，需要扩展运行时自身功能时需要使用
-	AutoRun              bool               // 是否开启自动运行
-	ProcessQueueCapacity int                // 任务处理流水线大小
-	ProcessQueueTimeout  time.Duration      // 当任务处理流水线满时，向其插入代码片段的超时时间，为0表示不等待直接报错
-	SyncCallTimeout      time.Duration      // 同步调用超时时间，为0表示不处理超时，此时两个运行时互相同步调用会死锁
-	Frame                runtime.Frame      // 帧，设置为nil表示不使用帧更新特性
-	GCInterval           time.Duration      // GC间隔时长
-	CustomGC             CustomGC           // 自定义GC
+	CompositeFace        iface.Face[Runtime] // 扩展者，需要扩展运行时自身功能时需要使用
+	AutoRun              bool                // 是否开启自动运行
+	ProcessQueueCapacity int                 // 任务处理流水线大小
+	ProcessQueueTimeout  time.Duration       // 当任务处理流水线满时，向其插入代码片段的超时时间，为0表示不等待直接报错
+	SyncCallTimeout      time.Duration       // 同步调用超时时间，为0表示不处理超时，此时两个运行时互相同步调用会死锁
+	Frame                runtime.Frame       // 帧，设置为nil表示不使用帧更新特性
+	GCInterval           time.Duration       // GC间隔时长
+	CustomGC             CustomGC            // 自定义GC
 }
 
 // RuntimeOption 创建运行时的选项设置器
@@ -30,7 +32,7 @@ type RuntimeOption func(o *RuntimeOptions)
 // Default 运行时的默认值
 func (_RuntimeOption) Default() RuntimeOption {
 	return func(o *RuntimeOptions) {
-		_RuntimeOption{}.CompositeFace(util.Face[Runtime]{})(o)
+		_RuntimeOption{}.CompositeFace(iface.Face[Runtime]{})(o)
 		_RuntimeOption{}.AutoRun(false)(o)
 		_RuntimeOption{}.ProcessQueueCapacity(128)(o)
 		_RuntimeOption{}.ProcessQueueTimeout(0)(o)
@@ -42,7 +44,7 @@ func (_RuntimeOption) Default() RuntimeOption {
 }
 
 // CompositeFace 运行时的扩展者，需要扩展运行时自身功能时需要使用
-func (_RuntimeOption) CompositeFace(face util.Face[Runtime]) RuntimeOption {
+func (_RuntimeOption) CompositeFace(face iface.Face[Runtime]) RuntimeOption {
 	return func(o *RuntimeOptions) {
 		o.CompositeFace = face
 	}
@@ -59,7 +61,7 @@ func (_RuntimeOption) AutoRun(b bool) RuntimeOption {
 func (_RuntimeOption) ProcessQueueCapacity(cap int) RuntimeOption {
 	return func(o *RuntimeOptions) {
 		if cap <= 0 {
-			panic("ProcessQueueCapacity less equal 0 is invalid")
+			panic(fmt.Errorf("%w: %w: ProcessQueueCapacity less equal 0 is invalid", ErrRuntime, internal.ErrArgs))
 		}
 		o.ProcessQueueCapacity = cap
 	}
@@ -90,7 +92,7 @@ func (_RuntimeOption) Frame(frame runtime.Frame) RuntimeOption {
 func (_RuntimeOption) GCInterval(dur time.Duration) RuntimeOption {
 	return func(o *RuntimeOptions) {
 		if dur <= 0 {
-			panic("GCInterval less equal 0 is invalid")
+			panic(fmt.Errorf("%w: %w: GCInterval less equal 0 is invalid", ErrRuntime, internal.ErrArgs))
 		}
 		o.GCInterval = dur
 	}

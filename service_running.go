@@ -1,6 +1,7 @@
 package golaxy
 
 import (
+	"fmt"
 	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/service"
@@ -10,7 +11,7 @@ import (
 // Run 运行，返回的channel用于线程同步，可以阻塞等待至运行结束
 func (_service *ServiceBehavior) Run() <-chan struct{} {
 	if !service.UnsafeContext(_service.ctx).MarkRunning(true) {
-		panic("service already running")
+		panic(fmt.Errorf("%w: already running", ErrService))
 	}
 
 	shutChan := make(chan struct{}, 1)

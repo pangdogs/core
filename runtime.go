@@ -1,12 +1,13 @@
 package golaxy
 
 import (
+	"fmt"
 	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/event"
 	"kit.golaxy.org/golaxy/internal"
-	"kit.golaxy.org/golaxy/localevent"
 	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/uid"
-	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/iface"
 )
 
 // NewRuntime 创建运行时
@@ -53,10 +54,10 @@ type _Runtime interface {
 type RuntimeBehavior struct {
 	opts            RuntimeOptions
 	ctx             runtime.Context
-	hooksMap        map[uid.Id][3]localevent.Hook
+	hooksMap        map[uid.Id][3]event.Hook
 	processQueue    chan func()
-	eventUpdate     localevent.Event
-	eventLateUpdate localevent.Event
+	eventUpdate     event.Event
+	eventLateUpdate event.Event
 }
 
 // GetContext 获取运行时上下文
@@ -65,34 +66,34 @@ func (_runtime *RuntimeBehavior) GetContext() runtime.Context {
 }
 
 // ResolveContext 解析上下文
-func (_runtime *RuntimeBehavior) ResolveContext() util.IfaceCache {
-	return util.Iface2Cache[runtime.Context](_runtime.ctx)
+func (_runtime *RuntimeBehavior) ResolveContext() iface.Cache {
+	return iface.Iface2Cache[runtime.Context](_runtime.ctx)
 }
 
 func (_runtime *RuntimeBehavior) init(ctx runtime.Context, opts *RuntimeOptions) {
 	if ctx == nil {
-		panic("nil ctx")
+		panic(fmt.Errorf("%w: %w: ctx is nil", ErrRuntime, ErrArgs))
 	}
 
 	if opts == nil {
-		panic("nil opts")
+		panic(fmt.Errorf("%w: %w: opts is nil", ErrRuntime, ErrArgs))
 	}
 
 	if !runtime.UnsafeContext(ctx).MarkPaired(true) {
-		panic("runtime context already paired")
+		panic(fmt.Errorf("%w: ctx already paired", ErrRuntime))
 	}
 
 	_runtime.opts = *opts
 
 	if _runtime.opts.CompositeFace.IsNil() {
-		_runtime.opts.CompositeFace = util.NewFace[Runtime](_runtime)
+		_runtime.opts.CompositeFace = iface.NewFace[Runtime](_runtime)
 	}
 
 	_runtime.ctx = ctx
-	_runtime.hooksMap = make(map[uid.Id][3]localevent.Hook)
+	_runtime.hooksMap = make(map[uid.Id][3]event.Hook)
 
-	_runtime.eventUpdate.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Disallow, ctx.GetHookAllocator(), nil)
-	_runtime.eventLateUpdate.Init(ctx.GetAutoRecover(), ctx.GetReportError(), localevent.EventRecursion_Disallow, ctx.GetHookAllocator(), nil)
+	_runtime.eventUpdate.Init(ctx.GetAutoRecover(), ctx.GetReportError(), event.EventRecursion_Disallow, ctx.GetHookAllocator(), nil)
+	_runtime.eventLateUpdate.Init(ctx.GetAutoRecover(), ctx.GetReportError(), event.EventRecursion_Disallow, ctx.GetHookAllocator(), nil)
 
 	_runtime.changeRunningState(runtime.RunningState_Birth)
 
@@ -227,15 +228,15 @@ func (_runtime *RuntimeBehavior) connectEntity(entity ec.Entity) {
 		return
 	}
 
-	var hooks [3]localevent.Hook
+	var hooks [3]event.Hook
 
 	if entityUpdate, ok := entity.(LifecycleEntityUpdate); ok {
-		hooks[0] = localevent.BindEvent[LifecycleEntityUpdate](&_runtime.eventUpdate, entityUpdate)
+		hooks[0] = event.BindEvent[LifecycleEntityUpdate](&_runtime.eventUpdate, entityUpdate)
 	}
 	if entityLateUpdate, ok := entity.(LifecycleEntityLateUpdate); ok {
-		hooks[1] = localevent.BindEvent[LifecycleEntityLateUpdate](&_runtime.eventLateUpdate, entityLateUpdate)
+		hooks[1] = event.BindEvent[LifecycleEntityLateUpdate](&_runtime.eventLateUpdate, entityLateUpdate)
 	}
-	hooks[2] = localevent.BindEvent[ec.EventEntityDestroySelf](ec.UnsafeEntity(entity).EventEntityDestroySelf(), _runtime)
+	hooks[2] = event.BindEvent[ec.EventEntityDestroySelf](ec.UnsafeEntity(entity).EventEntityDestroySelf(), _runtime)
 
 	_runtime.hooksMap[entity.GetId()] = hooks
 
@@ -272,15 +273,15 @@ func (_runtime *RuntimeBehavior) connectComponent(comp ec.Component) {
 		return
 	}
 
-	var hooks [3]localevent.Hook
+	var hooks [3]event.Hook
 
 	if compUpdate, ok := comp.(LifecycleComponentUpdate); ok {
-		hooks[0] = localevent.BindEvent[LifecycleComponentUpdate](&_runtime.eventUpdate, compUpdate)
+		hooks[0] = event.BindEvent[LifecycleComponentUpdate](&_runtime.eventUpdate, compUpdate)
 	}
 	if compLateUpdate, ok := comp.(LifecycleComponentLateUpdate); ok {
-		hooks[1] = localevent.BindEvent[LifecycleComponentLateUpdate](&_runtime.eventLateUpdate, compLateUpdate)
+		hooks[1] = event.BindEvent[LifecycleComponentLateUpdate](&_runtime.eventLateUpdate, compLateUpdate)
 	}
-	hooks[2] = localevent.BindEvent[ec.EventComponentDestroySelf](ec.UnsafeComponent(comp).EventComponentDestroySelf(), _runtime)
+	hooks[2] = event.BindEvent[ec.EventComponentDestroySelf](ec.UnsafeComponent(comp).EventComponentDestroySelf(), _runtime)
 
 	_runtime.hooksMap[comp.GetId()] = hooks
 

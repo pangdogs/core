@@ -1,9 +1,10 @@
 package golaxy
 
 import (
+	"fmt"
 	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/event"
 	"kit.golaxy.org/golaxy/internal"
-	"kit.golaxy.org/golaxy/localevent"
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/runtime"
 	"time"
@@ -14,7 +15,7 @@ func (_runtime *RuntimeBehavior) Run() <-chan struct{} {
 	ctx := _runtime.ctx
 
 	if !runtime.UnsafeContext(ctx).MarkRunning(true) {
-		panic("runtime already running")
+		panic(fmt.Errorf("%w: already running", ErrRuntime))
 	}
 
 	shutChan := make(chan struct{}, 1)
@@ -76,7 +77,7 @@ func (_runtime *RuntimeBehavior) running(shutChan chan struct{}) {
 	shutChan <- struct{}{}
 }
 
-func (_runtime *RuntimeBehavior) loopStart() (hooks [5]localevent.Hook) {
+func (_runtime *RuntimeBehavior) loopStart() (hooks [5]event.Hook) {
 	ctx := _runtime.ctx
 	frame := _runtime.opts.Frame
 
@@ -84,11 +85,11 @@ func (_runtime *RuntimeBehavior) loopStart() (hooks [5]localevent.Hook) {
 		runtime.UnsafeFrame(frame).RunningBegin()
 	}
 
-	hooks[0] = localevent.BindEvent[runtime.EventEntityMgrAddEntity](ctx.GetEntityMgr().EventEntityMgrAddEntity(), _runtime)
-	hooks[1] = localevent.BindEvent[runtime.EventEntityMgrRemoveEntity](ctx.GetEntityMgr().EventEntityMgrRemoveEntity(), _runtime)
-	hooks[2] = localevent.BindEvent[runtime.EventEntityMgrEntityAddComponents](ctx.GetEntityMgr().EventEntityMgrEntityAddComponents(), _runtime)
-	hooks[3] = localevent.BindEvent[runtime.EventEntityMgrEntityRemoveComponent](ctx.GetEntityMgr().EventEntityMgrEntityRemoveComponent(), _runtime)
-	hooks[4] = localevent.BindEvent[runtime.EventEntityMgrEntityFirstAccessComponent](ctx.GetEntityMgr().EventEntityMgrEntityFirstAccessComponent(), _runtime)
+	hooks[0] = event.BindEvent[runtime.EventEntityMgrAddEntity](ctx.GetEntityMgr().EventEntityMgrAddEntity(), _runtime)
+	hooks[1] = event.BindEvent[runtime.EventEntityMgrRemoveEntity](ctx.GetEntityMgr().EventEntityMgrRemoveEntity(), _runtime)
+	hooks[2] = event.BindEvent[runtime.EventEntityMgrEntityAddComponents](ctx.GetEntityMgr().EventEntityMgrEntityAddComponents(), _runtime)
+	hooks[3] = event.BindEvent[runtime.EventEntityMgrEntityRemoveComponent](ctx.GetEntityMgr().EventEntityMgrEntityRemoveComponent(), _runtime)
+	hooks[4] = event.BindEvent[runtime.EventEntityMgrEntityFirstAccessComponent](ctx.GetEntityMgr().EventEntityMgrEntityFirstAccessComponent(), _runtime)
 
 	ctx.GetEntityMgr().RangeEntities(func(entity ec.Entity) bool {
 		internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), func() {
@@ -100,7 +101,7 @@ func (_runtime *RuntimeBehavior) loopStart() (hooks [5]localevent.Hook) {
 	return
 }
 
-func (_runtime *RuntimeBehavior) loopStop(hooks [5]localevent.Hook) {
+func (_runtime *RuntimeBehavior) loopStop(hooks [5]event.Hook) {
 	ctx := _runtime.ctx
 	frame := _runtime.opts.Frame
 

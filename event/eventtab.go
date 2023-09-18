@@ -1,4 +1,4 @@
-package localevent
+package event
 
 import "kit.golaxy.org/golaxy/util/container"
 

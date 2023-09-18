@@ -1,9 +1,10 @@
-package localevent
+package event
 
 import (
+	"fmt"
 	"kit.golaxy.org/golaxy/internal"
-	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/golaxy/util/container"
+	"kit.golaxy.org/golaxy/util/iface"
 )
 
 // EventRecursion 发生事件递归的处理方式，事件递归是指在一个事件的订阅者中再次发送这个事件
@@ -28,8 +29,8 @@ var (
 
 // IEvent 本地事件接口，非线程安全，不能用于跨线程事件通知
 type IEvent interface {
-	emit(fun func(delegate util.IfaceCache) bool)
-	newHook(delegateFace util.FaceAny, priority int32) Hook
+	emit(fun func(delegate iface.Cache) bool)
+	newHook(delegateFace iface.FaceAny, priority int32) Hook
 	removeDelegate(delegate any)
 	setGCCollector(gcCollector container.GCCollector)
 	gc()
@@ -51,7 +52,7 @@ type Event struct {
 // Init 初始化事件
 func (event *Event) Init(autoRecover bool, reportError chan error, eventRecursion EventRecursion, hookAllocator container.Allocator[Hook], gcCollector container.GCCollector) {
 	if event.inited {
-		panic("event initialized")
+		panic(fmt.Errorf("%w: event is already initialized", ErrEvent))
 	}
 
 	event.autoRecover = autoRecover
@@ -66,7 +67,7 @@ func (event *Event) Init(autoRecover bool, reportError chan error, eventRecursio
 // Open 打开事件
 func (event *Event) Open() {
 	if !event.inited {
-		panic("event not initialized")
+		panic(fmt.Errorf("%w: event not initialized", ErrEvent))
 	}
 
 	event.opened = true
@@ -86,13 +87,13 @@ func (event *Event) Clean() {
 	})
 }
 
-func (event *Event) emit(fun func(delegate util.IfaceCache) bool) {
+func (event *Event) emit(fun func(delegate iface.Cache) bool) {
 	if fun == nil || !event.opened {
 		return
 	}
 
 	if event.emitted >= EventRecursionLimit {
-		panic("recursive event calls cause stack overflow")
+		panic(fmt.Errorf("%w: recursive event calls(%d) cause stack overflow", ErrEvent, event.emitted))
 	}
 
 	switch event.eventRecursion {
@@ -128,7 +129,7 @@ func (event *Event) emit(fun func(delegate util.IfaceCache) bool) {
 			break
 		case EventRecursion_Disallow:
 			if e.Value.received > 0 {
-				panic("recursive event disallowed")
+				panic(fmt.Errorf("%w: recursive event disallowed", ErrEvent))
 			}
 		case EventRecursion_Discard:
 			if e.Value.received > 0 {
@@ -160,9 +161,13 @@ func (event *Event) emit(fun func(delegate util.IfaceCache) bool) {
 	})
 }
 
-func (event *Event) newHook(delegateFace util.FaceAny, priority int32) Hook {
+func (event *Event) newHook(delegateFace iface.FaceAny, priority int32) Hook {
 	if !event.opened {
-		panic("event closed")
+		panic(fmt.Errorf("%w: event closed", ErrEvent))
+	}
+
+	if delegateFace.IsNil() {
+		panic(fmt.Errorf("%w: %w: delegateFace is nil", ErrEvent, internal.ErrArgs))
 	}
 
 	hook := Hook{

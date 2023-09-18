@@ -1,10 +1,10 @@
 package ec
 
 import (
-	"kit.golaxy.org/golaxy/localevent"
+	"kit.golaxy.org/golaxy/event"
 	"kit.golaxy.org/golaxy/uid"
-	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/golaxy/util/container"
+	"kit.golaxy.org/golaxy/util/iface"
 )
 
 // Deprecated: UnsafeEntity 访问实体内部函数
@@ -34,7 +34,7 @@ func (ue _UnsafeEntity) SetId(id uid.Id) {
 }
 
 // SetContext 设置上下文
-func (ue _UnsafeEntity) SetContext(ctx util.IfaceCache) {
+func (ue _UnsafeEntity) SetContext(ctx iface.Cache) {
 	ue.setContext(ctx)
 }
 
@@ -64,6 +64,6 @@ func (ue _UnsafeEntity) SetState(state EntityState) {
 }
 
 // EventEntityDestroySelf 事件：实体销毁自身
-func (ue _UnsafeEntity) EventEntityDestroySelf() localevent.IEvent {
+func (ue _UnsafeEntity) EventEntityDestroySelf() event.IEvent {
 	return ue.eventEntityDestroySelf()
 }

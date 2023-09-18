@@ -7,7 +7,7 @@ import (
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/uid"
-	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/iface"
 )
 
 // NewContext 创建服务上下文
@@ -81,15 +81,20 @@ func (ctx *ContextBehavior) GetEntityMgr() IEntityMgr {
 	return &ctx.entityMgr
 }
 
+// String implements fmt.Stringer
+func (ctx *ContextBehavior) String() string {
+	return fmt.Sprintf("{Id:%s Name:%s}", ctx.GetId(), ctx.GetName())
+}
+
 func (ctx *ContextBehavior) init(opts *ContextOptions) {
 	if opts == nil {
-		panic("nil opts")
+		panic(fmt.Errorf("%w: %w: opts is nil", ErrContext, internal.ErrArgs))
 	}
 
 	ctx.opts = *opts
 
 	if ctx.opts.CompositeFace.IsNil() {
-		ctx.opts.CompositeFace = util.NewFace[Context](ctx)
+		ctx.opts.CompositeFace = iface.NewFace[Context](ctx)
 	}
 
 	if ctx.opts.Context == nil {

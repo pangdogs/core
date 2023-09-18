@@ -1,7 +1,7 @@
 package service
 
 import (
-	"errors"
+	"fmt"
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/uid"
@@ -56,14 +56,14 @@ func entityExist(entity ec.Entity) bool
 
 func checkEntityId(entityId uid.Id) error {
 	if entityId.IsNil() {
-		return errors.New("entity id equal zero is invalid")
+		return fmt.Errorf("%w: entity id is nil", ErrContext)
 	}
 	return nil
 }
 
 func checkSegment(segment func(entity ec.Entity) Ret) error {
 	if segment == nil {
-		return errors.New("nil segment")
+		return fmt.Errorf("%w: segment is nil", ErrContext)
 	}
 	return nil
 }
@@ -71,7 +71,7 @@ func checkSegment(segment func(entity ec.Entity) Ret) error {
 func getEntity(entityMgr _EntityMgr, id uid.Id) (ec.Entity, error) {
 	entity, ok := entityMgr.GetEntity(id)
 	if !ok {
-		return nil, errors.New("entity not exist in service context")
+		return nil, fmt.Errorf("%w: entity not exist", ErrContext)
 	}
 	return entity, nil
 }
@@ -80,7 +80,7 @@ func syncCall(entity ec.Entity, segment func(entity ec.Entity) Ret) Ret {
 	return entityCaller(entity).SyncCall(func() Ret {
 		if !entityExist(entity) {
 			return Ret{
-				Error: errors.New("entity not exist in runtime context"),
+				Error: fmt.Errorf("%w: entity not exist", ErrContext),
 			}
 		}
 		return segment(entity)
@@ -91,7 +91,7 @@ func asyncCall(entity ec.Entity, segment func(entity ec.Entity) Ret) AsyncRet {
 	return entityCaller(entity).AsyncCall(func() Ret {
 		if !entityExist(entity) {
 			return Ret{
-				Error: errors.New("entity not exist in runtime context"),
+				Error: fmt.Errorf("%w: entity not exist", ErrContext),
 			}
 		}
 		return segment(entity)

@@ -2,11 +2,11 @@ package ec
 
 import (
 	"fmt"
+	"kit.golaxy.org/golaxy/event"
 	"kit.golaxy.org/golaxy/internal"
-	"kit.golaxy.org/golaxy/localevent"
 	"kit.golaxy.org/golaxy/uid"
-	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/golaxy/util/container"
+	"kit.golaxy.org/golaxy/util/iface"
 	"reflect"
 )
 
@@ -29,7 +29,7 @@ type Component interface {
 }
 
 type _Component interface {
-	init(name string, entity Entity, composite Component, hookAllocator container.Allocator[localevent.Hook], gcCollector container.GCCollector)
+	init(name string, entity Entity, composite Component, hookAllocator container.Allocator[event.Hook], gcCollector container.GCCollector)
 	setId(id uid.Id)
 	setFixed(v bool)
 	getFixed() bool
@@ -38,7 +38,7 @@ type _Component interface {
 	getReflectValue() reflect.Value
 	getComposite() Component
 	setGCCollector(gcCollector container.GCCollector)
-	eventComponentDestroySelf() localevent.IEvent
+	eventComponentDestroySelf() event.IEvent
 }
 
 // ComponentBehavior 组件行为，需要在开发新组件时，匿名嵌入至组件结构体中
@@ -50,7 +50,7 @@ type ComponentBehavior struct {
 	fixed                      bool
 	state                      ComponentState
 	reflectValue               reflect.Value
-	_eventComponentDestroySelf localevent.Event
+	_eventComponentDestroySelf event.Event
 }
 
 // GetId 获取组件Id
@@ -77,20 +77,25 @@ func (comp *ComponentBehavior) GetState() ComponentState {
 func (comp *ComponentBehavior) DestroySelf() {
 	switch comp.GetState() {
 	case ComponentState_Awake, ComponentState_Start, ComponentState_Living:
-		emitEventComponentDestroySelf(&comp._eventComponentDestroySelf, comp.composite)
+		emitEventComponentDestroySelf(UnsafeComponent(comp), comp.composite)
 	}
 }
 
 // ResolveContext 解析上下文
-func (comp *ComponentBehavior) ResolveContext() util.IfaceCache {
+func (comp *ComponentBehavior) ResolveContext() iface.Cache {
 	return comp.entity.ResolveContext()
 }
 
-func (comp *ComponentBehavior) init(name string, entity Entity, composite Component, hookAllocator container.Allocator[localevent.Hook], gcCollector container.GCCollector) {
+// String implements fmt.Stringer
+func (comp *ComponentBehavior) String() string {
+	return fmt.Sprintf("{Id:%s Name:%s Entity:%s State:%s}", comp.GetId(), comp.GetName(), comp.GetEntity().GetId(), comp.GetState())
+}
+
+func (comp *ComponentBehavior) init(name string, entity Entity, composite Component, hookAllocator container.Allocator[event.Hook], gcCollector container.GCCollector) {
 	comp.name = name
 	comp.entity = entity
 	comp.composite = composite
-	comp._eventComponentDestroySelf.Init(false, nil, localevent.EventRecursion_NotEmit, hookAllocator, gcCollector)
+	comp._eventComponentDestroySelf.Init(false, nil, event.EventRecursion_NotEmit, hookAllocator, gcCollector)
 }
 
 func (comp *ComponentBehavior) setId(id uid.Id) {
@@ -131,9 +136,9 @@ func (comp *ComponentBehavior) getComposite() Component {
 }
 
 func (comp *ComponentBehavior) setGCCollector(gcCollector container.GCCollector) {
-	localevent.UnsafeEvent(&comp._eventComponentDestroySelf).SetGCCollector(gcCollector)
+	event.UnsafeEvent(&comp._eventComponentDestroySelf).SetGCCollector(gcCollector)
 }
 
-func (comp *ComponentBehavior) eventComponentDestroySelf() localevent.IEvent {
+func (comp *ComponentBehavior) eventComponentDestroySelf() event.IEvent {
 	return &comp._eventComponentDestroySelf
 }

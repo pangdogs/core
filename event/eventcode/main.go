@@ -2,14 +2,15 @@
 //
 //   - 可以生成发送事件（emit event）与事件表（event table）辅助代码。
 //   - 用于生成发送事件辅助代码时，在事件定义代码源文件（*.go）头部，添加以下注释：
-//     `go:generate go run kit.golaxy.org/golaxy/localevent/eventcode --decl_file=$GOFILE gen_emit --package=$GOPACKAGE`
+//     `go:generate go run kit.golaxy.org/golaxy/event/eventcode --decl_file=$GOFILE gen_emit --package=$GOPACKAGE`
 //   - 用于生成事件表辅助代码时，在事件定义代码源文件（*.go）头部，添加以下注释：
-//     `go:generate go run kit.golaxy.org/golaxy/localevent/eventcode --decl_file=$GOFILE gen_eventtab --package=$GOPACKAGE --name=XXXEventTab`
+//     `go:generate go run kit.golaxy.org/golaxy/event/eventcode --decl_file=$GOFILE gen_eventtab --package=$GOPACKAGE --name=XXXEventTab`
 //   - 需要生成事件辅助代码时，在Cmd控制台中，定位到事件定义代码源文件（*.go）的路径下，输入`go generate`指令即可，也可以使用IDE提供的go generate功能。
 //   - 本包可以编译并执行`eventcode --help`查看命令行参数，按需求调整参数改变生成的代码。
 package main
 
 import (
+	"fmt"
 	"github.com/alecthomas/kingpin/v2"
 	"go/ast"
 	"go/parser"
@@ -24,7 +25,8 @@ type _CommandContext struct {
 	// 基础选项
 	DeclFile          string
 	EventRegexp       string
-	EventPackageAlias string
+	PackageEventAlias string
+	PackageIfaceAlias string
 	FileData          []byte
 	FileSet           *token.FileSet
 	FileAst           *ast.File
@@ -42,11 +44,17 @@ type _CommandContext struct {
 	EventTabDefEventRecursion string
 }
 
+var (
+	packageEventPath = "kit.golaxy.org/golaxy/event"
+	packageIfacePath = "kit.golaxy.org/golaxy/util/iface"
+)
+
 func main() {
 	// 基础选项
 	declFile := kingpin.Flag("decl_file", "定义事件的源文件（*.go）。").ExistingFile()
 	eventRegexp := kingpin.Flag("event_regexp", "匹配事件定义时使用的正则表达式。").Default("^[eE]vent.+").String()
-	eventPackageAlias := kingpin.Flag("event_package_alias", "导入GOLAXY框架的`kit.golaxy.org/golaxy/localevent`包时使用的别名。").Default("localevent").String()
+	packageEventAlias := kingpin.Flag("package_event_alias", fmt.Sprintf("导入GOLAXY框架的`%s`包时使用的别名。", packageEventPath)).Default("event").String()
+	packageIfaceAlias := kingpin.Flag("package_iface_alias", fmt.Sprintf("导入GOLAXY框架的`%s`包时使用的别名。", packageIfacePath)).Default("iface").String()
 
 	// 生成发送事件代码相关选项
 	emitCmd := kingpin.Command("gen_emit", "通过定义的事件生成发送事件代码。")
@@ -67,10 +75,15 @@ func main() {
 	ctx := &_CommandContext{}
 	ctx.DeclFile, _ = filepath.Abs(*declFile)
 	ctx.EventRegexp = strings.TrimSpace(*eventRegexp)
-	ctx.EventPackageAlias = strings.TrimSpace(*eventPackageAlias)
+	ctx.PackageEventAlias = strings.TrimSpace(*packageEventAlias)
+	ctx.PackageIfaceAlias = strings.TrimSpace(*packageIfaceAlias)
 
-	if ctx.EventPackageAlias == "" {
-		panic("`gen_emit --event_package_alias`设置的别名不能为空")
+	if ctx.PackageEventAlias == "" {
+		panic("`gen_emit --package_event_alias`设置的别名不能为空")
+	}
+
+	if ctx.PackageIfaceAlias == "" {
+		panic("`gen_emit --package_iface_alias`设置的别名不能为空")
 	}
 
 	switch cmd {

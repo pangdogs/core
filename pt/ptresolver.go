@@ -16,12 +16,12 @@ type EntityPtResolver interface {
 //	@param prototype 实体原型名称。
 func FetchEntityPt(entityPtResolver EntityPtResolver, prototype string) EntityPt {
 	if entityPtResolver == nil {
-		panic("nil entityPtResolver")
+		panic(fmt.Errorf("%w: entityPtResolver is nil", ErrPt))
 	}
 
 	entityPt, ok := entityPtResolver.ResolveEntityPt(prototype)
 	if !ok {
-		panic(fmt.Errorf("entity prototype %q not registered", prototype))
+		panic(fmt.Errorf("%w: entity %q not registered", ErrPt, prototype))
 	}
 
 	return entityPt
