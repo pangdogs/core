@@ -58,7 +58,7 @@ func (app *_App) Run() {
 
 	for _, customCmd := range app.options.Commands {
 		if cmd == customCmd.Clause.FullCommand() {
-			customCmd.Run(customCmd.Flags)
+			customCmd.Run()
 			return
 		}
 	}

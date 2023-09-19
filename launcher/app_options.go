@@ -14,23 +14,22 @@ import (
 type Option struct{}
 
 type (
-	ServiceCtxInit = func(serviceName string, entityLib pt.EntityLib, pluginBundle plugin.PluginBundle) []service.ContextOption // 服务上下文初始化函数
-	ServiceInit    = func(serviceName string) []golaxy.ServiceOption                                                            // 服务初始化函数
+	ServiceCtxHandler = func(serviceName string, entityLib pt.EntityLib, pluginBundle plugin.PluginBundle) []service.ContextOption // 服务上下文初始化函数
+	ServiceHandler    = func(serviceName string) []golaxy.ServiceOption                                                            // 服务初始化函数
 )
 
 // Cmd 应用指令
 type Cmd struct {
 	Clause *kingpin.CmdClause // cmd clause
-	Flags  []any              // cmd flags
-	Run    func(flags []any)  // run cmd
+	Run    func()             // run cmd
 }
 
 // AppOptions 创建应用的所有选项
 type AppOptions struct {
-	Commands          []Cmd                     // 自定义应用指令
-	QuitSignals       []os.Signal               // 退出信号
-	ServiceCtxInitTab map[string]ServiceCtxInit // 所有服务上下文初始化函数
-	ServiceInitTab    map[string]ServiceInit    // 所有服务初始化函数
+	Commands           []Cmd                        // 自定义应用指令
+	QuitSignals        []os.Signal                  // 退出信号
+	ServiceCtxHandlers map[string]ServiceCtxHandler // 所有服务上下文初始化函数
+	ServiceHandlers    map[string]ServiceHandler    // 所有服务初始化函数
 }
 
 // AppOption 创建应用的选项设置器
@@ -41,8 +40,8 @@ func (Option) Default() AppOption {
 	return func(o *AppOptions) {
 		Option{}.Commands(nil)(o)
 		Option{}.QuitSignals(syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGKILL)(o)
-		Option{}.ServiceCtxInitTab(nil)(o)
-		Option{}.ServiceInitTab(nil)(o)
+		Option{}.ServiceCtxHandlers(nil)(o)
+		Option{}.ServiceHandlers(nil)(o)
 	}
 }
 
@@ -60,16 +59,16 @@ func (Option) QuitSignals(signals ...os.Signal) AppOption {
 	}
 }
 
-// ServiceCtxInitTab 所有服务上下文初始化函数
-func (Option) ServiceCtxInitTab(tab map[string]ServiceCtxInit) AppOption {
+// ServiceCtxHandlers 所有服务上下文初始化函数
+func (Option) ServiceCtxHandlers(handlers map[string]ServiceCtxHandler) AppOption {
 	return func(o *AppOptions) {
-		o.ServiceCtxInitTab = tab
+		o.ServiceCtxHandlers = handlers
 	}
 }
 
-// ServiceInitTab 所有服务初始化函数
-func (Option) ServiceInitTab(tab map[string]ServiceInit) AppOption {
+// ServiceHandlers 所有服务初始化函数
+func (Option) ServiceHandlers(handlers map[string]ServiceHandler) AppOption {
 	return func(o *AppOptions) {
-		o.ServiceInitTab = tab
+		o.ServiceHandlers = handlers
 	}
 }

@@ -92,19 +92,19 @@ func (app *_App) runService(ctx context.Context, serviceName string, serviceConf
 		service.Option{}.PluginBundle(pluginBundle),
 	}
 
-	if app.options.ServiceCtxInitTab != nil {
-		initFunc := app.options.ServiceCtxInitTab[serviceName]
-		if initFunc != nil {
-			serviceCtxOpts = append(serviceCtxOpts, initFunc(serviceName, entityLib, pluginBundle)...)
+	if app.options.ServiceCtxHandlers != nil {
+		handler := app.options.ServiceCtxHandlers[serviceName]
+		if handler != nil {
+			serviceCtxOpts = append(serviceCtxOpts, handler(serviceName, entityLib, pluginBundle)...)
 		}
 	}
 
 	var serviceOpts []golaxy.ServiceOption
 
-	if app.options.ServiceInitTab != nil {
-		initFunc := app.options.ServiceInitTab[serviceName]
-		if initFunc != nil {
-			serviceOpts = append(serviceOpts, initFunc(serviceName)...)
+	if app.options.ServiceHandlers != nil {
+		handler := app.options.ServiceHandlers[serviceName]
+		if handler != nil {
+			serviceOpts = append(serviceOpts, handler(serviceName)...)
 		}
 	}
 
