@@ -104,7 +104,7 @@ func (entity *EntityBehavior) GetState() EntityState {
 func (entity *EntityBehavior) DestroySelf() {
 	switch entity.GetState() {
 	case EntityState_Init, EntityState_Inited, EntityState_Living:
-		emitEventEntityDestroySelf(UnsafeEntity(entity), entity.opts.CompositeFace.Iface)
+		emitEventEntityDestroySelf(entity.eventEntityDestroySelf(), entity.opts.CompositeFace.Iface)
 	}
 }
 

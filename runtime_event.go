@@ -1,4 +1,4 @@
-//go:generate go run kit.golaxy.org/golaxy/event/eventcode --decl_file=$GOFILE gen_emit --package=$GOPACKAGE --default_export=0
+//go:generate go run kit.golaxy.org/golaxy/event/eventcode --decl_file=$GOFILE gen_emit --package=$GOPACKAGE --default_export=false
 package golaxy
 
 type eventUpdate interface {

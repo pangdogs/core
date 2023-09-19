@@ -172,10 +172,10 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 
 	entityInfo := _EntityInfo{}
 	entityInfo.Element = entityMgr.entityList.PushBack(iface.NewFacePair[any](entity, entity))
-	entityInfo.Hooks[0] = event.BindEvent[ec.EventCompMgrAddComponents](entity.EventCompMgrAddComponents(), entityMgr)
-	entityInfo.Hooks[1] = event.BindEvent[ec.EventCompMgrRemoveComponent](entity.EventCompMgrRemoveComponent(), entityMgr)
+	entityInfo.Hooks[0] = ec.BindEventCompMgrAddComponents(entity, entityMgr)
+	entityInfo.Hooks[1] = ec.BindEventCompMgrRemoveComponent(entity, entityMgr)
 	if _entity.GetOptions().ComponentAwakeByAccess {
-		entityInfo.Hooks[2] = event.BindEvent[ec.EventCompMgrFirstAccessComponent](entity.EventCompMgrFirstAccessComponent(), entityMgr)
+		entityInfo.Hooks[2] = ec.BindEventCompMgrFirstAccessComponent(entity, entityMgr)
 	}
 	entityInfo.GlobalMark = scope == ec.Scope_Global
 

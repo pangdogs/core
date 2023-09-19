@@ -85,11 +85,11 @@ func (_runtime *RuntimeBehavior) loopStart() (hooks [5]event.Hook) {
 		runtime.UnsafeFrame(frame).RunningBegin()
 	}
 
-	hooks[0] = event.BindEvent[runtime.EventEntityMgrAddEntity](ctx.GetEntityMgr().EventEntityMgrAddEntity(), _runtime)
-	hooks[1] = event.BindEvent[runtime.EventEntityMgrRemoveEntity](ctx.GetEntityMgr().EventEntityMgrRemoveEntity(), _runtime)
-	hooks[2] = event.BindEvent[runtime.EventEntityMgrEntityAddComponents](ctx.GetEntityMgr().EventEntityMgrEntityAddComponents(), _runtime)
-	hooks[3] = event.BindEvent[runtime.EventEntityMgrEntityRemoveComponent](ctx.GetEntityMgr().EventEntityMgrEntityRemoveComponent(), _runtime)
-	hooks[4] = event.BindEvent[runtime.EventEntityMgrEntityFirstAccessComponent](ctx.GetEntityMgr().EventEntityMgrEntityFirstAccessComponent(), _runtime)
+	hooks[0] = runtime.BindEventEntityMgrAddEntity(ctx.GetEntityMgr(), _runtime)
+	hooks[1] = runtime.BindEventEntityMgrRemoveEntity(ctx.GetEntityMgr(), _runtime)
+	hooks[2] = runtime.BindEventEntityMgrEntityAddComponents(ctx.GetEntityMgr(), _runtime)
+	hooks[3] = runtime.BindEventEntityMgrEntityRemoveComponent(ctx.GetEntityMgr(), _runtime)
+	hooks[4] = runtime.BindEventEntityMgrEntityFirstAccessComponent(ctx.GetEntityMgr(), _runtime)
 
 	ctx.GetEntityMgr().RangeEntities(func(entity ec.Entity) bool {
 		internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), func() {
