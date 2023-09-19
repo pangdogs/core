@@ -158,7 +158,7 @@ func AsyncChanRet[T any](ctx context.Context, ch <-chan T) runtime.AsyncRet {
 	}
 
 	if ch == nil {
-		panic("nil ch")
+		panic(fmt.Errorf("%w: %w: ch is nil", ErrAsyncAwait, ErrArgs))
 	}
 
 	asyncRet := make(chan runtime.Ret, 1)
