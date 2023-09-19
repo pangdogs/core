@@ -61,9 +61,9 @@ func (creator *EntityCreator) Spawn(options ...EntityCreatorOption) (ec.Entity, 
 		opts = &copyOpts
 	}
 
-	entityPt, ok := pt.AccessEntityPt(serviceCtx, opts.Prototype)
-	if !ok {
-		return nil, fmt.Errorf("%w: entity %q not registered", ErrEntityCreator, opts.Prototype)
+	entityPt, err := pt.Access(serviceCtx, opts.Prototype)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrEntityCreator, err)
 	}
 
 	entity := entityPt.UnsafeConstruct(opts.ConstructEntityOptions)

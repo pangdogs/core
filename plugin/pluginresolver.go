@@ -17,39 +17,30 @@ type PluginResolver interface {
 //	@param pluginResolver 插件解析器。
 //	@param name 插件名称。
 func Fetch[T any](pluginResolver PluginResolver, name string) T {
-	if pluginResolver == nil {
-		panic(fmt.Errorf("%w: pluginResolver is nil", ErrPlugin))
+	plugin, err := Access[T](pluginResolver, name)
+	if err != nil {
+		panic(err)
 	}
-
-	pluginInfo, ok := pluginResolver.ResolvePlugin(name)
-	if !ok {
-		panic(fmt.Errorf("%w: %q not installed", ErrPlugin, name))
-	}
-
-	if !pluginInfo.Active {
-		panic(fmt.Errorf("%w: %q not actived", ErrPlugin, name))
-	}
-
-	return iface.Cache2Iface[T](pluginInfo.Face.Cache)
+	return plugin
 }
 
 // Access 访问插件
 //
 //	@param pluginResolver 插件解析器。
 //	@param name 插件名称。
-func Access[T any](pluginResolver PluginResolver, name string) (T, bool) {
+func Access[T any](pluginResolver PluginResolver, name string) (T, error) {
 	if pluginResolver == nil {
-		return util.Zero[T](), false
+		return util.Zero[T](), fmt.Errorf("%w: pluginResolver is nil", ErrPlugin)
 	}
 
 	pluginInfo, ok := pluginResolver.ResolvePlugin(name)
 	if !ok {
-		return util.Zero[T](), false
+		return util.Zero[T](), fmt.Errorf("%w: %q not installed", ErrPlugin, name)
 	}
 
 	if !pluginInfo.Active {
-		return util.Zero[T](), false
+		return util.Zero[T](), fmt.Errorf("%w: %q not actived", ErrPlugin, name)
 	}
 
-	return iface.Cache2Iface[T](pluginInfo.Face.Cache), true
+	return iface.Cache2Iface[T](pluginInfo.Face.Cache), nil
 }

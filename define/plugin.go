@@ -33,19 +33,19 @@ func (p _Plugin[PLUGIN_IFACE, OPTION]) fetch() func(pluginResolver plugin.Plugin
 	}
 }
 
-func (p _Plugin[PLUGIN_IFACE, OPTION]) access() func(pluginResolver plugin.PluginResolver) (PLUGIN_IFACE, bool) {
-	return func(pluginResolver plugin.PluginResolver) (PLUGIN_IFACE, bool) {
+func (p _Plugin[PLUGIN_IFACE, OPTION]) access() func(pluginResolver plugin.PluginResolver) (PLUGIN_IFACE, error) {
+	return func(pluginResolver plugin.PluginResolver) (PLUGIN_IFACE, error) {
 		return plugin.Access[PLUGIN_IFACE](pluginResolver, p.name())
 	}
 }
 
 // ServicePlugin 服务插件
 type ServicePlugin[PLUGIN_IFACE, OPTION any] struct {
-	Name      string                                     // 插件名称
-	Install   func(plugin.PluginBundle, ...OPTION)       // 向插件包安装
-	Uninstall func(plugin.PluginBundle)                  // 从插件包卸载
-	Fetch     func(service.Context) PLUGIN_IFACE         // 从服务上下文获取插件
-	Access    func(service.Context) (PLUGIN_IFACE, bool) // 从服务上下文访问插件
+	Name      string                                      // 插件名称
+	Install   func(plugin.PluginBundle, ...OPTION)        // 向插件包安装
+	Uninstall func(plugin.PluginBundle)                   // 从插件包卸载
+	Fetch     func(service.Context) PLUGIN_IFACE          // 从服务上下文获取插件
+	Access    func(service.Context) (PLUGIN_IFACE, error) // 从服务上下文访问插件
 }
 
 // ServicePlugin 生成服务插件定义
@@ -55,17 +55,17 @@ func (p _Plugin[PLUGIN_IFACE, OPTION]) ServicePlugin(creator func(...OPTION) PLU
 		Install:   p.install(creator),
 		Uninstall: p.uninstall(),
 		Fetch:     func(ctx service.Context) PLUGIN_IFACE { return p.fetch()(ctx) },
-		Access:    func(ctx service.Context) (PLUGIN_IFACE, bool) { return p.access()(ctx) },
+		Access:    func(ctx service.Context) (PLUGIN_IFACE, error) { return p.access()(ctx) },
 	}
 }
 
 // RuntimePlugin 运行时插件
 type RuntimePlugin[PLUGIN_IFACE, OPTION any] struct {
-	Name      string                                     // 插件名称
-	Install   func(plugin.PluginBundle, ...OPTION)       // 向插件包安装
-	Uninstall func(plugin.PluginBundle)                  // 从插件包卸载
-	Fetch     func(runtime.Context) PLUGIN_IFACE         // 从运行时上下文获取插件
-	Access    func(runtime.Context) (PLUGIN_IFACE, bool) // 从运行时上下文访问插件
+	Name      string                                      // 插件名称
+	Install   func(plugin.PluginBundle, ...OPTION)        // 向插件包安装
+	Uninstall func(plugin.PluginBundle)                   // 从插件包卸载
+	Fetch     func(runtime.Context) PLUGIN_IFACE          // 从运行时上下文获取插件
+	Access    func(runtime.Context) (PLUGIN_IFACE, error) // 从运行时上下文访问插件
 }
 
 // RuntimePlugin 生成运行时插件定义
@@ -75,17 +75,17 @@ func (p _Plugin[PLUGIN_IFACE, OPTION]) RuntimePlugin(creator func(...OPTION) PLU
 		Install:   p.install(creator),
 		Uninstall: p.uninstall(),
 		Fetch:     func(ctx runtime.Context) PLUGIN_IFACE { return p.fetch()(ctx) },
-		Access:    func(ctx runtime.Context) (PLUGIN_IFACE, bool) { return p.access()(ctx) },
+		Access:    func(ctx runtime.Context) (PLUGIN_IFACE, error) { return p.access()(ctx) },
 	}
 }
 
 // Plugin 插件
 type Plugin[PLUGIN_IFACE, OPTION any] struct {
-	Name      string                                           // 插件名称
-	Install   func(plugin.PluginBundle, ...OPTION)             // 向插件包安装
-	Uninstall func(plugin.PluginBundle)                        // 从插件包卸载
-	Fetch     func(plugin.PluginResolver) PLUGIN_IFACE         // 获取插件
-	Access    func(plugin.PluginResolver) (PLUGIN_IFACE, bool) // 访问插件
+	Name      string                                            // 插件名称
+	Install   func(plugin.PluginBundle, ...OPTION)              // 向插件包安装
+	Uninstall func(plugin.PluginBundle)                         // 从插件包卸载
+	Fetch     func(plugin.PluginResolver) PLUGIN_IFACE          // 获取插件
+	Access    func(plugin.PluginResolver) (PLUGIN_IFACE, error) // 访问插件
 }
 
 // Plugin 生成插件定义
