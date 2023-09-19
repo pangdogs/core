@@ -14,8 +14,8 @@ import (
 type Option struct{}
 
 type (
-	ServiceCtxHandler = func(serviceName string, entityLib pt.EntityLib, pluginBundle plugin.PluginBundle) []service.ContextOption // 服务上下文初始化函数
-	ServiceHandler    = func(serviceName string) []golaxy.ServiceOption                                                            // 服务初始化函数
+	ServiceCtxHandler = func(serviceName string, entityLib pt.EntityLib, pluginBundle plugin.PluginBundle) []service.ContextOption // 服务上下文初始化处理器
+	ServiceHandler    = func(serviceName string) []golaxy.ServiceOption                                                            // 服务初始化处理器
 )
 
 // Cmd 应用指令
@@ -26,10 +26,10 @@ type Cmd struct {
 
 // AppOptions 创建应用的所有选项
 type AppOptions struct {
-	Commands           []Cmd                        // 自定义应用指令
+	Commands           []Cmd                        // 应用指令
 	QuitSignals        []os.Signal                  // 退出信号
-	ServiceCtxHandlers map[string]ServiceCtxHandler // 所有服务上下文初始化函数
-	ServiceHandlers    map[string]ServiceHandler    // 所有服务初始化函数
+	ServiceCtxHandlers map[string]ServiceCtxHandler // 服务上下文初始化处理器
+	ServiceHandlers    map[string]ServiceHandler    // 服务初始化处理器
 }
 
 // AppOption 创建应用的选项设置器
@@ -45,7 +45,7 @@ func (Option) Default() AppOption {
 	}
 }
 
-// Commands 自定义应用指令
+// Commands 应用指令
 func (Option) Commands(cmds []Cmd) AppOption {
 	return func(o *AppOptions) {
 		o.Commands = cmds
@@ -59,14 +59,14 @@ func (Option) QuitSignals(signals ...os.Signal) AppOption {
 	}
 }
 
-// ServiceCtxHandlers 所有服务上下文初始化函数
+// ServiceCtxHandlers 服务上下文初始化处理器
 func (Option) ServiceCtxHandlers(handlers map[string]ServiceCtxHandler) AppOption {
 	return func(o *AppOptions) {
 		o.ServiceCtxHandlers = handlers
 	}
 }
 
-// ServiceHandlers 所有服务初始化函数
+// ServiceHandlers 服务初始化处理器
 func (Option) ServiceHandlers(handlers map[string]ServiceHandler) AppOption {
 	return func(o *AppOptions) {
 		o.ServiceHandlers = handlers
