@@ -1,7 +1,7 @@
 package define
 
 import (
-	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/types"
 )
 
 type _Component struct {
@@ -33,9 +33,9 @@ func (c _Component) Component() Component {
 // DefineComponent 定义组件
 func DefineComponent[COMP_IFACE, COMP any](descr ...string) Component {
 	compIface := DefineComponentInterface[COMP_IFACE]()
-	compIface.Register(util.Zero[COMP](), descr...)
+	compIface.Register(types.Zero[COMP](), descr...)
 	return _Component{
 		_name:           compIface.Name,
-		_implementation: util.TypeFullName[COMP](),
+		_implementation: types.FullName[COMP](),
 	}.Component()
 }

@@ -3,7 +3,7 @@ package pt
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/types"
 	"reflect"
 	"strings"
 )
@@ -34,11 +34,11 @@ import (
 //	1.内部逻辑有使用反射，为了提高性能，可以使用一次后存储转换结果重复使用。
 //	2.实体更新组件后，需要重新提取。
 func As[T comparable](entity ec.Entity) (T, bool) {
-	compositeIface := util.Zero[T]()
+	compositeIface := types.Zero[T]()
 	vfCompositeIface := reflect.ValueOf(&compositeIface).Elem()
 
 	if !as(entity, vfCompositeIface) {
-		return util.Zero[T](), false
+		return types.Zero[T](), false
 	}
 
 	return compositeIface, true
@@ -132,15 +132,15 @@ func (c *Composite[T]) Changed() bool {
 // As 从实体提取一些需要的组件接口，复合在一起直接使用（实体更新组件后，会自动重新提取）
 func (c *Composite[T]) As() (T, bool) {
 	if c.Entity == nil {
-		return util.Zero[T](), false
+		return types.Zero[T](), false
 	}
 
-	if c.iface != util.Zero[T]() && !c.Changed() {
+	if c.iface != types.Zero[T]() && !c.Changed() {
 		return c.iface, true
 	}
 
 	if !as(c.Entity, reflect.ValueOf(c.iface)) {
-		return util.Zero[T](), false
+		return types.Zero[T](), false
 	}
 
 	c.version = ec.UnsafeEntity(c.Entity).GetVersion()
@@ -173,7 +173,7 @@ func as(entity ec.Entity, vfIface reflect.Value) bool {
 			tfCompIface := vfCompIface.Type()
 
 			sb.Reset()
-			util.WriteFullName(&sb, tfCompIface)
+			types.WriteTypeFullName(&sb, tfCompIface)
 
 			comp := entity.GetComponent(sb.String())
 			if comp == nil {
@@ -189,7 +189,7 @@ func as(entity ec.Entity, vfIface reflect.Value) bool {
 		tfCompositeIface := vfIface.Type()
 
 		sb.Reset()
-		util.WriteFullName(&sb, tfCompositeIface)
+		types.WriteTypeFullName(&sb, tfCompositeIface)
 
 		comp := entity.GetComponent(sb.String())
 		if comp == nil {

@@ -2,19 +2,19 @@ package internal
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/types"
 	"runtime"
 )
 
 // CallOuter 调用外部代码，有返回值
 func CallOuter[T any](autoRecover bool, reportError chan error, fun func() T) (ret T, panicErr error) {
 	if fun == nil {
-		return util.Zero[T](), nil
+		return types.Zero[T](), nil
 	}
 
 	if autoRecover {
 		defer func() {
-			if panicErr = util.Panic2Err(recover()); panicErr != nil {
+			if panicErr = types.Panic2Err(recover()); panicErr != nil {
 				if reportError != nil {
 					exception := printStackTrace(panicErr)
 					select {
@@ -39,7 +39,7 @@ func CallOuterVoid(autoRecover bool, reportError chan error, fun func()) (panicE
 
 	if autoRecover {
 		defer func() {
-			if panicErr = util.Panic2Err(recover()); panicErr != nil {
+			if panicErr = types.Panic2Err(recover()); panicErr != nil {
 				if reportError != nil {
 					exception := printStackTrace(panicErr)
 					select {

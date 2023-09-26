@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/internal"
-	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/types"
 	"reflect"
 	"sync"
 )
@@ -30,14 +30,14 @@ func RegisterComponent(name string, comp any, descr ...string) {
 
 // DeregisterComponent 取消注册组件原型，线程安全。
 //
-//	@param compImpl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld/HelloWorld`。
+//	@param compImpl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld.HelloWorld`。
 func DeregisterComponent(impl string) {
 	componentLib.DeregisterComponent(impl)
 }
 
 // AccessComponent 访问组件原型，线程安全。
 //
-//	@param compImpl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld/HelloWorld`。
+//	@param compImpl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld.HelloWorld`。
 //	@return 组件原型，可以用于创建组件。
 //	@return 是否存在。
 func AccessComponent(impl string) (ComponentPt, bool) {
@@ -80,7 +80,7 @@ func (lib *_ComponentLib) RegisterComponent(name string, comp any, descr string)
 
 // DeregisterComponent 取消注册组件原型，线程安全。
 //
-//	@param compImpl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld/HelloWorld`。
+//	@param compImpl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld.HelloWorld`。
 func (lib *_ComponentLib) DeregisterComponent(impl string) {
 	lib.Lock()
 	defer lib.Unlock()
@@ -97,7 +97,7 @@ func (lib *_ComponentLib) DeregisterComponent(impl string) {
 
 // Get 获取组件原型，线程安全。
 //
-//	@param compImpl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld/HelloWorld`。
+//	@param compImpl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld.HelloWorld`。
 //	@return 组件原型，可以用于创建组件。
 //	@return 是否存在。
 func (lib *_ComponentLib) Get(impl string) (ComponentPt, bool) {
@@ -143,7 +143,7 @@ func (lib *_ComponentLib) register(name string, tfComp reflect.Type, descr strin
 		panic(fmt.Errorf("%w: anonymous component not allowed", ErrPt))
 	}
 
-	compImpl := util.TypeOfAnyFullName(tfComp)
+	compImpl := types.AnyFullName(tfComp)
 
 	if !reflect.PointerTo(tfComp).Implements(reflect.TypeOf((*ec.Component)(nil)).Elem()) {
 		panic(fmt.Errorf("%w: component %q not implement ec.Component", ErrPt, compImpl))

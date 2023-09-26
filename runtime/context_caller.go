@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/internal"
-	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/types"
 )
 
 // NewRet 创建调用结果
@@ -43,7 +43,7 @@ func entityExist(entity ec.Entity) bool {
 func (ctx *ContextBehavior) SyncCall(segment func() Ret) (ret Ret) {
 	func() {
 		defer func() {
-			if panicErr := util.Panic2Err(recover()); panicErr != nil {
+			if panicErr := types.Panic2Err(recover()); panicErr != nil {
 				ret = NewRet(nil, fmt.Errorf("%w: %w", internal.ErrPanicked, panicErr))
 			}
 		}()
@@ -71,7 +71,7 @@ func (ctx *ContextBehavior) AsyncCall(segment func() Ret) AsyncRet {
 
 	go func() {
 		defer func() {
-			if panicErr := util.Panic2Err(recover()); panicErr != nil {
+			if panicErr := types.Panic2Err(recover()); panicErr != nil {
 				asyncRet <- NewRet(nil, fmt.Errorf("%w: %w", internal.ErrPanicked, panicErr))
 				close(asyncRet)
 			}

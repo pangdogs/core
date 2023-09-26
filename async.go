@@ -6,7 +6,7 @@ import (
 	"github.com/elliotchance/pie/v2"
 	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/runtime"
-	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/types"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -57,7 +57,7 @@ func AsyncGo(ctxResolver runtime.ContextResolver, segment func(ctx runtime.Conte
 
 	go func() {
 		defer func() {
-			if panicErr := util.Panic2Err(recover()); panicErr != nil {
+			if panicErr := types.Panic2Err(recover()); panicErr != nil {
 				asyncRet <- runtime.NewRet(nil, fmt.Errorf("%w: %w: %w", internal.ErrPanicked, ErrAsyncAwait, panicErr))
 			}
 			close(asyncRet)
@@ -80,7 +80,7 @@ func AsyncGoVoid(ctxResolver runtime.ContextResolver, segment func(ctx runtime.C
 
 	go func() {
 		defer func() {
-			if panicErr := util.Panic2Err(recover()); panicErr != nil {
+			if panicErr := types.Panic2Err(recover()); panicErr != nil {
 				asyncRet <- runtime.NewRet(nil, fmt.Errorf("%w: %w: %w", internal.ErrPanicked, ErrAsyncAwait, panicErr))
 			}
 			close(asyncRet)

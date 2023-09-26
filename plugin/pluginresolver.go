@@ -2,8 +2,8 @@ package plugin
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/util"
 	"kit.golaxy.org/golaxy/util/iface"
+	"kit.golaxy.org/golaxy/util/types"
 )
 
 // PluginResolver 插件解析器
@@ -30,16 +30,16 @@ func Fetch[T any](pluginResolver PluginResolver, name string) T {
 //	@param name 插件名称。
 func Access[T any](pluginResolver PluginResolver, name string) (T, error) {
 	if pluginResolver == nil {
-		return util.Zero[T](), fmt.Errorf("%w: pluginResolver is nil", ErrPlugin)
+		return types.Zero[T](), fmt.Errorf("%w: pluginResolver is nil", ErrPlugin)
 	}
 
 	pluginInfo, ok := pluginResolver.ResolvePlugin(name)
 	if !ok {
-		return util.Zero[T](), fmt.Errorf("%w: %q not installed", ErrPlugin, name)
+		return types.Zero[T](), fmt.Errorf("%w: %q not installed", ErrPlugin, name)
 	}
 
 	if !pluginInfo.Active {
-		return util.Zero[T](), fmt.Errorf("%w: %q not actived", ErrPlugin, name)
+		return types.Zero[T](), fmt.Errorf("%w: %q not actived", ErrPlugin, name)
 	}
 
 	return iface.Cache2Iface[T](pluginInfo.Face.Cache), nil

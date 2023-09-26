@@ -2,7 +2,7 @@ package define
 
 import (
 	"kit.golaxy.org/golaxy/pt"
-	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/types"
 )
 
 type _ComponentInterface struct {
@@ -36,6 +36,6 @@ func (c _ComponentInterface) ComponentInterface() ComponentInterface {
 // DefineComponentInterface 定义组件接口
 func DefineComponentInterface[COMP_IFACE any]() ComponentInterface {
 	return _ComponentInterface{
-		_name: util.TypeFullName[COMP_IFACE](),
+		_name: types.FullName[COMP_IFACE](),
 	}.ComponentInterface()
 }
