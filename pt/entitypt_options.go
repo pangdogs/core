@@ -3,9 +3,9 @@ package pt
 import (
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/event"
-	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util/container"
 	"kit.golaxy.org/golaxy/util/iface"
+	"kit.golaxy.org/golaxy/util/uid"
 )
 
 // Option 所有选项设置器

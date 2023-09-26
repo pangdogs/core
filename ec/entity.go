@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"kit.golaxy.org/golaxy/event"
 	"kit.golaxy.org/golaxy/internal"
-	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util/container"
 	"kit.golaxy.org/golaxy/util/iface"
+	"kit.golaxy.org/golaxy/util/uid"
 )
 
 // NewEntity 创建实体

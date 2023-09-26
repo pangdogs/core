@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/internal"
-	"kit.golaxy.org/golaxy/uid"
+	"kit.golaxy.org/golaxy/util/uid"
 	_ "unsafe"
 )
 

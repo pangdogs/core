@@ -6,8 +6,8 @@ import (
 	"kit.golaxy.org/golaxy/event"
 	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/runtime"
-	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util/iface"
+	"kit.golaxy.org/golaxy/util/uid"
 )
 
 // NewRuntime 创建运行时

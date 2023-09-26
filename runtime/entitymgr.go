@@ -6,9 +6,9 @@ import (
 	"kit.golaxy.org/golaxy/event"
 	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/service"
-	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util/container"
 	"kit.golaxy.org/golaxy/util/iface"
+	"kit.golaxy.org/golaxy/util/uid"
 )
 
 // IEntityMgr 实体管理器接口

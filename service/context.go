@@ -6,8 +6,8 @@ import (
 	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/pt"
-	"kit.golaxy.org/golaxy/uid"
 	"kit.golaxy.org/golaxy/util/iface"
+	"kit.golaxy.org/golaxy/util/uid"
 )
 
 // NewContext 创建服务上下文
