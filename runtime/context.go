@@ -80,7 +80,7 @@ type ContextBehavior struct {
 	serviceCtx service.Context
 	frame      Frame
 	entityMgr  _EntityMgr
-	ecTree     ECTree
+	ecTree     _ECTree
 	callee     Callee
 	gcList     []container.GC
 }
@@ -164,8 +164,8 @@ func (ctx *ContextBehavior) init(serviceCtx service.Context, opts *ContextOption
 
 	internal.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
 	ctx.serviceCtx = serviceCtx
-	ctx.entityMgr.Init(ctx.getOptions().CompositeFace.Iface)
-	ctx.ecTree.init(ctx.opts.CompositeFace.Iface, true)
+	ctx.entityMgr.Init(ctx.opts.CompositeFace.Iface)
+	ctx.ecTree.Init(ctx.opts.CompositeFace.Iface)
 }
 
 func (ctx *ContextBehavior) getOptions() *ContextOptions {

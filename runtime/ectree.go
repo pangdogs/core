@@ -13,9 +13,9 @@ import (
 // IECTree EC树接口
 type IECTree interface {
 	internal.ContextResolver
-	// AddChild 子实体加入父实体，在实体加入运行时上下文后调用，切换父实体时，先调用RemoveChild()离开旧父实体，再调用AddChild()加入新父实体
+	// AddChild 实体加入父实体，在实体加入运行时上下文后才能调用，切换父实体时，先调用RemoveChild()离开旧父实体，再调用AddChild()加入新父实体
 	AddChild(parentId, childId uid.Id) error
-	// RemoveChild 子实体离开父实体，在实体从运行时上下文中删除前调用，切换父实体时，先调用RemoveChild()离开旧父实体，再调用AddChild()加入新父实体
+	// RemoveChild 实体离开父实体，会销毁所有子实体
 	RemoveChild(childId uid.Id)
 	// RangeChildren 遍历子实体
 	RangeChildren(parentId uid.Id, fun func(child ec.Entity) bool)
@@ -31,6 +31,7 @@ type IECTree interface {
 	EventECTreeRemoveChild() event.IEvent
 }
 
+// _ECNode EC树节点
 type _ECNode struct {
 	Parent          ec.Entity
 	ElementInParent *container.Element[iface.FaceAny]
@@ -38,66 +39,47 @@ type _ECNode struct {
 	Removing        bool
 }
 
-// ECTree EC树，除了运行时上下文的主EC树以外，自己创建的EC树全部是对实体的引用，称为EC引用树，
-// 主要区别是，从主EC树中删除父实体会递归删除并销毁所有子实体，从EC引用树中删除父实体则仅会递归删除所有子实体。
-// 同个实体可以同时加入多个EC引用树，这个特性可以实现一些特殊的需求。
-type ECTree struct {
+// _ECTree EC树
+type _ECTree struct {
 	ctx                    Context
-	masterTree             bool
 	ecTree                 map[uid.Id]_ECNode
 	eventECTreeAddChild    event.Event
 	eventECTreeRemoveChild event.Event
 	hook                   event.Hook
-	inited                 bool
 }
 
 // Init 初始化EC树
-func (ecTree *ECTree) Init(ctx Context) {
-	ecTree.init(ctx, false)
+func (ecTree *_ECTree) Init(ctx Context) {
+	if ctx == nil {
+		panic(fmt.Errorf("%w: %w: ctx is nil", ErrECTree, internal.ErrArgs))
+	}
+
+	ecTree.ctx = ctx
+	ecTree.ecTree = map[uid.Id]_ECNode{}
+	ecTree.eventECTreeAddChild.Init(ctx.GetAutoRecover(), ctx.GetReportError(), event.EventRecursion_Allow, ctx.getOptions().HookAllocator, ctx)
+	ecTree.eventECTreeRemoveChild.Init(ctx.GetAutoRecover(), ctx.GetReportError(), event.EventRecursion_Allow, ctx.getOptions().HookAllocator, ctx)
+
+	ecTree.hook = event.BindEvent[EventEntityMgrRemovingEntity](ecTree.ctx.GetEntityMgr().EventEntityMgrRemovingEntity(), ecTree)
 }
 
 // Shut 销毁EC树
-func (ecTree *ECTree) Shut() {
+func (ecTree *_ECTree) Shut() {
 	ecTree.hook.Unbind()
 	ecTree.eventECTreeAddChild.Close()
 	ecTree.eventECTreeRemoveChild.Close()
 }
 
-func (ecTree *ECTree) init(ctx Context, masterTree bool) {
-	if ctx == nil {
-		panic(fmt.Errorf("%w: %w: ctx is nil", ErrECTree, internal.ErrArgs))
-	}
-
-	if ecTree.inited {
-		panic(fmt.Errorf("%w: ec-tree is already initialized", ErrECTree))
-	}
-
-	ecTree.inited = true
-
-	ecTree.ctx = ctx
-	ecTree.masterTree = masterTree
-	ecTree.ecTree = map[uid.Id]_ECNode{}
-	ecTree.eventECTreeAddChild.Init(ctx.GetAutoRecover(), ctx.GetReportError(), event.EventRecursion_Allow, ctx.getOptions().HookAllocator, ctx)
-	ecTree.eventECTreeRemoveChild.Init(ctx.GetAutoRecover(), ctx.GetReportError(), event.EventRecursion_Allow, ctx.getOptions().HookAllocator, ctx)
-
-	var priority int32
-	if !ecTree.masterTree {
-		priority = -1
-	}
-	ecTree.hook = event.BindEventWithPriority[EventEntityMgrRemovingEntity](ecTree.ctx.GetEntityMgr().EventEntityMgrRemovingEntity(), ecTree, priority)
-}
-
-func (ecTree *ECTree) OnEntityMgrRemovingEntity(entityMgr IEntityMgr, entity ec.Entity) {
+func (ecTree *_ECTree) OnEntityMgrRemovingEntity(entityMgr IEntityMgr, entity ec.Entity) {
 	ecTree.RemoveChild(entity.GetId())
 }
 
 // ResolveContext 解析上下文
-func (ecTree *ECTree) ResolveContext() iface.Cache {
+func (ecTree *_ECTree) ResolveContext() iface.Cache {
 	return ecTree.ctx.ResolveContext()
 }
 
-// AddChild 子实体加入父实体，在实体加入运行时上下文后调用，切换父实体时，先调用RemoveChild()离开旧父实体，再调用AddChild()加入新父实体
-func (ecTree *ECTree) AddChild(parentId, childId uid.Id) error {
+// AddChild 实体加入父实体，在实体加入运行时上下文后才能调用，切换父实体时，先调用RemoveChild()离开旧父实体，再调用AddChild()加入新父实体
+func (ecTree *_ECTree) AddChild(parentId, childId uid.Id) error {
 	if parentId == childId {
 		return fmt.Errorf("%w: %w: parentId and childId can't be equal", ErrECTree, internal.ErrArgs)
 	}
@@ -141,17 +123,15 @@ func (ecTree *ECTree) AddChild(parentId, childId uid.Id) error {
 		ElementInParent: element,
 	}
 
-	if ecTree.masterTree {
-		ec.UnsafeEntity(child).SetParent(parent)
-	}
+	ec.UnsafeEntity(child).SetParent(parent)
 
 	emitEventECTreeAddChild(ecTree, ecTree, parent, child)
 
 	return nil
 }
 
-// RemoveChild 子实体离开父实体，在实体从运行时上下文中删除前调用，切换父实体时，先调用RemoveChild()离开旧父实体，再调用AddChild()加入新父实体
-func (ecTree *ECTree) RemoveChild(childId uid.Id) {
+// RemoveChild 实体离开父实体，会销毁所有子实体
+func (ecTree *_ECTree) RemoveChild(childId uid.Id) {
 	node, ok := ecTree.ecTree[childId]
 	if !ok {
 		return
@@ -160,17 +140,13 @@ func (ecTree *ECTree) RemoveChild(childId uid.Id) {
 	if node.Removing {
 		return
 	}
-
 	node.Removing = true
+
 	ecTree.ecTree[childId] = node
 
 	if node.Children != nil {
 		node.Children.ReverseTraversal(func(e *container.Element[iface.FaceAny]) bool {
-			if ecTree.masterTree {
-				iface.Cache2Iface[ec.Entity](e.Value.Cache).DestroySelf()
-			} else {
-				ecTree.RemoveChild(iface.Cache2Iface[ec.Entity](e.Value.Cache).GetId())
-			}
+			iface.Cache2Iface[ec.Entity](e.Value.Cache).DestroySelf()
 			return true
 		})
 	}
@@ -180,15 +156,13 @@ func (ecTree *ECTree) RemoveChild(childId uid.Id) {
 
 	child := iface.Cache2Iface[ec.Entity](node.ElementInParent.Value.Cache)
 
-	if ecTree.masterTree {
-		ec.UnsafeEntity(child).SetParent(nil)
-	}
+	ec.UnsafeEntity(child).SetParent(nil)
 
 	emitEventECTreeRemoveChild(ecTree, ecTree, node.Parent, child)
 }
 
 // RangeChildren 遍历子实体
-func (ecTree *ECTree) RangeChildren(parentId uid.Id, fun func(child ec.Entity) bool) {
+func (ecTree *_ECTree) RangeChildren(parentId uid.Id, fun func(child ec.Entity) bool) {
 	if fun == nil {
 		return
 	}
@@ -204,7 +178,7 @@ func (ecTree *ECTree) RangeChildren(parentId uid.Id, fun func(child ec.Entity) b
 }
 
 // ReverseRangeChildren 反向遍历子实体
-func (ecTree *ECTree) ReverseRangeChildren(parentId uid.Id, fun func(child ec.Entity) bool) {
+func (ecTree *_ECTree) ReverseRangeChildren(parentId uid.Id, fun func(child ec.Entity) bool) {
 	if fun == nil {
 		return
 	}
@@ -220,7 +194,7 @@ func (ecTree *ECTree) ReverseRangeChildren(parentId uid.Id, fun func(child ec.En
 }
 
 // CountChildren 获取子实体数量
-func (ecTree *ECTree) CountChildren(parentId uid.Id) int {
+func (ecTree *_ECTree) CountChildren(parentId uid.Id) int {
 	node, ok := ecTree.ecTree[parentId]
 	if !ok || node.Children == nil {
 		return 0
@@ -230,7 +204,7 @@ func (ecTree *ECTree) CountChildren(parentId uid.Id) int {
 }
 
 // GetParent 获取子实体的父实体
-func (ecTree *ECTree) GetParent(childId uid.Id) (ec.Entity, bool) {
+func (ecTree *_ECTree) GetParent(childId uid.Id) (ec.Entity, bool) {
 	node, ok := ecTree.ecTree[childId]
 	if !ok {
 		return nil, false
@@ -240,11 +214,11 @@ func (ecTree *ECTree) GetParent(childId uid.Id) (ec.Entity, bool) {
 }
 
 // EventECTreeAddChild 事件：EC树中子实体加入父实体
-func (ecTree *ECTree) EventECTreeAddChild() event.IEvent {
+func (ecTree *_ECTree) EventECTreeAddChild() event.IEvent {
 	return &ecTree.eventECTreeAddChild
 }
 
 // EventECTreeRemoveChild 事件：EC树中子实体离开父实体
-func (ecTree *ECTree) EventECTreeRemoveChild() event.IEvent {
+func (ecTree *_ECTree) EventECTreeRemoveChild() event.IEvent {
 	return &ecTree.eventECTreeRemoveChild
 }
