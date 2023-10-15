@@ -73,9 +73,8 @@ func (creator *EntityCreator) Spawn(options ...EntityCreatorOption) (ec.Entity, 
 	}
 
 	if !opts.ParentID.IsNil() {
-		err := runtimeCtx.GetECTree().AddChild(opts.ParentID, entity.GetId())
-		if err != nil {
-			runtimeCtx.GetEntityMgr().RemoveEntity(entity.GetId())
+		if err := runtimeCtx.GetECTree().AddChild(opts.ParentID, entity.GetId()); err != nil {
+			entity.DestroySelf()
 			return nil, fmt.Errorf("%w, %w", ErrEntityCreator, err)
 		}
 	}
