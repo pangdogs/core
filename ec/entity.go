@@ -115,14 +115,11 @@ func (entity *EntityBehavior) ResolveContext() iface.Cache {
 
 // String implements fmt.Stringer
 func (entity *EntityBehavior) String() string {
-	var parentInfo string
+	var parentId uid.Id
 	if parent, ok := entity.GetParent(); ok {
-		parentInfo = parent.GetId().String()
-	} else {
-		parentInfo = "nil"
+		parentId = parent.GetId()
 	}
-
-	return fmt.Sprintf("{Id:%s Prototype:%s Parent:%s State:%s}", entity.GetId(), entity.GetPrototype(), parentInfo, entity.GetState())
+	return fmt.Sprintf(`{"id":%q "prototype":%q "parent_id":%q "state":%q}`, entity.GetId(), entity.GetPrototype(), parentId, entity.GetState())
 }
 
 func (entity *EntityBehavior) init(opts *EntityOptions) {

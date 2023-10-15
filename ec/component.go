@@ -88,7 +88,7 @@ func (comp *ComponentBehavior) ResolveContext() iface.Cache {
 
 // String implements fmt.Stringer
 func (comp *ComponentBehavior) String() string {
-	return fmt.Sprintf("{Id:%s Name:%s Entity:%s State:%s}", comp.GetId(), comp.GetName(), comp.GetEntity().GetId(), comp.GetState())
+	return fmt.Sprintf(`{"id":%q "name":%q "entity_id":%q "state":%q}`, comp.GetId(), comp.GetName(), comp.GetEntity().GetId(), comp.GetState())
 }
 
 func (comp *ComponentBehavior) init(name string, entity Entity, composite Component, hookAllocator container.Allocator[event.Hook], gcCollector container.GCCollector) {

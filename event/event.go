@@ -21,10 +21,6 @@ const (
 var (
 	// EventRecursionLimit 事件递归次数上限，超过此上限会panic
 	EventRecursionLimit = int32(128)
-	// EventEnableEmitBatch 是否开启事件的发送批次检查。
-	//	- 开启此选项时，在一个事件的处理器函数中再次订阅此事件的订阅者，需要等下次发送该事件时，才能收到事件。
-	//	- 若关闭此选项，则本次事件发送过程中，这个订阅者就可以收到。
-	EventEnableEmitBatch = true
 )
 
 // IEvent 本地事件接口，非线程安全，不能用于跨线程事件通知
@@ -120,7 +116,7 @@ func (event *Event) emit(fun func(delegate iface.Cache) bool) {
 			return true
 		}
 
-		if EventEnableEmitBatch && e.Value.emitBatch == event.emitBatch {
+		if e.Value.emitBatch == event.emitBatch {
 			return true
 		}
 
