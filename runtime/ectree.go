@@ -62,13 +62,6 @@ func (ecTree *_ECTree) Init(ctx Context) {
 	ecTree.hook = event.BindEvent[EventEntityMgrRemovingEntity](ecTree.ctx.GetEntityMgr().EventEntityMgrRemovingEntity(), ecTree)
 }
 
-// Shut 销毁EC树
-func (ecTree *_ECTree) Shut() {
-	ecTree.hook.Unbind()
-	ecTree.eventECTreeAddChild.Close()
-	ecTree.eventECTreeRemoveChild.Close()
-}
-
 func (ecTree *_ECTree) OnEntityMgrRemovingEntity(entityMgr IEntityMgr, entity ec.Entity) {
 	ecTree.RemoveChild(entity.GetId())
 }
