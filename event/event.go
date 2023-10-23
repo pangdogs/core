@@ -7,15 +7,15 @@ import (
 	"kit.golaxy.org/golaxy/util/iface"
 )
 
-// EventRecursion 发生事件递归的处理方式，事件递归是指在一个事件的订阅者中再次发送这个事件
+// EventRecursion 发生事件递归时的处理方式，事件递归是指事件发送过程中，在订阅者接收并处理事件的逻辑中，再次发送这个事件
 type EventRecursion int32
 
 const (
-	EventRecursion_Allow    EventRecursion = iota // 允许事件递归，但是可能会造成无限递归
-	EventRecursion_Disallow                       // 不允许事件递归，发生时会panic
-	EventRecursion_NotEmit                        // 不再发送事件，如果在订阅者中再次发送这个事件，那么不会再发送给任何订阅者
-	EventRecursion_Discard                        // 丢弃递归的事件，如果在订阅者中再次发送这个事件，那么不会再次进入这个订阅者，但是会进入其他订阅者
-	EventRecursion_Deepest                        // 深度优先处理递归事件，如果在订阅者中再次发送这个事件，那么会中断上次事件发送过程，并在本次事件发送过程中，不会再次进入这个订阅者
+	EventRecursion_Allow    EventRecursion = iota // 允许事件递归，但是逻辑有误时，会造成无限递归
+	EventRecursion_Disallow                       // 不允许事件递归，发生无限递归时会panic
+	EventRecursion_NotEmit                        // 不再发送事件，如果在订阅者逻辑中再次发送这个事件，那么不会再发送给任何订阅者
+	EventRecursion_Discard                        // 丢弃递归的事件，如果在订阅者逻辑中再次发送这个事件，那么不会再次发送给这个订阅者，但是会发送给其他订阅者
+	EventRecursion_Deepest                        // 深度优先处理递归事件，如果在订阅者逻辑中再次发送这个事件，那么会中断上一次事件发送过程，并在本次事件发送过程中，不会再次发送给这个订阅者
 )
 
 var (
@@ -39,8 +39,8 @@ type Event struct {
 	reportError    chan error
 	eventRecursion EventRecursion
 	emitted        int32
-	emitBatch      int64
-	depth          int32
+	emitDepth      int32
+	emitBatch      int32
 	opened         bool
 	inited         bool
 }
@@ -65,7 +65,6 @@ func (event *Event) Open() {
 	if !event.inited {
 		panic(fmt.Errorf("%w: event not initialized", ErrEvent))
 	}
-
 	event.opened = true
 }
 
@@ -100,23 +99,16 @@ func (event *Event) emit(fun func(delegate iface.Cache) bool) {
 	}
 
 	event.emitted++
-	defer func() {
-		event.emitted--
-	}()
-
+	defer func() { event.emitted-- }()
+	event.emitDepth = event.emitted
 	event.emitBatch++
-	event.depth = event.emitted
 
 	event.subscribers.Traversal(func(e *container.Element[Hook]) bool {
 		if !event.opened {
 			return false
 		}
 
-		if e.Value.delegateFace.IsNil() {
-			return true
-		}
-
-		if e.Value.emitBatch == event.emitBatch {
+		if e.Value.delegateFace.IsNil() || e.Value.createdBatch == event.emitBatch {
 			return true
 		}
 
@@ -132,7 +124,7 @@ func (event *Event) emit(fun func(delegate iface.Cache) bool) {
 				return true
 			}
 		case EventRecursion_Deepest:
-			if event.depth != event.emitted {
+			if event.emitDepth != event.emitted {
 				return false
 			}
 			if e.Value.received > 0 {
@@ -141,14 +133,11 @@ func (event *Event) emit(fun func(delegate iface.Cache) bool) {
 		}
 
 		e.Value.received++
-		defer func() {
-			e.Value.received--
-		}()
+		defer func() { e.Value.received-- }()
 
 		ret, err := internal.CallOuter(event.autoRecover, event.reportError, func() bool {
 			return fun(e.Value.delegateFace.Cache)
 		})
-
 		if err != nil {
 			return true
 		}
@@ -168,8 +157,8 @@ func (event *Event) newHook(delegateFace iface.FaceAny, priority int32) Hook {
 
 	hook := Hook{
 		delegateFace: delegateFace,
+		createdBatch: event.emitBatch,
 		priority:     priority,
-		emitBatch:    event.emitBatch,
 	}
 
 	var mark *container.Element[Hook]
