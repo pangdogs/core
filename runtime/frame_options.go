@@ -2,7 +2,7 @@ package runtime
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/errors"
 )
 
 type _FrameOption struct{}
@@ -30,7 +30,7 @@ func (_FrameOption) Default() FrameOption {
 func (_FrameOption) TargetFPS(fps float32) FrameOption {
 	return func(o *FrameOptions) {
 		if fps <= 0 {
-			panic(fmt.Errorf("%w: %w: TargetFPS less equal 0 is invalid", ErrFrame, internal.ErrArgs))
+			panic(fmt.Errorf("%w: %w: TargetFPS less equal 0 is invalid", ErrFrame, errors.ErrArgs))
 		}
 		o.TargetFPS = fps
 	}
@@ -40,7 +40,7 @@ func (_FrameOption) TargetFPS(fps float32) FrameOption {
 func (_FrameOption) TotalFrames(v uint64) FrameOption {
 	return func(o *FrameOptions) {
 		if v < 0 {
-			panic(fmt.Errorf("%w: %w: TotalFrames less 0 is invalid", ErrFrame, internal.ErrArgs))
+			panic(fmt.Errorf("%w: %w: TotalFrames less 0 is invalid", ErrFrame, errors.ErrArgs))
 		}
 		o.TotalFrames = v
 	}

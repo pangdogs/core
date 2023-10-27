@@ -5,6 +5,7 @@ import (
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/event"
 	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/errors"
 	"kit.golaxy.org/golaxy/util/container"
 	"kit.golaxy.org/golaxy/util/iface"
 	"kit.golaxy.org/golaxy/util/uid"
@@ -51,7 +52,7 @@ type _ECTree struct {
 // Init 初始化EC树
 func (ecTree *_ECTree) Init(ctx Context) {
 	if ctx == nil {
-		panic(fmt.Errorf("%w: %w: ctx is nil", ErrECTree, internal.ErrArgs))
+		panic(fmt.Errorf("%w: %w: ctx is nil", ErrECTree, errors.ErrArgs))
 	}
 
 	ecTree.ctx = ctx
@@ -74,7 +75,7 @@ func (ecTree *_ECTree) ResolveContext() iface.Cache {
 // AddChild 实体加入父实体，在实体加入运行时上下文后才能调用，切换父实体时，先调用RemoveChild()离开旧父实体，再调用AddChild()加入新父实体
 func (ecTree *_ECTree) AddChild(parentId, childId uid.Id) error {
 	if parentId == childId {
-		return fmt.Errorf("%w: %w: parentId and childId can't be equal", ErrECTree, internal.ErrArgs)
+		return fmt.Errorf("%w: %w: parentId and childId can't be equal", ErrECTree, errors.ErrArgs)
 	}
 
 	parent, ok := ecTree.ctx.GetEntityMgr().GetEntity(parentId)

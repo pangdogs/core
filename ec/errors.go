@@ -2,9 +2,9 @@ package ec
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/errors"
 )
 
 var (
-	ErrEC = fmt.Errorf("%w: ec", internal.ErrGolaxy) // EC错误
+	ErrEC = fmt.Errorf("%w: ec", errors.ErrGolaxy) // EC错误
 )

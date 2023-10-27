@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 	"kit.golaxy.org/golaxy/event"
-	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/errors"
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/util/container"
 	"kit.golaxy.org/golaxy/util/iface"
@@ -128,7 +128,7 @@ func (_ContextOption) RunningHandler(fn RunningHandler) ContextOption {
 func (_ContextOption) FaceAnyAllocator(allocator container.Allocator[iface.FaceAny]) ContextOption {
 	return func(o *ContextOptions) {
 		if allocator == nil {
-			panic(fmt.Errorf("%w: %w: allocator is nil", ErrContext, internal.ErrArgs))
+			panic(fmt.Errorf("%w: %w: allocator is nil", ErrContext, errors.ErrArgs))
 		}
 		o.FaceAnyAllocator = allocator
 	}
@@ -138,7 +138,7 @@ func (_ContextOption) FaceAnyAllocator(allocator container.Allocator[iface.FaceA
 func (_ContextOption) HookAllocator(allocator container.Allocator[event.Hook]) ContextOption {
 	return func(o *ContextOptions) {
 		if allocator == nil {
-			panic(fmt.Errorf("%w: %w: allocator is nil", ErrContext, internal.ErrArgs))
+			panic(fmt.Errorf("%w: %w: allocator is nil", ErrContext, errors.ErrArgs))
 		}
 		o.HookAllocator = allocator
 	}

@@ -3,7 +3,7 @@ package ec
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy/event"
-	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/errors"
 	"kit.golaxy.org/golaxy/util/container"
 	"kit.golaxy.org/golaxy/util/iface"
 	"kit.golaxy.org/golaxy/util/uid"
@@ -71,7 +71,7 @@ func (Option) ComponentAwakeByAccess(b bool) EntityOption {
 func (Option) FaceAnyAllocator(allocator container.Allocator[iface.FaceAny]) EntityOption {
 	return func(o *EntityOptions) {
 		if allocator == nil {
-			panic(fmt.Errorf("%w: %w: allocator is nil", ErrEC, internal.ErrArgs))
+			panic(fmt.Errorf("%w: %w: allocator is nil", ErrEC, errors.ErrArgs))
 		}
 		o.FaceAnyAllocator = allocator
 	}
@@ -81,7 +81,7 @@ func (Option) FaceAnyAllocator(allocator container.Allocator[iface.FaceAny]) Ent
 func (Option) HookAllocator(allocator container.Allocator[event.Hook]) EntityOption {
 	return func(o *EntityOptions) {
 		if allocator == nil {
-			panic(fmt.Errorf("%w: %w: allocator is nil", ErrEC, internal.ErrArgs))
+			panic(fmt.Errorf("%w: %w: allocator is nil", ErrEC, errors.ErrArgs))
 		}
 		o.HookAllocator = allocator
 	}

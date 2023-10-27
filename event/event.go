@@ -3,6 +3,7 @@ package event
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/errors"
 	"kit.golaxy.org/golaxy/util/container"
 	"kit.golaxy.org/golaxy/util/iface"
 )
@@ -152,7 +153,7 @@ func (event *Event) newHook(delegateFace iface.FaceAny, priority int32) Hook {
 	}
 
 	if delegateFace.IsNil() {
-		panic(fmt.Errorf("%w: %w: delegateFace is nil", ErrEvent, internal.ErrArgs))
+		panic(fmt.Errorf("%w: %w: delegateFace is nil", ErrEvent, errors.ErrArgs))
 	}
 
 	hook := Hook{

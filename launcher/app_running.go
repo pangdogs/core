@@ -7,7 +7,7 @@ import (
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/service"
-	"kit.golaxy.org/golaxy/util"
+	"kit.golaxy.org/golaxy/util/config"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -54,7 +54,7 @@ func (app *_App) runApp(services []string, ptPath string) {
 func (app *_App) loadPtConfig(ptConfFile string) ServiceConfTab {
 	switch strings.ToLower(filepath.Ext(ptConfFile)) {
 	case ".json":
-		loader := util.JsonLoader[ServiceConfTab]{}
+		loader := config.JsonLoader[ServiceConfTab]{}
 
 		if err := loader.SetFile(ptConfFile); err != nil {
 			panic(fmt.Errorf("load service pt config %q failed, %v", ptConfFile, err))
@@ -63,7 +63,7 @@ func (app *_App) loadPtConfig(ptConfFile string) ServiceConfTab {
 		return loader.Get()
 
 	case ".xml":
-		loader := util.XmlLoader[ServiceConfTab]{}
+		loader := config.XmlLoader[ServiceConfTab]{}
 
 		if err := loader.SetFile(ptConfFile); err != nil {
 			panic(fmt.Errorf("load service pt config %q failed, %v", ptConfFile, err))

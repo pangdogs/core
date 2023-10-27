@@ -3,7 +3,7 @@ package service
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/errors"
 	"kit.golaxy.org/golaxy/util/iface"
 	"kit.golaxy.org/golaxy/util/uid"
 	"sync"
@@ -32,7 +32,7 @@ type _EntityMgr struct {
 
 func (entityMgr *_EntityMgr) init(ctx Context) {
 	if ctx == nil {
-		panic(fmt.Errorf("%w: %w: ctx is nil", ErrEntityMgr, internal.ErrArgs))
+		panic(fmt.Errorf("%w: %w: ctx is nil", ErrEntityMgr, errors.ErrArgs))
 	}
 
 	entityMgr.ctx = ctx
@@ -56,7 +56,7 @@ func (entityMgr *_EntityMgr) GetEntity(id uid.Id) (ec.Entity, bool) {
 // GetOrAddEntity 查询或添加实体
 func (entityMgr *_EntityMgr) GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, error) {
 	if entity == nil {
-		return nil, false, fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, internal.ErrArgs)
+		return nil, false, fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, errors.ErrArgs)
 	}
 
 	if entity.GetId().IsNil() {
@@ -74,7 +74,7 @@ func (entityMgr *_EntityMgr) GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, 
 // AddEntity 添加实体
 func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity) error {
 	if entity == nil {
-		return fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, internal.ErrArgs)
+		return fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, errors.ErrArgs)
 	}
 
 	if entity.GetId().IsNil() {

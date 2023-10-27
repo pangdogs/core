@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/errors"
 	"kit.golaxy.org/golaxy/util/types"
 )
 
@@ -44,12 +45,12 @@ func (ctx *ContextBehavior) SyncCall(segment func() Ret) (ret Ret) {
 	func() {
 		defer func() {
 			if panicErr := types.Panic2Err(recover()); panicErr != nil {
-				ret = NewRet(nil, fmt.Errorf("%w: %w", internal.ErrPanicked, panicErr))
+				ret = NewRet(nil, fmt.Errorf("%w: %w", errors.ErrPanicked, panicErr))
 			}
 		}()
 
 		if segment == nil {
-			panic(fmt.Errorf("%w: %w: segment is nil", ErrContext, internal.ErrArgs))
+			panic(fmt.Errorf("%w: %w: segment is nil", ErrContext, errors.ErrArgs))
 		}
 
 		ctx.callee.PushCall(func() {
@@ -72,13 +73,13 @@ func (ctx *ContextBehavior) AsyncCall(segment func() Ret) AsyncRet {
 	go func() {
 		defer func() {
 			if panicErr := types.Panic2Err(recover()); panicErr != nil {
-				asyncRet <- NewRet(nil, fmt.Errorf("%w: %w", internal.ErrPanicked, panicErr))
+				asyncRet <- NewRet(nil, fmt.Errorf("%w: %w", errors.ErrPanicked, panicErr))
 				close(asyncRet)
 			}
 		}()
 
 		if segment == nil {
-			panic(fmt.Errorf("%w: %w: segment is nil", ErrContext, internal.ErrArgs))
+			panic(fmt.Errorf("%w: %w: segment is nil", ErrContext, errors.ErrArgs))
 		}
 
 		ctx.callee.PushCall(func() {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/errors"
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/util/iface"
@@ -88,7 +89,7 @@ func (ctx *ContextBehavior) String() string {
 
 func (ctx *ContextBehavior) init(opts *ContextOptions) {
 	if opts == nil {
-		panic(fmt.Errorf("%w: %w: opts is nil", ErrContext, internal.ErrArgs))
+		panic(fmt.Errorf("%w: %w: opts is nil", ErrContext, errors.ErrArgs))
 	}
 
 	ctx.opts = *opts

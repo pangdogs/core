@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"kit.golaxy.org/golaxy/event"
 	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/errors"
 	"kit.golaxy.org/golaxy/util/container"
 	"kit.golaxy.org/golaxy/util/iface"
 	"kit.golaxy.org/golaxy/util/uid"
@@ -124,7 +125,7 @@ func (entity *EntityBehavior) String() string {
 
 func (entity *EntityBehavior) init(opts *EntityOptions) {
 	if opts == nil {
-		panic(fmt.Errorf("%w: %w: opts is nil", ErrEC, internal.ErrArgs))
+		panic(fmt.Errorf("%w: %w: opts is nil", ErrEC, errors.ErrArgs))
 	}
 
 	entity.opts = *opts
