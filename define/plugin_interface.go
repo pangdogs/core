@@ -15,63 +15,55 @@ func (p _PluginInterface[PLUGIN_IFACE]) name() string {
 	return p._name
 }
 
-func (p _PluginInterface[PLUGIN_IFACE]) fetch() func(pluginResolver plugin.PluginResolver) PLUGIN_IFACE {
+func (p _PluginInterface[PLUGIN_IFACE]) using() func(pluginResolver plugin.PluginResolver) PLUGIN_IFACE {
 	return func(pluginResolver plugin.PluginResolver) PLUGIN_IFACE {
-		return plugin.Fetch[PLUGIN_IFACE](pluginResolver, p.name())
-	}
-}
-
-func (p _PluginInterface[PLUGIN_IFACE]) access() func(pluginResolver plugin.PluginResolver) (PLUGIN_IFACE, error) {
-	return func(pluginResolver plugin.PluginResolver) (PLUGIN_IFACE, error) {
-		return plugin.Access[PLUGIN_IFACE](pluginResolver, p.name())
+		plugin, err := plugin.Using[PLUGIN_IFACE](pluginResolver, p.name())
+		if err != nil {
+			panic(err)
+		}
+		return plugin
 	}
 }
 
 // ServicePluginInterface 服务插件接口
 type ServicePluginInterface[PLUGIN_IFACE any] struct {
-	Name   string                                      // 插件名称
-	Fetch  func(service.Context) PLUGIN_IFACE          // 从服务上下文获取插件
-	Access func(service.Context) (PLUGIN_IFACE, error) // 从服务上下文访问插件
+	Name  string                             // 插件名称
+	Using func(service.Context) PLUGIN_IFACE // 使用插件
 }
 
 // ServicePluginInterface 生成服务插件接口定义
 func (p _PluginInterface[PLUGIN_IFACE]) ServicePluginInterface() ServicePluginInterface[PLUGIN_IFACE] {
 	return ServicePluginInterface[PLUGIN_IFACE]{
-		Name:   p.name(),
-		Fetch:  func(ctx service.Context) PLUGIN_IFACE { return p.fetch()(ctx) },
-		Access: func(ctx service.Context) (PLUGIN_IFACE, error) { return p.access()(ctx) },
+		Name:  p.name(),
+		Using: func(ctx service.Context) PLUGIN_IFACE { return p.using()(ctx) },
 	}
 }
 
 // RuntimePluginInterface 运行时插件接口
 type RuntimePluginInterface[PLUGIN_IFACE any] struct {
-	Name   string                                      // 插件名称
-	Fetch  func(runtime.Context) PLUGIN_IFACE          // 从运行时上下文获取插件
-	Access func(runtime.Context) (PLUGIN_IFACE, error) // 从运行时上下文访问插件
+	Name  string                             // 插件名称
+	Using func(runtime.Context) PLUGIN_IFACE // 使用插件
 }
 
 // RuntimePluginInterface 生成运行时插件接口定义
 func (p _PluginInterface[PLUGIN_IFACE]) RuntimePluginInterface() RuntimePluginInterface[PLUGIN_IFACE] {
 	return RuntimePluginInterface[PLUGIN_IFACE]{
-		Name:   p.name(),
-		Fetch:  func(ctx runtime.Context) PLUGIN_IFACE { return p.fetch()(ctx) },
-		Access: func(ctx runtime.Context) (PLUGIN_IFACE, error) { return p.access()(ctx) },
+		Name:  p.name(),
+		Using: func(ctx runtime.Context) PLUGIN_IFACE { return p.using()(ctx) },
 	}
 }
 
 // PluginInterface 通用插件接口
 type PluginInterface[PLUGIN_IFACE any] struct {
-	Name   string                                            // 插件名称
-	Fetch  func(plugin.PluginResolver) PLUGIN_IFACE          // 获取插件
-	Access func(plugin.PluginResolver) (PLUGIN_IFACE, error) // 访问插件
+	Name  string                                   // 插件名称
+	Using func(plugin.PluginResolver) PLUGIN_IFACE // 使用插件
 }
 
 // PluginInterface 生成通用插件接口定义
 func (p _PluginInterface[PLUGIN_IFACE]) PluginInterface() PluginInterface[PLUGIN_IFACE] {
 	return PluginInterface[PLUGIN_IFACE]{
-		Name:   p.name(),
-		Fetch:  p.fetch(),
-		Access: p.access(),
+		Name:  p.name(),
+		Using: p.using(),
 	}
 }
 

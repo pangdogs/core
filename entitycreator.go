@@ -61,7 +61,7 @@ func (creator *EntityCreator) Spawn(options ...EntityCreatorOption) (ec.Entity, 
 		opts = &copyOpts
 	}
 
-	entityPt, err := pt.Access(serviceCtx, opts.Prototype)
+	entityPt, err := pt.Using(serviceCtx, opts.Prototype)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrEntityCreator, err)
 	}

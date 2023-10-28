@@ -12,23 +12,11 @@ type PluginResolver interface {
 	ResolvePlugin(name string) (PluginInfo, bool)
 }
 
-// Fetch 获取插件。
+// Using 使用插件
 //
 //	@param pluginResolver 插件解析器。
 //	@param name 插件名称。
-func Fetch[T any](pluginResolver PluginResolver, name string) T {
-	plugin, err := Access[T](pluginResolver, name)
-	if err != nil {
-		panic(err)
-	}
-	return plugin
-}
-
-// Access 访问插件
-//
-//	@param pluginResolver 插件解析器。
-//	@param name 插件名称。
-func Access[T any](pluginResolver PluginResolver, name string) (T, error) {
+func Using[T any](pluginResolver PluginResolver, name string) (T, error) {
 	if pluginResolver == nil {
 		return types.Zero[T](), fmt.Errorf("%w: pluginResolver is nil", ErrPlugin)
 	}
