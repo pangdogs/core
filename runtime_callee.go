@@ -2,14 +2,14 @@ package golaxy
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal/errors"
+	"kit.golaxy.org/golaxy/internal"
 	"time"
 )
 
 // PushCall 将代码片段压入接受者的任务处理流水线，串行化的进行调用。
 func (_runtime *RuntimeBehavior) PushCall(segment func()) {
 	if segment == nil {
-		panic(fmt.Errorf("%w: %w: segment is nil", ErrRuntime, errors.ErrArgs))
+		panic(fmt.Errorf("%w: %w: segment is nil", ErrRuntime, internal.ErrArgs))
 	}
 
 	if _runtime.opts.ProcessQueueTimeout > 0 {

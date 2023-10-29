@@ -3,7 +3,7 @@ package ec
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy/event"
-	"kit.golaxy.org/golaxy/internal/errors"
+	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/util/container"
 	"kit.golaxy.org/golaxy/util/iface"
 	"kit.golaxy.org/golaxy/util/uid"
@@ -239,7 +239,7 @@ func (entity *EntityBehavior) EventCompMgrFirstAccessComponent() event.IEvent {
 
 func (entity *EntityBehavior) addSingleComponent(name string, component Component) error {
 	if component == nil {
-		return fmt.Errorf("%w: %w: component is nil", ErrEC, errors.ErrArgs)
+		return fmt.Errorf("%w: %w: component is nil", ErrEC, internal.ErrArgs)
 	}
 
 	if component.GetState() != ComponentState_Birth {

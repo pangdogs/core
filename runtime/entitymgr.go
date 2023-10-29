@@ -5,7 +5,6 @@ import (
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/event"
 	"kit.golaxy.org/golaxy/internal"
-	"kit.golaxy.org/golaxy/internal/errors"
 	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/golaxy/util/container"
 	"kit.golaxy.org/golaxy/util/iface"
@@ -61,7 +60,7 @@ type _EntityMgr struct {
 
 func (entityMgr *_EntityMgr) Init(ctx Context) {
 	if ctx == nil {
-		panic(fmt.Errorf("%w: %w: ctx is nil", ErrEntityMgr, errors.ErrArgs))
+		panic(fmt.Errorf("%w: %w: ctx is nil", ErrEntityMgr, internal.ErrArgs))
 	}
 
 	entityMgr.ctx = ctx
@@ -125,13 +124,13 @@ func (entityMgr *_EntityMgr) CountEntities() int {
 // AddEntity 添加实体
 func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 	if entity == nil {
-		panic(fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, errors.ErrArgs))
+		panic(fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, internal.ErrArgs))
 	}
 
 	switch scope {
 	case ec.Scope_Local, ec.Scope_Global:
 	default:
-		return fmt.Errorf("%w: %w: invalid scope", ErrEntityMgr, errors.ErrArgs)
+		return fmt.Errorf("%w: %w: invalid scope", ErrEntityMgr, internal.ErrArgs)
 	}
 
 	if entity.GetState() != ec.EntityState_Birth {

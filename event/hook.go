@@ -2,7 +2,7 @@ package event
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal/errors"
+	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/util/container"
 	"kit.golaxy.org/golaxy/util/iface"
 )
@@ -24,7 +24,7 @@ func (hook *Hook) Bind(event IEvent) {
 // BindWithPriority 重新绑定事件与订阅者，可以设置优先级调整回调先后顺序，按优先级升序排列
 func (hook *Hook) BindWithPriority(event IEvent, priority int32) {
 	if event == nil {
-		panic(fmt.Errorf("%w: %w: event is nil", ErrEvent, errors.ErrArgs))
+		panic(fmt.Errorf("%w: %w: event is nil", ErrEvent, internal.ErrArgs))
 	}
 
 	if hook.IsBound() {

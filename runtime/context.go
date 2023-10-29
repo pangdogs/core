@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"kit.golaxy.org/golaxy/event"
 	"kit.golaxy.org/golaxy/internal"
-	"kit.golaxy.org/golaxy/internal/errors"
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/golaxy/util/container"
@@ -142,11 +141,11 @@ func (ctx *ContextBehavior) String() string {
 
 func (ctx *ContextBehavior) init(serviceCtx service.Context, opts *ContextOptions) {
 	if serviceCtx == nil {
-		panic(fmt.Errorf("%w: %w: serviceCtx is nil", ErrContext, errors.ErrArgs))
+		panic(fmt.Errorf("%w: %w: serviceCtx is nil", ErrContext, internal.ErrArgs))
 	}
 
 	if opts == nil {
-		panic(fmt.Errorf("%w: %w: opts is nil", ErrContext, errors.ErrArgs))
+		panic(fmt.Errorf("%w: %w: opts is nil", ErrContext, internal.ErrArgs))
 	}
 
 	ctx.opts = *opts

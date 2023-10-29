@@ -3,14 +3,14 @@ package golaxy
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/internal/errors"
+	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/service"
 )
 
 var (
-	ErrEntityCreator = fmt.Errorf("%w: entity-creator", errors.ErrGolaxy)
+	ErrEntityCreator = fmt.Errorf("%w: entity-creator", internal.ErrGolaxy)
 )
 
 // EntityCreator 实体构建器

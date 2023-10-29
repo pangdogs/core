@@ -3,7 +3,7 @@ package pt
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/internal/errors"
+	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/util/types"
 	"reflect"
 	"sync"
@@ -68,7 +68,7 @@ func (lib *_ComponentLib) init() {
 //	@param descr 组件功能的描述说明。
 func (lib *_ComponentLib) RegisterComponent(name string, comp any, descr string) {
 	if comp == nil {
-		panic(fmt.Errorf("%w: %w: comp is nil", ErrPt, errors.ErrArgs))
+		panic(fmt.Errorf("%w: %w: comp is nil", ErrPt, internal.ErrArgs))
 	}
 
 	if tfComp, ok := comp.(reflect.Type); ok {

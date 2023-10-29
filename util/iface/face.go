@@ -1,10 +1,5 @@
 package iface
 
-import (
-	"fmt"
-	"kit.golaxy.org/golaxy/internal/errors"
-)
-
 // NewFace 创建Face
 func NewFace[T any](iface T) Face[T] {
 	return Face[T]{
@@ -16,7 +11,7 @@ func NewFace[T any](iface T) Face[T] {
 // NewFacePair 创建Face，同时传入接口与Cache
 func NewFacePair[T, C any](iface T, cache C) Face[T] {
 	if Iface2Cache(iface)[1] != Iface2Cache(cache)[1] {
-		panic(fmt.Errorf("%w: different pointer address", errors.ErrGolaxy))
+		panic("different pointer address")
 	}
 
 	return Face[T]{

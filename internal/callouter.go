@@ -2,7 +2,6 @@ package internal
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal/errors"
 	"kit.golaxy.org/golaxy/util/types"
 	"runtime"
 )
@@ -60,5 +59,5 @@ func CallOuterVoid(autoRecover bool, reportError chan error, fun func()) (panicE
 func printStackTrace(err error) error {
 	stackBuf := make([]byte, 4096)
 	n := runtime.Stack(stackBuf, false)
-	return fmt.Errorf("%w: %w\nstack: %s\n", errors.ErrPanicked, err, stackBuf[:n])
+	return fmt.Errorf("%w: %w\nstack: %s\n", ErrPanicked, err, stackBuf[:n])
 }

@@ -2,7 +2,7 @@ package golaxy
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal/errors"
+	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/util/iface"
 	"time"
@@ -61,7 +61,7 @@ func (_RuntimeOption) AutoRun(b bool) RuntimeOption {
 func (_RuntimeOption) ProcessQueueCapacity(cap int) RuntimeOption {
 	return func(o *RuntimeOptions) {
 		if cap <= 0 {
-			panic(fmt.Errorf("%w: %w: ProcessQueueCapacity less equal 0 is invalid", ErrRuntime, errors.ErrArgs))
+			panic(fmt.Errorf("%w: %w: ProcessQueueCapacity less equal 0 is invalid", ErrRuntime, internal.ErrArgs))
 		}
 		o.ProcessQueueCapacity = cap
 	}
@@ -92,7 +92,7 @@ func (_RuntimeOption) Frame(frame runtime.Frame) RuntimeOption {
 func (_RuntimeOption) GCInterval(dur time.Duration) RuntimeOption {
 	return func(o *RuntimeOptions) {
 		if dur <= 0 {
-			panic(fmt.Errorf("%w: %w: GCInterval less equal 0 is invalid", ErrRuntime, errors.ErrArgs))
+			panic(fmt.Errorf("%w: %w: GCInterval less equal 0 is invalid", ErrRuntime, internal.ErrArgs))
 		}
 		o.GCInterval = dur
 	}

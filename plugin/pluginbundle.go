@@ -3,7 +3,7 @@ package plugin
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal/errors"
+	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/util/iface"
 	"sync"
 )
@@ -55,7 +55,7 @@ type PluginBundle interface {
 //	@param plugin 插件。
 func Install[T any](pluginBundle PluginBundle, name string, plugin T) {
 	if pluginBundle == nil {
-		panic(fmt.Errorf("%w: %w: pluginBundle is nil", ErrPlugin, errors.ErrArgs))
+		panic(fmt.Errorf("%w: %w: pluginBundle is nil", ErrPlugin, internal.ErrArgs))
 	}
 	pluginBundle.Install(name, iface.NewFacePair[any](plugin, plugin))
 }
@@ -65,7 +65,7 @@ func Install[T any](pluginBundle PluginBundle, name string, plugin T) {
 //	@param pluginBundle 插件包。
 func Uninstall(pluginBundle PluginBundle, name string) {
 	if pluginBundle == nil {
-		panic(fmt.Errorf("%w: %w: pluginBundle is nil", ErrPlugin, errors.ErrArgs))
+		panic(fmt.Errorf("%w: %w: pluginBundle is nil", ErrPlugin, internal.ErrArgs))
 	}
 	pluginBundle.Uninstall(name)
 }
@@ -93,7 +93,7 @@ func (bundle *_PluginBundle) init() {
 //	@param plugin 插件Face。
 func (bundle *_PluginBundle) Install(name string, pluginFace iface.FaceAny) {
 	if pluginFace.IsNil() {
-		panic(fmt.Errorf("%w: %w: pluginFace is nil", ErrPlugin, errors.ErrArgs))
+		panic(fmt.Errorf("%w: %w: pluginFace is nil", ErrPlugin, internal.ErrArgs))
 	}
 
 	bundle.Lock()

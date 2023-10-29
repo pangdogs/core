@@ -2,7 +2,7 @@ package runtime
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal/errors"
+	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/golaxy/util/iface"
 )
@@ -10,7 +10,7 @@ import (
 // Current 获取当前运行时上下文
 func Current(ctxResolver ContextResolver) Context {
 	if ctxResolver == nil {
-		panic(fmt.Errorf("%w: %w: ctxResolver is nil", ErrContext, errors.ErrArgs))
+		panic(fmt.Errorf("%w: %w: ctxResolver is nil", ErrContext, internal.ErrArgs))
 	}
 	return iface.Cache2Iface[Context](ctxResolver.ResolveContext())
 }
