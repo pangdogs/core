@@ -19,3 +19,8 @@ type Id string
 func (id Id) IsNil() bool {
 	return id == Nil
 }
+
+// String implements fmt.Stringer
+func (id Id) String() string {
+	return string(id)
+}
