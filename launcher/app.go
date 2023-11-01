@@ -2,19 +2,13 @@ package launcher
 
 import (
 	"github.com/alecthomas/kingpin/v2"
+	"kit.golaxy.org/golaxy/util/option"
 )
 
 // NewApp 创建应用
-func NewApp(options ...AppOption) App {
-	opts := AppOptions{}
-	Option{}.Default()(&opts)
-
-	for i := range options {
-		options[i](&opts)
-	}
-
+func NewApp(settings ...option.Setting[AppOptions]) App {
 	app := &_App{
-		options: opts,
+		options: option.Make(Option{}.Default(), settings...),
 	}
 	return app
 }

@@ -6,8 +6,8 @@ import (
 	"runtime"
 )
 
-// CallOuter 调用外部代码，有返回值
-func CallOuter[T any](autoRecover bool, reportError chan error, fun func() T) (ret T, panicErr error) {
+// Call 调用外部代码，有返回值
+func Call[T any](autoRecover bool, reportError chan error, fun func() T) (ret T, panicErr error) {
 	if fun == nil {
 		return types.Zero[T](), nil
 	}
@@ -15,10 +15,11 @@ func CallOuter[T any](autoRecover bool, reportError chan error, fun func() T) (r
 	if autoRecover {
 		defer func() {
 			if panicErr = types.Panic2Err(recover()); panicErr != nil {
+				panicErr = fmt.Errorf("%w: %w", ErrPanicked, panicErr)
+
 				if reportError != nil {
-					exception := printStackTrace(panicErr)
 					select {
-					case reportError <- exception:
+					case reportError <- PrintStackTrace(panicErr):
 					default:
 					}
 				}
@@ -26,13 +27,11 @@ func CallOuter[T any](autoRecover bool, reportError chan error, fun func() T) (r
 		}()
 	}
 
-	ret = fun()
-
-	return
+	return fun(), nil
 }
 
-// CallOuterVoid 调用外部代码，没有返回值
-func CallOuterVoid(autoRecover bool, reportError chan error, fun func()) (panicErr error) {
+// CallVoid 调用外部代码，没有返回值
+func CallVoid(autoRecover bool, reportError chan error, fun func()) (panicErr error) {
 	if fun == nil {
 		return nil
 	}
@@ -40,10 +39,11 @@ func CallOuterVoid(autoRecover bool, reportError chan error, fun func()) (panicE
 	if autoRecover {
 		defer func() {
 			if panicErr = types.Panic2Err(recover()); panicErr != nil {
+				panicErr = fmt.Errorf("%w: %w", ErrPanicked, panicErr)
+
 				if reportError != nil {
-					exception := printStackTrace(panicErr)
 					select {
-					case reportError <- exception:
+					case reportError <- PrintStackTrace(panicErr):
 					default:
 					}
 				}
@@ -56,8 +56,8 @@ func CallOuterVoid(autoRecover bool, reportError chan error, fun func()) (panicE
 	return
 }
 
-func printStackTrace(err error) error {
+func PrintStackTrace(err error) error {
 	stackBuf := make([]byte, 4096)
 	n := runtime.Stack(stackBuf, false)
-	return fmt.Errorf("%w: %w\nstack: %s\n", ErrPanicked, err, stackBuf[:n])
+	return fmt.Errorf("%w\nstack: %s\n", err, stackBuf[:n])
 }

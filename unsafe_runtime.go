@@ -14,7 +14,7 @@ type _UnsafeRuntime struct {
 }
 
 // Init 初始化
-func (ur _UnsafeRuntime) Init(ctx runtime.Context, opts *RuntimeOptions) {
+func (ur _UnsafeRuntime) Init(ctx runtime.Context, opts RuntimeOptions) {
 	ur.init(ctx, opts)
 }
 

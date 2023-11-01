@@ -8,6 +8,7 @@ import (
 	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/golaxy/util/config"
+	"kit.golaxy.org/golaxy/util/option"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -85,27 +86,21 @@ func (app *_App) runService(ctx context.Context, serviceName string, serviceConf
 
 	pluginBundle := plugin.NewPluginBundle()
 
-	serviceCtxOpts := []service.ContextOption{
+	serviceCtxOpts := []option.Setting[service.ContextOptions]{
 		service.Option{}.Context(ctx),
 		service.Option{}.Name(serviceName),
 		service.Option{}.EntityLib(entityLib),
 		service.Option{}.PluginBundle(pluginBundle),
 	}
 
-	if app.options.ServiceCtxHandlers != nil {
-		handler := app.options.ServiceCtxHandlers[serviceName]
-		if handler != nil {
-			serviceCtxOpts = append(serviceCtxOpts, handler(serviceName, entityLib, pluginBundle)...)
-		}
+	for _, handler := range app.options.ServiceCtxCtors {
+		serviceCtxOpts = append(serviceCtxOpts, handler.Exec(serviceName, entityLib, pluginBundle)...)
 	}
 
-	var serviceOpts []golaxy.ServiceOption
+	var serviceOpts []option.Setting[golaxy.ServiceOptions]
 
-	if app.options.ServiceHandlers != nil {
-		handler := app.options.ServiceHandlers[serviceName]
-		if handler != nil {
-			serviceOpts = append(serviceOpts, handler(serviceName)...)
-		}
+	for _, handler := range app.options.ServiceCtors {
+		serviceOpts = append(serviceOpts, handler.Exec(serviceName)...)
 	}
 
 	<-golaxy.NewService(service.NewContext(serviceCtxOpts...), serviceOpts...).Run()

@@ -14,7 +14,7 @@ type _UnsafeService struct {
 }
 
 // Init 初始化
-func (us _UnsafeService) Init(ctx service.Context, opts *ServiceOptions) {
+func (us _UnsafeService) Init(ctx service.Context, opts ServiceOptions) {
 	us.init(ctx, opts)
 }
 

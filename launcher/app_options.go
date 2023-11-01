@@ -6,6 +6,8 @@ import (
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/service"
+	"kit.golaxy.org/golaxy/util/generic"
+	"kit.golaxy.org/golaxy/util/option"
 	"os"
 	"syscall"
 )
@@ -14,8 +16,8 @@ import (
 type Option struct{}
 
 type (
-	ServiceCtxHandler = func(serviceName string, entityLib pt.EntityLib, pluginBundle plugin.PluginBundle) []service.ContextOption // 服务上下文初始化处理器
-	ServiceHandler    = func(serviceName string) []golaxy.ServiceOption                                                            // 服务初始化处理器
+	ServiceCtxCtor = generic.Func3[string, pt.EntityLib, plugin.PluginBundle, []option.Setting[service.ContextOptions]] // 服务上下文构造函数
+	ServiceCtor    = generic.Func1[string, []option.Setting[golaxy.ServiceOptions]]                                     // 服务构造函数
 )
 
 // Cmd 应用指令
@@ -26,49 +28,46 @@ type Cmd struct {
 
 // AppOptions 创建应用的所有选项
 type AppOptions struct {
-	Commands           []Cmd                        // 应用指令
-	QuitSignals        []os.Signal                  // 退出信号
-	ServiceCtxHandlers map[string]ServiceCtxHandler // 服务上下文初始化处理器
-	ServiceHandlers    map[string]ServiceHandler    // 服务初始化处理器
+	Commands        []Cmd            // 应用指令
+	QuitSignals     []os.Signal      // 退出信号
+	ServiceCtxCtors []ServiceCtxCtor // 服务上下文构造函数
+	ServiceCtors    []ServiceCtor    // 服务构造函数
 }
 
-// AppOption 创建应用的选项设置器
-type AppOption func(o *AppOptions)
-
 // Default 默认值
-func (Option) Default() AppOption {
+func (Option) Default() option.Setting[AppOptions] {
 	return func(o *AppOptions) {
 		Option{}.Commands(nil)(o)
 		Option{}.QuitSignals(syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGKILL)(o)
-		Option{}.ServiceCtxHandlers(nil)(o)
-		Option{}.ServiceHandlers(nil)(o)
+		Option{}.ServiceCtxCtors(nil)(o)
+		Option{}.ServiceCtors(nil)(o)
 	}
 }
 
 // Commands 应用指令
-func (Option) Commands(cmds []Cmd) AppOption {
+func (Option) Commands(cmds []Cmd) option.Setting[AppOptions] {
 	return func(o *AppOptions) {
 		o.Commands = cmds
 	}
 }
 
 // QuitSignals 退出信号
-func (Option) QuitSignals(signals ...os.Signal) AppOption {
+func (Option) QuitSignals(signals ...os.Signal) option.Setting[AppOptions] {
 	return func(o *AppOptions) {
 		o.QuitSignals = signals
 	}
 }
 
-// ServiceCtxHandlers 服务上下文初始化处理器
-func (Option) ServiceCtxHandlers(handlers map[string]ServiceCtxHandler) AppOption {
+// ServiceCtxCtors 服务上下文构造函数
+func (Option) ServiceCtxCtors(ctors []ServiceCtxCtor) option.Setting[AppOptions] {
 	return func(o *AppOptions) {
-		o.ServiceCtxHandlers = handlers
+		o.ServiceCtxCtors = ctors
 	}
 }
 
-// ServiceHandlers 服务初始化处理器
-func (Option) ServiceHandlers(handlers map[string]ServiceHandler) AppOption {
+// ServiceCtors 服务构造函数
+func (Option) ServiceCtors(ctors []ServiceCtor) option.Setting[AppOptions] {
 	return func(o *AppOptions) {
-		o.ServiceHandlers = handlers
+		o.ServiceCtors = ctors
 	}
 }

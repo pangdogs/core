@@ -5,6 +5,7 @@ import (
 	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/service"
+	"kit.golaxy.org/golaxy/util/generic"
 	"time"
 )
 
@@ -65,20 +66,14 @@ loop:
 }
 
 func (_service *ServiceBehavior) changeRunningState(state service.RunningState) {
-	if handler := service.UnsafeContext(_service.ctx).GetOptions().RunningHandler; handler != nil {
-		internal.CallOuterVoid(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
-			handler(_service.ctx, state)
-		})
-	}
+	service.UnsafeContext(_service.ctx).GetOptions().RunningHandler.Call(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), _service.ctx, state)
 }
 
 func (_service *ServiceBehavior) initPlugin() {
 	if pluginBundle := service.UnsafeContext(_service.ctx).GetOptions().PluginBundle; pluginBundle != nil {
 		pluginBundle.Range(func(info plugin.PluginInfo) bool {
 			if pluginInit, ok := info.Face.Iface.(LifecycleServicePluginInit); ok {
-				internal.CallOuterVoid(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
-					pluginInit.InitSP(_service.ctx)
-				})
+				generic.ToAction1(pluginInit.InitSP).Call(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), _service.ctx)
 			}
 			plugin.UnsafePluginBundle(pluginBundle).Activate(info.Name, true)
 			return true
@@ -91,9 +86,7 @@ func (_service *ServiceBehavior) shutPlugin() {
 		pluginBundle.ReverseRange(func(info plugin.PluginInfo) bool {
 			plugin.UnsafePluginBundle(pluginBundle).Activate(info.Name, false)
 			if pluginShut, ok := info.Face.Iface.(LifecycleServicePluginShut); ok {
-				internal.CallOuterVoid(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), func() {
-					pluginShut.ShutSP(_service.ctx)
-				})
+				generic.ToAction1(pluginShut.ShutSP).Call(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), _service.ctx)
 			}
 			return true
 		})

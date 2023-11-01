@@ -121,6 +121,15 @@ func (bundle *_PluginBundle) Uninstall(name string) {
 	bundle.Lock()
 	defer bundle.Unlock()
 
+	pluginInfo, ok := bundle.pluginMap[name]
+	if !ok {
+		return
+	}
+
+	if pluginInfo.Active {
+		panic(fmt.Errorf("%w: %q is active, can't uninstall", ErrPlugin, name))
+	}
+
 	delete(bundle.pluginMap, name)
 
 	for i, pluginInfo := range bundle.pluginList {

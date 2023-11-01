@@ -41,9 +41,9 @@ type IEntityMgr interface {
 }
 
 type _EntityInfo struct {
-	Element    *container.Element[iface.FaceAny]
-	Hooks      [3]event.Hook
-	GlobalMark bool
+	Element *container.Element[iface.FaceAny]
+	Hooks   [3]event.Hook
+	Global  bool
 }
 
 type _EntityMgr struct {
@@ -170,14 +170,14 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 		}
 	}
 
-	entityInfo := _EntityInfo{}
-	entityInfo.Element = entityMgr.entityList.PushBack(iface.NewFacePair[any](entity, entity))
-	entityInfo.Hooks[0] = ec.BindEventCompMgrAddComponents(entity, entityMgr)
-	entityInfo.Hooks[1] = ec.BindEventCompMgrRemoveComponent(entity, entityMgr)
+	entityInfo := _EntityInfo{
+		Element: entityMgr.entityList.PushBack(iface.NewFacePair[any](entity, entity)),
+		Hooks:   [3]event.Hook{ec.BindEventCompMgrAddComponents(entity, entityMgr), ec.BindEventCompMgrRemoveComponent(entity, entityMgr)},
+		Global:  scope == ec.Scope_Global,
+	}
 	if _entity.GetOptions().ComponentAwakeByAccess {
 		entityInfo.Hooks[2] = ec.BindEventCompMgrFirstAccessComponent(entity, entityMgr)
 	}
-	entityInfo.GlobalMark = scope == ec.Scope_Global
 
 	entityMgr.entityMap[entity.GetId()] = entityInfo
 
@@ -206,7 +206,7 @@ func (entityMgr *_EntityMgr) RemoveEntity(id uid.Id) {
 
 	entity.SetState(ec.EntityState_Leave)
 
-	if entityInfo.GlobalMark {
+	if entityInfo.Global {
 		service.Current(entityMgr).GetEntityMgr().RemoveEntity(entity.GetId())
 	}
 

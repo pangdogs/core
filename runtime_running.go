@@ -7,6 +7,7 @@ import (
 	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/runtime"
+	"kit.golaxy.org/golaxy/util/generic"
 	"time"
 )
 
@@ -92,9 +93,7 @@ func (_runtime *RuntimeBehavior) loopStart() (hooks [5]event.Hook) {
 	hooks[4] = runtime.BindEventEntityMgrEntityFirstAccessComponent(ctx.GetEntityMgr(), _runtime)
 
 	ctx.GetEntityMgr().RangeEntities(func(entity ec.Entity) bool {
-		internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), func() {
-			_runtime.OnEntityMgrAddEntity(ctx.GetEntityMgr(), entity)
-		})
+		generic.ToAction2(_runtime.OnEntityMgrAddEntity).Call(ctx.GetAutoRecover(), ctx.GetReportError(), ctx.GetEntityMgr(), entity)
 		return true
 	})
 
@@ -106,9 +105,7 @@ func (_runtime *RuntimeBehavior) loopStop(hooks [5]event.Hook) {
 	frame := _runtime.opts.Frame
 
 	ctx.GetEntityMgr().ReverseRangeEntities(func(entity ec.Entity) bool {
-		internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), func() {
-			_runtime.OnEntityMgrRemoveEntity(ctx.GetEntityMgr(), entity)
-		})
+		generic.ToAction2(_runtime.OnEntityMgrRemoveEntity).Call(ctx.GetAutoRecover(), ctx.GetReportError(), ctx.GetEntityMgr(), entity)
 		return true
 	})
 
@@ -135,7 +132,7 @@ func (_runtime *RuntimeBehavior) loopingNoFrame() {
 			if !ok {
 				return
 			}
-			internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), process)
+			internal.CallVoid(ctx.GetAutoRecover(), ctx.GetReportError(), process)
 
 		case <-gcTicker.C:
 			_runtime.gc()
@@ -155,7 +152,7 @@ func (_runtime *RuntimeBehavior) loopingNoFrameEnd() {
 			if !ok {
 				return
 			}
-			internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), process)
+			internal.CallVoid(ctx.GetAutoRecover(), ctx.GetReportError(), process)
 
 		default:
 			return
@@ -206,7 +203,7 @@ func (_runtime *RuntimeBehavior) loopingFrame() {
 			if !ok {
 				return
 			}
-			internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), process)
+			internal.CallVoid(ctx.GetAutoRecover(), ctx.GetReportError(), process)
 
 		case <-gcTicker.C:
 			_runtime.gc()
@@ -227,7 +224,7 @@ loop:
 			if !ok {
 				break loop
 			}
-			internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), process)
+			internal.CallVoid(ctx.GetAutoRecover(), ctx.GetReportError(), process)
 
 		default:
 			break loop
@@ -310,7 +307,7 @@ loop:
 			if !ok {
 				break loop
 			}
-			internal.CallOuterVoid(ctx.GetAutoRecover(), ctx.GetReportError(), process)
+			internal.CallVoid(ctx.GetAutoRecover(), ctx.GetReportError(), process)
 
 		default:
 			break loop
@@ -349,20 +346,14 @@ func (_runtime *RuntimeBehavior) blinkFrameLoop() bool {
 }
 
 func (_runtime *RuntimeBehavior) changeRunningState(state runtime.RunningState) {
-	if handler := runtime.UnsafeContext(_runtime.ctx).GetOptions().RunningHandler; handler != nil {
-		internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-			handler(_runtime.ctx, state)
-		})
-	}
+	runtime.UnsafeContext(_runtime.ctx).GetOptions().RunningHandler.Call(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), _runtime.ctx, state)
 }
 
 func (_runtime *RuntimeBehavior) initPlugin() {
 	if pluginBundle := runtime.UnsafeContext(_runtime.ctx).GetOptions().PluginBundle; pluginBundle != nil {
 		pluginBundle.Range(func(info plugin.PluginInfo) bool {
 			if pluginInit, ok := info.Face.Iface.(LifecycleRuntimePluginInit); ok {
-				internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-					pluginInit.InitRP(_runtime.ctx)
-				})
+				generic.ToAction1(pluginInit.InitRP).Call(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), _runtime.ctx)
 			}
 			plugin.UnsafePluginBundle(pluginBundle).Activate(info.Name, true)
 			return true
@@ -375,9 +366,7 @@ func (_runtime *RuntimeBehavior) shutPlugin() {
 		pluginBundle.ReverseRange(func(info plugin.PluginInfo) bool {
 			plugin.UnsafePluginBundle(pluginBundle).Activate(info.Name, false)
 			if pluginShut, ok := info.Face.Iface.(LifecycleRuntimePluginShut); ok {
-				internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-					pluginShut.ShutRP(_runtime.ctx)
-				})
+				generic.ToAction1(pluginShut.ShutRP).Call(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), _runtime.ctx)
 			}
 			return true
 		})

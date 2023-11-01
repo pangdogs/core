@@ -9,8 +9,5 @@ func (_runtime *RuntimeBehavior) gc() {
 	runtime.UnsafeContext(_runtime.ctx).GC()
 	event.UnsafeEvent(&_runtime.eventUpdate).GC()
 	event.UnsafeEvent(&_runtime.eventLateUpdate).GC()
-
-	if _runtime.opts.CustomGC != nil {
-		_runtime.opts.CustomGC(_runtime.opts.CompositeFace.Iface)
-	}
+	_runtime.opts.CustomGC.Call(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), _runtime.opts.CompositeFace.Iface)
 }

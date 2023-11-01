@@ -7,6 +7,7 @@ import (
 	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/service"
+	"kit.golaxy.org/golaxy/util/option"
 )
 
 var (
@@ -16,50 +17,19 @@ var (
 // EntityCreator 实体构建器
 type EntityCreator struct {
 	Context runtime.Context      // 运行时上下文
-	options EntityCreatorOptions // 实体构建器的所有选项
-	mutable bool                 // 是否已改变选项
-}
-
-// Clone 克隆
-func (creator EntityCreator) Clone() *EntityCreator {
-	return &creator
-}
-
-// Options 创建实体的选项
-func (creator *EntityCreator) Options(options ...EntityCreatorOption) *EntityCreator {
-	if !creator.mutable {
-		Option{}.EntityCreator.Default()(&creator.options)
-		if creator.Context != nil {
-			creator.options.FaceAnyAllocator = creator.Context.GetFaceAnyAllocator()
-			creator.options.HookAllocator = creator.Context.GetHookAllocator()
-		}
-		creator.mutable = true
-	}
-	for i := range options {
-		options[i](&creator.options)
-	}
-	return creator
+	Options EntityCreatorOptions // 实体构建器的所有选项
 }
 
 // Spawn 创建实体
-func (creator *EntityCreator) Spawn(options ...EntityCreatorOption) (ec.Entity, error) {
+func (creator EntityCreator) Spawn(settings ...option.Setting[EntityCreatorOptions]) (ec.Entity, error) {
 	if creator.Context == nil {
-		return nil, fmt.Errorf("%w: context is nil", ErrEntityCreator)
+		panic(fmt.Errorf("%w: setting Context is nil", ErrEntityCreator))
 	}
 
 	runtimeCtx := creator.Context
 	serviceCtx := service.Current(runtimeCtx)
 
-	creator.Options()
-
-	opts := &creator.options
-	if len(options) > 0 {
-		copyOpts := creator.options
-		for i := range options {
-			options[i](&copyOpts)
-		}
-		opts = &copyOpts
-	}
+	opts := option.Append(creator.Options, settings...)
 
 	entityPt, err := pt.Using(serviceCtx, opts.Prototype)
 	if err != nil {

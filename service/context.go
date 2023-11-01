@@ -7,30 +7,24 @@ import (
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/util/iface"
+	"kit.golaxy.org/golaxy/util/option"
 	"kit.golaxy.org/golaxy/util/uid"
 )
 
 // NewContext 创建服务上下文
-func NewContext(options ...ContextOption) Context {
-	opts := ContextOptions{}
-	Option{}.Default()(&opts)
-
-	for i := range options {
-		options[i](&opts)
-	}
-
-	return UnsafeNewContext(opts)
+func NewContext(settings ...option.Setting[ContextOptions]) Context {
+	return UnsafeNewContext(option.Make(Option{}.Default(), settings...))
 }
 
 // Deprecated: UnsafeNewContext 内部创建服务上下文
 func UnsafeNewContext(options ContextOptions) Context {
 	if !options.CompositeFace.IsNil() {
-		options.CompositeFace.Iface.init(&options)
+		options.CompositeFace.Iface.init(options)
 		return options.CompositeFace.Iface
 	}
 
 	ctx := &ContextBehavior{}
-	ctx.init(&options)
+	ctx.init(options)
 
 	return ctx.opts.CompositeFace.Iface
 }
@@ -54,7 +48,7 @@ type Context interface {
 }
 
 type _Context interface {
-	init(opts *ContextOptions)
+	init(opts ContextOptions)
 	getOptions() *ContextOptions
 }
 
@@ -86,12 +80,8 @@ func (ctx *ContextBehavior) String() string {
 	return fmt.Sprintf(`{"id":%q "name":%q}`, ctx.GetId(), ctx.GetName())
 }
 
-func (ctx *ContextBehavior) init(opts *ContextOptions) {
-	if opts == nil {
-		panic(fmt.Errorf("%w: %w: opts is nil", ErrContext, internal.ErrArgs))
-	}
-
-	ctx.opts = *opts
+func (ctx *ContextBehavior) init(opts ContextOptions) {
+	ctx.opts = opts
 
 	if ctx.opts.CompositeFace.IsNil() {
 		ctx.opts.CompositeFace = iface.NewFace[Context](ctx)

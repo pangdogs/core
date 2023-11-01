@@ -1,13 +1,14 @@
 package runtime
 
 import (
+	"kit.golaxy.org/golaxy/util/option"
 	"time"
 )
 
 // NewFrame 创建帧，在运行时初始化时可以设置帧，用于设置运行时帧更新方式，在逻辑运行过程中可以在运行时上下文中获取帧信息。
-func NewFrame(options ...FrameOption) Frame {
+func NewFrame(settings ...option.Setting[FrameOptions]) Frame {
 	frame := &_FrameBehavior{}
-	frame.init(options...)
+	frame.init(option.Make(_FrameOption{}.Default(), settings...))
 	return frame
 }
 
@@ -119,12 +120,8 @@ func (frame *_FrameBehavior) GetLastUpdateElapseTime() time.Duration {
 	return frame.lastUpdateElapseTime
 }
 
-func (frame *_FrameBehavior) init(options ...FrameOption) {
-	_FrameOption{}.Default()(&frame.options)
-
-	for i := range options {
-		options[i](&frame.options)
-	}
+func (frame *_FrameBehavior) init(opts FrameOptions) {
+	frame.options = opts
 
 	if frame.options.Blink {
 		frame.blinkFrameTime = time.Duration(float64(time.Second) / float64(frame.options.TargetFPS))

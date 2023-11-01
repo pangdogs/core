@@ -8,30 +8,24 @@ import (
 	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/golaxy/util/container"
 	"kit.golaxy.org/golaxy/util/iface"
+	"kit.golaxy.org/golaxy/util/option"
 	"kit.golaxy.org/golaxy/util/uid"
 )
 
 // NewContext 创建运行时上下文
-func NewContext(serviceCtx service.Context, options ...ContextOption) Context {
-	opts := ContextOptions{}
-	_ContextOption{}.Default()(&opts)
-
-	for i := range options {
-		options[i](&opts)
-	}
-
-	return UnsafeNewContext(serviceCtx, opts)
+func NewContext(serviceCtx service.Context, settings ...option.Setting[ContextOptions]) Context {
+	return UnsafeNewContext(serviceCtx, option.Make(_ContextOption{}.Default(), settings...))
 }
 
 // Deprecated: UnsafeNewContext 内部创建运行时上下文
 func UnsafeNewContext(serviceCtx service.Context, options ContextOptions) Context {
 	if !options.CompositeFace.IsNil() {
-		options.CompositeFace.Iface.init(serviceCtx, &options)
+		options.CompositeFace.Iface.init(serviceCtx, options)
 		return options.CompositeFace.Iface
 	}
 
 	ctx := &ContextBehavior{}
-	ctx.init(serviceCtx, &options)
+	ctx.init(serviceCtx, options)
 
 	return ctx.opts.CompositeFace.Iface
 }
@@ -64,7 +58,7 @@ type Context interface {
 }
 
 type _Context interface {
-	init(serviceCtx service.Context, opts *ContextOptions)
+	init(serviceCtx service.Context, opts ContextOptions)
 	getOptions() *ContextOptions
 	setFrame(frame Frame)
 	setCallee(callee Callee)
@@ -139,16 +133,12 @@ func (ctx *ContextBehavior) String() string {
 	return fmt.Sprintf(`{"id":%q "name":%q}`, ctx.GetId(), ctx.GetName())
 }
 
-func (ctx *ContextBehavior) init(serviceCtx service.Context, opts *ContextOptions) {
+func (ctx *ContextBehavior) init(serviceCtx service.Context, opts ContextOptions) {
 	if serviceCtx == nil {
 		panic(fmt.Errorf("%w: %w: serviceCtx is nil", ErrContext, internal.ErrArgs))
 	}
 
-	if opts == nil {
-		panic(fmt.Errorf("%w: %w: opts is nil", ErrContext, internal.ErrArgs))
-	}
-
-	ctx.opts = *opts
+	ctx.opts = opts
 
 	if ctx.opts.CompositeFace.IsNil() {
 		ctx.opts.CompositeFace = iface.NewFace[Context](ctx)

@@ -6,30 +6,24 @@ import (
 	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/util/container"
 	"kit.golaxy.org/golaxy/util/iface"
+	"kit.golaxy.org/golaxy/util/option"
 	"kit.golaxy.org/golaxy/util/uid"
 )
 
 // NewEntity 创建实体
-func NewEntity(options ...EntityOption) Entity {
-	opts := EntityOptions{}
-	Option{}.Default()(&opts)
-
-	for i := range options {
-		options[i](&opts)
-	}
-
-	return UnsafeNewEntity(opts)
+func NewEntity(settings ...option.Setting[EntityOptions]) Entity {
+	return UnsafeNewEntity(option.Make(Option{}.Default(), settings...))
 }
 
 // Deprecated: UnsafeNewEntity 内部创建实体
 func UnsafeNewEntity(options EntityOptions) Entity {
 	if !options.CompositeFace.IsNil() {
-		options.CompositeFace.Iface.init(&options)
+		options.CompositeFace.Iface.init(options)
 		return options.CompositeFace.Iface
 	}
 
 	e := &EntityBehavior{}
-	e.init(&options)
+	e.init(options)
 
 	return e.opts.CompositeFace.Iface
 }
@@ -54,7 +48,7 @@ type Entity interface {
 }
 
 type _Entity interface {
-	init(opts *EntityOptions)
+	init(opts EntityOptions)
 	getOptions() *EntityOptions
 	setId(id uid.Id)
 	setContext(ctx iface.Cache)
@@ -122,12 +116,8 @@ func (entity *EntityBehavior) String() string {
 	return fmt.Sprintf(`{"id":%q "prototype":%q "parent_id":%q "state":%q}`, entity.GetId(), entity.GetPrototype(), parentId, entity.GetState())
 }
 
-func (entity *EntityBehavior) init(opts *EntityOptions) {
-	if opts == nil {
-		panic(fmt.Errorf("%w: %w: opts is nil", ErrEC, internal.ErrArgs))
-	}
-
-	entity.opts = *opts
+func (entity *EntityBehavior) init(opts EntityOptions) {
+	entity.opts = opts
 
 	if entity.opts.CompositeFace.IsNil() {
 		entity.opts.CompositeFace = iface.NewFace[Entity](entity)

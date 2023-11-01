@@ -135,7 +135,7 @@ func (event *Event) emit(fun func(delegate iface.Cache) bool) {
 		e.Value.received++
 		defer func() { e.Value.received-- }()
 
-		ret, err := internal.CallOuter(event.autoRecover, event.reportError, func() bool {
+		ret, err := internal.Call(event.autoRecover, event.reportError, func() bool {
 			return fun(e.Value.delegateFace.Cache)
 		})
 		if err != nil {

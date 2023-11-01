@@ -14,7 +14,7 @@ type _UnsafeContext struct {
 }
 
 // Init 初始化
-func (uc _UnsafeContext) Init(opts *ContextOptions) {
+func (uc _UnsafeContext) Init(opts ContextOptions) {
 	uc.Context.init(opts)
 }
 

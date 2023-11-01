@@ -6,6 +6,7 @@ import (
 	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/util/container"
 	"kit.golaxy.org/golaxy/util/iface"
+	"kit.golaxy.org/golaxy/util/option"
 	"kit.golaxy.org/golaxy/util/uid"
 )
 
@@ -23,11 +24,8 @@ type EntityOptions struct {
 	GCCollector            container.GCCollector              // 自定义GC收集器，通常不传或者传入运行时上下文
 }
 
-// EntityOption 创建实体的选项设置器
-type EntityOption func(o *EntityOptions)
-
 // Default 默认值
-func (Option) Default() EntityOption {
+func (Option) Default() option.Setting[EntityOptions] {
 	return func(o *EntityOptions) {
 		Option{}.CompositeFace(iface.Face[Entity]{})(o)
 		Option{}.Prototype("")(o)
@@ -40,35 +38,35 @@ func (Option) Default() EntityOption {
 }
 
 // CompositeFace 扩展者，在扩展实体自身能力时使用
-func (Option) CompositeFace(face iface.Face[Entity]) EntityOption {
+func (Option) CompositeFace(face iface.Face[Entity]) option.Setting[EntityOptions] {
 	return func(o *EntityOptions) {
 		o.CompositeFace = face
 	}
 }
 
 // Prototype 实体原型名称
-func (Option) Prototype(pt string) EntityOption {
+func (Option) Prototype(pt string) option.Setting[EntityOptions] {
 	return func(o *EntityOptions) {
 		o.Prototype = pt
 	}
 }
 
 // PersistId 实体持久化Id
-func (Option) PersistId(id uid.Id) EntityOption {
+func (Option) PersistId(id uid.Id) option.Setting[EntityOptions] {
 	return func(o *EntityOptions) {
 		o.PersistId = id
 	}
 }
 
 // ComponentAwakeByAccess 开启组件被访问时，检测并调用Awake()
-func (Option) ComponentAwakeByAccess(b bool) EntityOption {
+func (Option) ComponentAwakeByAccess(b bool) option.Setting[EntityOptions] {
 	return func(o *EntityOptions) {
 		o.ComponentAwakeByAccess = b
 	}
 }
 
 // FaceAnyAllocator 自定义FaceAny内存分配器，用于提高性能，通常传入运行时上下文中的FaceAnyAllocator
-func (Option) FaceAnyAllocator(allocator container.Allocator[iface.FaceAny]) EntityOption {
+func (Option) FaceAnyAllocator(allocator container.Allocator[iface.FaceAny]) option.Setting[EntityOptions] {
 	return func(o *EntityOptions) {
 		if allocator == nil {
 			panic(fmt.Errorf("%w: %w: allocator is nil", ErrEC, internal.ErrArgs))
@@ -78,7 +76,7 @@ func (Option) FaceAnyAllocator(allocator container.Allocator[iface.FaceAny]) Ent
 }
 
 // HookAllocator 自定义Hook内存分配器，用于提高性能，通常传入运行时上下文中的HookAllocator
-func (Option) HookAllocator(allocator container.Allocator[event.Hook]) EntityOption {
+func (Option) HookAllocator(allocator container.Allocator[event.Hook]) option.Setting[EntityOptions] {
 	return func(o *EntityOptions) {
 		if allocator == nil {
 			panic(fmt.Errorf("%w: %w: allocator is nil", ErrEC, internal.ErrArgs))
@@ -88,7 +86,7 @@ func (Option) HookAllocator(allocator container.Allocator[event.Hook]) EntityOpt
 }
 
 // GCCollector 自定义GC收集器，通常不传或者传入运行时上下文
-func (Option) GCCollector(collector container.GCCollector) EntityOption {
+func (Option) GCCollector(collector container.GCCollector) option.Setting[EntityOptions] {
 	return func(o *EntityOptions) {
 		o.GCCollector = collector
 	}

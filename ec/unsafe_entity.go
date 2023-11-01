@@ -19,7 +19,7 @@ type _UnsafeEntity struct {
 }
 
 // Init 初始化
-func (ue _UnsafeEntity) Init(opts *EntityOptions) {
+func (ue _UnsafeEntity) Init(opts EntityOptions) {
 	ue.init(opts)
 }
 

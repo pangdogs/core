@@ -3,6 +3,7 @@ package pt
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/util/option"
 )
 
 // EntityPt 实体原型
@@ -12,25 +13,18 @@ type EntityPt struct {
 }
 
 // Construct 创建实体
-func (pt *EntityPt) Construct(options ...ConstructEntityOption) ec.Entity {
-	opts := ConstructEntityOptions{}
-	Option{}.Default()(&opts)
-
-	for i := range options {
-		options[i](&opts)
-	}
-
-	return pt.UnsafeConstruct(opts)
+func (pt *EntityPt) Construct(settings ...option.Setting[ConstructEntityOptions]) ec.Entity {
+	return pt.UnsafeConstruct(option.Make(Option{}.Default(), settings...))
 }
 
 // Deprecated: UnsafeConstruct 内部创建实体
 func (pt *EntityPt) UnsafeConstruct(options ConstructEntityOptions) ec.Entity {
 	options.Prototype = pt.Prototype
-	return pt.Assemble(ec.UnsafeNewEntity(options.EntityOptions), options.ComponentConstructor, options.EntityConstructor)
+	return pt.Assemble(ec.UnsafeNewEntity(options.EntityOptions), options.ComponentCtor, options.EntityCtor)
 }
 
 // Assemble 向实体安装组件
-func (pt *EntityPt) Assemble(entity ec.Entity, componentConstructor ComponentConstructor, entityConstructor EntityConstructor) ec.Entity {
+func (pt *EntityPt) Assemble(entity ec.Entity, componentConstructor ComponentCtor, entityConstructor EntityCtor) ec.Entity {
 	if entity == nil {
 		return nil
 	}
@@ -44,14 +38,10 @@ func (pt *EntityPt) Assemble(entity ec.Entity, componentConstructor ComponentCon
 			panic(fmt.Errorf("%w: %w", ErrPt, err))
 		}
 
-		if componentConstructor != nil {
-			componentConstructor(entity, comp)
-		}
+		componentConstructor.Exec(entity, comp)
 	}
 
-	if entityConstructor != nil {
-		entityConstructor(entity)
-	}
+	entityConstructor.Exec(entity)
 
 	return entity
 }

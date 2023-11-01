@@ -6,31 +6,26 @@ import (
 	"kit.golaxy.org/golaxy/event"
 	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/runtime"
+	"kit.golaxy.org/golaxy/util/generic"
 	"kit.golaxy.org/golaxy/util/iface"
+	"kit.golaxy.org/golaxy/util/option"
 	"kit.golaxy.org/golaxy/util/uid"
 )
 
 // NewRuntime 创建运行时
-func NewRuntime(ctx runtime.Context, options ...RuntimeOption) Runtime {
-	opts := RuntimeOptions{}
-	Option{}.Runtime.Default()(&opts)
-
-	for i := range options {
-		options[i](&opts)
-	}
-
-	return UnsafeNewRuntime(ctx, opts)
+func NewRuntime(ctx runtime.Context, settings ...option.Setting[RuntimeOptions]) Runtime {
+	return UnsafeNewRuntime(ctx, option.Make(_RuntimeOption{}.Default(), settings...))
 }
 
 // Deprecated: UnsafeNewRuntime 内部创建运行时
 func UnsafeNewRuntime(ctx runtime.Context, options RuntimeOptions) Runtime {
 	if !options.CompositeFace.IsNil() {
-		options.CompositeFace.Iface.init(ctx, &options)
+		options.CompositeFace.Iface.init(ctx, options)
 		return options.CompositeFace.Iface
 	}
 
 	runtime := &RuntimeBehavior{}
-	runtime.init(ctx, &options)
+	runtime.init(ctx, options)
 
 	return runtime.opts.CompositeFace.Iface
 }
@@ -46,7 +41,7 @@ type Runtime interface {
 }
 
 type _Runtime interface {
-	init(ctx runtime.Context, opts *RuntimeOptions)
+	init(ctx runtime.Context, opts RuntimeOptions)
 	getOptions() *RuntimeOptions
 }
 
@@ -70,20 +65,16 @@ func (_runtime *RuntimeBehavior) ResolveContext() iface.Cache {
 	return iface.Iface2Cache[runtime.Context](_runtime.ctx)
 }
 
-func (_runtime *RuntimeBehavior) init(ctx runtime.Context, opts *RuntimeOptions) {
+func (_runtime *RuntimeBehavior) init(ctx runtime.Context, opts RuntimeOptions) {
 	if ctx == nil {
 		panic(fmt.Errorf("%w: %w: ctx is nil", ErrRuntime, ErrArgs))
-	}
-
-	if opts == nil {
-		panic(fmt.Errorf("%w: %w: opts is nil", ErrRuntime, ErrArgs))
 	}
 
 	if !runtime.UnsafeContext(ctx).MarkPaired(true) {
 		panic(fmt.Errorf("%w: ctx already paired", ErrRuntime))
 	}
 
-	_runtime.opts = *opts
+	_runtime.opts = opts
 
 	if _runtime.opts.CompositeFace.IsNil() {
 		_runtime.opts.CompositeFace = iface.NewFace[Runtime](_runtime)
@@ -129,9 +120,7 @@ func (_runtime *RuntimeBehavior) OnEntityMgrEntityFirstAccessComponent(entityMgr
 	_comp.SetState(ec.ComponentState_Awake)
 
 	if compAwake, ok := component.(LifecycleComponentAwake); ok {
-		internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-			compAwake.Awake()
-		})
+		generic.ToAction0(compAwake.Awake).Call(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError())
 	}
 
 	_comp.SetState(ec.ComponentState_Start)
@@ -176,9 +165,7 @@ func (_runtime *RuntimeBehavior) addComponents(entity ec.Entity, components []ec
 		}
 
 		if compAwake, ok := components[i].(LifecycleComponentAwake); ok {
-			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-				compAwake.Awake()
-			})
+			generic.ToAction0(compAwake.Awake).Call(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError())
 		}
 
 		_comp.SetState(ec.ComponentState_Start)
@@ -198,9 +185,7 @@ func (_runtime *RuntimeBehavior) addComponents(entity ec.Entity, components []ec
 		}
 
 		if compStart, ok := components[i].(LifecycleComponentStart); ok {
-			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-				compStart.Start()
-			})
+			generic.ToAction0(compStart.Start).Call(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError())
 		}
 
 		_comp.SetState(ec.ComponentState_Living)
@@ -215,9 +200,7 @@ func (_runtime *RuntimeBehavior) removeComponent(component ec.Component) {
 	}
 
 	if compShut, ok := component.(LifecycleComponentShut); ok {
-		internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-			compShut.Shut()
-		})
+		generic.ToAction0(compShut.Shut).Call(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError())
 	}
 
 	ec.UnsafeComponent(component).SetState(ec.ComponentState_Death)
@@ -309,9 +292,7 @@ func (_runtime *RuntimeBehavior) initEntity(entity ec.Entity) {
 	}
 
 	if entityInit, ok := entity.(LifecycleEntityInit); ok {
-		internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-			entityInit.Init()
-		})
+		generic.ToAction0(entityInit.Init).Call(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError())
 	}
 
 	if entity.GetState() != ec.EntityState_Init {
@@ -326,9 +307,7 @@ func (_runtime *RuntimeBehavior) initEntity(entity ec.Entity) {
 		}
 
 		if compAwake, ok := comp.(LifecycleComponentAwake); ok {
-			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-				compAwake.Awake()
-			})
+			generic.ToAction0(compAwake.Awake).Call(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError())
 		}
 
 		_comp.SetState(ec.ComponentState_Start)
@@ -348,9 +327,7 @@ func (_runtime *RuntimeBehavior) initEntity(entity ec.Entity) {
 		}
 
 		if compStart, ok := comp.(LifecycleComponentStart); ok {
-			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-				compStart.Start()
-			})
+			generic.ToAction0(compStart.Start).Call(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError())
 		}
 
 		_comp.SetState(ec.ComponentState_Living)
@@ -365,9 +342,7 @@ func (_runtime *RuntimeBehavior) initEntity(entity ec.Entity) {
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Inited)
 
 	if entityInited, ok := entity.(LifecycleEntityInited); ok {
-		internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-			entityInited.Inited()
-		})
+		generic.ToAction0(entityInited.Inited).Call(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError())
 	}
 
 	if entity.GetState() != ec.EntityState_Inited {
@@ -383,9 +358,7 @@ func (_runtime *RuntimeBehavior) shutEntity(entity ec.Entity) {
 	}
 
 	if entityShut, ok := entity.(LifecycleEntityShut); ok {
-		internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-			entityShut.Shut()
-		})
+		generic.ToAction0(entityShut.Shut).Call(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError())
 	}
 
 	entity.RangeComponents(func(comp ec.Component) bool {
@@ -396,9 +369,7 @@ func (_runtime *RuntimeBehavior) shutEntity(entity ec.Entity) {
 		}
 
 		if compShut, ok := comp.(LifecycleComponentShut); ok {
-			internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-				compShut.Shut()
-			})
+			generic.ToAction0(compShut.Shut).Call(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError())
 		}
 
 		_comp.SetState(ec.ComponentState_Death)
@@ -409,8 +380,6 @@ func (_runtime *RuntimeBehavior) shutEntity(entity ec.Entity) {
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Death)
 
 	if entityDestroy, ok := entity.(LifecycleEntityDestroy); ok {
-		internal.CallOuterVoid(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), func() {
-			entityDestroy.Destroy()
-		})
+		generic.ToAction0(entityDestroy.Destroy).Call(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError())
 	}
 }
