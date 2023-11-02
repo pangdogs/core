@@ -93,14 +93,14 @@ func (app *_App) runService(ctx context.Context, serviceName string, serviceConf
 		service.Option{}.PluginBundle(pluginBundle),
 	}
 
-	for _, handler := range app.options.ServiceCtxCtors {
-		serviceCtxOpts = append(serviceCtxOpts, handler.Exec(serviceName, entityLib, pluginBundle)...)
+	for _, ctor := range app.options.ServiceCtxCtors {
+		serviceCtxOpts = append(serviceCtxOpts, ctor.Exec(serviceName, entityLib, pluginBundle)...)
 	}
 
 	var serviceOpts []option.Setting[golaxy.ServiceOptions]
 
-	for _, handler := range app.options.ServiceCtors {
-		serviceOpts = append(serviceOpts, handler.Exec(serviceName)...)
+	for _, ctor := range app.options.ServiceCtors {
+		serviceOpts = append(serviceOpts, ctor.Exec(serviceName)...)
 	}
 
 	<-golaxy.NewService(service.NewContext(serviceCtxOpts...), serviceOpts...).Run()
