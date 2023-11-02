@@ -42,36 +42,16 @@ type _ComponentMgr interface {
 // GetComponent 使用名称查询组件，一般情况下名称指组件接口名称，也可以自定义名称，同个名称指向多个组件时，返回首个组件
 func (entity *EntityBehavior) GetComponent(name string) Component {
 	if e, ok := entity.getComponentElement(name); ok {
-		comp := iface.Cache2Iface[Component](e.Value.Cache)
-
-		if entity.opts.ComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
-			switch entity.GetState() {
-			case EntityState_Init, EntityState_Inited, EntityState_Living:
-				emitEventCompMgrFirstAccessComponent(entity, entity.opts.CompositeFace.Iface, comp)
-			}
-		}
-
-		return comp
+		return entity.accessComponent(iface.Cache2Iface[Component](e.Value.Cache))
 	}
-
 	return nil
 }
 
 // GetComponentById 使用组件Id查询组件
 func (entity *EntityBehavior) GetComponentById(id uid.Id) Component {
 	if e, ok := entity.getComponentElementById(id); ok {
-		comp := iface.Cache2Iface[Component](e.Value.Cache)
-
-		if entity.opts.ComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
-			switch entity.GetState() {
-			case EntityState_Init, EntityState_Inited, EntityState_Living:
-				emitEventCompMgrFirstAccessComponent(entity, entity.opts.CompositeFace.Iface, comp)
-			}
-		}
-
-		return comp
+		return entity.accessComponent(iface.Cache2Iface[Component](e.Value.Cache))
 	}
-
 	return nil
 }
 
@@ -89,14 +69,15 @@ func (entity *EntityBehavior) GetComponents(name string) []Component {
 			return false
 		}, e)
 
-		if entity.opts.ComponentAwakeByAccess {
-			for i := range components {
-				if components[i].GetState() == ComponentState_Attach {
-					switch entity.GetState() {
-					case EntityState_Init, EntityState_Inited, EntityState_Living:
-						emitEventCompMgrFirstAccessComponent(entity, entity.opts.CompositeFace.Iface, components[i])
-					}
-				}
+		for i := range components {
+			if entity.accessComponent(components[i]) == nil {
+				components[i] = nil
+			}
+		}
+
+		for i := len(components) - 1; i >= 0; i-- {
+			if components[i] == nil {
+				components = append(components[:i], components[i+1:]...)
 			}
 		}
 
@@ -113,15 +94,10 @@ func (entity *EntityBehavior) RangeComponents(fun func(component Component) bool
 	}
 
 	entity.componentList.Traversal(func(e *container.Element[iface.FaceAny]) bool {
-		comp := iface.Cache2Iface[Component](e.Value.Cache)
-
-		if entity.opts.ComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
-			switch entity.GetState() {
-			case EntityState_Init, EntityState_Inited, EntityState_Living:
-				emitEventCompMgrFirstAccessComponent(entity, entity.opts.CompositeFace.Iface, comp)
-			}
+		comp := entity.accessComponent(iface.Cache2Iface[Component](e.Value.Cache))
+		if comp == nil {
+			return true
 		}
-
 		return fun(comp)
 	})
 }
@@ -133,15 +109,10 @@ func (entity *EntityBehavior) ReverseRangeComponents(fun func(component Componen
 	}
 
 	entity.componentList.ReverseTraversal(func(e *container.Element[iface.FaceAny]) bool {
-		comp := iface.Cache2Iface[Component](e.Value.Cache)
-
-		if entity.opts.ComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
-			switch entity.GetState() {
-			case EntityState_Init, EntityState_Inited, EntityState_Living:
-				emitEventCompMgrFirstAccessComponent(entity, entity.opts.CompositeFace.Iface, comp)
-			}
+		comp := entity.accessComponent(iface.Cache2Iface[Component](e.Value.Cache))
+		if comp == nil {
+			return true
 		}
-
 		return fun(comp)
 	})
 }
@@ -298,4 +269,19 @@ func (entity *EntityBehavior) getComponentElementById(id uid.Id) (*container.Ele
 	})
 
 	return e, e != nil
+}
+
+func (entity *EntityBehavior) accessComponent(comp Component) Component {
+	if entity.opts.ComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
+		switch entity.GetState() {
+		case EntityState_Init, EntityState_Inited, EntityState_Living:
+			emitEventCompMgrFirstAccessComponent(entity, entity.opts.CompositeFace.Iface, comp)
+		}
+	}
+
+	if comp.GetState() >= ComponentState_Detach {
+		return nil
+	}
+
+	return comp
 }

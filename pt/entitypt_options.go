@@ -21,16 +21,16 @@ type (
 // ConstructEntityOptions 创建实体的所有选项
 type ConstructEntityOptions struct {
 	ec.EntityOptions
-	ComponentCtor ComponentCtor // 组件构造函数
-	EntityCtor    EntityCtor    // 实体构造函数
+	ComponentCtors []ComponentCtor // 组件构造函数
+	EntityCtors    []EntityCtor    // 实体构造函数
 }
 
 // Default 默认值
 func (Option) Default() option.Setting[ConstructEntityOptions] {
 	return func(o *ConstructEntityOptions) {
 		ec.Option{}.Default()(&o.EntityOptions)
-		Option{}.ComponentCtor(nil)
-		Option{}.EntityCtor(nil)
+		Option{}.ComponentCtors(nil)
+		Option{}.EntityCtors(nil)
 	}
 }
 
@@ -76,16 +76,16 @@ func (Option) GCCollector(collector container.GCCollector) option.Setting[Constr
 	}
 }
 
-// ComponentCtor 组件构造函数
-func (Option) ComponentCtor(ctor ComponentCtor) option.Setting[ConstructEntityOptions] {
+// ComponentCtors 组件构造函数
+func (Option) ComponentCtors(ctors []ComponentCtor) option.Setting[ConstructEntityOptions] {
 	return func(o *ConstructEntityOptions) {
-		o.ComponentCtor = ctor
+		o.ComponentCtors = ctors
 	}
 }
 
-// EntityCtor 实体构造函数
-func (Option) EntityCtor(ctor EntityCtor) option.Setting[ConstructEntityOptions] {
+// EntityCtors 实体构造函数
+func (Option) EntityCtors(ctors []EntityCtor) option.Setting[ConstructEntityOptions] {
 	return func(o *ConstructEntityOptions) {
-		o.EntityCtor = ctor
+		o.EntityCtors = ctors
 	}
 }

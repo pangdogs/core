@@ -20,11 +20,11 @@ func (pt *EntityPt) Construct(settings ...option.Setting[ConstructEntityOptions]
 // Deprecated: UnsafeConstruct 内部创建实体
 func (pt *EntityPt) UnsafeConstruct(options ConstructEntityOptions) ec.Entity {
 	options.Prototype = pt.Prototype
-	return pt.Assemble(ec.UnsafeNewEntity(options.EntityOptions), options.ComponentCtor, options.EntityCtor)
+	return pt.Assemble(ec.UnsafeNewEntity(options.EntityOptions), options.ComponentCtors, options.EntityCtors)
 }
 
 // Assemble 向实体安装组件
-func (pt *EntityPt) Assemble(entity ec.Entity, componentConstructor ComponentCtor, entityConstructor EntityCtor) ec.Entity {
+func (pt *EntityPt) Assemble(entity ec.Entity, componentCtors []ComponentCtor, entityCtors []EntityCtor) ec.Entity {
 	if entity == nil {
 		return nil
 	}
@@ -38,10 +38,14 @@ func (pt *EntityPt) Assemble(entity ec.Entity, componentConstructor ComponentCto
 			panic(fmt.Errorf("%w: %w", ErrPt, err))
 		}
 
-		componentConstructor.Exec(entity, comp)
+		for j := range componentCtors {
+			componentCtors[j].Exec(entity, comp)
+		}
 	}
 
-	entityConstructor.Exec(entity)
+	for i := range entityCtors {
+		entityCtors[i].Exec(entity)
+	}
 
 	return entity
 }

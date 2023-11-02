@@ -77,17 +77,17 @@ func (_EntityCreatorOption) GCCollector(collector container.GCCollector) option.
 	}
 }
 
-// ComponentConstructor 组件构造函数
-func (_EntityCreatorOption) ComponentConstructor(ctor pt.ComponentCtor) option.Setting[EntityCreatorOptions] {
+// ComponentCtors 组件构造函数
+func (_EntityCreatorOption) ComponentCtors(ctors []pt.ComponentCtor) option.Setting[EntityCreatorOptions] {
 	return func(o *EntityCreatorOptions) {
-		pt.Option{}.ComponentCtor(ctor)(&o.ConstructEntityOptions)
+		pt.Option{}.ComponentCtors(ctors)(&o.ConstructEntityOptions)
 	}
 }
 
-// EntityConstructor 实体构造函数
-func (_EntityCreatorOption) EntityConstructor(ctor pt.EntityCtor) option.Setting[EntityCreatorOptions] {
+// EntityCtors 实体构造函数
+func (_EntityCreatorOption) EntityCtors(ctors []pt.EntityCtor) option.Setting[EntityCreatorOptions] {
 	return func(o *EntityCreatorOptions) {
-		pt.Option{}.EntityCtor(ctor)(&o.ConstructEntityOptions)
+		pt.Option{}.EntityCtors(ctors)(&o.ConstructEntityOptions)
 	}
 }
 
