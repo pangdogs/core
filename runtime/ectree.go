@@ -14,10 +14,9 @@ import (
 
 // IECTree EC树接口
 type IECTree interface {
+	_IECTree
 	concurrent.CurrentContextResolver
 
-	// TryAddChild 尝试加入父实体
-	TryAddChild(parentId, childId uid.Id) error
 	// AddChild 实体加入父实体。切换父实体时，先调用RemoveChild()离开旧父实体，再调用AddChild()加入新父实体
 	AddChild(parentId, childId uid.Id) error
 	// RemoveChild 实体离开父实体，会销毁所有子实体
@@ -33,6 +32,10 @@ type IECTree interface {
 
 	iAutoEventECTreeAddChild    // 事件：EC树中子实体加入父实体
 	iAutoEventECTreeRemoveChild // 事件：EC树中子实体离开父实体
+}
+
+type _IECTree interface {
+	fetchEntity(entityId uid.Id) (ec.Entity, error)
 }
 
 // _ECNode EC树节点
@@ -81,17 +84,24 @@ func (ecTree *_ECTree) ResolveCurrentContext() iface.Cache {
 	return ecTree.ctx.ResolveCurrentContext()
 }
 
-// TryAddChild 尝试加入父实体
-func (ecTree *_ECTree) TryAddChild(parentId, childId uid.Id) error {
-	_, _, err := ecTree.tryAddChild(parentId, childId)
-	return err
-}
-
 // AddChild 实体加入父实体，在实体加入运行时上下文后才能调用，切换父实体时，先调用RemoveChild()离开旧父实体，再调用AddChild()加入新父实体
 func (ecTree *_ECTree) AddChild(parentId, childId uid.Id) error {
-	parent, child, err := ecTree.tryAddChild(parentId, childId)
+	if parentId == childId {
+		return fmt.Errorf("%w: %w: parentId and childId is %q, can't be equal", ErrECTree, exception.ErrArgs, parentId)
+	}
+
+	parent, err := ecTree.fetchEntity(parentId)
 	if err != nil {
 		return err
+	}
+
+	child, err := ecTree.fetchEntity(childId)
+	if err != nil {
+		return err
+	}
+
+	if _, ok := ecTree.ecTree[childId]; ok {
+		return fmt.Errorf("%w: child entity %q already in ec-tree", ErrECTree, childId)
 	}
 
 	parentNode, ok := ecTree.ecTree[parentId]
@@ -205,36 +215,17 @@ func (ecTree *_ECTree) OnEntityMgrRemovingEntity(entityMgr IEntityMgr, entity ec
 	ecTree.RemoveChild(entity.GetId())
 }
 
-func (ecTree *_ECTree) tryAddChild(parentId, childId uid.Id) (parent, child ec.Entity, err error) {
-	if parentId == childId {
-		return nil, nil, fmt.Errorf("%w: %w: parentId and childId can't be equal", ErrECTree, exception.ErrArgs)
-	}
-
-	parent, ok := ecTree.ctx.GetEntityMgr().GetEntity(parentId)
+func (ecTree *_ECTree) fetchEntity(entityId uid.Id) (ec.Entity, error) {
+	entity, ok := ecTree.ctx.GetEntityMgr().GetEntity(entityId)
 	if !ok {
-		return nil, nil, fmt.Errorf("%w: parent entity not exist", ErrECTree)
+		return nil, fmt.Errorf("%w: entity %q not exist", ErrECTree, entityId)
 	}
 
-	switch parent.GetState() {
+	switch entity.GetState() {
 	case ec.EntityState_Awake, ec.EntityState_Start, ec.EntityState_Living:
 	default:
-		return nil, nil, fmt.Errorf("%w: invalid parent entity state %q", ErrECTree, parent.GetState())
+		return nil, fmt.Errorf("%w: entity %q has invalid state %q", ErrECTree, entityId, entity.GetState())
 	}
 
-	child, ok = ecTree.ctx.GetEntityMgr().GetEntity(childId)
-	if !ok {
-		return nil, nil, fmt.Errorf("%w: child entity not exist", ErrECTree)
-	}
-
-	switch child.GetState() {
-	case ec.EntityState_Awake, ec.EntityState_Start, ec.EntityState_Living:
-	default:
-		return nil, nil, fmt.Errorf("%w: invalid child entity state %q", ErrECTree, parent.GetState())
-	}
-
-	if _, ok = ecTree.ecTree[childId]; ok {
-		return nil, nil, fmt.Errorf("%w: child entity already in ec-tree", ErrECTree)
-	}
-
-	return
+	return entity, nil
 }

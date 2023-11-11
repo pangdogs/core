@@ -40,7 +40,10 @@ func (creator EntityCreator) Spawn(settings ...option.Setting[EntityCreatorOptio
 	}
 
 	if !opts.ParentID.IsNil() {
-
+		_, err := runtime.UnsafeECTree(runtimeCtx.GetECTree()).FetchEntity(opts.ParentID)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	entity := entityPt.UnsafeConstruct(opts.ConstructEntityOptions)
