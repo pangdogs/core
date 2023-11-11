@@ -13,18 +13,11 @@ type iAutoEventECTreeAddChild interface {
 	EventECTreeAddChild() event.IEvent
 }
 
-func BindEventECTreeAddChild(auto iAutoEventECTreeAddChild, delegate EventECTreeAddChild) event.Hook {
+func BindEventECTreeAddChild(auto iAutoEventECTreeAddChild, delegate EventECTreeAddChild, priority ...int32) event.Hook {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
-	return event.BindEvent[EventECTreeAddChild](auto.EventECTreeAddChild(), delegate)
-}
-
-func BindEventECTreeAddChildWithPriority(auto iAutoEventECTreeAddChild, delegate EventECTreeAddChild, priority int32) event.Hook {
-	if auto == nil {
-		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
-	}
-	return event.BindEventWithPriority[EventECTreeAddChild](auto.EventECTreeAddChild(), delegate, priority)
+	return event.BindEvent[EventECTreeAddChild](auto.EventECTreeAddChild(), delegate, priority...)
 }
 
 func emitEventECTreeAddChild(auto iAutoEventECTreeAddChild, ecTree IECTree, parent, child ec.Entity) {
@@ -41,18 +34,11 @@ type iAutoEventECTreeRemoveChild interface {
 	EventECTreeRemoveChild() event.IEvent
 }
 
-func BindEventECTreeRemoveChild(auto iAutoEventECTreeRemoveChild, delegate EventECTreeRemoveChild) event.Hook {
+func BindEventECTreeRemoveChild(auto iAutoEventECTreeRemoveChild, delegate EventECTreeRemoveChild, priority ...int32) event.Hook {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
-	return event.BindEvent[EventECTreeRemoveChild](auto.EventECTreeRemoveChild(), delegate)
-}
-
-func BindEventECTreeRemoveChildWithPriority(auto iAutoEventECTreeRemoveChild, delegate EventECTreeRemoveChild, priority int32) event.Hook {
-	if auto == nil {
-		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
-	}
-	return event.BindEventWithPriority[EventECTreeRemoveChild](auto.EventECTreeRemoveChild(), delegate, priority)
+	return event.BindEvent[EventECTreeRemoveChild](auto.EventECTreeRemoveChild(), delegate, priority...)
 }
 
 func emitEventECTreeRemoveChild(auto iAutoEventECTreeRemoveChild, ecTree IECTree, parent, child ec.Entity) {

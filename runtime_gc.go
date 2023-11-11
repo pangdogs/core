@@ -5,9 +5,9 @@ import (
 	"kit.golaxy.org/golaxy/runtime"
 )
 
-func (_runtime *RuntimeBehavior) gc() {
-	runtime.UnsafeContext(_runtime.ctx).GC()
-	event.UnsafeEvent(&_runtime.eventUpdate).GC()
-	event.UnsafeEvent(&_runtime.eventLateUpdate).GC()
-	_runtime.opts.CustomGC.Call(_runtime.ctx.GetAutoRecover(), _runtime.ctx.GetReportError(), _runtime.opts.CompositeFace.Iface)
+func (rt *RuntimeBehavior) gc() {
+	runtime.UnsafeContext(rt.ctx).GC()
+	event.UnsafeEvent(&rt.eventUpdate).GC()
+	event.UnsafeEvent(&rt.eventLateUpdate).GC()
+	rt.opts.CustomGC.Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), nil, rt.opts.CompositeFace.Iface)
 }

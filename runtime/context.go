@@ -3,7 +3,8 @@ package runtime
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy/event"
-	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/concurrent"
+	"kit.golaxy.org/golaxy/internal/exception"
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/golaxy/util/container"
@@ -33,12 +34,12 @@ func UnsafeNewContext(serviceCtx service.Context, options ContextOptions) Contex
 // Context 运行时上下文接口
 type Context interface {
 	_Context
-	internal.ContextResolver
-	container.GCCollector
-	internal.Context
-	internal.RunningState
+	concurrent.CurrentContextResolver
+	concurrent.ConcurrentContextResolver
+	concurrent.Context
+	concurrent.Caller
 	plugin.PluginResolver
-	Caller
+	container.GCCollector
 	fmt.Stringer
 
 	// GetName 获取名称
@@ -63,15 +64,15 @@ type _Context interface {
 	setFrame(frame Frame)
 	setCallee(callee Callee)
 	getServiceCtx() service.Context
+	changeRunningState(state RunningState)
 	gc()
 }
 
 // ContextBehavior 运行时上下文行为，在需要扩展运行时上下文能力时，匿名嵌入至运行时上下文结构体中
 type ContextBehavior struct {
-	internal.ContextBehavior
-	internal.RunningStateBehavior
-	opts       ContextOptions
+	concurrent.ContextBehavior
 	serviceCtx service.Context
+	opts       ContextOptions
 	frame      Frame
 	entityMgr  _EntityMgr
 	ecTree     _ECTree
@@ -119,6 +120,16 @@ func (ctx *ContextBehavior) ResolveContext() iface.Cache {
 	return iface.Iface2Cache[Context](ctx.opts.CompositeFace.Iface)
 }
 
+// ResolveCurrentContext 解析当前上下文
+func (ctx *ContextBehavior) ResolveCurrentContext() iface.Cache {
+	return ctx.ResolveContext()
+}
+
+// ResolveConcurrentContext 解析多线程安全的上下文
+func (ctx *ContextBehavior) ResolveConcurrentContext() iface.Cache {
+	return ctx.ResolveContext()
+}
+
 // CollectGC 收集GC
 func (ctx *ContextBehavior) CollectGC(gc container.GC) {
 	if gc == nil || !gc.NeedGC() {
@@ -135,13 +146,13 @@ func (ctx *ContextBehavior) String() string {
 
 func (ctx *ContextBehavior) init(serviceCtx service.Context, opts ContextOptions) {
 	if serviceCtx == nil {
-		panic(fmt.Errorf("%w: %w: serviceCtx is nil", ErrContext, internal.ErrArgs))
+		panic(fmt.Errorf("%w: %w: serviceCtx is nil", ErrContext, exception.ErrArgs))
 	}
 
 	ctx.opts = opts
 
 	if ctx.opts.CompositeFace.IsNil() {
-		ctx.opts.CompositeFace = iface.NewFace[Context](ctx)
+		ctx.opts.CompositeFace = iface.MakeFace[Context](ctx)
 	}
 
 	if ctx.opts.Context == nil {
@@ -152,10 +163,10 @@ func (ctx *ContextBehavior) init(serviceCtx service.Context, opts ContextOptions
 		ctx.opts.PersistId = uid.New()
 	}
 
-	internal.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
+	concurrent.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
 	ctx.serviceCtx = serviceCtx
-	ctx.entityMgr.Init(ctx.opts.CompositeFace.Iface)
-	ctx.ecTree.Init(ctx.opts.CompositeFace.Iface)
+	ctx.entityMgr.init(ctx.opts.CompositeFace.Iface)
+	ctx.ecTree.init(ctx.opts.CompositeFace.Iface)
 }
 
 func (ctx *ContextBehavior) getOptions() *ContextOptions {
@@ -172,4 +183,10 @@ func (ctx *ContextBehavior) setCallee(callee Callee) {
 
 func (ctx *ContextBehavior) getServiceCtx() service.Context {
 	return ctx.serviceCtx
+}
+
+func (ctx *ContextBehavior) changeRunningState(state RunningState) {
+	ctx.entityMgr.changeRunningState(state)
+	ctx.ecTree.changeRunningState(state)
+	ctx.opts.RunningHandler.Call(ctx.GetAutoRecover(), ctx.GetReportError(), nil, ctx.opts.CompositeFace.Iface, state)
 }

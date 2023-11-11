@@ -1,11 +1,10 @@
-//go:generate stringer -type RunningState
 package runtime
 
 import (
 	"context"
 	"fmt"
 	"kit.golaxy.org/golaxy/event"
-	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/exception"
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/util/container"
 	"kit.golaxy.org/golaxy/util/generic"
@@ -16,25 +15,8 @@ import (
 
 type _ContextOption struct{}
 
-// RunningState 运行状态
-type RunningState int32
-
-const (
-	RunningState_Birth                RunningState = iota // 出生
-	RunningState_Starting                                 // 开始启动
-	RunningState_Started                                  // 已启动
-	RunningState_FrameLoopBegin                           // 帧循环开始
-	RunningState_FrameUpdateBegin                         // 帧更新开始
-	RunningState_FrameUpdateEnd                           // 帧更新结束
-	RunningState_FrameLoopEnd                             // 帧循环结束
-	RunningState_AsyncProcessingBegin                     // 异步调用处理开始
-	RunningState_AsyncProcessingEnd                       // 异步调用处理结束
-	RunningState_Terminating                              // 开始停止
-	RunningState_Terminated                               // 已停止
-)
-
 type (
-	RunningHandler = generic.Action2[Context, RunningState] // 运行状态变化处理器
+	RunningHandler = generic.DelegateAction2[Context, RunningState] // 运行状态变化处理器
 )
 
 // ContextOptions 创建运行时上下文的所有选项
@@ -127,7 +109,7 @@ func (_ContextOption) RunningHandler(handler RunningHandler) option.Setting[Cont
 func (_ContextOption) FaceAnyAllocator(allocator container.Allocator[iface.FaceAny]) option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
 		if allocator == nil {
-			panic(fmt.Errorf("%w: %w: allocator is nil", ErrContext, internal.ErrArgs))
+			panic(fmt.Errorf("%w: %w: allocator is nil", ErrContext, exception.ErrArgs))
 		}
 		o.FaceAnyAllocator = allocator
 	}
@@ -137,7 +119,7 @@ func (_ContextOption) FaceAnyAllocator(allocator container.Allocator[iface.FaceA
 func (_ContextOption) HookAllocator(allocator container.Allocator[event.Hook]) option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
 		if allocator == nil {
-			panic(fmt.Errorf("%w: %w: allocator is nil", ErrContext, internal.ErrArgs))
+			panic(fmt.Errorf("%w: %w: allocator is nil", ErrContext, exception.ErrArgs))
 		}
 		o.HookAllocator = allocator
 	}

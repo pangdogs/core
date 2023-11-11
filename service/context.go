@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
-	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/concurrent"
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/util/iface"
@@ -32,11 +32,10 @@ func UnsafeNewContext(options ContextOptions) Context {
 // Context 服务上下文
 type Context interface {
 	_Context
-	internal.Context
-	internal.RunningState
+	concurrent.Context
+	Caller
 	plugin.PluginResolver
 	pt.EntityPtResolver
-	Caller
 	fmt.Stringer
 
 	// GetName 获取名称
@@ -50,12 +49,12 @@ type Context interface {
 type _Context interface {
 	init(opts ContextOptions)
 	getOptions() *ContextOptions
+	changeRunningState(state RunningState)
 }
 
 // ContextBehavior 服务上下文行为，在需要扩展服务上下文能力时，匿名嵌入至服务上下文结构体中
 type ContextBehavior struct {
-	internal.ContextBehavior
-	internal.RunningStateBehavior
+	concurrent.ContextBehavior
 	opts      ContextOptions
 	entityMgr _EntityMgr
 }
@@ -84,7 +83,7 @@ func (ctx *ContextBehavior) init(opts ContextOptions) {
 	ctx.opts = opts
 
 	if ctx.opts.CompositeFace.IsNil() {
-		ctx.opts.CompositeFace = iface.NewFace[Context](ctx)
+		ctx.opts.CompositeFace = iface.MakeFace[Context](ctx)
 	}
 
 	if ctx.opts.Context == nil {
@@ -95,10 +94,14 @@ func (ctx *ContextBehavior) init(opts ContextOptions) {
 		ctx.opts.PersistId = uid.New()
 	}
 
-	internal.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
+	concurrent.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
 	ctx.entityMgr.init(ctx.opts.CompositeFace.Iface)
 }
 
 func (ctx *ContextBehavior) getOptions() *ContextOptions {
 	return &ctx.opts
+}
+
+func (ctx *ContextBehavior) changeRunningState(state RunningState) {
+	ctx.opts.RunningHandler.Call(ctx.GetAutoRecover(), ctx.GetReportError(), nil, ctx.opts.CompositeFace.Iface, state)
 }

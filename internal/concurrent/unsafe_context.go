@@ -1,6 +1,8 @@
-package internal
+package concurrent
 
-import "context"
+import (
+	"context"
+)
 
 // Deprecated: UnsafeContext 访问上下文内部方法
 func UnsafeContext(ctx Context) _UnsafeContext {
@@ -18,7 +20,12 @@ func (uc _UnsafeContext) Init(parentCtx context.Context, autoRecover bool, repor
 	uc.init(parentCtx, autoRecover, reportError)
 }
 
-// MarkPaired 标记已经配对
-func (uc _UnsafeContext) MarkPaired(v bool) bool {
-	return uc.markPaired(v)
+// SetPaired 设置配对标记
+func (uc _UnsafeContext) SetPaired(v bool) bool {
+	return uc.setPaired(v)
+}
+
+// GetPaired 获取配对标记
+func (uc _UnsafeContext) GetPaired() bool {
+	return uc.getPaired()
 }

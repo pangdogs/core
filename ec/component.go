@@ -3,7 +3,7 @@ package ec
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy/event"
-	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/concurrent"
 	"kit.golaxy.org/golaxy/util/container"
 	"kit.golaxy.org/golaxy/util/iface"
 	"kit.golaxy.org/golaxy/util/uid"
@@ -13,7 +13,7 @@ import (
 // Component 组件接口
 type Component interface {
 	_Component
-	internal.ContextResolver
+	concurrent.CurrentContextResolver
 	fmt.Stringer
 
 	// GetId 获取组件Id
@@ -77,13 +77,18 @@ func (comp *ComponentBehavior) GetState() ComponentState {
 func (comp *ComponentBehavior) DestroySelf() {
 	switch comp.GetState() {
 	case ComponentState_Awake, ComponentState_Start, ComponentState_Living:
-		emitEventComponentDestroySelf(comp.eventComponentDestroySelf(), comp.composite)
+		emitEventComponentDestroySelf(UnsafeComponent(comp), comp.composite)
 	}
 }
 
 // ResolveContext 解析上下文
 func (comp *ComponentBehavior) ResolveContext() iface.Cache {
 	return comp.entity.ResolveContext()
+}
+
+// ResolveCurrentContext 解析当前上下文
+func (comp *ComponentBehavior) ResolveCurrentContext() iface.Cache {
+	return comp.entity.ResolveCurrentContext()
 }
 
 // String implements fmt.Stringer
@@ -114,7 +119,13 @@ func (comp *ComponentBehavior) setState(state ComponentState) {
 	if state <= comp.state {
 		return
 	}
+
 	comp.state = state
+
+	switch comp.state {
+	case ComponentState_Detach:
+		comp._eventComponentDestroySelf.Close()
+	}
 }
 
 func (comp *ComponentBehavior) setReflectValue(v reflect.Value) {

@@ -12,18 +12,11 @@ type iAutoEventCompMgrAddComponents interface {
 	EventCompMgrAddComponents() event.IEvent
 }
 
-func BindEventCompMgrAddComponents(auto iAutoEventCompMgrAddComponents, delegate EventCompMgrAddComponents) event.Hook {
+func BindEventCompMgrAddComponents(auto iAutoEventCompMgrAddComponents, delegate EventCompMgrAddComponents, priority ...int32) event.Hook {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
-	return event.BindEvent[EventCompMgrAddComponents](auto.EventCompMgrAddComponents(), delegate)
-}
-
-func BindEventCompMgrAddComponentsWithPriority(auto iAutoEventCompMgrAddComponents, delegate EventCompMgrAddComponents, priority int32) event.Hook {
-	if auto == nil {
-		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
-	}
-	return event.BindEventWithPriority[EventCompMgrAddComponents](auto.EventCompMgrAddComponents(), delegate, priority)
+	return event.BindEvent[EventCompMgrAddComponents](auto.EventCompMgrAddComponents(), delegate, priority...)
 }
 
 func emitEventCompMgrAddComponents(auto iAutoEventCompMgrAddComponents, entity Entity, components []Component) {
@@ -40,18 +33,11 @@ type iAutoEventCompMgrRemoveComponent interface {
 	EventCompMgrRemoveComponent() event.IEvent
 }
 
-func BindEventCompMgrRemoveComponent(auto iAutoEventCompMgrRemoveComponent, delegate EventCompMgrRemoveComponent) event.Hook {
+func BindEventCompMgrRemoveComponent(auto iAutoEventCompMgrRemoveComponent, delegate EventCompMgrRemoveComponent, priority ...int32) event.Hook {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
-	return event.BindEvent[EventCompMgrRemoveComponent](auto.EventCompMgrRemoveComponent(), delegate)
-}
-
-func BindEventCompMgrRemoveComponentWithPriority(auto iAutoEventCompMgrRemoveComponent, delegate EventCompMgrRemoveComponent, priority int32) event.Hook {
-	if auto == nil {
-		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
-	}
-	return event.BindEventWithPriority[EventCompMgrRemoveComponent](auto.EventCompMgrRemoveComponent(), delegate, priority)
+	return event.BindEvent[EventCompMgrRemoveComponent](auto.EventCompMgrRemoveComponent(), delegate, priority...)
 }
 
 func emitEventCompMgrRemoveComponent(auto iAutoEventCompMgrRemoveComponent, entity Entity, component Component) {
@@ -68,18 +54,11 @@ type iAutoEventCompMgrFirstAccessComponent interface {
 	EventCompMgrFirstAccessComponent() event.IEvent
 }
 
-func BindEventCompMgrFirstAccessComponent(auto iAutoEventCompMgrFirstAccessComponent, delegate EventCompMgrFirstAccessComponent) event.Hook {
+func BindEventCompMgrFirstAccessComponent(auto iAutoEventCompMgrFirstAccessComponent, delegate EventCompMgrFirstAccessComponent, priority ...int32) event.Hook {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
-	return event.BindEvent[EventCompMgrFirstAccessComponent](auto.EventCompMgrFirstAccessComponent(), delegate)
-}
-
-func BindEventCompMgrFirstAccessComponentWithPriority(auto iAutoEventCompMgrFirstAccessComponent, delegate EventCompMgrFirstAccessComponent, priority int32) event.Hook {
-	if auto == nil {
-		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
-	}
-	return event.BindEventWithPriority[EventCompMgrFirstAccessComponent](auto.EventCompMgrFirstAccessComponent(), delegate, priority)
+	return event.BindEvent[EventCompMgrFirstAccessComponent](auto.EventCompMgrFirstAccessComponent(), delegate, priority...)
 }
 
 func emitEventCompMgrFirstAccessComponent(auto iAutoEventCompMgrFirstAccessComponent, entity Entity, component Component) {

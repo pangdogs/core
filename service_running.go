@@ -1,8 +1,9 @@
 package golaxy
 
 import (
+	"context"
 	"fmt"
-	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/concurrent"
 	"kit.golaxy.org/golaxy/plugin"
 	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/golaxy/util/generic"
@@ -10,35 +11,39 @@ import (
 )
 
 // Run 运行，返回的channel用于线程同步，可以阻塞等待至运行结束
-func (_service *ServiceBehavior) Run() <-chan struct{} {
-	if !service.UnsafeContext(_service.ctx).MarkRunning(true) {
-		panic(fmt.Errorf("%w: already running", ErrService))
+func (serv *ServiceBehavior) Run() <-chan struct{} {
+	ctx := serv.ctx
+
+	select {
+	case <-ctx.Done():
+		panic(fmt.Errorf("%w: %w", ErrService, context.Canceled))
+	default:
 	}
 
-	shutChan := make(chan struct{}, 1)
+	if !serv.started.CompareAndSwap(false, true) {
+		panic(fmt.Errorf("%w: running already started", ErrService))
+	}
 
-	if parentCtx, ok := _service.ctx.GetParentContext().(internal.Context); ok {
+	if parentCtx, ok := serv.ctx.GetParentContext().(concurrent.Context); ok {
 		parentCtx.GetWaitGroup().Add(1)
 	}
 
-	go _service.running(shutChan)
+	shutChan := make(chan struct{}, 1)
+	go serv.running(shutChan)
 
 	return shutChan
 }
 
 // Terminate 停止
-func (_service *ServiceBehavior) Terminate() {
-	_service.ctx.GetCancelFunc()()
+func (serv *ServiceBehavior) Terminate() {
+	serv.ctx.GetCancelFunc()()
 }
 
-func (_service *ServiceBehavior) running(shutChan chan struct{}) {
-	ctx := _service.ctx
+func (serv *ServiceBehavior) running(shutChan chan struct{}) {
+	ctx := serv.ctx
 
-	_service.changeRunningState(service.RunningState_Starting)
-
-	_service.initPlugin()
-
-	_service.changeRunningState(service.RunningState_Started)
+	serv.changeRunningState(service.RunningState_Starting)
+	serv.changeRunningState(service.RunningState_Started)
 
 loop:
 	for {
@@ -50,30 +55,35 @@ loop:
 		}
 	}
 
-	_service.changeRunningState(service.RunningState_Terminating)
+	serv.changeRunningState(service.RunningState_Terminating)
 
 	ctx.GetWaitGroup().Wait()
-	_service.shutPlugin()
 
-	_service.changeRunningState(service.RunningState_Terminated)
+	serv.changeRunningState(service.RunningState_Terminated)
 
-	if parentCtx, ok := ctx.GetParentContext().(internal.Context); ok {
+	if parentCtx, ok := ctx.GetParentContext().(concurrent.Context); ok {
 		parentCtx.GetWaitGroup().Done()
 	}
 
-	service.UnsafeContext(ctx).MarkRunning(false)
 	shutChan <- struct{}{}
 }
 
-func (_service *ServiceBehavior) changeRunningState(state service.RunningState) {
-	service.UnsafeContext(_service.ctx).GetOptions().RunningHandler.Call(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), _service.ctx, state)
+func (serv *ServiceBehavior) changeRunningState(state service.RunningState) {
+	switch state {
+	case service.RunningState_Starting:
+		serv.initPlugin()
+	case service.RunningState_Terminated:
+		serv.shutPlugin()
+	}
+
+	service.UnsafeContext(serv.ctx).ChangeRunningState(state)
 }
 
-func (_service *ServiceBehavior) initPlugin() {
-	if pluginBundle := service.UnsafeContext(_service.ctx).GetOptions().PluginBundle; pluginBundle != nil {
+func (serv *ServiceBehavior) initPlugin() {
+	if pluginBundle := service.UnsafeContext(serv.ctx).GetOptions().PluginBundle; pluginBundle != nil {
 		pluginBundle.Range(func(info plugin.PluginInfo) bool {
 			if pluginInit, ok := info.Face.Iface.(LifecycleServicePluginInit); ok {
-				generic.ToAction1(pluginInit.InitSP).Call(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), _service.ctx)
+				generic.CastAction1(pluginInit.InitSP).Call(serv.ctx.GetAutoRecover(), serv.ctx.GetReportError(), serv.ctx)
 			}
 			plugin.UnsafePluginBundle(pluginBundle).Activate(info.Name, true)
 			return true
@@ -81,12 +91,12 @@ func (_service *ServiceBehavior) initPlugin() {
 	}
 }
 
-func (_service *ServiceBehavior) shutPlugin() {
-	if pluginBundle := service.UnsafeContext(_service.ctx).GetOptions().PluginBundle; pluginBundle != nil {
+func (serv *ServiceBehavior) shutPlugin() {
+	if pluginBundle := service.UnsafeContext(serv.ctx).GetOptions().PluginBundle; pluginBundle != nil {
 		pluginBundle.ReverseRange(func(info plugin.PluginInfo) bool {
 			plugin.UnsafePluginBundle(pluginBundle).Activate(info.Name, false)
 			if pluginShut, ok := info.Face.Iface.(LifecycleServicePluginShut); ok {
-				generic.ToAction1(pluginShut.ShutSP).Call(_service.ctx.GetAutoRecover(), _service.ctx.GetReportError(), _service.ctx)
+				generic.CastAction1(pluginShut.ShutSP).Call(serv.ctx.GetAutoRecover(), serv.ctx.GetReportError(), serv.ctx)
 			}
 			return true
 		})

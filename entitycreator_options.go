@@ -49,10 +49,10 @@ func (_EntityCreatorOption) PersistId(id uid.Id) option.Setting[EntityCreatorOpt
 	}
 }
 
-// ComponentAwakeByAccess 开启组件被访问时，检测并调用Awake()
-func (_EntityCreatorOption) ComponentAwakeByAccess(b bool) option.Setting[EntityCreatorOptions] {
+// AwakeOnFirstAccess 开启组件被首次访问时，检测并调用Awake()
+func (_EntityCreatorOption) AwakeOnFirstAccess(b bool) option.Setting[EntityCreatorOptions] {
 	return func(o *EntityCreatorOptions) {
-		pt.Option{}.ComponentAwakeByAccess(b)(&o.ConstructEntityOptions)
+		pt.Option{}.AwakeOnFirstAccess(b)(&o.ConstructEntityOptions)
 	}
 }
 
@@ -77,17 +77,17 @@ func (_EntityCreatorOption) GCCollector(collector container.GCCollector) option.
 	}
 }
 
-// ComponentCtors 组件构造函数
-func (_EntityCreatorOption) ComponentCtors(ctors []pt.ComponentCtor) option.Setting[EntityCreatorOptions] {
+// ComponentCtor 组件构造函数
+func (_EntityCreatorOption) ComponentCtor(ctors pt.ComponentCtor) option.Setting[EntityCreatorOptions] {
 	return func(o *EntityCreatorOptions) {
-		pt.Option{}.ComponentCtors(ctors)(&o.ConstructEntityOptions)
+		pt.Option{}.ComponentCtor(ctors)(&o.ConstructEntityOptions)
 	}
 }
 
-// EntityCtors 实体构造函数
-func (_EntityCreatorOption) EntityCtors(ctors []pt.EntityCtor) option.Setting[EntityCreatorOptions] {
+// EntityCtor 实体构造函数
+func (_EntityCreatorOption) EntityCtor(ctors pt.EntityCtor) option.Setting[EntityCreatorOptions] {
 	return func(o *EntityCreatorOptions) {
-		pt.Option{}.EntityCtors(ctors)(&o.ConstructEntityOptions)
+		pt.Option{}.EntityCtor(ctors)(&o.ConstructEntityOptions)
 	}
 }
 

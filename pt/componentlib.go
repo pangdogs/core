@@ -3,7 +3,8 @@ package pt
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/exception"
+	"kit.golaxy.org/golaxy/util/generic"
 	"kit.golaxy.org/golaxy/util/types"
 	"reflect"
 	"sync"
@@ -17,8 +18,8 @@ func init() {
 
 // RegisterComponent 注册组件原型，一般在init()函数中使用，线程安全。
 //
-//	@param compName 组件名称，一般是组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
-//	@param COMP 组件对象。
+//	@param name 组件名称，一般是组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
+//	@param comp 组件对象。
 //	@param descr 组件功能的描述说明。
 func RegisterComponent(name string, comp any, descr ...string) {
 	var _descr string
@@ -30,24 +31,24 @@ func RegisterComponent(name string, comp any, descr ...string) {
 
 // DeregisterComponent 取消注册组件原型，线程安全。
 //
-//	@param compImpl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld.HelloWorld`。
+//	@param impl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld.HelloWorld`。
 func DeregisterComponent(impl string) {
 	componentLib.DeregisterComponent(impl)
 }
 
-// AccessComponent 访问组件原型，线程安全。
+// GetComponent 获取组件原型，线程安全。
 //
-//	@param compImpl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld.HelloWorld`。
+//	@param impl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld.HelloWorld`。
 //	@return 组件原型，可以用于创建组件。
 //	@return 是否存在。
-func AccessComponent(impl string) (ComponentPt, bool) {
+func GetComponent(impl string) (ComponentPt, bool) {
 	return componentLib.Get(impl)
 }
 
 // RangeComponent 遍历所有已注册的组件原型，线程安全。
 //
 //	@param fun 遍历函数。
-func RangeComponent(fun func(compPt ComponentPt) bool) {
+func RangeComponent(fun generic.Func1[ComponentPt, bool]) {
 	componentLib.Range(fun)
 }
 
@@ -63,12 +64,12 @@ func (lib *_ComponentLib) init() {
 
 // RegisterComponent 注册组件原型，一般在init()函数中使用，线程安全。
 //
-//	@param compName 组件名称，一般是组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
-//	@param COMP 组件对象。
+//	@param name 组件名称，一般是组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
+//	@param comp 组件对象。
 //	@param descr 组件功能的描述说明。
 func (lib *_ComponentLib) RegisterComponent(name string, comp any, descr string) {
 	if comp == nil {
-		panic(fmt.Errorf("%w: %w: comp is nil", ErrPt, internal.ErrArgs))
+		panic(fmt.Errorf("%w: %w: comp is nil", ErrPt, exception.ErrArgs))
 	}
 
 	if tfComp, ok := comp.(reflect.Type); ok {
@@ -80,7 +81,7 @@ func (lib *_ComponentLib) RegisterComponent(name string, comp any, descr string)
 
 // DeregisterComponent 取消注册组件原型，线程安全。
 //
-//	@param compImpl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld.HelloWorld`。
+//	@param impl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld.HelloWorld`。
 func (lib *_ComponentLib) DeregisterComponent(impl string) {
 	lib.Lock()
 	defer lib.Unlock()
@@ -97,7 +98,7 @@ func (lib *_ComponentLib) DeregisterComponent(impl string) {
 
 // Get 获取组件原型，线程安全。
 //
-//	@param compImpl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld.HelloWorld`。
+//	@param impl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld.HelloWorld`。
 //	@return 组件原型，可以用于创建组件。
 //	@return 是否存在。
 func (lib *_ComponentLib) Get(impl string) (ComponentPt, bool) {
@@ -115,17 +116,13 @@ func (lib *_ComponentLib) Get(impl string) (ComponentPt, bool) {
 // Range 遍历所有已注册的组件原型，线程安全。
 //
 //	@param fun 遍历函数。
-func (lib *_ComponentLib) Range(fun func(compPt ComponentPt) bool) {
-	if fun == nil {
-		return
-	}
-
+func (lib *_ComponentLib) Range(fun generic.Func1[ComponentPt, bool]) {
 	lib.RLock()
 	compPtList := append(make([]*ComponentPt, 0, len(lib.compPtList)), lib.compPtList...)
 	lib.RUnlock()
 
 	for _, compPt := range compPtList {
-		if !fun(*compPt) {
+		if !fun.Exec(*compPt) {
 			return
 		}
 	}

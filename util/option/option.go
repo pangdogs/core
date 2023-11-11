@@ -2,14 +2,14 @@ package option
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/exception"
 	"kit.golaxy.org/golaxy/util/generic"
 )
 
 type Setting[T any] generic.Action1[*T]
 
 func (s Setting[T]) Cast() generic.Action1[*T] {
-	return generic.Action1[*T](s)
+	return generic.CastAction1(s)
 }
 
 func Make[T any](defaults Setting[T], settings ...Setting[T]) (opts T) {
@@ -43,7 +43,7 @@ func Append[T any](opts T, settings ...Setting[T]) T {
 
 func Change[T any](opts *T, settings ...Setting[T]) *T {
 	if opts == nil {
-		panic(fmt.Errorf("%w: opts is nil", internal.ErrArgs))
+		panic(fmt.Errorf("%w: %w: opts is nil", exception.ErrGolaxy, exception.ErrArgs))
 	}
 	for i := range settings {
 		settings[i].Cast().Exec(opts)

@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func genEmit(ctx *_CommandContext) {
+func genEmit(ctx *CommandContext) {
 	emitFile := ctx.EmitDir
 
 	if emitFile == "" {
@@ -80,7 +80,7 @@ package %s
 	}
 
 	// 解析事件定义
-	eventDeclTab := _EventDeclTab{}
+	eventDeclTab := EventDeclTab{}
 	eventDeclTab.Parse(ctx)
 
 	// event包前缀
@@ -125,18 +125,11 @@ type iAuto%[1]s interface {
 	%[1]s() %[6]sIEvent
 }
 
-func Bind%[1]s(auto iAuto%[1]s, delegate %[2]s%[8]s) %[6]sHook {
+func Bind%[1]s(auto iAuto%[1]s, delegate %[2]s%[8]s, priority ...int32) %[6]sHook {
 	if auto == nil {
 		panic(fmt.Errorf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs))
 	}
-	return %[6]sBindEvent[%[2]s%[8]s](auto.%[1]s(), delegate)
-}
-
-func Bind%[1]sWithPriority(auto iAuto%[1]s, delegate %[2]s%[8]s, priority int32) %[6]sHook {
-	if auto == nil {
-		panic(fmt.Errorf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs))
-	}
-	return %[6]sBindEventWithPriority[%[2]s%[8]s](auto.%[1]s(), delegate, priority)
+	return %[6]sBindEvent[%[2]s%[8]s](auto.%[1]s(), delegate, priority...)
 }
 
 func %[9]s%[1]s%[7]s(auto iAuto%[1]s%[4]s) {
@@ -155,18 +148,11 @@ type iAuto%[1]s interface {
 	%[1]s() %[6]sIEvent
 }
 
-func Bind%[1]s(auto iAuto%[1]s, delegate %[2]s%[8]s) %[6]sHook {
+func Bind%[1]s(auto iAuto%[1]s, delegate %[2]s%[8]s, priority ...int32) %[6]sHook {
 	if auto == nil {
 		panic(fmt.Errorf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs))
 	}
-	return %[6]sBindEvent[%[2]s%[8]s](auto.%[1]s(), delegate)
-}
-
-func Bind%[1]sWithPriority(auto iAuto%[1]s, delegate %[2]s%[8]s, priority int32) %[6]sHook {
-	if auto == nil {
-		panic(fmt.Errorf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs))
-	}
-	return %[6]sBindEventWithPriority[%[2]s%[8]s](auto.%[1]s(), delegate, priority)
+	return %[6]sBindEvent[%[2]s%[8]s](auto.%[1]s(), delegate, priority...)
 }
 
 func %[9]s%[1]s%[7]s(auto iAuto%[1]s%[4]s) {

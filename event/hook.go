@@ -2,12 +2,12 @@ package event
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/exception"
 	"kit.golaxy.org/golaxy/util/container"
 	"kit.golaxy.org/golaxy/util/iface"
 )
 
-// Hook 事件绑定句柄，主要用于重新绑定或解除绑定事件，由BindEvent()或BindEventWithPriority()创建并返回，请勿自己创建
+// Hook 事件绑定句柄，主要用于重新绑定或解除绑定事件，由BindEvent()创建并返回，请勿自己创建
 type Hook struct {
 	delegateFace iface.FaceAny
 	createdBatch int32
@@ -16,22 +16,22 @@ type Hook struct {
 	received     int32
 }
 
-// Bind 重新绑定事件与订阅者
-func (hook *Hook) Bind(event IEvent) {
-	hook.BindWithPriority(event, 0)
-}
-
-// BindWithPriority 重新绑定事件与订阅者，可以设置优先级调整回调先后顺序，按优先级升序排列
-func (hook *Hook) BindWithPriority(event IEvent, priority int32) {
+// Bind 重新绑定事件与订阅者，可以设置优先级调整回调先后顺序，按优先级升序排列
+func (hook *Hook) Bind(event IEvent, priority ...int32) {
 	if event == nil {
-		panic(fmt.Errorf("%w: %w: event is nil", ErrEvent, internal.ErrArgs))
+		panic(fmt.Errorf("%w: %w: event is nil", ErrEvent, exception.ErrArgs))
 	}
 
 	if hook.IsBound() {
 		panic(fmt.Errorf("%w: hook already bound", ErrEvent))
 	}
 
-	*hook = event.newHook(hook.delegateFace, priority)
+	_priority := int32(0)
+	if len(priority) > 0 {
+		_priority = priority[0]
+	}
+
+	*hook = event.newHook(hook.delegateFace, _priority)
 }
 
 // Unbind 解绑定事件与订阅者

@@ -21,7 +21,7 @@ import (
 	"strings"
 )
 
-type _CommandContext struct {
+type CommandContext struct {
 	// 基础选项
 	DeclFile          string
 	EventRegexp       string
@@ -72,7 +72,7 @@ func main() {
 
 	cmd := kingpin.Parse()
 
-	ctx := &_CommandContext{}
+	ctx := &CommandContext{}
 	ctx.DeclFile, _ = filepath.Abs(*declFile)
 	ctx.EventRegexp = strings.TrimSpace(*eventRegexp)
 	ctx.PackageEventAlias = strings.TrimSpace(*packageEventAlias)
@@ -129,7 +129,7 @@ func main() {
 	}
 }
 
-func loadDeclFile(ctx *_CommandContext) {
+func loadDeclFile(ctx *CommandContext) {
 	if filepath.Ext(ctx.DeclFile) != ".go" {
 		panic("`--decl_file`设置的源文件后缀名必须为`.go`")
 	}

@@ -4,46 +4,44 @@ import (
 	"fmt"
 	"kit.golaxy.org/golaxy/ec"
 	"kit.golaxy.org/golaxy/event"
-	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/concurrent"
+	"kit.golaxy.org/golaxy/internal/exception"
 	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/golaxy/util/container"
+	"kit.golaxy.org/golaxy/util/generic"
 	"kit.golaxy.org/golaxy/util/iface"
 	"kit.golaxy.org/golaxy/util/uid"
 )
 
 // IEntityMgr 实体管理器接口
 type IEntityMgr interface {
-	internal.ContextResolver
+	concurrent.CurrentContextResolver
+
 	// GetEntity 查询实体
 	GetEntity(id uid.Id) (ec.Entity, bool)
 	// RangeEntities 遍历所有实体
-	RangeEntities(func(entity ec.Entity) bool)
+	RangeEntities(fun generic.Func1[ec.Entity, bool])
 	// ReverseRangeEntities 反向遍历所有实体
-	ReverseRangeEntities(func(entity ec.Entity) bool)
+	ReverseRangeEntities(fun generic.Func1[ec.Entity, bool])
 	// CountEntities 获取实体数量
 	CountEntities() int
 	// AddEntity 添加实体
 	AddEntity(entity ec.Entity, scope ec.Scope) error
 	// RemoveEntity 删除实体
 	RemoveEntity(id uid.Id)
-	// EventEntityMgrAddEntity 事件：实体管理器添加实体
-	EventEntityMgrAddEntity() event.IEvent
-	// EventEntityMgrRemovingEntity 事件：实体管理器开始删除实体
-	EventEntityMgrRemovingEntity() event.IEvent
-	// EventEntityMgrRemoveEntity 事件：实体管理器删除实体
-	EventEntityMgrRemoveEntity() event.IEvent
-	// EventEntityMgrEntityAddComponents 事件：实体管理器中的实体添加组件
-	EventEntityMgrEntityAddComponents() event.IEvent
-	// EventEntityMgrEntityRemoveComponent 事件：实体管理器中的实体删除组件
-	EventEntityMgrEntityRemoveComponent() event.IEvent
-	// EventEntityMgrEntityFirstAccessComponent 事件：实体管理器中的实体首次访问组件
-	EventEntityMgrEntityFirstAccessComponent() event.IEvent
+
+	iAutoEventEntityMgrAddEntity                  // 事件：实体管理器添加实体
+	iAutoEventEntityMgrRemovingEntity             // 事件：实体管理器开始删除实体
+	iAutoEventEntityMgrRemoveEntity               // 事件：实体管理器删除实体
+	iAutoEventEntityMgrEntityAddComponents        // 事件：实体管理器中的实体添加组件
+	iAutoEventEntityMgrEntityRemoveComponent      // 事件：实体管理器中的实体删除组件
+	iAutoEventEntityMgrEntityFirstAccessComponent // 事件：实体管理器中的实体首次访问组件
 }
 
 type _EntityInfo struct {
-	Element *container.Element[iface.FaceAny]
-	Hooks   [3]event.Hook
-	Global  bool
+	element *container.Element[iface.FaceAny]
+	hooks   [3]event.Hook
+	global  bool
 }
 
 type _EntityMgr struct {
@@ -58,9 +56,9 @@ type _EntityMgr struct {
 	eventEntityMgrEntityFirstAccessComponent event.Event
 }
 
-func (entityMgr *_EntityMgr) Init(ctx Context) {
+func (entityMgr *_EntityMgr) init(ctx Context) {
 	if ctx == nil {
-		panic(fmt.Errorf("%w: %w: ctx is nil", ErrEntityMgr, internal.ErrArgs))
+		panic(fmt.Errorf("%w: %w: ctx is nil", ErrEntityMgr, exception.ErrArgs))
 	}
 
 	entityMgr.ctx = ctx
@@ -75,9 +73,36 @@ func (entityMgr *_EntityMgr) Init(ctx Context) {
 	entityMgr.eventEntityMgrEntityFirstAccessComponent.Init(ctx.GetAutoRecover(), ctx.GetReportError(), event.EventRecursion_Allow, ctx.GetHookAllocator(), ctx)
 }
 
+func (entityMgr *_EntityMgr) changeRunningState(state RunningState) {
+	switch state {
+	case RunningState_Starting:
+		entityMgr.RangeEntities(func(entity ec.Entity) bool {
+			emitEventEntityMgrAddEntity(entityMgr, entityMgr, entity)
+			return true
+		})
+	case RunningState_Terminating:
+		entityMgr.ReverseRangeEntities(func(entity ec.Entity) bool {
+			entity.DestroySelf()
+			return true
+		})
+	case RunningState_Terminated:
+		entityMgr.eventEntityMgrAddEntity.Clean()
+		entityMgr.eventEntityMgrRemovingEntity.Clean()
+		entityMgr.eventEntityMgrRemoveEntity.Clean()
+		entityMgr.eventEntityMgrEntityAddComponents.Clean()
+		entityMgr.eventEntityMgrEntityRemoveComponent.Clean()
+		entityMgr.eventEntityMgrEntityFirstAccessComponent.Clean()
+	}
+}
+
 // ResolveContext 解析上下文
 func (entityMgr *_EntityMgr) ResolveContext() iface.Cache {
 	return entityMgr.ctx.ResolveContext()
+}
+
+// ResolveCurrentContext 解析当前上下文
+func (entityMgr *_EntityMgr) ResolveCurrentContext() iface.Cache {
+	return entityMgr.ctx.ResolveCurrentContext()
 }
 
 // GetEntity 查询实体
@@ -87,32 +112,24 @@ func (entityMgr *_EntityMgr) GetEntity(id uid.Id) (ec.Entity, bool) {
 		return nil, false
 	}
 
-	if e.Element.Escaped() {
+	if e.element.Escaped() {
 		return nil, false
 	}
 
-	return iface.Cache2Iface[ec.Entity](e.Element.Value.Cache), true
+	return iface.Cache2Iface[ec.Entity](e.element.Value.Cache), true
 }
 
 // RangeEntities 遍历所有实体
-func (entityMgr *_EntityMgr) RangeEntities(fun func(entity ec.Entity) bool) {
-	if fun == nil {
-		return
-	}
-
+func (entityMgr *_EntityMgr) RangeEntities(fun generic.Func1[ec.Entity, bool]) {
 	entityMgr.entityList.Traversal(func(e *container.Element[iface.FaceAny]) bool {
-		return fun(iface.Cache2Iface[ec.Entity](e.Value.Cache))
+		return fun.Exec(iface.Cache2Iface[ec.Entity](e.Value.Cache))
 	})
 }
 
 // ReverseRangeEntities 反向遍历所有实体
-func (entityMgr *_EntityMgr) ReverseRangeEntities(fun func(entity ec.Entity) bool) {
-	if fun == nil {
-		return
-	}
-
+func (entityMgr *_EntityMgr) ReverseRangeEntities(fun generic.Func1[ec.Entity, bool]) {
 	entityMgr.entityList.ReverseTraversal(func(e *container.Element[iface.FaceAny]) bool {
-		return fun(iface.Cache2Iface[ec.Entity](e.Value.Cache))
+		return fun.Exec(iface.Cache2Iface[ec.Entity](e.Value.Cache))
 	})
 }
 
@@ -124,13 +141,13 @@ func (entityMgr *_EntityMgr) CountEntities() int {
 // AddEntity 添加实体
 func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 	if entity == nil {
-		panic(fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, internal.ErrArgs))
+		panic(fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs))
 	}
 
 	switch scope {
 	case ec.Scope_Local, ec.Scope_Global:
 	default:
-		return fmt.Errorf("%w: %w: invalid scope", ErrEntityMgr, internal.ErrArgs)
+		return fmt.Errorf("%w: %w: invalid scope", ErrEntityMgr, exception.ErrArgs)
 	}
 
 	if entity.GetState() != ec.EntityState_Birth {
@@ -171,21 +188,20 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity, scope ec.Scope) error {
 	}
 
 	entityInfo := _EntityInfo{
-		Element: entityMgr.entityList.PushBack(iface.NewFacePair[any](entity, entity)),
-		Hooks:   [3]event.Hook{ec.BindEventCompMgrAddComponents(entity, entityMgr), ec.BindEventCompMgrRemoveComponent(entity, entityMgr)},
-		Global:  scope == ec.Scope_Global,
+		element: entityMgr.entityList.PushBack(iface.MakeFacePair[any](entity, entity)),
+		hooks:   [3]event.Hook{ec.BindEventCompMgrAddComponents(entity, entityMgr), ec.BindEventCompMgrRemoveComponent(entity, entityMgr)},
+		global:  scope == ec.Scope_Global,
 	}
-	if _entity.GetOptions().ComponentAwakeByAccess {
-		entityInfo.Hooks[2] = ec.BindEventCompMgrFirstAccessComponent(entity, entityMgr)
+	if _entity.GetOptions().AwakeOnFirstAccess {
+		entityInfo.hooks[2] = ec.BindEventCompMgrFirstAccessComponent(entity, entityMgr)
+	}
+	if _entity.GetOptions().GCCollector == nil {
+		_entity.SetGCCollector(entityMgr.ctx)
 	}
 
 	entityMgr.entityMap[entity.GetId()] = entityInfo
 
 	_entity.SetState(ec.EntityState_Entry)
-
-	if _entity.GetGCCollector() == nil {
-		_entity.SetGCCollector(entityMgr.ctx)
-	}
 
 	emitEventEntityMgrAddEntity(entityMgr, entityMgr, entity)
 
@@ -199,24 +215,24 @@ func (entityMgr *_EntityMgr) RemoveEntity(id uid.Id) {
 		return
 	}
 
-	entity := ec.UnsafeEntity(iface.Cache2Iface[ec.Entity](entityInfo.Element.Value.Cache))
+	entity := ec.UnsafeEntity(iface.Cache2Iface[ec.Entity](entityInfo.element.Value.Cache))
 	if entity.GetState() >= ec.EntityState_Leave {
 		return
 	}
 
 	entity.SetState(ec.EntityState_Leave)
 
-	if entityInfo.Global {
+	if entityInfo.global {
 		service.Current(entityMgr).GetEntityMgr().RemoveEntity(entity.GetId())
 	}
 
 	emitEventEntityMgrRemovingEntity(entityMgr, entityMgr, entity.Entity)
 
 	delete(entityMgr.entityMap, id)
-	entityInfo.Element.Escape()
+	entityInfo.element.Escape()
 
-	for i := range entityInfo.Hooks {
-		entityInfo.Hooks[i].Unbind()
+	for i := range entityInfo.hooks {
+		entityInfo.hooks[i].Unbind()
 	}
 
 	emitEventEntityMgrRemoveEntity(entityMgr, entityMgr, entity.Entity)

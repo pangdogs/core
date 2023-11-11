@@ -3,195 +3,169 @@ package service
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/concurrent"
+	"kit.golaxy.org/golaxy/util/generic"
 	"kit.golaxy.org/golaxy/util/uid"
 	_ "unsafe"
 )
 
-// Ret 调用结果
-type Ret = internal.Ret
-
-// AsyncRet 异步调用结果
-type AsyncRet = internal.AsyncRet
+type (
+	Ret      = concurrent.Ret      // 调用结果
+	AsyncRet = concurrent.AsyncRet // 异步调用结果
+)
 
 // Caller 异步调用发起者
 type Caller interface {
-	// SyncCall 同步调用。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，会阻塞并等待返回值。
+	// Call 查找实体并异步调用函数，有返回值。不会阻塞当前线程，会返回AsyncRet。
 	//
 	//	注意：
-	//	- 代码片段中的线程安全问题。
-	//	- 当运行时的SyncCallTimeout选项设置为0时，在代码片段中，如果向调用方所在的运行时发起同步调用，那么会造成线程死锁。
+	//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
 	//  - 调用过程中的panic信息，均会转换为error返回。
-	SyncCall(entityId uid.Id, segment func(entity ec.Entity) Ret) Ret
+	Call(entityId uid.Id, fun generic.FuncVar1[ec.Entity, any, Ret], va ...any) AsyncRet
 
-	// AsyncCall 异步调用。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，不会阻塞，会返回AsyncRet。
+	// CallDelegate 查找实体并异步调用委托，有返回值。不会阻塞当前线程，会返回AsyncRet。
 	//
 	//	注意：
-	//	- 代码片段中的线程安全问题。
-	//	- 在代码片段中，如果向调用方所在的运行时发起同步调用，并且调用方也在阻塞AsyncRet等待返回值，那么会造成线程死锁。
+	//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
 	//  - 调用过程中的panic信息，均会转换为error返回。
-	AsyncCall(entityId uid.Id, segment func(entity ec.Entity) Ret) AsyncRet
+	CallDelegate(entityId uid.Id, fun generic.DelegateFuncVar1[ec.Entity, any, Ret], va ...any) AsyncRet
 
-	// SyncCallVoid 同步调用，无返回值。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，会阻塞，没有返回值。
+	// CallVoid 查找实体并异步调用函数，无返回值。在运行时中。不会阻塞当前线程，会返回AsyncRet。
 	//
 	//	注意：
-	//	- 代码片段中的线程安全问题。
-	//	- 当运行时的SyncCallTimeout选项设置为0时，在代码片段中，如果向调用方所在的运行时发起同步调用，那么会造成线程死锁。
-	//  - 调用过程中的panic信息，均会抛弃。
-	SyncCallVoid(entityId uid.Id, segment func(entity ec.Entity))
+	//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
+	//  - 调用过程中的panic信息，均会转换为error返回。
+	CallVoid(entityId uid.Id, fun generic.ActionVar1[ec.Entity, any], va ...any) AsyncRet
 
-	// AsyncCallVoid 异步调用，无返回值。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，不会阻塞，没有返回值。
+	// CallVoidDelegate 查找实体并异步调用委托，无返回值。在运行时中。不会阻塞当前线程，会返回AsyncRet。
 	//
 	//	注意：
-	//	- 代码片段中的线程安全问题。
-	//  - 调用过程中的panic信息，均会抛弃。
-	AsyncCallVoid(entityId uid.Id, segment func(entity ec.Entity))
+	//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
+	//  - 调用过程中的panic信息，均会转换为error返回。
+	CallVoidDelegate(entityId uid.Id, fun generic.DelegateActionVar1[ec.Entity, any], va ...any) AsyncRet
 }
 
-//go:linkname entityCaller kit.golaxy.org/golaxy/runtime.entityCaller
-func entityCaller(entity ec.Entity) internal.Caller
+//go:linkname getCaller kit.golaxy.org/golaxy/runtime.getCaller
+func getCaller(ctxResolver concurrent.ContextResolver) concurrent.Caller
 
-//go:linkname entityExist kit.golaxy.org/golaxy/runtime.entityExist
-func entityExist(entity ec.Entity) bool
+func makeAsyncErr(err error) AsyncRet {
+	asyncRet := concurrent.MakeAsyncRet()
+	asyncRet <- concurrent.MakeRet(nil, err)
+	close(asyncRet)
+	return asyncRet
+}
 
-func checkEntityId(entityId uid.Id) error {
-	if entityId.IsNil() {
-		return fmt.Errorf("%w: entity id is nil", ErrContext)
+func checkEntity(entity ec.Entity) error {
+	if entity.GetState() >= ec.EntityState_Leave {
+		return fmt.Errorf("%w: entity not living", ErrContext)
 	}
 	return nil
 }
 
-func checkSegment(segment func(entity ec.Entity) Ret) error {
-	if segment == nil {
-		return fmt.Errorf("%w: segment is nil", ErrContext)
+// Call 查找实体并异步调用函数，有返回值。不会阻塞当前线程，会返回AsyncRet。
+//
+//		注意：
+//		- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
+//	 - 调用过程中的panic信息，均会转换为error返回。
+func (ctx *ContextBehavior) Call(entityId uid.Id, fun generic.FuncVar1[ec.Entity, any, Ret], va ...any) AsyncRet {
+	entity, err := ctx.getEntity(entityId)
+	if err != nil {
+		return makeAsyncErr(err)
 	}
-	return nil
+
+	return getCaller(entity).Call(func(va ...any) concurrent.Ret {
+		entity := va[0].(ec.Entity)
+		fun := va[1].(generic.FuncVar1[ec.Entity, any, Ret])
+		funVa := va[2].([]any)
+
+		if err := checkEntity(entity); err != nil {
+			return concurrent.MakeRet(nil, err)
+		}
+
+		return fun.Exec(entity, funVa...)
+	}, entity, fun, va)
 }
 
-func getEntity(entityMgr _EntityMgr, id uid.Id) (ec.Entity, error) {
-	entity, ok := entityMgr.GetEntity(id)
+// CallDelegate 查找实体并异步调用委托，有返回值。不会阻塞当前线程，会返回AsyncRet。
+//
+//		注意：
+//		- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
+//	 - 调用过程中的panic信息，均会转换为error返回。
+func (ctx *ContextBehavior) CallDelegate(entityId uid.Id, fun generic.DelegateFuncVar1[ec.Entity, any, Ret], va ...any) AsyncRet {
+	entity, err := ctx.getEntity(entityId)
+	if err != nil {
+		return makeAsyncErr(err)
+	}
+
+	return getCaller(entity).Call(func(va ...any) concurrent.Ret {
+		entity := va[0].(ec.Entity)
+		fun := va[1].(generic.DelegateFuncVar1[ec.Entity, any, Ret])
+		funVa := va[2].([]any)
+
+		if err := checkEntity(entity); err != nil {
+			return concurrent.MakeRet(nil, err)
+		}
+
+		return fun.Exec(nil, entity, funVa...)
+	}, entity, fun, va)
+}
+
+// CallVoid 查找实体并异步调用函数，无返回值。在运行时中。不会阻塞当前线程，会返回AsyncRet。
+//
+//		注意：
+//		- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
+//	 - 调用过程中的panic信息，均会转换为error返回。
+func (ctx *ContextBehavior) CallVoid(entityId uid.Id, fun generic.ActionVar1[ec.Entity, any], va ...any) AsyncRet {
+	entity, err := ctx.getEntity(entityId)
+	if err != nil {
+		return makeAsyncErr(err)
+	}
+
+	return getCaller(entity).Call(func(va ...any) concurrent.Ret {
+		entity := va[0].(ec.Entity)
+		fun := va[1].(generic.ActionVar1[ec.Entity, any])
+		funVa := va[2].([]any)
+
+		if err := checkEntity(entity); err != nil {
+			return concurrent.MakeRet(nil, err)
+		}
+
+		fun.Exec(entity, funVa...)
+
+		return concurrent.MakeRet(nil, nil)
+	}, entity, fun, va)
+}
+
+// CallVoidDelegate 查找实体并异步调用委托，无返回值。在运行时中。不会阻塞当前线程，会返回AsyncRet。
+//
+//		注意：
+//		- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
+//	 - 调用过程中的panic信息，均会转换为error返回。
+func (ctx *ContextBehavior) CallVoidDelegate(entityId uid.Id, fun generic.DelegateActionVar1[ec.Entity, any], va ...any) AsyncRet {
+	entity, err := ctx.getEntity(entityId)
+	if err != nil {
+		return makeAsyncErr(err)
+	}
+
+	return getCaller(entity).Call(func(va ...any) concurrent.Ret {
+		entity := va[0].(ec.Entity)
+		fun := va[1].(generic.DelegateActionVar1[ec.Entity, any])
+		funVa := va[2].([]any)
+
+		if err := checkEntity(entity); err != nil {
+			return concurrent.MakeRet(nil, err)
+		}
+
+		fun.Exec(nil, entity, funVa...)
+
+		return concurrent.MakeRet(nil, nil)
+	}, entity, fun, va)
+}
+
+func (ctx *ContextBehavior) getEntity(id uid.Id) (ec.ConcurrentEntity, error) {
+	entity, ok := ctx.entityMgr.GetEntity(id)
 	if !ok {
 		return nil, fmt.Errorf("%w: entity not exist", ErrContext)
 	}
 	return entity, nil
-}
-
-func syncCall(entity ec.Entity, segment func(entity ec.Entity) Ret) Ret {
-	return entityCaller(entity).SyncCall(func() Ret {
-		if !entityExist(entity) {
-			return Ret{
-				Error: fmt.Errorf("%w: entity not exist", ErrContext),
-			}
-		}
-		return segment(entity)
-	})
-}
-
-func asyncCall(entity ec.Entity, segment func(entity ec.Entity) Ret) AsyncRet {
-	return entityCaller(entity).AsyncCall(func() Ret {
-		if !entityExist(entity) {
-			return Ret{
-				Error: fmt.Errorf("%w: entity not exist", ErrContext),
-			}
-		}
-		return segment(entity)
-	})
-}
-
-// SyncCall 同步调用。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，会阻塞并等待返回值。
-//
-//	注意：
-//	- 代码片段中的线程安全问题。
-//	- 当运行时的SyncCallTimeout选项设置为0时，在代码片段中，如果向调用方所在的运行时发起同步调用，那么会造成线程死锁。
-//	- 调用过程中的panic信息，均会转换为error返回。
-func (ctx *ContextBehavior) SyncCall(entityId uid.Id, segment func(entity ec.Entity) Ret) Ret {
-	if err := checkEntityId(entityId); err != nil {
-		return internal.NewRet(nil, err)
-	}
-
-	if err := checkSegment(segment); err != nil {
-		return internal.NewRet(nil, err)
-	}
-
-	entity, err := getEntity(ctx.entityMgr, entityId)
-	if err != nil {
-		return internal.NewRet(nil, err)
-	}
-
-	return syncCall(entity, segment)
-}
-
-// AsyncCall 异步调用。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，不会阻塞，会返回AsyncRet。
-//
-//	注意：
-//	- 代码片段中的线程安全问题。
-//	- 在代码片段中，如果向调用方所在的运行时发起同步调用，并且调用方也在阻塞AsyncRet等待返回值，那么会造成线程死锁。
-//	- 调用过程中的panic信息，均会转换为error返回。
-func (ctx *ContextBehavior) AsyncCall(entityId uid.Id, segment func(entity ec.Entity) Ret) AsyncRet {
-	returnAsyncRet := func(val any, err error) AsyncRet {
-		asyncRet := make(chan Ret, 1)
-		asyncRet <- internal.NewRet(val, err)
-		close(asyncRet)
-		return asyncRet
-	}
-
-	if err := checkEntityId(entityId); err != nil {
-		return returnAsyncRet(nil, err)
-	}
-
-	if err := checkSegment(segment); err != nil {
-		return returnAsyncRet(nil, err)
-	}
-
-	entity, err := getEntity(ctx.entityMgr, entityId)
-	if err != nil {
-		return returnAsyncRet(nil, err)
-	}
-
-	return asyncCall(entity, segment)
-}
-
-// SyncCallVoid 同步调用，无返回值。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，会阻塞，没有返回值。
-//
-//	注意：
-//	- 代码片段中的线程安全问题。
-//	- 当运行时的SyncCallTimeout选项设置为0时，在代码片段中，如果向调用方所在的运行时发起同步调用，那么会造成线程死锁。
-//	- 调用过程中的panic信息，均会抛弃。
-func (ctx *ContextBehavior) SyncCallVoid(entityId uid.Id, segment func(entity ec.Entity)) {
-	if entityId.IsNil() || segment == nil {
-		return
-	}
-
-	entity, ok := ctx.entityMgr.GetEntity(entityId)
-	if !ok {
-		return
-	}
-
-	entityCaller(entity).SyncCallVoid(func() {
-		if entityExist(entity) {
-			segment(entity)
-		}
-	})
-}
-
-// AsyncCallVoid 异步调用，无返回值。查找实体，并获取实体的运行时，将代码片段压入运行时的任务流水线，串行化的进行调用，不会阻塞，没有返回值。
-//
-//	注意：
-//	- 代码片段中的线程安全问题。
-//	- 调用过程中的panic信息，均会抛弃。
-func (ctx *ContextBehavior) AsyncCallVoid(entityId uid.Id, segment func(entity ec.Entity)) {
-	if entityId.IsNil() || segment == nil {
-		return
-	}
-
-	entity, ok := ctx.entityMgr.GetEntity(entityId)
-	if !ok {
-		return
-	}
-
-	entityCaller(entity).AsyncCallVoid(func() {
-		if entityExist(entity) {
-			segment(entity)
-		}
-	})
 }

@@ -39,7 +39,7 @@ func (app *_App) runApp(services []string, ptPath string) {
 	for _, service := range services {
 		serviceConf, ok := servicePtConf[service]
 		if !ok {
-			panic(fmt.Errorf("service %q pt config not found", service))
+			panic(fmt.Errorf("%w: service %q pt config not found", ErrApp, service))
 		}
 
 		wg.Add(1)
@@ -58,7 +58,7 @@ func (app *_App) loadPtConfig(ptConfFile string) ServiceConfTab {
 		loader := config.JsonLoader[ServiceConfTab]{}
 
 		if err := loader.SetFile(ptConfFile); err != nil {
-			panic(fmt.Errorf("load service pt config %q failed, %v", ptConfFile, err))
+			panic(fmt.Errorf("%w: load service pt config %q failed, %v", ErrApp, ptConfFile, err))
 		}
 
 		return loader.Get()
@@ -67,13 +67,13 @@ func (app *_App) loadPtConfig(ptConfFile string) ServiceConfTab {
 		loader := config.XmlLoader[ServiceConfTab]{}
 
 		if err := loader.SetFile(ptConfFile); err != nil {
-			panic(fmt.Errorf("load service pt config %q failed, %v", ptConfFile, err))
+			panic(fmt.Errorf("%w: load service pt config %q failed, %v", ErrApp, ptConfFile, err))
 		}
 
 		return loader.Get()
 
 	default:
-		panic(fmt.Errorf("load service pt config %q failed, file suffix invalid", ptConfFile))
+		panic(fmt.Errorf("%w: load service pt config %q failed, file suffix invalid", ErrApp, ptConfFile))
 	}
 }
 
@@ -86,22 +86,24 @@ func (app *_App) runService(ctx context.Context, serviceName string, serviceConf
 
 	pluginBundle := plugin.NewPluginBundle()
 
-	serviceCtxOpts := []option.Setting[service.ContextOptions]{
+	serviceCtxSettings := []option.Setting[service.ContextOptions]{
 		service.Option{}.Context(ctx),
 		service.Option{}.Name(serviceName),
 		service.Option{}.EntityLib(entityLib),
 		service.Option{}.PluginBundle(pluginBundle),
 	}
 
-	for _, ctor := range app.options.ServiceCtxCtors {
-		serviceCtxOpts = append(serviceCtxOpts, ctor.Exec(serviceName, entityLib, pluginBundle)...)
-	}
+	app.options.ServiceCtxCtor.Exec(func(settings []option.Setting[service.ContextOptions], err error) bool {
+		serviceCtxSettings = append(serviceCtxSettings, settings...)
+		return false
+	}, serviceName, entityLib, pluginBundle)
 
-	var serviceOpts []option.Setting[golaxy.ServiceOptions]
+	var serviceSettings []option.Setting[golaxy.ServiceOptions]
 
-	for _, ctor := range app.options.ServiceCtors {
-		serviceOpts = append(serviceOpts, ctor.Exec(serviceName)...)
-	}
+	app.options.ServiceCtor.Exec(func(settings []option.Setting[golaxy.ServiceOptions], err error) bool {
+		serviceSettings = append(serviceSettings, settings...)
+		return false
+	}, serviceName)
 
-	<-golaxy.NewService(service.NewContext(serviceCtxOpts...), serviceOpts...).Run()
+	<-golaxy.NewService(service.NewContext(serviceCtxSettings...), serviceSettings...).Run()
 }

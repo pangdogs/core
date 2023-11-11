@@ -1,7 +1,6 @@
 package runtime
 
 import (
-	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/service"
 )
 
@@ -41,17 +40,12 @@ func (uc _UnsafeContext) GetServiceCtx() service.Context {
 	return uc.getServiceCtx()
 }
 
+// ChangeRunningState 修改运行状态
+func (uc _UnsafeContext) ChangeRunningState(state RunningState) {
+	uc.changeRunningState(state)
+}
+
 // GC GC
 func (uc _UnsafeContext) GC() {
 	uc.gc()
-}
-
-// MarkRunning 标记运行时已经开始运行
-func (uc _UnsafeContext) MarkRunning(v bool) bool {
-	return internal.UnsafeRunningState(uc.Context).MarkRunning(v)
-}
-
-// MarkPaired 标记与运行时已经配对
-func (uc _UnsafeContext) MarkPaired(v bool) bool {
-	return internal.UnsafeContext(uc.Context).MarkPaired(v)
 }

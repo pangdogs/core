@@ -2,8 +2,9 @@ package event
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/exception"
 	"kit.golaxy.org/golaxy/util/container"
+	"kit.golaxy.org/golaxy/util/generic"
 	"kit.golaxy.org/golaxy/util/iface"
 )
 
@@ -25,7 +26,7 @@ var (
 
 // IEvent 本地事件接口，非线程安全，不能用于跨线程事件通知
 type IEvent interface {
-	emit(fun func(delegate iface.Cache) bool)
+	emit(fun generic.Func1[iface.Cache, bool])
 	newHook(delegateFace iface.FaceAny, priority int32) Hook
 	removeDelegate(delegate any)
 	setGCCollector(gcCollector container.GCCollector)
@@ -82,8 +83,8 @@ func (event *Event) Clean() {
 	})
 }
 
-func (event *Event) emit(fun func(delegate iface.Cache) bool) {
-	if fun == nil || !event.opened {
+func (event *Event) emit(fun generic.Func1[iface.Cache, bool]) {
+	if !event.opened {
 		return
 	}
 
@@ -135,10 +136,8 @@ func (event *Event) emit(fun func(delegate iface.Cache) bool) {
 		e.Value.received++
 		defer func() { e.Value.received-- }()
 
-		ret, err := internal.Call(event.autoRecover, event.reportError, func() bool {
-			return fun(e.Value.delegateFace.Cache)
-		})
-		if err != nil {
+		ret, panicErr := fun.Call(event.autoRecover, event.reportError, e.Value.delegateFace.Cache)
+		if panicErr != nil {
 			return true
 		}
 
@@ -152,7 +151,7 @@ func (event *Event) newHook(delegateFace iface.FaceAny, priority int32) Hook {
 	}
 
 	if delegateFace.IsNil() {
-		panic(fmt.Errorf("%w: %w: delegateFace is nil", ErrEvent, internal.ErrArgs))
+		panic(fmt.Errorf("%w: %w: delegateFace is nil", ErrEvent, exception.ErrArgs))
 	}
 
 	hook := Hook{

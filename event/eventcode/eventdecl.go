@@ -6,7 +6,7 @@ import (
 	"regexp"
 )
 
-type _EventDecl struct {
+type EventDecl struct {
 	Name               string
 	Comment            string
 	FuncName           string
@@ -17,9 +17,9 @@ type _EventDecl struct {
 	FuncHasRet         bool
 }
 
-type _EventDeclTab []_EventDecl
+type EventDeclTab []EventDecl
 
-func (tab *_EventDeclTab) Parse(ctx *_CommandContext) {
+func (tab *EventDeclTab) Parse(ctx *CommandContext) {
 	eventRegexp, err := regexp.Compile(ctx.EventRegexp)
 	if err != nil {
 		panic(err)
@@ -153,7 +153,7 @@ func (tab *_EventDeclTab) Parse(ctx *_CommandContext) {
 			eventFuncHasRet = true
 		}
 
-		eventInfo := _EventDecl{
+		eventInfo := EventDecl{
 			Name:               eventName,
 			Comment:            eventComment,
 			FuncName:           eventFuncName,

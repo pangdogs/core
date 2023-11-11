@@ -22,7 +22,7 @@ func (app *_App) printComp() {
 
 	compPtsDs, err := json.MarshalIndent(compPts, "", "\t")
 	if err != nil {
-		panic(fmt.Errorf("marshal components info failed, %v", err))
+		panic(fmt.Errorf("%w: marshal components info failed, %v", ErrApp, err))
 	}
 
 	fmt.Printf("%s", compPtsDs)
@@ -33,7 +33,7 @@ func (app *_App) printPt(ptPath string) {
 
 	servicePtDs, err := json.MarshalIndent(servicePt, "", "\t")
 	if err != nil {
-		panic(fmt.Errorf("marshal service pt info failed, %v", err))
+		panic(fmt.Errorf("%w: marshal service pt info failed, %v", ErrApp, err))
 	}
 
 	fmt.Printf("%s", servicePtDs)

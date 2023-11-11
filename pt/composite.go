@@ -158,6 +158,10 @@ func (c *Composite[T]) Cast() T {
 }
 
 func as(entity ec.Entity, vfIface reflect.Value) bool {
+	if entity == nil {
+		return false
+	}
+
 	sb := strings.Builder{}
 	sb.Grow(128)
 

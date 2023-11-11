@@ -3,16 +3,19 @@ package golaxy
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/internal"
 	"kit.golaxy.org/golaxy/pt"
 	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/golaxy/util/option"
 )
 
-var (
-	ErrEntityCreator = fmt.Errorf("%w: entity-creator", internal.ErrGolaxy)
-)
+// CreateEntity 创建实体
+func CreateEntity(ctx runtime.Context, settings ...option.Setting[EntityCreatorOptions]) EntityCreator {
+	return EntityCreator{
+		Context: ctx,
+		Options: option.Make(_EntityCreatorOption{}.Default(), settings...),
+	}
+}
 
 // EntityCreator 实体构建器
 type EntityCreator struct {
@@ -23,7 +26,7 @@ type EntityCreator struct {
 // Spawn 创建实体
 func (creator EntityCreator) Spawn(settings ...option.Setting[EntityCreatorOptions]) (ec.Entity, error) {
 	if creator.Context == nil {
-		panic(fmt.Errorf("%w: setting Context is nil", ErrEntityCreator))
+		panic(fmt.Errorf("%w: setting context is nil", ErrGolaxy))
 	}
 
 	runtimeCtx := creator.Context
@@ -33,19 +36,23 @@ func (creator EntityCreator) Spawn(settings ...option.Setting[EntityCreatorOptio
 
 	entityPt, err := pt.Using(serviceCtx, opts.Prototype)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrEntityCreator, err)
+		return nil, err
+	}
+
+	if !opts.ParentID.IsNil() {
+
 	}
 
 	entity := entityPt.UnsafeConstruct(opts.ConstructEntityOptions)
 
 	if err := runtimeCtx.GetEntityMgr().AddEntity(entity, opts.Scope); err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrEntityCreator, err)
+		return nil, err
 	}
 
 	if !opts.ParentID.IsNil() {
 		if err := runtimeCtx.GetECTree().AddChild(opts.ParentID, entity.GetId()); err != nil {
 			entity.DestroySelf()
-			return nil, fmt.Errorf("%w, %w", ErrEntityCreator, err)
+			return nil, err
 		}
 	}
 

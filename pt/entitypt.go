@@ -3,6 +3,7 @@ package pt
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy/ec"
+	"kit.golaxy.org/golaxy/internal/exception"
 	"kit.golaxy.org/golaxy/util/option"
 )
 
@@ -20,13 +21,13 @@ func (pt *EntityPt) Construct(settings ...option.Setting[ConstructEntityOptions]
 // Deprecated: UnsafeConstruct 内部创建实体
 func (pt *EntityPt) UnsafeConstruct(options ConstructEntityOptions) ec.Entity {
 	options.Prototype = pt.Prototype
-	return pt.Assemble(ec.UnsafeNewEntity(options.EntityOptions), options.ComponentCtors, options.EntityCtors)
+	return pt.Assemble(ec.UnsafeNewEntity(options.EntityOptions), options.ComponentCtor, options.EntityCtor)
 }
 
 // Assemble 向实体安装组件
-func (pt *EntityPt) Assemble(entity ec.Entity, componentCtors []ComponentCtor, entityCtors []EntityCtor) ec.Entity {
+func (pt *EntityPt) Assemble(entity ec.Entity, componentCtor ComponentCtor, entityCtor EntityCtor) ec.Entity {
 	if entity == nil {
-		return nil
+		panic(fmt.Errorf("%w: %w: entity is nil", ErrPt, exception.ErrArgs))
 	}
 
 	for i := range pt.compPts {
@@ -38,14 +39,10 @@ func (pt *EntityPt) Assemble(entity ec.Entity, componentCtors []ComponentCtor, e
 			panic(fmt.Errorf("%w: %w", ErrPt, err))
 		}
 
-		for j := range componentCtors {
-			componentCtors[j].Exec(entity, comp)
-		}
+		componentCtor.Exec(nil, entity, comp)
 	}
 
-	for i := range entityCtors {
-		entityCtors[i].Exec(entity)
-	}
+	entityCtor.Exec(nil, entity)
 
 	return entity
 }

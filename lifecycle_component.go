@@ -20,3 +20,8 @@ type LifecycleComponentLateUpdate = eventLateUpdate
 type LifecycleComponentShut interface {
 	Shut()
 }
+
+// LifecycleComponentDestroy 组件的生命周期进入死亡（death）时的回调，组件实现此接口即可使用
+type LifecycleComponentDestroy interface {
+	Destroy()
+}

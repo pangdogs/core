@@ -2,10 +2,11 @@ package golaxy
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/concurrent"
 	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/golaxy/util/iface"
 	"kit.golaxy.org/golaxy/util/option"
+	"sync/atomic"
 )
 
 // NewService 创建服务
@@ -29,7 +30,7 @@ func UnsafeNewService(ctx service.Context, options ServiceOptions) Service {
 // Service 服务
 type Service interface {
 	_Service
-	internal.Running
+	Running
 
 	// GetContext 获取服务上下文
 	GetContext() service.Context
@@ -41,35 +42,35 @@ type _Service interface {
 }
 
 type ServiceBehavior struct {
-	opts ServiceOptions
-	ctx  service.Context
+	ctx     service.Context
+	opts    ServiceOptions
+	started atomic.Bool
 }
 
 // GetContext 获取服务上下文
-func (_service *ServiceBehavior) GetContext() service.Context {
-	return _service.ctx
+func (serv *ServiceBehavior) GetContext() service.Context {
+	return serv.ctx
 }
 
-func (_service *ServiceBehavior) init(ctx service.Context, opts ServiceOptions) {
+func (serv *ServiceBehavior) init(ctx service.Context, opts ServiceOptions) {
 	if ctx == nil {
-		panic(fmt.Errorf("%w: %w: ctx is nil", ErrService, ErrArgs))
+		panic(fmt.Errorf("%w: %w: context is nil", ErrService, ErrArgs))
 	}
 
-	if !service.UnsafeContext(ctx).MarkPaired(true) {
-		panic(fmt.Errorf("%w: ctx already paired", ErrService))
+	if !concurrent.UnsafeContext(ctx).SetPaired(true) {
+		panic(fmt.Errorf("%w: context already paired", ErrService))
 	}
 
-	_service.opts = opts
+	serv.ctx = ctx
+	serv.opts = opts
 
-	if _service.opts.CompositeFace.IsNil() {
-		_service.opts.CompositeFace = iface.NewFace[Service](_service)
+	if serv.opts.CompositeFace.IsNil() {
+		serv.opts.CompositeFace = iface.MakeFace[Service](serv)
 	}
 
-	_service.ctx = ctx
-
-	_service.changeRunningState(service.RunningState_Birth)
+	serv.changeRunningState(service.RunningState_Birth)
 }
 
-func (_service *ServiceBehavior) getOptions() *ServiceOptions {
-	return &_service.opts
+func (serv *ServiceBehavior) getOptions() *ServiceOptions {
+	return &serv.opts
 }

@@ -3,8 +3,9 @@ package ec
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy/event"
-	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/exception"
 	"kit.golaxy.org/golaxy/util/container"
+	"kit.golaxy.org/golaxy/util/generic"
 	"kit.golaxy.org/golaxy/util/iface"
 	"kit.golaxy.org/golaxy/util/uid"
 )
@@ -18,9 +19,9 @@ type _ComponentMgr interface {
 	// GetComponents 使用名称查询所有指向的组件
 	GetComponents(name string) []Component
 	// RangeComponents 遍历所有组件
-	RangeComponents(fun func(component Component) bool)
+	RangeComponents(fun generic.Func1[Component, bool])
 	// ReverseRangeComponents 反向遍历所有组件
-	ReverseRangeComponents(fun func(component Component) bool)
+	ReverseRangeComponents(fun generic.Func1[Component, bool])
 	// CountComponents 统计所有组件数量
 	CountComponents() int
 	// AddComponents 使用同个名称添加多个组件，一般情况下名称指组件接口名称，也可以自定义名称
@@ -31,12 +32,10 @@ type _ComponentMgr interface {
 	RemoveComponent(name string)
 	// RemoveComponentById 使用组件Id删除组件
 	RemoveComponentById(id uid.Id)
-	// EventCompMgrAddComponents 事件：实体的组件管理器加入一些组件
-	EventCompMgrAddComponents() event.IEvent
-	// EventCompMgrRemoveComponent 事件：实体的组件管理器删除组件
-	EventCompMgrRemoveComponent() event.IEvent
-	// EventCompMgrFirstAccessComponent 事件：实体的组件管理器首次访问组件
-	EventCompMgrFirstAccessComponent() event.IEvent
+
+	iAutoEventCompMgrAddComponents        // 事件：实体的组件管理器加入一些组件
+	iAutoEventCompMgrRemoveComponent      // 事件：实体的组件管理器删除组件
+	iAutoEventCompMgrFirstAccessComponent // 事件：实体的组件管理器首次访问组件
 }
 
 // GetComponent 使用名称查询组件，一般情况下名称指组件接口名称，也可以自定义名称，同个名称指向多个组件时，返回首个组件
@@ -88,32 +87,24 @@ func (entity *EntityBehavior) GetComponents(name string) []Component {
 }
 
 // RangeComponents 遍历所有组件
-func (entity *EntityBehavior) RangeComponents(fun func(component Component) bool) {
-	if fun == nil {
-		return
-	}
-
+func (entity *EntityBehavior) RangeComponents(fun generic.Func1[Component, bool]) {
 	entity.componentList.Traversal(func(e *container.Element[iface.FaceAny]) bool {
 		comp := entity.accessComponent(iface.Cache2Iface[Component](e.Value.Cache))
 		if comp == nil {
 			return true
 		}
-		return fun(comp)
+		return fun.Exec(comp)
 	})
 }
 
 // ReverseRangeComponents 反向遍历所有组件
-func (entity *EntityBehavior) ReverseRangeComponents(fun func(component Component) bool) {
-	if fun == nil {
-		return
-	}
-
+func (entity *EntityBehavior) ReverseRangeComponents(fun generic.Func1[Component, bool]) {
 	entity.componentList.ReverseTraversal(func(e *container.Element[iface.FaceAny]) bool {
 		comp := entity.accessComponent(iface.Cache2Iface[Component](e.Value.Cache))
 		if comp == nil {
 			return true
 		}
-		return fun(comp)
+		return fun.Exec(comp)
 	})
 }
 
@@ -210,7 +201,7 @@ func (entity *EntityBehavior) EventCompMgrFirstAccessComponent() event.IEvent {
 
 func (entity *EntityBehavior) addSingleComponent(name string, component Component) error {
 	if component == nil {
-		return fmt.Errorf("%w: %w: component is nil", ErrEC, internal.ErrArgs)
+		return fmt.Errorf("%w: %w: component is nil", ErrEC, exception.ErrArgs)
 	}
 
 	if component.GetState() != ComponentState_Birth {
@@ -219,7 +210,7 @@ func (entity *EntityBehavior) addSingleComponent(name string, component Componen
 
 	component.init(name, entity.opts.CompositeFace.Iface, component, entity.opts.HookAllocator, entity.opts.GCCollector)
 
-	face := iface.NewFacePair[any](component, component)
+	face := iface.MakeFacePair[any](component, component)
 
 	if e, ok := entity.getComponentElement(name); ok {
 		entity.componentList.TraversalAt(func(other *container.Element[iface.FaceAny]) bool {
@@ -272,9 +263,9 @@ func (entity *EntityBehavior) getComponentElementById(id uid.Id) (*container.Ele
 }
 
 func (entity *EntityBehavior) accessComponent(comp Component) Component {
-	if entity.opts.ComponentAwakeByAccess && comp.GetState() == ComponentState_Attach {
+	if entity.opts.AwakeOnFirstAccess && comp.GetState() == ComponentState_Attach {
 		switch entity.GetState() {
-		case EntityState_Init, EntityState_Inited, EntityState_Living:
+		case EntityState_Awake, EntityState_Start, EntityState_Living:
 			emitEventCompMgrFirstAccessComponent(entity, entity.opts.CompositeFace.Iface, comp)
 		}
 	}

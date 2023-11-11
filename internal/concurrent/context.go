@@ -1,4 +1,4 @@
-package internal
+package concurrent
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 // Context 上下文
 type Context interface {
 	context.Context
+
 	// GetParentContext 获取父上下文
 	GetParentContext() context.Context
 	// GetAutoRecover panic时是否自动恢复
@@ -21,7 +22,8 @@ type Context interface {
 	GetCancelFunc() context.CancelFunc
 
 	init(parentCtx context.Context, autoRecover bool, reportError chan error)
-	markPaired(v bool) bool
+	setPaired(v bool) bool
+	getPaired() bool
 }
 
 // ContextBehavior 上下文行为
@@ -73,6 +75,10 @@ func (ctx *ContextBehavior) init(parentCtx context.Context, autoRecover bool, re
 	ctx.Context, ctx.cancel = context.WithCancel(ctx.parentCtx)
 }
 
-func (ctx *ContextBehavior) markPaired(v bool) bool {
+func (ctx *ContextBehavior) setPaired(v bool) bool {
 	return ctx.paired.CompareAndSwap(!v, v)
+}
+
+func (ctx *ContextBehavior) getPaired() bool {
+	return ctx.paired.Load()
 }

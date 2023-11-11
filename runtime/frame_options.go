@@ -2,7 +2,7 @@ package runtime
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/exception"
 	"kit.golaxy.org/golaxy/util/option"
 )
 
@@ -28,7 +28,7 @@ func (_FrameOption) Default() option.Setting[FrameOptions] {
 func (_FrameOption) TargetFPS(fps float32) option.Setting[FrameOptions] {
 	return func(o *FrameOptions) {
 		if fps <= 0 {
-			panic(fmt.Errorf("%w: %w: TargetFPS less equal 0 is invalid", ErrFrame, internal.ErrArgs))
+			panic(fmt.Errorf("%w: %w: TargetFPS less equal 0 is invalid", ErrFrame, exception.ErrArgs))
 		}
 		o.TargetFPS = fps
 	}
@@ -38,7 +38,7 @@ func (_FrameOption) TargetFPS(fps float32) option.Setting[FrameOptions] {
 func (_FrameOption) TotalFrames(v uint64) option.Setting[FrameOptions] {
 	return func(o *FrameOptions) {
 		if v < 0 {
-			panic(fmt.Errorf("%w: %w: TotalFrames less 0 is invalid", ErrFrame, internal.ErrArgs))
+			panic(fmt.Errorf("%w: %w: TotalFrames less 0 is invalid", ErrFrame, exception.ErrArgs))
 		}
 		o.TotalFrames = v
 	}

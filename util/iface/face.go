@@ -1,17 +1,22 @@
 package iface
 
-// NewFace 创建Face
-func NewFace[T any](iface T) Face[T] {
+import (
+	"fmt"
+	"kit.golaxy.org/golaxy/internal/exception"
+)
+
+// MakeFace 创建Face
+func MakeFace[T any](iface T) Face[T] {
 	return Face[T]{
 		Iface: iface,
 		Cache: Iface2Cache[T](iface),
 	}
 }
 
-// NewFacePair 创建Face，同时传入接口与Cache
-func NewFacePair[T, C any](iface T, cache C) Face[T] {
+// MakeFacePair 创建Face，同时传入接口与Cache
+func MakeFacePair[T, C any](iface T, cache C) Face[T] {
 	if Iface2Cache(iface)[1] != Iface2Cache(cache)[1] {
-		panic("different pointer address")
+		panic(fmt.Errorf("%w: different pointer address", exception.ErrGolaxy))
 	}
 
 	return Face[T]{

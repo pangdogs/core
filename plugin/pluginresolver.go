@@ -2,6 +2,7 @@ package plugin
 
 import (
 	"fmt"
+	"kit.golaxy.org/golaxy/internal/exception"
 	"kit.golaxy.org/golaxy/util/iface"
 	"kit.golaxy.org/golaxy/util/types"
 )
@@ -18,7 +19,7 @@ type PluginResolver interface {
 //	@param name 插件名称。
 func Using[T any](pluginResolver PluginResolver, name string) (T, error) {
 	if pluginResolver == nil {
-		return types.Zero[T](), fmt.Errorf("%w: pluginResolver is nil", ErrPlugin)
+		return types.Zero[T](), fmt.Errorf("%w: %w: pluginResolver is nil", ErrPlugin, exception.ErrArgs)
 	}
 
 	pluginInfo, ok := pluginResolver.ResolvePlugin(name)

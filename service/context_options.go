@@ -14,19 +14,8 @@ import (
 // Option 所有选项设置器
 type Option struct{}
 
-// RunningState 运行状态
-type RunningState int32
-
-const (
-	RunningState_Birth       RunningState = iota // 出生
-	RunningState_Starting                        // 开始启动
-	RunningState_Started                         // 已启动
-	RunningState_Terminating                     // 开始停止
-	RunningState_Terminated                      // 已停止
-)
-
 type (
-	RunningHandler = generic.Action2[Context, RunningState] // 运行状态变化处理器
+	RunningHandler = generic.DelegateAction2[Context, RunningState] // 运行状态变化处理器
 )
 
 // ContextOptions 创建服务上下文的所有选项

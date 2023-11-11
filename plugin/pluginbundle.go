@@ -3,7 +3,8 @@ package plugin
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/exception"
+	"kit.golaxy.org/golaxy/util/generic"
 	"kit.golaxy.org/golaxy/util/iface"
 	"sync"
 )
@@ -38,12 +39,12 @@ type PluginBundle interface {
 	// Range 遍历所有已注册的插件
 	//
 	//	@param fun 遍历函数。
-	Range(fun func(info PluginInfo) bool)
+	Range(fun generic.Func1[PluginInfo, bool])
 
 	// ReverseRange 反向遍历所有已注册的插件
 	//
 	//	@param fun 遍历函数。
-	ReverseRange(fun func(info PluginInfo) bool)
+	ReverseRange(fun generic.Func1[PluginInfo, bool])
 
 	activate(name string, b bool)
 }
@@ -55,9 +56,9 @@ type PluginBundle interface {
 //	@param plugin 插件。
 func Install[T any](pluginBundle PluginBundle, name string, plugin T) {
 	if pluginBundle == nil {
-		panic(fmt.Errorf("%w: %w: pluginBundle is nil", ErrPlugin, internal.ErrArgs))
+		panic(fmt.Errorf("%w: %w: pluginBundle is nil", ErrPlugin, exception.ErrArgs))
 	}
-	pluginBundle.Install(name, iface.NewFacePair[any](plugin, plugin))
+	pluginBundle.Install(name, iface.MakeFacePair[any](plugin, plugin))
 }
 
 // Uninstall 卸载插件。
@@ -65,7 +66,7 @@ func Install[T any](pluginBundle PluginBundle, name string, plugin T) {
 //	@param pluginBundle 插件包。
 func Uninstall(pluginBundle PluginBundle, name string) {
 	if pluginBundle == nil {
-		panic(fmt.Errorf("%w: %w: pluginBundle is nil", ErrPlugin, internal.ErrArgs))
+		panic(fmt.Errorf("%w: %w: pluginBundle is nil", ErrPlugin, exception.ErrArgs))
 	}
 	pluginBundle.Uninstall(name)
 }
@@ -93,7 +94,7 @@ func (bundle *_PluginBundle) init() {
 //	@param plugin 插件Face。
 func (bundle *_PluginBundle) Install(name string, pluginFace iface.FaceAny) {
 	if pluginFace.IsNil() {
-		panic(fmt.Errorf("%w: %w: pluginFace is nil", ErrPlugin, internal.ErrArgs))
+		panic(fmt.Errorf("%w: %w: pluginFace is nil", ErrPlugin, exception.ErrArgs))
 	}
 
 	bundle.Lock()
@@ -160,17 +161,13 @@ func (bundle *_PluginBundle) Get(name string) (PluginInfo, bool) {
 // Range 遍历所有已注册的插件
 //
 //	@param fun 遍历函数。
-func (bundle *_PluginBundle) Range(fun func(info PluginInfo) bool) {
-	if fun == nil {
-		return
-	}
-
+func (bundle *_PluginBundle) Range(fun generic.Func1[PluginInfo, bool]) {
 	bundle.RLock()
 	pluginList := append(make([]*PluginInfo, 0, len(bundle.pluginList)), bundle.pluginList...)
 	bundle.RUnlock()
 
 	for i := range pluginList {
-		if !fun(*pluginList[i]) {
+		if !fun.Exec(*pluginList[i]) {
 			return
 		}
 	}
@@ -179,17 +176,13 @@ func (bundle *_PluginBundle) Range(fun func(info PluginInfo) bool) {
 // ReverseRange 反向遍历所有已注册的插件
 //
 //	@param fun 遍历函数。
-func (bundle *_PluginBundle) ReverseRange(fun func(info PluginInfo) bool) {
-	if fun == nil {
-		return
-	}
-
+func (bundle *_PluginBundle) ReverseRange(fun generic.Func1[PluginInfo, bool]) {
 	bundle.RLock()
 	pluginList := append(make([]*PluginInfo, 0, len(bundle.pluginList)), bundle.pluginList...)
 	bundle.RUnlock()
 
 	for i := len(pluginList) - 1; i >= 0; i-- {
-		if !fun(*pluginList[i]) {
+		if !fun.Exec(*pluginList[i]) {
 			return
 		}
 	}

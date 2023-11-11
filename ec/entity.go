@@ -3,7 +3,7 @@ package ec
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy/event"
-	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/concurrent"
 	"kit.golaxy.org/golaxy/util/container"
 	"kit.golaxy.org/golaxy/util/iface"
 	"kit.golaxy.org/golaxy/util/option"
@@ -32,15 +32,18 @@ func UnsafeNewEntity(options EntityOptions) Entity {
 type Entity interface {
 	_Entity
 	_ComponentMgr
-	internal.ContextResolver
+	concurrent.CurrentContextResolver
+	concurrent.ConcurrentContextResolver
 	fmt.Stringer
 
 	// GetId 获取实体Id
 	GetId() uid.Id
 	// GetPrototype 获取实体原型
 	GetPrototype() string
-	// GetParent 获取在运行时上下文的主EC树上的父实体
-	GetParent() (Entity, bool)
+	// GetECNodeState 获取EC节点状态
+	GetECNodeState() ECNodeState
+	// GetECParent 获取在EC树中的父实体
+	GetECParent() (Entity, bool)
 	// GetState 获取实体状态
 	GetState() EntityState
 	// DestroySelf 销毁自身
@@ -54,8 +57,8 @@ type _Entity interface {
 	setContext(ctx iface.Cache)
 	getVersion() int32
 	setGCCollector(gcCollector container.GCCollector)
-	getGCCollector() container.GCCollector
-	setParent(parent Entity)
+	setECNodeState(state ECNodeState)
+	setECParent(parent Entity)
 	setState(state EntityState)
 	eventEntityDestroySelf() event.IEvent
 }
@@ -64,6 +67,7 @@ type _Entity interface {
 type EntityBehavior struct {
 	opts                             EntityOptions
 	context                          iface.Cache
+	ecNodeState                      ECNodeState
 	parent                           Entity
 	componentList                    container.List[iface.FaceAny]
 	version                          int32
@@ -84,8 +88,13 @@ func (entity *EntityBehavior) GetPrototype() string {
 	return entity.opts.Prototype
 }
 
-// GetParent 获取在运行时上下文的主EC树上的父实体
-func (entity *EntityBehavior) GetParent() (Entity, bool) {
+// GetECNodeState 获取EC节点状态
+func (entity *EntityBehavior) GetECNodeState() ECNodeState {
+	return entity.ecNodeState
+}
+
+// GetECParent 获取在EC树中的父实体
+func (entity *EntityBehavior) GetECParent() (Entity, bool) {
 	return entity.parent, entity.parent != nil
 }
 
@@ -97,8 +106,8 @@ func (entity *EntityBehavior) GetState() EntityState {
 // DestroySelf 销毁自身
 func (entity *EntityBehavior) DestroySelf() {
 	switch entity.GetState() {
-	case EntityState_Init, EntityState_Inited, EntityState_Living:
-		emitEventEntityDestroySelf(entity.eventEntityDestroySelf(), entity.opts.CompositeFace.Iface)
+	case EntityState_Awake, EntityState_Start, EntityState_Living:
+		emitEventEntityDestroySelf(UnsafeEntity(entity), entity.opts.CompositeFace.Iface)
 	}
 }
 
@@ -107,10 +116,20 @@ func (entity *EntityBehavior) ResolveContext() iface.Cache {
 	return entity.context
 }
 
+// ResolveCurrentContext 解析当前上下文
+func (entity *EntityBehavior) ResolveCurrentContext() iface.Cache {
+	return entity.ResolveContext()
+}
+
+// ResolveConcurrentContext 解析线程安全的上下文
+func (entity *EntityBehavior) ResolveConcurrentContext() iface.Cache {
+	return entity.ResolveContext()
+}
+
 // String implements fmt.Stringer
 func (entity *EntityBehavior) String() string {
 	var parentId uid.Id
-	if parent, ok := entity.GetParent(); ok {
+	if parent, ok := entity.GetECParent(); ok {
 		parentId = parent.GetId()
 	}
 	return fmt.Sprintf(`{"id":%q "prototype":%q "parent_id":%q "state":%q}`, entity.GetId(), entity.GetPrototype(), parentId, entity.GetState())
@@ -120,7 +139,7 @@ func (entity *EntityBehavior) init(opts EntityOptions) {
 	entity.opts = opts
 
 	if entity.opts.CompositeFace.IsNil() {
-		entity.opts.CompositeFace = iface.NewFace[Entity](entity)
+		entity.opts.CompositeFace = iface.MakeFace[Entity](entity)
 	}
 
 	entity.componentList.Init(entity.opts.FaceAnyAllocator, entity.opts.GCCollector)
@@ -151,7 +170,6 @@ func (entity *EntityBehavior) setGCCollector(gcCollector container.GCCollector) 
 	if entity.opts.GCCollector == gcCollector {
 		return
 	}
-
 	entity.opts.GCCollector = gcCollector
 
 	entity.componentList.SetGCCollector(gcCollector)
@@ -164,13 +182,14 @@ func (entity *EntityBehavior) setGCCollector(gcCollector container.GCCollector) 
 	event.UnsafeEvent(&entity._eventEntityDestroySelf).SetGCCollector(gcCollector)
 	event.UnsafeEvent(&entity.eventCompMgrAddComponents).SetGCCollector(gcCollector)
 	event.UnsafeEvent(&entity.eventCompMgrRemoveComponent).SetGCCollector(gcCollector)
+	event.UnsafeEvent(&entity.eventCompMgrFirstAccessComponent).SetGCCollector(gcCollector)
 }
 
-func (entity *EntityBehavior) getGCCollector() container.GCCollector {
-	return entity.opts.GCCollector
+func (entity *EntityBehavior) setECNodeState(state ECNodeState) {
+	entity.ecNodeState = state
 }
 
-func (entity *EntityBehavior) setParent(parent Entity) {
+func (entity *EntityBehavior) setECParent(parent Entity) {
 	entity.parent = parent
 }
 
@@ -178,7 +197,17 @@ func (entity *EntityBehavior) setState(state EntityState) {
 	if state <= entity.state {
 		return
 	}
+
 	entity.state = state
+
+	switch entity.state {
+	case EntityState_Leave:
+		entity._eventEntityDestroySelf.Close()
+	case EntityState_Shut:
+		entity.eventCompMgrAddComponents.Close()
+		entity.eventCompMgrRemoveComponent.Close()
+		entity.eventCompMgrFirstAccessComponent.Close()
+	}
 }
 
 func (entity *EntityBehavior) eventEntityDestroySelf() event.IEvent {

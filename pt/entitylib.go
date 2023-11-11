@@ -2,6 +2,7 @@ package pt
 
 import (
 	"fmt"
+	"kit.golaxy.org/golaxy/util/generic"
 	"sync"
 )
 
@@ -28,7 +29,7 @@ type EntityLib interface {
 	// Range 遍历所有已注册的实体原型
 	//
 	//	@param fun 遍历函数。
-	Range(fun func(entityPt EntityPt) bool)
+	Range(fun generic.Func1[EntityPt, bool])
 }
 
 // NewEntityLib 创建实体原型库
@@ -66,7 +67,7 @@ func (lib *_EntityLib) Register(prototype string, compImpls []string) {
 	}
 
 	for i := range compImpls {
-		compPt, ok := AccessComponent(compImpls[i])
+		compPt, ok := GetComponent(compImpls[i])
 		if !ok {
 			panic(fmt.Errorf("%w: entity %q component %q not registered", ErrPt, prototype, compImpls[i]))
 		}
@@ -114,17 +115,13 @@ func (lib *_EntityLib) Get(prototype string) (EntityPt, bool) {
 // Range 遍历所有已注册的实体原型
 //
 //	@param fun 遍历函数。
-func (lib *_EntityLib) Range(fun func(entityPt EntityPt) bool) {
-	if fun == nil {
-		return
-	}
-
+func (lib *_EntityLib) Range(fun generic.Func1[EntityPt, bool]) {
 	lib.RLock()
 	entityPtList := append(make([]*EntityPt, 0, len(lib.entityPtList)), lib.entityPtList...)
 	lib.RUnlock()
 
 	for _, entityPt := range entityPtList {
-		if !fun(*entityPt) {
+		if !fun.Exec(*entityPt) {
 			return
 		}
 	}

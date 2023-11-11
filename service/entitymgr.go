@@ -3,7 +3,7 @@ package service
 import (
 	"fmt"
 	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/internal"
+	"kit.golaxy.org/golaxy/internal/exception"
 	"kit.golaxy.org/golaxy/util/iface"
 	"kit.golaxy.org/golaxy/util/uid"
 	"sync"
@@ -14,13 +14,13 @@ type IEntityMgr interface {
 	// GetContext 获取服务上下文
 	GetContext() Context
 	// GetEntity 查询实体
-	GetEntity(id uid.Id) (ec.Entity, bool)
+	GetEntity(id uid.Id) (ec.ConcurrentEntity, bool)
 	// GetOrAddEntity 查询或添加实体
-	GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, error)
+	GetOrAddEntity(entity ec.ConcurrentEntity) (ec.ConcurrentEntity, bool, error)
 	// AddEntity 添加实体
-	AddEntity(entity ec.Entity) error
+	AddEntity(entity ec.ConcurrentEntity) error
 	// GetAndRemoveEntity 查询并删除实体
-	GetAndRemoveEntity(id uid.Id) (ec.Entity, bool)
+	GetAndRemoveEntity(id uid.Id) (ec.ConcurrentEntity, bool)
 	// RemoveEntity 删除实体
 	RemoveEntity(id uid.Id)
 }
@@ -32,7 +32,7 @@ type _EntityMgr struct {
 
 func (entityMgr *_EntityMgr) init(ctx Context) {
 	if ctx == nil {
-		panic(fmt.Errorf("%w: %w: ctx is nil", ErrEntityMgr, internal.ErrArgs))
+		panic(fmt.Errorf("%w: %w: ctx is nil", ErrEntityMgr, exception.ErrArgs))
 	}
 
 	entityMgr.ctx = ctx
@@ -44,44 +44,44 @@ func (entityMgr *_EntityMgr) GetContext() Context {
 }
 
 // GetEntity 查询实体
-func (entityMgr *_EntityMgr) GetEntity(id uid.Id) (ec.Entity, bool) {
+func (entityMgr *_EntityMgr) GetEntity(id uid.Id) (ec.ConcurrentEntity, bool) {
 	v, ok := entityMgr.entityMap.Load(id)
 	if !ok {
 		return nil, false
 	}
 
-	return v.(ec.Entity), true
+	return v.(ec.ConcurrentEntity), true
 }
 
 // GetOrAddEntity 查询或添加实体
-func (entityMgr *_EntityMgr) GetOrAddEntity(entity ec.Entity) (ec.Entity, bool, error) {
+func (entityMgr *_EntityMgr) GetOrAddEntity(entity ec.ConcurrentEntity) (ec.ConcurrentEntity, bool, error) {
 	if entity == nil {
-		return nil, false, fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, internal.ErrArgs)
+		return nil, false, fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs)
 	}
 
 	if entity.GetId().IsNil() {
 		return nil, false, fmt.Errorf("%w: entity id is nil", ErrEntityMgr)
 	}
 
-	if entity.ResolveContext() == iface.NilCache {
+	if entity.ResolveConcurrentContext() == iface.NilCache {
 		return nil, false, fmt.Errorf("%w: entity context can't be resolve", ErrEntityMgr)
 	}
 
 	actual, loaded := entityMgr.entityMap.LoadOrStore(entity.GetId(), entity)
-	return actual.(ec.Entity), loaded, nil
+	return actual.(ec.ConcurrentEntity), loaded, nil
 }
 
 // AddEntity 添加实体
-func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity) error {
+func (entityMgr *_EntityMgr) AddEntity(entity ec.ConcurrentEntity) error {
 	if entity == nil {
-		return fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, internal.ErrArgs)
+		return fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs)
 	}
 
 	if entity.GetId().IsNil() {
 		return fmt.Errorf("%w: entity id is nil", ErrEntityMgr)
 	}
 
-	if entity.ResolveContext() == iface.NilCache {
+	if entity.ResolveConcurrentContext() == iface.NilCache {
 		return fmt.Errorf("%w: entity context can't be resolve", ErrEntityMgr)
 	}
 
@@ -91,12 +91,12 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.Entity) error {
 }
 
 // GetAndRemoveEntity 查询并删除实体
-func (entityMgr *_EntityMgr) GetAndRemoveEntity(id uid.Id) (ec.Entity, bool) {
+func (entityMgr *_EntityMgr) GetAndRemoveEntity(id uid.Id) (ec.ConcurrentEntity, bool) {
 	v, loaded := entityMgr.entityMap.LoadAndDelete(id)
 	if !loaded {
 		return nil, false
 	}
-	return v.(ec.Entity), true
+	return v.(ec.ConcurrentEntity), true
 }
 
 // RemoveEntity 删除实体

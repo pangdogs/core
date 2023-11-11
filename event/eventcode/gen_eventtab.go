@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func genEventTab(ctx *_CommandContext) {
+func genEventTab(ctx *CommandContext) {
 	eventTabFile := ctx.EventTabDir
 
 	if eventTabFile == "" {
@@ -49,7 +49,7 @@ package %s
 	}
 
 	// 解析事件定义
-	eventDeclTab := _EventDeclTab{}
+	eventDeclTab := EventDeclTab{}
 	eventDeclTab.Parse(ctx)
 
 	// event包前缀

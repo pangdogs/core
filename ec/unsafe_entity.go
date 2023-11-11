@@ -48,14 +48,14 @@ func (ue _UnsafeEntity) SetGCCollector(gcCollector container.GCCollector) {
 	ue.setGCCollector(gcCollector)
 }
 
-// GetGCCollector 获取GC收集器
-func (ue _UnsafeEntity) GetGCCollector() container.GCCollector {
-	return ue.getGCCollector()
+// SetECNodeState 设置EC节点状态
+func (ue _UnsafeEntity) SetECNodeState(state ECNodeState) {
+	ue.setECNodeState(state)
 }
 
-// SetParent 设置父实体
-func (ue _UnsafeEntity) SetParent(parent Entity) {
-	ue.setParent(parent)
+// SetECParent 设置在EC树中的父实体
+func (ue _UnsafeEntity) SetECParent(parent Entity) {
+	ue.setECParent(parent)
 }
 
 // SetState 设置状态

@@ -16,8 +16,8 @@ import (
 type Option struct{}
 
 type (
-	ServiceCtxCtor = generic.Func3[string, pt.EntityLib, plugin.PluginBundle, []option.Setting[service.ContextOptions]] // 服务上下文构造函数
-	ServiceCtor    = generic.Func1[string, []option.Setting[golaxy.ServiceOptions]]                                     // 服务构造函数
+	ServiceCtxCtor = generic.DelegateFunc3[string, pt.EntityLib, plugin.PluginBundle, []option.Setting[service.ContextOptions]] // 服务上下文构造函数
+	ServiceCtor    = generic.DelegateFunc1[string, []option.Setting[golaxy.ServiceOptions]]                                     // 服务构造函数
 )
 
 // Cmd 应用指令
@@ -28,10 +28,10 @@ type Cmd struct {
 
 // AppOptions 创建应用的所有选项
 type AppOptions struct {
-	Commands        []Cmd            // 应用指令
-	QuitSignals     []os.Signal      // 退出信号
-	ServiceCtxCtors []ServiceCtxCtor // 服务上下文构造函数
-	ServiceCtors    []ServiceCtor    // 服务构造函数
+	Commands       []Cmd          // 应用指令
+	QuitSignals    []os.Signal    // 退出信号
+	ServiceCtxCtor ServiceCtxCtor // 服务上下文构造函数
+	ServiceCtor    ServiceCtor    // 服务构造函数
 }
 
 // Default 默认值
@@ -39,8 +39,8 @@ func (Option) Default() option.Setting[AppOptions] {
 	return func(o *AppOptions) {
 		Option{}.Commands(nil)(o)
 		Option{}.QuitSignals(syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGKILL)(o)
-		Option{}.ServiceCtxCtors(nil)(o)
-		Option{}.ServiceCtors(nil)(o)
+		Option{}.ServiceCtxCtor(nil)(o)
+		Option{}.ServiceCtor(nil)(o)
 	}
 }
 
@@ -58,16 +58,16 @@ func (Option) QuitSignals(signals ...os.Signal) option.Setting[AppOptions] {
 	}
 }
 
-// ServiceCtxCtors 服务上下文构造函数
-func (Option) ServiceCtxCtors(ctors []ServiceCtxCtor) option.Setting[AppOptions] {
+// ServiceCtxCtor 服务上下文构造函数
+func (Option) ServiceCtxCtor(ctor ServiceCtxCtor) option.Setting[AppOptions] {
 	return func(o *AppOptions) {
-		o.ServiceCtxCtors = ctors
+		o.ServiceCtxCtor = ctor
 	}
 }
 
-// ServiceCtors 服务构造函数
-func (Option) ServiceCtors(ctors []ServiceCtor) option.Setting[AppOptions] {
+// ServiceCtor 服务构造函数
+func (Option) ServiceCtor(ctor ServiceCtor) option.Setting[AppOptions] {
 	return func(o *AppOptions) {
-		o.ServiceCtors = ctors
+		o.ServiceCtor = ctor
 	}
 }
