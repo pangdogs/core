@@ -14,19 +14,19 @@ import (
 )
 
 // NewContext 创建运行时上下文
-func NewContext(serviceCtx service.Context, settings ...option.Setting[ContextOptions]) Context {
-	return UnsafeNewContext(serviceCtx, option.Make(_ContextOption{}.Default(), settings...))
+func NewContext(servCtx service.Context, settings ...option.Setting[ContextOptions]) Context {
+	return UnsafeNewContext(servCtx, option.Make(_ContextOption{}.Default(), settings...))
 }
 
 // Deprecated: UnsafeNewContext 内部创建运行时上下文
-func UnsafeNewContext(serviceCtx service.Context, options ContextOptions) Context {
+func UnsafeNewContext(servCtx service.Context, options ContextOptions) Context {
 	if !options.CompositeFace.IsNil() {
-		options.CompositeFace.Iface.init(serviceCtx, options)
+		options.CompositeFace.Iface.init(servCtx, options)
 		return options.CompositeFace.Iface
 	}
 
 	ctx := &ContextBehavior{}
-	ctx.init(serviceCtx, options)
+	ctx.init(servCtx, options)
 
 	return ctx.opts.CompositeFace.Iface
 }
@@ -59,7 +59,7 @@ type Context interface {
 }
 
 type _Context interface {
-	init(serviceCtx service.Context, opts ContextOptions)
+	init(servCtx service.Context, opts ContextOptions)
 	getOptions() *ContextOptions
 	setFrame(frame Frame)
 	setCallee(callee Callee)
@@ -71,13 +71,13 @@ type _Context interface {
 // ContextBehavior 运行时上下文行为，在需要扩展运行时上下文能力时，匿名嵌入至运行时上下文结构体中
 type ContextBehavior struct {
 	concurrent.ContextBehavior
-	serviceCtx service.Context
-	opts       ContextOptions
-	frame      Frame
-	entityMgr  _EntityMgr
-	ecTree     _ECTree
-	callee     Callee
-	gcList     []container.GC
+	servCtx   service.Context
+	opts      ContextOptions
+	frame     Frame
+	entityMgr _EntityMgr
+	ecTree    _ECTree
+	callee    Callee
+	gcList    []container.GC
 }
 
 // GetName 获取名称
@@ -144,9 +144,9 @@ func (ctx *ContextBehavior) String() string {
 	return fmt.Sprintf(`{"id":%q "name":%q}`, ctx.GetId(), ctx.GetName())
 }
 
-func (ctx *ContextBehavior) init(serviceCtx service.Context, opts ContextOptions) {
-	if serviceCtx == nil {
-		panic(fmt.Errorf("%w: %w: serviceCtx is nil", ErrContext, exception.ErrArgs))
+func (ctx *ContextBehavior) init(servCtx service.Context, opts ContextOptions) {
+	if servCtx == nil {
+		panic(fmt.Errorf("%w: %w: servCtx is nil", ErrContext, exception.ErrArgs))
 	}
 
 	ctx.opts = opts
@@ -156,7 +156,7 @@ func (ctx *ContextBehavior) init(serviceCtx service.Context, opts ContextOptions
 	}
 
 	if ctx.opts.Context == nil {
-		ctx.opts.Context = serviceCtx
+		ctx.opts.Context = servCtx
 	}
 
 	if ctx.opts.PersistId.IsNil() {
@@ -164,7 +164,7 @@ func (ctx *ContextBehavior) init(serviceCtx service.Context, opts ContextOptions
 	}
 
 	concurrent.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
-	ctx.serviceCtx = serviceCtx
+	ctx.servCtx = servCtx
 	ctx.entityMgr.init(ctx.opts.CompositeFace.Iface)
 	ctx.ecTree.init(ctx.opts.CompositeFace.Iface)
 }
@@ -182,7 +182,7 @@ func (ctx *ContextBehavior) setCallee(callee Callee) {
 }
 
 func (ctx *ContextBehavior) getServiceCtx() service.Context {
-	return ctx.serviceCtx
+	return ctx.servCtx
 }
 
 func (ctx *ContextBehavior) changeRunningState(state RunningState) {

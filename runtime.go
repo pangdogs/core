@@ -81,7 +81,7 @@ func (rt *RuntimeBehavior) ResolveConcurrentContext() iface.Cache {
 
 func (rt *RuntimeBehavior) init(ctx runtime.Context, opts RuntimeOptions) {
 	if ctx == nil {
-		panic(fmt.Errorf("%w: %w: context is nil", ErrRuntime, ErrArgs))
+		panic(fmt.Errorf("%w: %w: ctx is nil", ErrRuntime, ErrArgs))
 	}
 
 	if !concurrent.UnsafeContext(ctx).SetPaired(true) {

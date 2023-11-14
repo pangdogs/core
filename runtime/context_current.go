@@ -36,7 +36,7 @@ func getCaller(ctxResolver concurrent.ContextResolver) concurrent.Caller {
 	return iface.Cache2Iface[Context](ctxResolver.ResolveContext())
 }
 
-func getContext(ctxResolver concurrent.ContextResolver) Context {
+func getRuntimeContext(ctxResolver concurrent.ContextResolver) Context {
 	if ctxResolver == nil {
 		panic(fmt.Errorf("%w: %w: ctxResolver is nil", ErrContext, exception.ErrArgs))
 	}

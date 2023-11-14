@@ -39,7 +39,7 @@ func (ad AwaitDirector) Any(ctxResolver service.ContextResolver, fun generic.Act
 		return
 	}
 
-	runtimeCtx := getContext(ctxResolver)
+	rtCtx := getRuntimeContext(ctxResolver)
 
 	var b atomic.Bool
 	ctx, cancel := context.WithCancel(ad.context)
@@ -51,7 +51,7 @@ func (ad AwaitDirector) Any(ctxResolver service.ContextResolver, fun generic.Act
 		}
 
 		go func(b *atomic.Bool, ctx context.Context, cancel context.CancelFunc,
-			asyncRet runtime.AsyncRet, runtimeCtx runtime.Context, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va []any) {
+			asyncRet runtime.AsyncRet, rtCtx runtime.Context, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va []any) {
 
 			ret := asyncRet.Wait(ctx)
 
@@ -61,14 +61,14 @@ func (ad AwaitDirector) Any(ctxResolver service.ContextResolver, fun generic.Act
 
 			cancel()
 
-			runtimeCtx.CallVoid(func(va ...any) {
-				runtimeCtx := va[0].(runtime.Context)
+			rtCtx.CallVoid(func(va ...any) {
+				rtCtx := va[0].(runtime.Context)
 				fun := va[1].(generic.ActionVar2[runtime.Context, runtime.Ret, any])
 				ret := va[2].(runtime.Ret)
 				funVa := va[3].([]any)
-				fun.Exec(runtimeCtx, ret, funVa...)
-			}, runtimeCtx, fun, ret, va)
-		}(&b, ctx, cancel, asyncRet, runtimeCtx, fun, va)
+				fun.Exec(rtCtx, ret, funVa...)
+			}, rtCtx, fun, ret, va)
+		}(&b, ctx, cancel, asyncRet, rtCtx, fun, va)
 	}
 }
 
@@ -82,7 +82,7 @@ func (ad AwaitDirector) AnyOK(ctxResolver service.ContextResolver, fun generic.A
 		return
 	}
 
-	runtimeCtx := getContext(ctxResolver)
+	rtCtx := getRuntimeContext(ctxResolver)
 
 	var wg sync.WaitGroup
 	var b atomic.Bool
@@ -96,7 +96,7 @@ func (ad AwaitDirector) AnyOK(ctxResolver service.ContextResolver, fun generic.A
 
 		wg.Add(1)
 		go func(wg *sync.WaitGroup, b *atomic.Bool, ctx context.Context, cancel context.CancelFunc,
-			asyncRet runtime.AsyncRet, runtimeCtx runtime.Context, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va []any) {
+			asyncRet runtime.AsyncRet, rtCtx runtime.Context, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va []any) {
 			defer wg.Done()
 
 			ret := asyncRet.Wait(ctx)
@@ -110,31 +110,31 @@ func (ad AwaitDirector) AnyOK(ctxResolver service.ContextResolver, fun generic.A
 
 			cancel()
 
-			runtimeCtx.CallVoid(func(va ...any) {
-				runtimeCtx := va[0].(runtime.Context)
+			rtCtx.CallVoid(func(va ...any) {
+				rtCtx := va[0].(runtime.Context)
 				fun := va[1].(generic.ActionVar2[runtime.Context, runtime.Ret, any])
 				ret := va[2].(runtime.Ret)
 				funVa := va[3].([]any)
-				fun.Exec(runtimeCtx, ret, funVa...)
-			}, runtimeCtx, fun, ret, va)
-		}(&wg, &b, ctx, cancel, asyncRet, runtimeCtx, fun, va)
+				fun.Exec(rtCtx, ret, funVa...)
+			}, rtCtx, fun, ret, va)
+		}(&wg, &b, ctx, cancel, asyncRet, rtCtx, fun, va)
 	}
 
 	go func(wg *sync.WaitGroup, b *atomic.Bool,
-		runtimeCtx runtime.Context, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va []any) {
+		rtCtx runtime.Context, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va []any) {
 		wg.Wait()
 
 		if b.Load() {
 			return
 		}
 
-		runtimeCtx.CallVoid(func(va ...any) {
-			runtimeCtx := va[0].(runtime.Context)
+		rtCtx.CallVoid(func(va ...any) {
+			rtCtx := va[0].(runtime.Context)
 			fun := va[1].(generic.ActionVar2[runtime.Context, runtime.Ret, any])
 			funVa := va[2].([]any)
-			fun.Exec(runtimeCtx, concurrent.MakeRet(nil, ErrAllFailures), funVa...)
-		}, runtimeCtx, fun, va)
-	}(&wg, &b, runtimeCtx, fun, va)
+			fun.Exec(rtCtx, concurrent.MakeRet(nil, ErrAllFailures), funVa...)
+		}, rtCtx, fun, va)
+	}(&wg, &b, rtCtx, fun, va)
 }
 
 // All 异步等待所有结果返回
@@ -147,7 +147,7 @@ func (ad AwaitDirector) All(ctxResolver service.ContextResolver, fun generic.Act
 		return
 	}
 
-	runtimeCtx := getContext(ctxResolver)
+	rtCtx := getRuntimeContext(ctxResolver)
 
 	var wg sync.WaitGroup
 	ctx, cancel := context.WithCancel(ad.context)
@@ -166,15 +166,15 @@ func (ad AwaitDirector) All(ctxResolver service.ContextResolver, fun generic.Act
 		}(&wg, ctx, cancel, &rets[i], asyncRet)
 	}
 
-	go func(wg *sync.WaitGroup, runtimeCtx runtime.Context, fun generic.ActionVar2[runtime.Context, []runtime.Ret, any], rets []runtime.Ret, va []any) {
+	go func(wg *sync.WaitGroup, rtCtx runtime.Context, fun generic.ActionVar2[runtime.Context, []runtime.Ret, any], rets []runtime.Ret, va []any) {
 		wg.Wait()
 
-		runtimeCtx.CallVoid(func(va ...any) {
-			runtimeCtx := va[0].(runtime.Context)
+		rtCtx.CallVoid(func(va ...any) {
+			rtCtx := va[0].(runtime.Context)
 			fun := va[1].(generic.ActionVar2[runtime.Context, []runtime.Ret, any])
 			rets := va[2].([]runtime.Ret)
 			funVa := va[3].([]any)
-			fun.Exec(runtimeCtx, rets, funVa...)
-		}, runtimeCtx, fun, rets, va)
-	}(&wg, runtimeCtx, fun, rets, va)
+			fun.Exec(rtCtx, rets, funVa...)
+		}, rtCtx, fun, rets, va)
+	}(&wg, rtCtx, fun, rets, va)
 }

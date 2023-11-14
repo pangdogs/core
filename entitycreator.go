@@ -10,9 +10,9 @@ import (
 )
 
 // CreateEntity 创建实体
-func CreateEntity(ctx runtime.Context, settings ...option.Setting[EntityCreatorOptions]) EntityCreator {
+func CreateEntity(ctxResolver runtime.CurrentContextResolver, settings ...option.Setting[EntityCreatorOptions]) EntityCreator {
 	return EntityCreator{
-		Context: ctx,
+		Context: runtime.Current(ctxResolver),
 		Options: option.Make(_EntityCreatorOption{}.Default(), settings...),
 	}
 }
@@ -29,18 +29,18 @@ func (creator EntityCreator) Spawn(settings ...option.Setting[EntityCreatorOptio
 		panic(fmt.Errorf("%w: setting context is nil", ErrGolaxy))
 	}
 
-	runtimeCtx := creator.Context
-	serviceCtx := service.Current(runtimeCtx)
+	rtCtx := creator.Context
+	servCtx := service.Current(rtCtx)
 
 	opts := option.Append(creator.Options, settings...)
 
-	entityPt, err := pt.Using(serviceCtx, opts.Prototype)
+	entityPt, err := pt.Using(servCtx, opts.Prototype)
 	if err != nil {
 		return nil, err
 	}
 
 	if !opts.ParentID.IsNil() {
-		_, err := runtime.UnsafeECTree(runtimeCtx.GetECTree()).FetchEntity(opts.ParentID)
+		_, err := runtime.UnsafeECTree(rtCtx.GetECTree()).FetchEntity(opts.ParentID)
 		if err != nil {
 			return nil, err
 		}
@@ -48,12 +48,12 @@ func (creator EntityCreator) Spawn(settings ...option.Setting[EntityCreatorOptio
 
 	entity := entityPt.UnsafeConstruct(opts.ConstructEntityOptions)
 
-	if err := runtimeCtx.GetEntityMgr().AddEntity(entity, opts.Scope); err != nil {
+	if err := rtCtx.GetEntityMgr().AddEntity(entity, opts.Scope); err != nil {
 		return nil, err
 	}
 
 	if !opts.ParentID.IsNil() {
-		if err := runtimeCtx.GetECTree().AddChild(opts.ParentID, entity.GetId()); err != nil {
+		if err := rtCtx.GetECTree().AddChild(opts.ParentID, entity.GetId()); err != nil {
 			entity.DestroySelf()
 			return nil, err
 		}

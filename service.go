@@ -54,7 +54,7 @@ func (serv *ServiceBehavior) GetContext() service.Context {
 
 func (serv *ServiceBehavior) init(ctx service.Context, opts ServiceOptions) {
 	if ctx == nil {
-		panic(fmt.Errorf("%w: %w: context is nil", ErrService, ErrArgs))
+		panic(fmt.Errorf("%w: %w: ctx is nil", ErrService, ErrArgs))
 	}
 
 	if !concurrent.UnsafeContext(ctx).SetPaired(true) {

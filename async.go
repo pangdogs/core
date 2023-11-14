@@ -11,29 +11,29 @@ import (
 	_ "unsafe"
 )
 
-//go:linkname getContext kit.golaxy.org/golaxy/runtime.getContext
-func getContext(ctxResolver concurrent.ContextResolver) runtime.Context
+//go:linkname getRuntimeContext kit.golaxy.org/golaxy/runtime.getRuntimeContext
+func getRuntimeContext(ctxResolver concurrent.ContextResolver) runtime.Context
 
 // Async 异步执行代码，有返回值
 func Async(ctxResolver service.ContextResolver, fun generic.FuncVar1[runtime.Context, any, runtime.Ret], va ...any) runtime.AsyncRet {
-	ctx := getContext(ctxResolver)
-	return ctx.Call(func(va ...any) runtime.Ret {
-		ctx := va[0].(runtime.Context)
+	rtCtx := getRuntimeContext(ctxResolver)
+	return rtCtx.Call(func(va ...any) runtime.Ret {
+		rtCtx := va[0].(runtime.Context)
 		fun := va[1].(generic.FuncVar1[runtime.Context, any, runtime.Ret])
 		funVa := va[2].([]any)
-		return fun.Exec(ctx, funVa...)
-	}, ctx, fun, va)
+		return fun.Exec(rtCtx, funVa...)
+	}, rtCtx, fun, va)
 }
 
 // AsyncVoid 异步执行代码，无返回值
 func AsyncVoid(ctxResolver service.ContextResolver, fun generic.ActionVar1[runtime.Context, any], va ...any) runtime.AsyncRet {
-	ctx := getContext(ctxResolver)
-	return ctx.CallVoid(func(va ...any) {
-		ctx := va[0].(runtime.Context)
+	rtCtx := getRuntimeContext(ctxResolver)
+	return rtCtx.CallVoid(func(va ...any) {
+		rtCtx := va[0].(runtime.Context)
 		fun := va[1].(generic.ActionVar1[runtime.Context, any])
 		funVa := va[2].([]any)
-		fun.Exec(ctx, funVa...)
-	}, ctx, fun, va)
+		fun.Exec(rtCtx, funVa...)
+	}, rtCtx, fun, va)
 }
 
 // Go 使用新线程执行代码，有返回值
