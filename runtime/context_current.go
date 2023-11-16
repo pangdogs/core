@@ -47,5 +47,9 @@ func getServiceContext(ctxProvider concurrent.ContextProvider) service.Context {
 	if ctxProvider == nil {
 		panic(fmt.Errorf("%w: %w: ctxProvider is nil", ErrContext, exception.ErrArgs))
 	}
-	return iface.Cache2Iface[Context](ctxProvider.GetContext()).getServiceCtx()
+	ctx := iface.Cache2Iface[Context](ctxProvider.GetContext())
+	if ctx == nil {
+		return nil
+	}
+	return ctx.getServiceCtx()
 }
