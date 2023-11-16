@@ -64,7 +64,7 @@ func (entityMgr *_EntityMgr) GetOrAddEntity(entity ec.ConcurrentEntity) (ec.Conc
 	}
 
 	if entity.GetConcurrentContext() == iface.NilCache {
-		return nil, false, fmt.Errorf("%w: entity context can't be resolve", ErrEntityMgr)
+		return nil, false, fmt.Errorf("%w: entity context is nil", ErrEntityMgr)
 	}
 
 	actual, loaded := entityMgr.entityMap.LoadOrStore(entity.GetId(), entity)
@@ -82,7 +82,7 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.ConcurrentEntity) error {
 	}
 
 	if entity.GetConcurrentContext() == iface.NilCache {
-		return fmt.Errorf("%w: entity context can't be resolve", ErrEntityMgr)
+		return fmt.Errorf("%w: entity context is nil", ErrEntityMgr)
 	}
 
 	entityMgr.entityMap.Store(entity.GetId(), entity)
