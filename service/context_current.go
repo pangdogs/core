@@ -6,13 +6,13 @@ import (
 )
 
 type (
-	ContextResolver = concurrent.ContextResolver // 上下文获取器
+	ContextProvider = concurrent.ContextProvider // 上下文提供者
 )
 
 //go:linkname getServiceContext kit.golaxy.org/golaxy/runtime.getServiceContext
-func getServiceContext(ctxResolver concurrent.ContextResolver) Context
+func getServiceContext(ctxProvider concurrent.ContextProvider) Context
 
 // Current 获取服务上下文
-func Current(ctxResolver ContextResolver) Context {
-	return getServiceContext(ctxResolver)
+func Current(ctxProvider ContextProvider) Context {
+	return getServiceContext(ctxProvider)
 }

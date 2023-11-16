@@ -9,43 +9,43 @@ import (
 )
 
 type (
-	CurrentContextResolver    = concurrent.CurrentContextResolver    // 当前上下文获取器
-	ConcurrentContextResolver = concurrent.ConcurrentContextResolver // 多线程安全的上下文获取器
+	CurrentContextProvider    = concurrent.CurrentContextProvider    // 当前上下文提供者
+	ConcurrentContextProvider = concurrent.ConcurrentContextProvider // 多线程安全的上下文提供者
 )
 
 // Current 获取当前运行时上下文
-func Current(ctxResolver CurrentContextResolver) Context {
-	if ctxResolver == nil {
-		panic(fmt.Errorf("%w: %w: ctxResolver is nil", ErrContext, exception.ErrArgs))
+func Current(ctxProvider CurrentContextProvider) Context {
+	if ctxProvider == nil {
+		panic(fmt.Errorf("%w: %w: ctxProvider is nil", ErrContext, exception.ErrArgs))
 	}
-	return iface.Cache2Iface[Context](ctxResolver.ResolveCurrentContext())
+	return iface.Cache2Iface[Context](ctxProvider.GetCurrentContext())
 }
 
 // Concurrent 获取多线程安全的运行时上下文
-func Concurrent(ctxResolver ConcurrentContextResolver) ConcurrentContext {
-	if ctxResolver == nil {
-		panic(fmt.Errorf("%w: %w: ctxResolver is nil", ErrContext, exception.ErrArgs))
+func Concurrent(ctxProvider ConcurrentContextProvider) ConcurrentContext {
+	if ctxProvider == nil {
+		panic(fmt.Errorf("%w: %w: ctxProvider is nil", ErrContext, exception.ErrArgs))
 	}
-	return iface.Cache2Iface[Context](ctxResolver.ResolveConcurrentContext())
+	return iface.Cache2Iface[Context](ctxProvider.GetConcurrentContext())
 }
 
-func getCaller(ctxResolver concurrent.ContextResolver) concurrent.Caller {
-	if ctxResolver == nil {
-		panic(fmt.Errorf("%w: %w: ctxResolver is nil", ErrContext, exception.ErrArgs))
+func getCaller(ctxProvider concurrent.ContextProvider) concurrent.Caller {
+	if ctxProvider == nil {
+		panic(fmt.Errorf("%w: %w: ctxProvider is nil", ErrContext, exception.ErrArgs))
 	}
-	return iface.Cache2Iface[Context](ctxResolver.ResolveContext())
+	return iface.Cache2Iface[Context](ctxProvider.GetContext())
 }
 
-func getRuntimeContext(ctxResolver concurrent.ContextResolver) Context {
-	if ctxResolver == nil {
-		panic(fmt.Errorf("%w: %w: ctxResolver is nil", ErrContext, exception.ErrArgs))
+func getRuntimeContext(ctxProvider concurrent.ContextProvider) Context {
+	if ctxProvider == nil {
+		panic(fmt.Errorf("%w: %w: ctxProvider is nil", ErrContext, exception.ErrArgs))
 	}
-	return iface.Cache2Iface[Context](ctxResolver.ResolveContext())
+	return iface.Cache2Iface[Context](ctxProvider.GetContext())
 }
 
-func getServiceContext(ctxResolver concurrent.ContextResolver) service.Context {
-	if ctxResolver == nil {
-		panic(fmt.Errorf("%w: %w: ctxResolver is nil", ErrContext, exception.ErrArgs))
+func getServiceContext(ctxProvider concurrent.ContextProvider) service.Context {
+	if ctxProvider == nil {
+		panic(fmt.Errorf("%w: %w: ctxProvider is nil", ErrContext, exception.ErrArgs))
 	}
-	return iface.Cache2Iface[Context](ctxResolver.ResolveContext()).getServiceCtx()
+	return iface.Cache2Iface[Context](ctxProvider.GetContext()).getServiceCtx()
 }

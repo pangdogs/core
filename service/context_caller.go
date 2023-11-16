@@ -46,7 +46,7 @@ type Caller interface {
 }
 
 //go:linkname getCaller kit.golaxy.org/golaxy/runtime.getCaller
-func getCaller(ctxResolver concurrent.ContextResolver) concurrent.Caller
+func getCaller(ctxProvider concurrent.ContextProvider) concurrent.Caller
 
 func makeAsyncErr(err error) AsyncRet {
 	asyncRet := concurrent.MakeAsyncRet()

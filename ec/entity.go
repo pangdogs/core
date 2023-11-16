@@ -32,8 +32,8 @@ func UnsafeNewEntity(options EntityOptions) Entity {
 type Entity interface {
 	_Entity
 	_ComponentMgr
-	concurrent.CurrentContextResolver
-	concurrent.ConcurrentContextResolver
+	concurrent.CurrentContextProvider
+	concurrent.ConcurrentContextProvider
 	fmt.Stringer
 
 	// GetId 获取实体Id
@@ -111,19 +111,19 @@ func (entity *EntityBehavior) DestroySelf() {
 	}
 }
 
-// ResolveContext 解析上下文
-func (entity *EntityBehavior) ResolveContext() iface.Cache {
+// GetContext 获取上下文
+func (entity *EntityBehavior) GetContext() iface.Cache {
 	return entity.context
 }
 
-// ResolveCurrentContext 解析当前上下文
-func (entity *EntityBehavior) ResolveCurrentContext() iface.Cache {
-	return entity.ResolveContext()
+// GetCurrentContext 获取当前上下文
+func (entity *EntityBehavior) GetCurrentContext() iface.Cache {
+	return entity.GetContext()
 }
 
-// ResolveConcurrentContext 解析线程安全的上下文
-func (entity *EntityBehavior) ResolveConcurrentContext() iface.Cache {
-	return entity.ResolveContext()
+// GetConcurrentContext 解析线程安全的上下文
+func (entity *EntityBehavior) GetConcurrentContext() iface.Cache {
+	return entity.GetContext()
 }
 
 // String implements fmt.Stringer

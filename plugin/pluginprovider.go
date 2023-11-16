@@ -7,22 +7,22 @@ import (
 	"kit.golaxy.org/golaxy/util/types"
 )
 
-// PluginResolver 插件解析器
-type PluginResolver interface {
-	// ResolvePlugin 解析插件
-	ResolvePlugin(name string) (PluginInfo, bool)
+// PluginProvider 插件提供者
+type PluginProvider interface {
+	// GetPlugin 获取插件
+	GetPlugin(name string) (PluginInfo, bool)
 }
 
 // Using 使用插件
 //
-//	@param pluginResolver 插件解析器。
+//	@param pluginProvider 插件提供者。
 //	@param name 插件名称。
-func Using[T any](pluginResolver PluginResolver, name string) (T, error) {
-	if pluginResolver == nil {
-		return types.Zero[T](), fmt.Errorf("%w: %w: pluginResolver is nil", ErrPlugin, exception.ErrArgs)
+func Using[T any](pluginProvider PluginProvider, name string) (T, error) {
+	if pluginProvider == nil {
+		return types.Zero[T](), fmt.Errorf("%w: %w: pluginProvider is nil", ErrPlugin, exception.ErrArgs)
 	}
 
-	pluginInfo, ok := pluginResolver.ResolvePlugin(name)
+	pluginInfo, ok := pluginProvider.GetPlugin(name)
 	if !ok {
 		return types.Zero[T](), fmt.Errorf("%w: %q not installed", ErrPlugin, name)
 	}

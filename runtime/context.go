@@ -34,11 +34,11 @@ func UnsafeNewContext(servCtx service.Context, options ContextOptions) Context {
 // Context 运行时上下文接口
 type Context interface {
 	_Context
-	concurrent.CurrentContextResolver
-	concurrent.ConcurrentContextResolver
+	concurrent.CurrentContextProvider
+	concurrent.ConcurrentContextProvider
 	concurrent.Context
 	concurrent.Caller
-	plugin.PluginResolver
+	plugin.PluginProvider
 	container.GCCollector
 	fmt.Stringer
 
@@ -115,19 +115,19 @@ func (ctx *ContextBehavior) GetHookAllocator() container.Allocator[event.Hook] {
 	return ctx.opts.HookAllocator
 }
 
-// ResolveContext 解析上下文
-func (ctx *ContextBehavior) ResolveContext() iface.Cache {
+// GetContext 获取上下文
+func (ctx *ContextBehavior) GetContext() iface.Cache {
 	return iface.Iface2Cache[Context](ctx.opts.CompositeFace.Iface)
 }
 
-// ResolveCurrentContext 解析当前上下文
-func (ctx *ContextBehavior) ResolveCurrentContext() iface.Cache {
-	return ctx.ResolveContext()
+// GetCurrentContext 获取当前上下文
+func (ctx *ContextBehavior) GetCurrentContext() iface.Cache {
+	return ctx.GetContext()
 }
 
-// ResolveConcurrentContext 解析多线程安全的上下文
-func (ctx *ContextBehavior) ResolveConcurrentContext() iface.Cache {
-	return ctx.ResolveContext()
+// GetConcurrentContext 获取多线程安全的上下文
+func (ctx *ContextBehavior) GetConcurrentContext() iface.Cache {
+	return ctx.GetContext()
 }
 
 // CollectGC 收集GC

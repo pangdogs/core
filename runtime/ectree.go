@@ -15,7 +15,7 @@ import (
 // IECTree EC树接口
 type IECTree interface {
 	_IECTree
-	concurrent.CurrentContextResolver
+	concurrent.CurrentContextProvider
 
 	// AddChild 实体加入父实体。切换父实体时，先调用RemoveChild()离开旧父实体，再调用AddChild()加入新父实体
 	AddChild(parentId, childId uid.Id) error
@@ -74,14 +74,14 @@ func (ecTree *_ECTree) changeRunningState(state RunningState) {
 	}
 }
 
-// ResolveContext 解析上下文
-func (ecTree *_ECTree) ResolveContext() iface.Cache {
-	return ecTree.ctx.ResolveContext()
+// GetContext 获取上下文
+func (ecTree *_ECTree) GetContext() iface.Cache {
+	return ecTree.ctx.GetContext()
 }
 
-// ResolveCurrentContext 解析当前上下文
-func (ecTree *_ECTree) ResolveCurrentContext() iface.Cache {
-	return ecTree.ctx.ResolveCurrentContext()
+// GetCurrentContext 获取当前上下文
+func (ecTree *_ECTree) GetCurrentContext() iface.Cache {
+	return ecTree.ctx.GetCurrentContext()
 }
 
 // AddChild 实体加入父实体，在实体加入运行时上下文后才能调用，切换父实体时，先调用RemoveChild()离开旧父实体，再调用AddChild()加入新父实体

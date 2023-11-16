@@ -13,7 +13,7 @@ import (
 // Component 组件接口
 type Component interface {
 	_Component
-	concurrent.CurrentContextResolver
+	concurrent.CurrentContextProvider
 	fmt.Stringer
 
 	// GetId 获取组件Id
@@ -81,14 +81,14 @@ func (comp *ComponentBehavior) DestroySelf() {
 	}
 }
 
-// ResolveContext 解析上下文
-func (comp *ComponentBehavior) ResolveContext() iface.Cache {
-	return comp.entity.ResolveContext()
+// GetContext 获取上下文
+func (comp *ComponentBehavior) GetContext() iface.Cache {
+	return comp.entity.GetContext()
 }
 
-// ResolveCurrentContext 解析当前上下文
-func (comp *ComponentBehavior) ResolveCurrentContext() iface.Cache {
-	return comp.entity.ResolveCurrentContext()
+// GetCurrentContext 获取当前上下文
+func (comp *ComponentBehavior) GetCurrentContext() iface.Cache {
+	return comp.entity.GetCurrentContext()
 }
 
 // String implements fmt.Stringer

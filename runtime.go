@@ -34,13 +34,10 @@ func UnsafeNewRuntime(ctx runtime.Context, options RuntimeOptions) Runtime {
 // Runtime 运行时接口
 type Runtime interface {
 	_Runtime
-	concurrent.CurrentContextResolver
-	concurrent.ConcurrentContextResolver
+	concurrent.CurrentContextProvider
+	concurrent.ConcurrentContextProvider
 	concurrent.Callee
 	Running
-
-	// GetContext 获取运行时上下文
-	GetContext() runtime.Context
 }
 
 type _Runtime interface {
@@ -59,24 +56,19 @@ type RuntimeBehavior struct {
 	eventLateUpdate event.Event
 }
 
-// GetContext 获取运行时上下文
-func (rt *RuntimeBehavior) GetContext() runtime.Context {
-	return rt.ctx
+// GetContext 获取上下文
+func (rt *RuntimeBehavior) GetContext() iface.Cache {
+	return rt.ctx.GetContext()
 }
 
-// ResolveContext 解析上下文
-func (rt *RuntimeBehavior) ResolveContext() iface.Cache {
-	return rt.ctx.ResolveContext()
+// GetCurrentContext 获取当前上下文
+func (rt *RuntimeBehavior) GetCurrentContext() iface.Cache {
+	return rt.ctx.GetCurrentContext()
 }
 
-// ResolveCurrentContext 解析当前上下文
-func (rt *RuntimeBehavior) ResolveCurrentContext() iface.Cache {
-	return rt.ctx.ResolveCurrentContext()
-}
-
-// ResolveConcurrentContext 解析多线程安全的上下文
-func (rt *RuntimeBehavior) ResolveConcurrentContext() iface.Cache {
-	return rt.ctx.ResolveConcurrentContext()
+// GetConcurrentContext 获取多线程安全的上下文
+func (rt *RuntimeBehavior) GetConcurrentContext() iface.Cache {
+	return rt.ctx.GetConcurrentContext()
 }
 
 func (rt *RuntimeBehavior) init(ctx runtime.Context, opts RuntimeOptions) {

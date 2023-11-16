@@ -30,7 +30,7 @@ type AwaitDirector struct {
 }
 
 // Any 异步等待任意一个结果返回
-func (ad AwaitDirector) Any(ctxResolver service.ContextResolver, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va ...any) {
+func (ad AwaitDirector) Any(ctxProvider service.ContextProvider, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va ...any) {
 	if ad.context == nil {
 		ad.context = context.Background()
 	}
@@ -39,7 +39,7 @@ func (ad AwaitDirector) Any(ctxResolver service.ContextResolver, fun generic.Act
 		return
 	}
 
-	rtCtx := getRuntimeContext(ctxResolver)
+	rtCtx := getRuntimeContext(ctxProvider)
 
 	var b atomic.Bool
 	ctx, cancel := context.WithCancel(ad.context)
@@ -73,7 +73,7 @@ func (ad AwaitDirector) Any(ctxResolver service.ContextResolver, fun generic.Act
 }
 
 // AnyOK 异步等待任意一个结果成功返回
-func (ad AwaitDirector) AnyOK(ctxResolver service.ContextResolver, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va ...any) {
+func (ad AwaitDirector) AnyOK(ctxProvider service.ContextProvider, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va ...any) {
 	if ad.context == nil {
 		ad.context = context.Background()
 	}
@@ -82,7 +82,7 @@ func (ad AwaitDirector) AnyOK(ctxResolver service.ContextResolver, fun generic.A
 		return
 	}
 
-	rtCtx := getRuntimeContext(ctxResolver)
+	rtCtx := getRuntimeContext(ctxProvider)
 
 	var wg sync.WaitGroup
 	var b atomic.Bool
@@ -138,7 +138,7 @@ func (ad AwaitDirector) AnyOK(ctxResolver service.ContextResolver, fun generic.A
 }
 
 // All 异步等待所有结果返回
-func (ad AwaitDirector) All(ctxResolver service.ContextResolver, fun generic.ActionVar2[runtime.Context, []runtime.Ret, any], va ...any) {
+func (ad AwaitDirector) All(ctxProvider service.ContextProvider, fun generic.ActionVar2[runtime.Context, []runtime.Ret, any], va ...any) {
 	if ad.context == nil {
 		ad.context = context.Background()
 	}
@@ -147,7 +147,7 @@ func (ad AwaitDirector) All(ctxResolver service.ContextResolver, fun generic.Act
 		return
 	}
 
-	rtCtx := getRuntimeContext(ctxResolver)
+	rtCtx := getRuntimeContext(ctxProvider)
 
 	var wg sync.WaitGroup
 	ctx, cancel := context.WithCancel(ad.context)

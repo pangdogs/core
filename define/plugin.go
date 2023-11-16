@@ -17,7 +17,7 @@ type Plugin[PLUGIN_IFACE, OPTION any] struct {
 	Name      string                                   // 插件名称
 	Install   func(plugin.PluginBundle, ...OPTION)     // 向插件包安装
 	Uninstall func(plugin.PluginBundle)                // 从插件包卸载
-	Using     func(plugin.PluginResolver) PLUGIN_IFACE // 使用插件
+	Using     func(plugin.PluginProvider) PLUGIN_IFACE // 使用插件
 }
 
 type _Plugin[PLUGIN_IFACE, OPTION any] struct {
@@ -36,9 +36,9 @@ func (p _Plugin[PLUGIN_IFACE, OPTION]) uninstall() func(plugin.PluginBundle) {
 	}
 }
 
-func (p _Plugin[PLUGIN_IFACE, OPTION]) using() func(pluginResolver plugin.PluginResolver) PLUGIN_IFACE {
-	return func(pluginResolver plugin.PluginResolver) PLUGIN_IFACE {
-		plugin, err := plugin.Using[PLUGIN_IFACE](pluginResolver, p.name)
+func (p _Plugin[PLUGIN_IFACE, OPTION]) using() func(pluginProvider plugin.PluginProvider) PLUGIN_IFACE {
+	return func(pluginProvider plugin.PluginProvider) PLUGIN_IFACE {
+		plugin, err := plugin.Using[PLUGIN_IFACE](pluginProvider, p.name)
 		if err != nil {
 			panic(err)
 		}

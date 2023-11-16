@@ -8,7 +8,7 @@ import (
 
 // ConcurrentContext 多线程安全的运行时上下文接口
 type ConcurrentContext interface {
-	concurrent.ConcurrentContextResolver
+	concurrent.ConcurrentContextProvider
 	concurrent.Context
 	concurrent.Caller
 

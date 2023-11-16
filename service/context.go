@@ -34,8 +34,8 @@ type Context interface {
 	_Context
 	concurrent.Context
 	Caller
-	plugin.PluginResolver
-	pt.EntityPtResolver
+	plugin.PluginProvider
+	pt.EntityPtProvider
 	fmt.Stringer
 
 	// GetName 获取名称

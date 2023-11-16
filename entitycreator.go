@@ -10,9 +10,9 @@ import (
 )
 
 // CreateEntity 创建实体
-func CreateEntity(ctxResolver runtime.CurrentContextResolver, settings ...option.Setting[EntityCreatorOptions]) EntityCreator {
+func CreateEntity(ctxProvider runtime.CurrentContextProvider, settings ...option.Setting[EntityCreatorOptions]) EntityCreator {
 	return EntityCreator{
-		Context: runtime.Current(ctxResolver),
+		Context: runtime.Current(ctxProvider),
 		Options: option.Make(_EntityCreatorOption{}.Default(), settings...),
 	}
 }

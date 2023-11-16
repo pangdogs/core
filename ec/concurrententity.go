@@ -7,7 +7,7 @@ import (
 
 // ConcurrentEntity 多线程安全的实体接口
 type ConcurrentEntity interface {
-	concurrent.ConcurrentContextResolver
+	concurrent.ConcurrentContextProvider
 
 	// GetId 获取实体Id
 	GetId() uid.Id

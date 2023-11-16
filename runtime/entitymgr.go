@@ -15,7 +15,7 @@ import (
 
 // IEntityMgr 实体管理器接口
 type IEntityMgr interface {
-	concurrent.CurrentContextResolver
+	concurrent.CurrentContextProvider
 
 	// GetEntity 查询实体
 	GetEntity(id uid.Id) (ec.Entity, bool)
@@ -95,14 +95,14 @@ func (entityMgr *_EntityMgr) changeRunningState(state RunningState) {
 	}
 }
 
-// ResolveContext 解析上下文
-func (entityMgr *_EntityMgr) ResolveContext() iface.Cache {
-	return entityMgr.ctx.ResolveContext()
+// GetContext 获取上下文
+func (entityMgr *_EntityMgr) GetContext() iface.Cache {
+	return entityMgr.ctx.GetContext()
 }
 
-// ResolveCurrentContext 解析当前上下文
-func (entityMgr *_EntityMgr) ResolveCurrentContext() iface.Cache {
-	return entityMgr.ctx.ResolveCurrentContext()
+// GetCurrentContext 获取当前上下文
+func (entityMgr *_EntityMgr) GetCurrentContext() iface.Cache {
+	return entityMgr.ctx.GetCurrentContext()
 }
 
 // GetEntity 查询实体

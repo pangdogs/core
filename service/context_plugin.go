@@ -4,8 +4,8 @@ import (
 	"kit.golaxy.org/golaxy/plugin"
 )
 
-// ResolvePlugin 解析插件
-func (ctx *ContextBehavior) ResolvePlugin(name string) (plugin.PluginInfo, bool) {
+// GetPlugin 获取插件
+func (ctx *ContextBehavior) GetPlugin(name string) (plugin.PluginInfo, bool) {
 	pluginBundle := ctx.getOptions().PluginBundle
 	if pluginBundle == nil {
 		return plugin.PluginInfo{}, false
