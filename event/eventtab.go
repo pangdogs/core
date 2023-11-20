@@ -1,17 +1,21 @@
 package event
 
-import "kit.golaxy.org/golaxy/util/container"
+// IEventTab 本地事件表接口，方便管理多个事件
+/*
+使用方式：
+	1.在定义事件的源码文件（.go）头部添加以下注释，在编译前自动化生成代码：
+	//go:generate go run kit.golaxy.org/golaxy/event/eventcode --decl_file=$GOFILE gen_eventtab --package=$GOPACKAGE --name={事件表名称}
 
-// IEventTab 本地事件表接口，我们可以把一些事件定义在同一个源码文件中，使用事件代码生成器的生成事件表功能，自动生成事件表
+定义事件的选项（添加到定义事件的注释里）：
+	1.事件表初始化时，该事件使用的递归处理方式，不填表示使用事件表初始化参数值
+		[EventRecursion_Allow]
+		[EventRecursion_Disallow]
+		[EventRecursion_NotEmit]
+		[EventRecursion_Discard]
+		[EventRecursion_Deepest]
+*/
 type IEventTab interface {
-	// Init 初始化事件表
-	Init(autoRecover bool, reportError chan error, hookAllocator container.Allocator[Hook], gcCollector container.GCCollector)
+	IEventCtrl
 	// Get 获取事件
 	Get(id int) IEvent
-	// Open 打开事件表中所有事件
-	Open()
-	// Close 关闭事件表中所有事件
-	Close()
-	// Clean 事件表中的所有事件清除全部订阅者
-	Clean()
 }

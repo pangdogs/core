@@ -1,13 +1,11 @@
 package define
 
-import (
-	"kit.golaxy.org/golaxy/util/types"
-)
+import "kit.golaxy.org/golaxy/util/types"
 
 // DefineComponent 定义组件
-func DefineComponent[COMP_IFACE, COMP any](descr ...string) Component {
+func DefineComponent[COMP_IFACE, COMP any]() Component {
 	compIface := DefineComponentInterface[COMP_IFACE]()
-	compIface.Register(types.Zero[COMP](), descr...)
+	compIface.Register(types.Zero[COMP]())
 	return _Component{
 		name:           compIface.Name,
 		implementation: types.FullName[COMP](),
@@ -16,8 +14,8 @@ func DefineComponent[COMP_IFACE, COMP any](descr ...string) Component {
 
 // Component 组件
 type Component struct {
-	Name           string // 组件名
-	Implementation string // 组件实现
+	Name           string // 组件名称
+	Implementation string // 组件实现名称
 }
 
 type _Component struct {

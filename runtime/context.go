@@ -49,13 +49,15 @@ type Context interface {
 	// GetFrame 获取帧
 	GetFrame() Frame
 	// GetEntityMgr 获取实体管理器
-	GetEntityMgr() IEntityMgr
+	GetEntityMgr() EntityMgr
 	// GetECTree 获取主EC树
-	GetECTree() IECTree
+	GetECTree() ECTree
 	// GetFaceAnyAllocator 获取FaceAny内存分配器
 	GetFaceAnyAllocator() container.Allocator[iface.FaceAny]
 	// GetHookAllocator 获取Hook内存分配器
 	GetHookAllocator() container.Allocator[event.Hook]
+	// ActivateEvent 启用事件
+	ActivateEvent(event event.IEventCtrl, recursion event.EventRecursion)
 }
 
 type _Context interface {
@@ -74,8 +76,8 @@ type ContextBehavior struct {
 	servCtx   service.Context
 	opts      ContextOptions
 	frame     Frame
-	entityMgr _EntityMgr
-	ecTree    _ECTree
+	entityMgr _EntityMgrBehavior
+	ecTree    _ECTreeBehavior
 	callee    Callee
 	gcList    []container.GC
 }
@@ -96,12 +98,12 @@ func (ctx *ContextBehavior) GetFrame() Frame {
 }
 
 // GetEntityMgr 获取实体管理器
-func (ctx *ContextBehavior) GetEntityMgr() IEntityMgr {
+func (ctx *ContextBehavior) GetEntityMgr() EntityMgr {
 	return &ctx.entityMgr
 }
 
 // GetECTree 获取主EC树
-func (ctx *ContextBehavior) GetECTree() IECTree {
+func (ctx *ContextBehavior) GetECTree() ECTree {
 	return &ctx.ecTree
 }
 
@@ -113,6 +115,14 @@ func (ctx *ContextBehavior) GetFaceAnyAllocator() container.Allocator[iface.Face
 // GetHookAllocator 获取Hook内存分配器
 func (ctx *ContextBehavior) GetHookAllocator() container.Allocator[event.Hook] {
 	return ctx.opts.HookAllocator
+}
+
+// ActivateEvent 启用事件
+func (ctx *ContextBehavior) ActivateEvent(event event.IEventCtrl, recursion event.EventRecursion) {
+	if event == nil {
+		panic(fmt.Errorf("%w: %w: event is nil", ErrContext, exception.ErrArgs))
+	}
+	event.Init(ctx.GetAutoRecover(), ctx.GetReportError(), recursion, ctx.GetHookAllocator(), ctx.opts.CompositeFace.Iface)
 }
 
 // GetContext 获取上下文

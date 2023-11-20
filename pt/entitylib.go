@@ -2,126 +2,139 @@ package pt
 
 import (
 	"fmt"
+	"kit.golaxy.org/golaxy/internal/exception"
 	"kit.golaxy.org/golaxy/util/generic"
 	"sync"
 )
 
 // EntityLib 实体原型库
 type EntityLib interface {
-	// Register 注册实体原型。
-	//
-	//	@param prototype 实体原型名称。
-	//	@param compImpls 组件实现列表。
-	Register(prototype string, compImpls []string)
-
-	// Deregister 取消注册实体原型。
-	//
-	//	@param prototype 实体原型名称。
+	EntityPTProvider
+	// Register 注册实体原型
+	Register(prototype string, comps []any) EntityPT
+	// Declare 声明实体原型，要求组件实例已注册
+	Declare(prototype string, compImpls []string) EntityPT
+	// Deregister 取消注册实体原型
 	Deregister(prototype string)
-
 	// Get 获取实体原型
-	//
-	//	@param prototype 实体原型名称。
-	//	@return 实体原型。
-	//	@return 是否存在。
-	Get(prototype string) (EntityPt, bool)
-
+	Get(prototype string) (EntityPT, bool)
 	// Range 遍历所有已注册的实体原型
-	//
-	//	@param fun 遍历函数。
-	Range(fun generic.Func1[EntityPt, bool])
+	Range(fun generic.Func1[EntityPT, bool])
 }
 
 // NewEntityLib 创建实体原型库
-func NewEntityLib() EntityLib {
-	lib := &_EntityLib{}
-	lib.init()
-	return lib
+func NewEntityLib(compLib ComponentLib) EntityLib {
+	if compLib == nil {
+		panic(fmt.Errorf("%w: %w: compLib is nil", ErrPt, exception.ErrArgs))
+	}
+
+	return &_EntityLib{
+		compLib:   compLib,
+		entityMap: map[string]*EntityPT{},
+	}
 }
 
 type _EntityLib struct {
 	sync.RWMutex
-	entityPtMap  map[string]*EntityPt
-	entityPtList []*EntityPt
+	compLib    ComponentLib
+	entityMap  map[string]*EntityPT
+	entityList []*EntityPT
 }
 
-func (lib *_EntityLib) init() {
-	lib.entityPtMap = map[string]*EntityPt{}
+// GetEntityLib 获取实体原型库
+func (lib *_EntityLib) GetEntityLib() EntityLib {
+	return lib
 }
 
-// Register 注册实体原型。
-//
-//	@param prototype 实体原型名称。
-//	@param compImpls 组件实现列表。
-func (lib *_EntityLib) Register(prototype string, compImpls []string) {
+// Register 注册实体原型
+func (lib *_EntityLib) Register(prototype string, comps []any) EntityPT {
 	lib.Lock()
 	defer lib.Unlock()
 
-	_, ok := lib.entityPtMap[prototype]
+	_, ok := lib.entityMap[prototype]
 	if ok {
 		panic(fmt.Errorf("%w: entity %q is already registered", ErrPt, prototype))
 	}
 
-	entityPt := &EntityPt{
+	entity := &EntityPT{
 		Prototype: prototype,
 	}
 
-	for i := range compImpls {
-		compPt, ok := GetComponent(compImpls[i])
-		if !ok {
-			panic(fmt.Errorf("%w: entity %q component %q not registered", ErrPt, prototype, compImpls[i]))
-		}
-		entityPt.compPts = append(entityPt.compPts, compPt)
+	for _, comp := range comps {
+		compPT := lib.compLib.Register(comp)
+		entity.comps = append(entity.comps, compPT)
 	}
 
-	lib.entityPtMap[prototype] = entityPt
-	lib.entityPtList = append(lib.entityPtList, entityPt)
+	lib.entityMap[prototype] = entity
+	lib.entityList = append(lib.entityList, entity)
+
+	return *entity
 }
 
-// Deregister 取消注册实体原型。
-//
-//	@param prototype 实体原型名称。
+// Declare 声明实体原型，要求组件实例已注册
+func (lib *_EntityLib) Declare(prototype string, compImpls []string) EntityPT {
+	lib.Lock()
+	defer lib.Unlock()
+
+	_, ok := lib.entityMap[prototype]
+	if ok {
+		panic(fmt.Errorf("%w: entity %q is already registered", ErrPt, prototype))
+	}
+
+	entity := &EntityPT{
+		Prototype: prototype,
+	}
+
+	for _, compImpl := range compImpls {
+		comp, ok := lib.compLib.Get(compImpl)
+		if !ok {
+			panic(fmt.Errorf("%w: entity %q component %q was not registered", ErrPt, prototype, compImpl))
+		}
+		entity.comps = append(entity.comps, comp)
+	}
+
+	lib.entityMap[prototype] = entity
+	lib.entityList = append(lib.entityList, entity)
+
+	return *entity
+}
+
+// Deregister 取消注册实体原型
 func (lib *_EntityLib) Deregister(prototype string) {
 	lib.Lock()
 	defer lib.Unlock()
 
-	delete(lib.entityPtMap, prototype)
+	delete(lib.entityMap, prototype)
 
-	for i, entityPt := range lib.entityPtList {
-		if entityPt.Prototype == prototype {
-			lib.entityPtList = append(lib.entityPtList[:i], lib.entityPtList[i+1:]...)
+	for i, entity := range lib.entityList {
+		if entity.Prototype == prototype {
+			lib.entityList = append(lib.entityList[:i], lib.entityList[i+1:]...)
 			return
 		}
 	}
 }
 
 // Get 获取实体原型
-//
-//	@param prototype 实体原型名称。
-//	@return 实体原型。
-//	@return 是否存在。
-func (lib *_EntityLib) Get(prototype string) (EntityPt, bool) {
+func (lib *_EntityLib) Get(prototype string) (EntityPT, bool) {
 	lib.RLock()
 	defer lib.RUnlock()
 
-	entityPt, ok := lib.entityPtMap[prototype]
+	entity, ok := lib.entityMap[prototype]
 	if !ok {
-		return EntityPt{}, false
+		return EntityPT{}, false
 	}
 
-	return *entityPt, ok
+	return *entity, ok
 }
 
 // Range 遍历所有已注册的实体原型
-//
-//	@param fun 遍历函数。
-func (lib *_EntityLib) Range(fun generic.Func1[EntityPt, bool]) {
+func (lib *_EntityLib) Range(fun generic.Func1[EntityPT, bool]) {
 	lib.RLock()
-	entityPtList := append(make([]*EntityPt, 0, len(lib.entityPtList)), lib.entityPtList...)
+	entityList := append(make([]*EntityPT, 0, len(lib.entityList)), lib.entityList...)
 	lib.RUnlock()
 
-	for _, entityPt := range entityPtList {
-		if !fun.Exec(*entityPt) {
+	for _, entity := range entityList {
+		if !fun.Exec(*entity) {
 			return
 		}
 	}

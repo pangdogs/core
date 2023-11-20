@@ -2,6 +2,7 @@ package define
 
 import (
 	"kit.golaxy.org/golaxy/runtime"
+	"kit.golaxy.org/golaxy/util/generic"
 	"kit.golaxy.org/golaxy/util/types"
 )
 
@@ -14,8 +15,8 @@ func DefineRuntimePluginInterface[PLUGIN_IFACE any]() RuntimePluginInterface[PLU
 
 // RuntimePluginInterface 运行时插件接口，只能在运行时上下文中使用
 type RuntimePluginInterface[PLUGIN_IFACE any] struct {
-	Name  string                             // 插件名称
-	Using func(runtime.Context) PLUGIN_IFACE // 使用插件
+	Name  string                                       // 插件名称
+	Using generic.Func1[runtime.Context, PLUGIN_IFACE] // 使用插件
 }
 
 // RuntimePluginInterface 生成运行时插件接口定义

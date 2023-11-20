@@ -1,12 +1,13 @@
-// Package eventcode 本地事件辅助代码生成器，使用Golang的代码生成功能（go generate）生成本地事件相关辅助代码。
-//
-//   - 可以生成发送事件（emit event）与事件表（event table）辅助代码。
-//   - 用于生成发送事件辅助代码时，在事件定义代码源文件（*.go）头部，添加以下注释：
-//     `go:generate go run kit.golaxy.org/golaxy/event/eventcode --decl_file=$GOFILE gen_emit --package=$GOPACKAGE`
-//   - 用于生成事件表辅助代码时，在事件定义代码源文件（*.go）头部，添加以下注释：
-//     `go:generate go run kit.golaxy.org/golaxy/event/eventcode --decl_file=$GOFILE gen_eventtab --package=$GOPACKAGE --name=XXXEventTab`
-//   - 需要生成事件辅助代码时，在Cmd控制台中，定位到事件定义代码源文件（*.go）的路径下，输入`go generate`指令即可，也可以使用IDE提供的go generate功能。
-//   - 本包可以编译并执行`eventcode --help`查看命令行参数，按需求调整参数改变生成的代码。
+// Package eventcode 使用go:generate功能，在编译前自动化生成代码
+/*
+	- 可以生成事件（event）与事件表（event table）辅助代码。
+	- 用于生成事件辅助代码时，在事件定义代码源文件（.go）头部，添加以下注释：
+		//go:generate go run kit.golaxy.org/golaxy/event/eventcode --decl_file=$GOFILE gen_event --package=$GOPACKAGE
+	- 用于生成事件表辅助代码时，在事件定义代码源文件（.go）头部，添加以下注释：
+		//go:generate go run kit.golaxy.org/golaxy/event/eventcode --decl_file=$GOFILE gen_eventtab --package=$GOPACKAGE --name={事件表名称}
+	- 在cmd控制台中，进入事件定义代码源文件（.go）的目录，输入go generate指令即可生成代码，此外也可以使用IDE提供的go generate功能。
+	- 编译本包并执行eventcode --help，可以查看命令行参数，通过参数可以调整生成的代码。
+*/
 package main
 
 import (
@@ -31,44 +32,42 @@ type CommandContext struct {
 	FileSet           *token.FileSet
 	FileAst           *ast.File
 
-	// 生成发送事件代码相关选项
-	EmitPackage   string
-	EmitDir       string
-	EmitDefExport bool
-	EmitDefAuto   bool
+	// 生成事件代码相关选项
+	EventPackage   string
+	EventDir       string
+	EventDefExport bool
+	EventDefAuto   bool
 
 	// 生成事件表代码相关选项
-	EventTabPackage           string
-	EventTabDir               string
-	EventTabName              string
-	EventTabDefEventRecursion string
+	EventTabPackage string
+	EventTabDir     string
+	EventTabName    string
 }
 
-var (
+const (
 	packageEventPath = "kit.golaxy.org/golaxy/event"
 	packageIfacePath = "kit.golaxy.org/golaxy/util/iface"
 )
 
 func main() {
 	// 基础选项
-	declFile := kingpin.Flag("decl_file", "定义事件的源文件（*.go）。").ExistingFile()
-	eventRegexp := kingpin.Flag("event_regexp", "匹配事件定义时使用的正则表达式。").Default("^[eE]vent.+").String()
+	declFile := kingpin.Flag("decl_file", "定义事件的源文件（.go）。").ExistingFile()
+	eventRegexp := kingpin.Flag("event_regexp", "匹配事件定义时，使用的正则表达式。").Default("^[eE]vent.+").String()
 	packageEventAlias := kingpin.Flag("package_event_alias", fmt.Sprintf("导入GOLAXY框架的`%s`包时使用的别名。", packageEventPath)).Default("event").String()
 	packageIfaceAlias := kingpin.Flag("package_iface_alias", fmt.Sprintf("导入GOLAXY框架的`%s`包时使用的别名。", packageIfacePath)).Default("iface").String()
 
-	// 生成发送事件代码相关选项
-	emitCmd := kingpin.Command("gen_emit", "通过定义的事件生成发送事件代码。")
-	emitPackage := emitCmd.Flag("package", "生成的发送事件代码时使用的包名。").String()
-	emitDir := emitCmd.Flag("dir", "生成的发送事件代码产生的源文件（*.go）存放的相对目录。").String()
-	emitDefExport := emitCmd.Flag("default_export", "生成的发送事件代码，默认的可见性，事件选项[EmitExport][EmitUnExport]可以覆盖此配置。").Default("true").String()
-	emitDefAuto := emitCmd.Flag("default_auto", "生成的发送事件代码，默认是否支持自动选择事件表中的事件，事件选项[EmitAuto][EmitManual]可以覆盖此配置。").Default("false").String()
+	// 生成事件代码相关选项
+	eventCmd := kingpin.Command("gen_event", "通过定义的事件，生成事件辅助代码。")
+	eventPackage := eventCmd.Flag("package", "生成事件辅助代码时，使用的包名。").String()
+	eventDir := eventCmd.Flag("dir", "生成事件辅助代码时，输出的源文件（.go）存放的相对目录。").String()
+	eventDefExport := eventCmd.Flag("default_export", "生成事件辅助代码时，发送事件的辅助代码的可见性，事件定义选项[EmitExport][EmitUnExport]可以覆盖此配置。").Default("true").String()
+	eventDefAuto := eventCmd.Flag("default_auto", "生成事件辅助代码时，是否生成简化绑定事件的辅助代码，事件定义选项[EmitAuto][EmitManual]可以覆盖此配置。").Default("true").String()
 
 	// 生成事件表代码相关选项
-	eventTabCmd := kingpin.Command("gen_eventtab", "通过定义的事件生成事件表代码。")
-	eventTabPackage := eventTabCmd.Flag("package", "生成的事件表代码使用的包名。").String()
-	eventTabDir := eventTabCmd.Flag("dir", "生成的事件表产生的源文件（*.go）存放的相对目录。").String()
-	eventTabName := eventTabCmd.Flag("name", "生成的事件表名。").String()
-	eventTabDefEventRecursion := eventTabCmd.Flag("default_event_recursion", "生成的事件表代码默认的事件递归处理方式，事件选项[EventRecursion_Allow][EventRecursion_Disallow][EventRecursion_NotEmit][EventRecursion_Discard][EventRecursion_Deepest]可以覆盖此配置。").Default("EventRecursion_Discard").String()
+	eventTabCmd := kingpin.Command("gen_eventtab", "通过定义的事件，生成事件表辅助代码。")
+	eventTabPackage := eventTabCmd.Flag("package", "生成事件表辅助代码，使用的包名。").String()
+	eventTabDir := eventTabCmd.Flag("dir", "生成事件表辅助代码时，输出的源文件（.go）存放的相对目录。").String()
+	eventTabName := eventTabCmd.Flag("name", "生成的事件表名称。").String()
 
 	cmd := kingpin.Parse()
 
@@ -79,27 +78,27 @@ func main() {
 	ctx.PackageIfaceAlias = strings.TrimSpace(*packageIfaceAlias)
 
 	if ctx.PackageEventAlias == "" {
-		panic("`gen_emit --package_event_alias`设置的别名不能为空")
+		panic("`gen_event --package_event_alias`设置的别名不能为空")
 	}
 
 	if ctx.PackageIfaceAlias == "" {
-		panic("`gen_emit --package_iface_alias`设置的别名不能为空")
+		panic("`gen_event --package_iface_alias`设置的别名不能为空")
 	}
 
 	switch cmd {
-	case emitCmd.FullCommand():
+	case eventCmd.FullCommand():
 		loadDeclFile(ctx)
 
-		ctx.EmitPackage = strings.TrimSpace(*emitPackage)
-		ctx.EmitDir = strings.TrimSpace(*emitDir)
-		ctx.EmitDefExport, _ = strconv.ParseBool(*emitDefExport)
-		ctx.EmitDefAuto, _ = strconv.ParseBool(*emitDefAuto)
+		ctx.EventPackage = strings.TrimSpace(*eventPackage)
+		ctx.EventDir = strings.TrimSpace(*eventDir)
+		ctx.EventDefExport, _ = strconv.ParseBool(*eventDefExport)
+		ctx.EventDefAuto, _ = strconv.ParseBool(*eventDefAuto)
 
-		if ctx.EmitPackage == "" {
-			panic("`gen_emit --package`设置的包名不能为空")
+		if ctx.EventPackage == "" {
+			panic("`gen_event --package`设置的包名不能为空")
 		}
 
-		genEmit(ctx)
+		genEvent(ctx)
 		return
 	case eventTabCmd.FullCommand():
 		loadDeclFile(ctx)
@@ -107,7 +106,6 @@ func main() {
 		ctx.EventTabPackage = *eventTabPackage
 		ctx.EventTabDir = *eventTabDir
 		ctx.EventTabName = *eventTabName
-		ctx.EventTabDefEventRecursion = *eventTabDefEventRecursion
 
 		if ctx.EventTabPackage == "" {
 			panic("`gen_eventtab --package`设置的包名不能为空")
@@ -115,10 +113,6 @@ func main() {
 
 		if ctx.EventTabName == "" {
 			panic("`gen_eventtab --name`设置的事件表名不能为空")
-		}
-
-		if ctx.EventTabDefEventRecursion == "" {
-			panic("`gen_eventtab --default_event_recursion`设置的事件递归处理方式不能为空")
 		}
 
 		genEventTab(ctx)

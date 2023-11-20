@@ -29,31 +29,24 @@ func (creator EntityCreator) Spawn(settings ...option.Setting[EntityCreatorOptio
 		panic(fmt.Errorf("%w: setting context is nil", ErrGolaxy))
 	}
 
-	rtCtx := creator.Context
-	servCtx := service.Current(rtCtx)
-
+	ctx := creator.Context
 	opts := option.Append(creator.Options, settings...)
 
-	entityPt, err := pt.Using(servCtx, opts.Prototype)
-	if err != nil {
-		return nil, err
-	}
-
 	if !opts.ParentID.IsNil() {
-		_, err := runtime.UnsafeECTree(rtCtx.GetECTree()).FetchEntity(opts.ParentID)
+		_, err := runtime.UnsafeECTree(ctx.GetECTree()).FetchEntity(opts.ParentID)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	entity := entityPt.UnsafeConstruct(opts.ConstructEntityOptions)
+	entity := pt.Using(service.Current(ctx), opts.Prototype).UnsafeConstruct(opts.ConstructEntityOptions)
 
-	if err := rtCtx.GetEntityMgr().AddEntity(entity, opts.Scope); err != nil {
+	if err := ctx.GetEntityMgr().AddEntity(entity, opts.Scope); err != nil {
 		return nil, err
 	}
 
 	if !opts.ParentID.IsNil() {
-		if err := rtCtx.GetECTree().AddChild(opts.ParentID, entity.GetId()); err != nil {
+		if err := ctx.GetECTree().AddChild(opts.ParentID, entity.GetId()); err != nil {
 			entity.DestroySelf()
 			return nil, err
 		}

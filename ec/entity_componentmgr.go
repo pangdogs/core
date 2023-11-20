@@ -210,7 +210,7 @@ func (entity *EntityBehavior) addSingleComponent(name string, component Componen
 
 	component.init(name, entity.opts.CompositeFace.Iface, component, entity.opts.HookAllocator, entity.opts.GCCollector)
 
-	face := iface.MakeFacePair[any](component, component)
+	face := iface.MakeFaceAny(component)
 
 	if e, ok := entity.getComponentElement(name); ok {
 		entity.componentList.TraversalAt(func(other *container.Element[iface.FaceAny]) bool {

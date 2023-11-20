@@ -21,7 +21,7 @@ type LifecycleEntityShut interface {
 	Shut()
 }
 
-// LifecycleEntityDestroy 实体的生命周期进入死亡（death）时的回调，实体实现此接口即可使用
-type LifecycleEntityDestroy interface {
-	Destroy()
+// LifecycleEntityDispose 实体的生命周期进入死亡（death）时的回调，实体实现此接口即可使用
+type LifecycleEntityDispose interface {
+	Dispose()
 }

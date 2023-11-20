@@ -9,11 +9,11 @@ import (
 
 // Hook 事件绑定句柄，主要用于重新绑定或解除绑定事件，由BindEvent()创建并返回，请勿自己创建
 type Hook struct {
-	delegateFace iface.FaceAny
-	createdBatch int32
-	priority     int32
-	element      *container.Element[Hook]
-	received     int32
+	subscriberFace iface.FaceAny
+	createdBatch   int32
+	priority       int32
+	element        *container.Element[Hook]
+	received       int32
 }
 
 // Bind 重新绑定事件与订阅者，可以设置优先级调整回调先后顺序，按优先级升序排列
@@ -31,7 +31,7 @@ func (hook *Hook) Bind(event IEvent, priority ...int32) {
 		_priority = priority[0]
 	}
 
-	*hook = event.newHook(hook.delegateFace, _priority)
+	*hook = event.newHook(hook.subscriberFace, _priority)
 }
 
 // Unbind 解绑定事件与订阅者

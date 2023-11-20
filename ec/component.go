@@ -39,6 +39,7 @@ type _Component interface {
 	getComposite() Component
 	setGCCollector(gcCollector container.GCCollector)
 	eventComponentDestroySelf() event.IEvent
+	cleanHooks()
 }
 
 // ComponentBehavior 组件行为，需要在开发新组件时，匿名嵌入至组件结构体中
@@ -51,6 +52,7 @@ type ComponentBehavior struct {
 	state                      ComponentState
 	reflectValue               reflect.Value
 	_eventComponentDestroySelf event.Event
+	hooks                      []event.Hook
 }
 
 // GetId 获取组件Id

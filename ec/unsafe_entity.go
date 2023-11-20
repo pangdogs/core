@@ -67,3 +67,7 @@ func (ue _UnsafeEntity) SetState(state EntityState) {
 func (ue _UnsafeEntity) EventEntityDestroySelf() event.IEvent {
 	return ue.eventEntityDestroySelf()
 }
+
+func (uc _UnsafeEntity) CleanHooks() {
+	uc.cleanHooks()
+}

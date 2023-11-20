@@ -8,31 +8,32 @@ import (
 	"strings"
 )
 
-// As 从实体提取一些需要的组件接口，复合在一起直接使用，示例：
-//
-//	type A interface {
-//		MethodA()
-//	}
-//	...
-//	type B interface {
-//		MethodB()
-//	}
-//	...
-//	type CompositeAB struct {
-//		A
-//		B
-//	}
-//	...
-//	v, ok := As[CompositeAB](entity)
-//	if ok {
-//		v.MethodA()
-//		v.MethodB()
-//	}
-//
-// 注意：
-//
-//	1.内部逻辑有使用反射，为了提高性能，可以使用一次后存储转换结果重复使用。
-//	2.实体更新组件后，需要重新提取。
+// As 从实体提取一些需要的组件接口，复合在一起直接使用
+/*
+示例：
+	type A interface {
+		MethodA()
+	}
+	...
+	type B interface {
+		MethodB()
+	}
+	...
+	type CompositeAB struct {
+		A
+		B
+	}
+	...
+	v, ok := As[CompositeAB](entity)
+	if ok {
+		v.MethodA()
+		v.MethodB()
+	}
+
+注意：
+	1.内部逻辑有使用反射，为了提高性能，可以使用一次后存储转换结果重复使用。
+	2.实体更新组件后，需要重新提取。
+*/
 func As[T comparable](entity ec.Entity) (T, bool) {
 	compositeIface := types.Zero[T]()
 	vfCompositeIface := reflect.ValueOf(&compositeIface).Elem()
@@ -44,28 +45,29 @@ func As[T comparable](entity ec.Entity) (T, bool) {
 	return compositeIface, true
 }
 
-// Cast 从实体提取一些需要的组件接口，复合在一起直接使用，提取失败会panic，示例：
-//
-//	type A interface {
-//		MethodA()
-//	}
-//	...
-//	type B interface {
-//		MethodB()
-//	}
-//	...
-//	type CompositeAB struct {
-//		A
-//		B
-//	}
-//	...
-//	Cast[CompositeAB](entity).MethodA()
-//	Cast[CompositeAB](entity).MethodB()
-//
-// 注意：
-//
-//	1.内部逻辑有使用反射，为了提高性能，可以使用一次后存储转换结果重复使用。
-//	2.实体更新组件后，需要重新提取。
+// Cast 从实体提取一些需要的组件接口，复合在一起直接使用，提取失败会panic
+/*
+示例：
+	type A interface {
+		MethodA()
+	}
+	...
+	type B interface {
+		MethodB()
+	}
+	...
+	type CompositeAB struct {
+		A
+		B
+	}
+	...
+	Cast[CompositeAB](entity).MethodA()
+	Cast[CompositeAB](entity).MethodB()
+
+注意：
+	1.内部逻辑有使用反射，为了提高性能，可以使用一次后存储转换结果重复使用。
+	2.实体更新组件后，需要重新提取。
+*/
 func Cast[T comparable](entity ec.Entity) T {
 	entityFace, ok := As[T](entity)
 	if !ok {
@@ -74,42 +76,44 @@ func Cast[T comparable](entity ec.Entity) T {
 	return entityFace
 }
 
-// Composite 创建组件复合提取器，直接使用As()或Cast()时，无法检测提取后实体是否又更新组件，使用提取器可以解决此问题，示例：
-//
-//	type A interface {
-//		MethodA()
-//	}
-//	...
-//	type B interface {
-//		MethodB()
-//	}
-//	...
-//	type CompositeAB struct {
-//		A
-//		B
-//	}
-//	...
-//	cx := Composite[CompositeAB]{Entity: entity}
-//	...
-//	if v, ok := cx.As(); ok {
-//		v.MethodA()
-//		v.MethodB()
-//		...
-//		entity.AddComponent(comp)
-//		...
-//		if v, ok := cx.As(); ok {
-//			v.MethodA()
-//			v.MethodB()
-//		}
-//	}
-//	...
-//	cx.Cast().MethodA()
-//	cx.Cast().MethodB()
-//	...
-//	entity.AddComponent(comp)
-//	...
-//	cx.Cast().MethodA()
-//	cx.Cast().MethodB()
+// Composite 创建组件复合提取器，直接使用As()或Cast()时，无法检测提取后实体是否又更新组件，使用提取器可以解决此问题
+/*
+示例：
+	type A interface {
+		MethodA()
+	}
+	...
+	type B interface {
+		MethodB()
+	}
+	...
+	type CompositeAB struct {
+		A
+		B
+	}
+	...
+	cx := Composite[CompositeAB]{Entity: entity}
+	...
+	if v, ok := cx.As(); ok {
+		v.MethodA()
+		v.MethodB()
+		...
+		entity.AddComponent(comp)
+		...
+		if v, ok := cx.As(); ok {
+			v.MethodA()
+			v.MethodB()
+		}
+	}
+	...
+	cx.Cast().MethodA()
+	cx.Cast().MethodB()
+	...
+	entity.AddComponent(comp)
+	...
+	cx.Cast().MethodA()
+	cx.Cast().MethodB()
+*/
 type Composite[T comparable] struct {
 	Entity  ec.Entity
 	version int32

@@ -108,19 +108,19 @@ func (rt *RuntimeBehavior) getOptions() *RuntimeOptions {
 }
 
 // OnEntityMgrAddEntity 事件处理器：实体管理器添加实体
-func (rt *RuntimeBehavior) OnEntityMgrAddEntity(entityMgr runtime.IEntityMgr, entity ec.Entity) {
+func (rt *RuntimeBehavior) OnEntityMgrAddEntity(entityMgr runtime.EntityMgr, entity ec.Entity) {
 	rt.connectEntity(entity)
 	rt.initEntity(entity)
 }
 
 // OnEntityMgrRemoveEntity 事件处理器：实体管理器删除实体
-func (rt *RuntimeBehavior) OnEntityMgrRemoveEntity(entityMgr runtime.IEntityMgr, entity ec.Entity) {
+func (rt *RuntimeBehavior) OnEntityMgrRemoveEntity(entityMgr runtime.EntityMgr, entity ec.Entity) {
 	rt.disconnectEntity(entity)
 	rt.shutEntity(entity)
 }
 
 // OnEntityMgrEntityFirstAccessComponent 事件处理器：实体管理器中的实体首次访问组件
-func (rt *RuntimeBehavior) OnEntityMgrEntityFirstAccessComponent(entityMgr runtime.IEntityMgr, entity ec.Entity, component ec.Component) {
+func (rt *RuntimeBehavior) OnEntityMgrEntityFirstAccessComponent(entityMgr runtime.EntityMgr, entity ec.Entity, component ec.Component) {
 	_comp := ec.UnsafeComponent(component)
 
 	if _comp.GetState() != ec.ComponentState_Attach {
@@ -137,12 +137,12 @@ func (rt *RuntimeBehavior) OnEntityMgrEntityFirstAccessComponent(entityMgr runti
 }
 
 // OnEntityMgrEntityAddComponents 事件处理器：实体管理器中的实体添加组件
-func (rt *RuntimeBehavior) OnEntityMgrEntityAddComponents(entityMgr runtime.IEntityMgr, entity ec.Entity, components []ec.Component) {
+func (rt *RuntimeBehavior) OnEntityMgrEntityAddComponents(entityMgr runtime.EntityMgr, entity ec.Entity, components []ec.Component) {
 	rt.addComponents(entity, components)
 }
 
 // OnEntityMgrEntityRemoveComponent 事件处理器：实体管理器中的实体删除组件
-func (rt *RuntimeBehavior) OnEntityMgrEntityRemoveComponent(entityMgr runtime.IEntityMgr, entity ec.Entity, component ec.Component) {
+func (rt *RuntimeBehavior) OnEntityMgrEntityRemoveComponent(entityMgr runtime.EntityMgr, entity ec.Entity, component ec.Component) {
 	rt.removeComponent(component)
 }
 
@@ -215,9 +215,11 @@ func (rt *RuntimeBehavior) removeComponent(component ec.Component) {
 
 	ec.UnsafeComponent(component).SetState(ec.ComponentState_Death)
 
-	if compDestroy, ok := component.(LifecycleComponentDestroy); ok {
-		generic.CastAction0(compDestroy.Destroy).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+	if compDispose, ok := component.(LifecycleComponentDispose); ok {
+		generic.CastAction0(compDispose.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
+
+	ec.UnsafeComponent(component).CleanHooks()
 }
 
 func (rt *RuntimeBehavior) connectEntity(entity ec.Entity) {
@@ -388,16 +390,20 @@ func (rt *RuntimeBehavior) shutEntity(entity ec.Entity) {
 
 		_comp.SetState(ec.ComponentState_Death)
 
-		if compDestroy, ok := comp.(LifecycleComponentDestroy); ok {
-			generic.CastAction0(compDestroy.Destroy).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+		if compDispose, ok := comp.(LifecycleComponentDispose); ok {
+			generic.CastAction0(compDispose.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 		}
+
+		ec.UnsafeComponent(comp).CleanHooks()
 
 		return true
 	})
 
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Death)
 
-	if entityDestroy, ok := entity.(LifecycleEntityDestroy); ok {
-		generic.CastAction0(entityDestroy.Destroy).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+	if entityDispose, ok := entity.(LifecycleEntityDispose); ok {
+		generic.CastAction0(entityDispose.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
+
+	ec.UnsafeEntity(entity).CleanHooks()
 }

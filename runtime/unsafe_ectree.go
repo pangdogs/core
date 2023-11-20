@@ -6,14 +6,14 @@ import (
 )
 
 // Deprecated: UnsafeECTree 访问EC树内部方法
-func UnsafeECTree(ecTree IECTree) _UnsafeECTree {
+func UnsafeECTree(ecTree ECTree) _UnsafeECTree {
 	return _UnsafeECTree{
-		IECTree: ecTree,
+		ECTree: ecTree,
 	}
 }
 
 type _UnsafeECTree struct {
-	IECTree
+	ECTree
 }
 
 // FetchEntity 访问实体

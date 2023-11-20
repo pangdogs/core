@@ -2,6 +2,7 @@ package define
 
 import (
 	"kit.golaxy.org/golaxy/plugin"
+	"kit.golaxy.org/golaxy/util/generic"
 	"kit.golaxy.org/golaxy/util/types"
 )
 
@@ -14,21 +15,17 @@ func DefinePluginInterface[PLUGIN_IFACE any]() PluginInterface[PLUGIN_IFACE] {
 
 // PluginInterface 通用插件接口，在运行时上下文和服务上下文中，均可使用
 type PluginInterface[PLUGIN_IFACE any] struct {
-	Name  string                                   // 插件名称
-	Using func(plugin.PluginProvider) PLUGIN_IFACE // 使用插件
+	Name  string                                             // 插件名称
+	Using generic.Func1[plugin.PluginProvider, PLUGIN_IFACE] // 使用插件
 }
 
 type _PluginInterface[PLUGIN_IFACE any] struct {
 	name string
 }
 
-func (p _PluginInterface[PLUGIN_IFACE]) using() func(pluginProvider plugin.PluginProvider) PLUGIN_IFACE {
+func (p _PluginInterface[PLUGIN_IFACE]) using() generic.Func1[plugin.PluginProvider, PLUGIN_IFACE] {
 	return func(pluginProvider plugin.PluginProvider) PLUGIN_IFACE {
-		plugin, err := plugin.Using[PLUGIN_IFACE](pluginProvider, p.name)
-		if err != nil {
-			panic(err)
-		}
-		return plugin
+		return plugin.Using[PLUGIN_IFACE](pluginProvider, p.name)
 	}
 }
 

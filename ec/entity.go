@@ -61,6 +61,7 @@ type _Entity interface {
 	setECParent(parent Entity)
 	setState(state EntityState)
 	eventEntityDestroySelf() event.IEvent
+	cleanHooks()
 }
 
 // EntityBehavior 实体行为，在需要扩展实体能力时，匿名嵌入至实体结构体中
@@ -76,6 +77,7 @@ type EntityBehavior struct {
 	eventCompMgrAddComponents        event.Event
 	eventCompMgrRemoveComponent      event.Event
 	eventCompMgrFirstAccessComponent event.Event
+	hooks                            []event.Hook
 }
 
 // GetId 获取实体Id

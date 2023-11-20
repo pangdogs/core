@@ -67,3 +67,7 @@ func (uc _UnsafeComponent) SetGCCollector(gcCollector container.GCCollector) {
 func (uc _UnsafeComponent) EventComponentDestroySelf() event.IEvent {
 	return uc.eventComponentDestroySelf()
 }
+
+func (uc _UnsafeComponent) CleanHooks() {
+	uc.cleanHooks()
+}

@@ -4,32 +4,44 @@ import (
 	"fmt"
 	"kit.golaxy.org/golaxy/internal/exception"
 	"kit.golaxy.org/golaxy/util/iface"
-	"kit.golaxy.org/golaxy/util/types"
 )
 
 // PluginProvider 插件提供者
 type PluginProvider interface {
-	// GetPlugin 获取插件
-	GetPlugin(name string) (PluginInfo, bool)
+	// GetPluginBundle 获取插件包
+	GetPluginBundle() PluginBundle
 }
 
 // Using 使用插件
-//
-//	@param pluginProvider 插件提供者。
-//	@param name 插件名称。
-func Using[T any](pluginProvider PluginProvider, name string) (T, error) {
+func Using[T any](pluginProvider PluginProvider, name string) T {
 	if pluginProvider == nil {
-		return types.Zero[T](), fmt.Errorf("%w: %w: pluginProvider is nil", ErrPlugin, exception.ErrArgs)
+		panic(fmt.Errorf("%w: %w: pluginProvider is nil", ErrPlugin, exception.ErrArgs))
 	}
 
-	pluginInfo, ok := pluginProvider.GetPlugin(name)
+	pluginInfo, ok := pluginProvider.GetPluginBundle().Get(name)
 	if !ok {
-		return types.Zero[T](), fmt.Errorf("%w: %q not installed", ErrPlugin, name)
+		panic(fmt.Errorf("%w: plugin %q not installed", ErrPlugin, name))
 	}
 
 	if !pluginInfo.Active {
-		return types.Zero[T](), fmt.Errorf("%w: %q not actived", ErrPlugin, name)
+		panic(fmt.Errorf("%w: plugin %q not actived", ErrPlugin, name))
 	}
 
-	return iface.Cache2Iface[T](pluginInfo.Face.Cache), nil
+	return iface.Cache2Iface[T](pluginInfo.Face.Cache)
+}
+
+// Install 安装插件
+func Install[T any](pluginProvider PluginProvider, plugin T, name ...string) {
+	if pluginProvider == nil {
+		panic(fmt.Errorf("%w: %w: pluginProvider is nil", ErrPlugin, exception.ErrArgs))
+	}
+	pluginProvider.GetPluginBundle().Install(iface.MakeFaceAny(plugin), name...)
+}
+
+// Uninstall 卸载插件
+func Uninstall(pluginProvider PluginProvider, name string) {
+	if pluginProvider == nil {
+		panic(fmt.Errorf("%w: %w: pluginProvider is nil", ErrPlugin, exception.ErrArgs))
+	}
+	pluginProvider.GetPluginBundle().Uninstall(name)
 }

@@ -2,7 +2,6 @@ package runtime
 
 import (
 	"kit.golaxy.org/golaxy/internal/concurrent"
-	"kit.golaxy.org/golaxy/service"
 	"kit.golaxy.org/golaxy/util/uid"
 )
 
@@ -16,6 +15,4 @@ type ConcurrentContext interface {
 	GetName() string
 	// GetId 获取运行时Id
 	GetId() uid.Id
-
-	getServiceCtx() service.Context
 }

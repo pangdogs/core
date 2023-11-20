@@ -17,18 +17,18 @@ type _UnsafeEvent struct {
 }
 
 // Emit 发送事件
-func (ue _UnsafeEvent) Emit(fun func(delegate iface.Cache) bool) {
+func (ue _UnsafeEvent) Emit(fun func(subscriber iface.Cache) bool) {
 	ue.emit(fun)
 }
 
 // NewHook 创建事件绑定句柄
-func (ue _UnsafeEvent) NewHook(delegateFace iface.FaceAny, priority int32) Hook {
-	return ue.newHook(delegateFace, priority)
+func (ue _UnsafeEvent) NewHook(subscriberFace iface.FaceAny, priority int32) Hook {
+	return ue.newHook(subscriberFace, priority)
 }
 
-// RemoveDelegate 删除订阅者
-func (ue _UnsafeEvent) RemoveDelegate(delegate any) {
-	ue.removeDelegate(delegate)
+// RemoveSubscriber 删除订阅者
+func (ue _UnsafeEvent) RemoveSubscriber(subscriber any) {
+	ue.removeSubscriber(subscriber)
 }
 
 // SetGCCollector 设置GC收集器

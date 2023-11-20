@@ -35,7 +35,7 @@ type Context interface {
 	concurrent.Context
 	Caller
 	plugin.PluginProvider
-	pt.EntityPtProvider
+	pt.EntityPTProvider
 	fmt.Stringer
 
 	// GetName 获取名称
@@ -43,7 +43,7 @@ type Context interface {
 	// GetId 获取服务Id
 	GetId() uid.Id
 	// GetEntityMgr 获取实体管理器
-	GetEntityMgr() IEntityMgr
+	GetEntityMgr() EntityMgr
 }
 
 type _Context interface {
@@ -56,7 +56,7 @@ type _Context interface {
 type ContextBehavior struct {
 	concurrent.ContextBehavior
 	opts      ContextOptions
-	entityMgr _EntityMgr
+	entityMgr _EntityMgrBehavior
 }
 
 // GetName 获取名称
@@ -70,7 +70,7 @@ func (ctx *ContextBehavior) GetId() uid.Id {
 }
 
 // GetEntityMgr 获取实体管理器
-func (ctx *ContextBehavior) GetEntityMgr() IEntityMgr {
+func (ctx *ContextBehavior) GetEntityMgr() EntityMgr {
 	return &ctx.entityMgr
 }
 

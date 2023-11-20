@@ -2,6 +2,7 @@ package define
 
 import (
 	"kit.golaxy.org/golaxy/service"
+	"kit.golaxy.org/golaxy/util/generic"
 	"kit.golaxy.org/golaxy/util/types"
 )
 
@@ -14,8 +15,8 @@ func DefineServicePluginInterface[PLUGIN_IFACE any]() ServicePluginInterface[PLU
 
 // ServicePluginInterface 服务插件接口，只能在服务上下文中使用
 type ServicePluginInterface[PLUGIN_IFACE any] struct {
-	Name  string                             // 插件名称
-	Using func(service.Context) PLUGIN_IFACE // 使用插件
+	Name  string                                       // 插件名称
+	Using generic.Func1[service.Context, PLUGIN_IFACE] // 使用插件
 }
 
 // ServicePluginInterface 生成服务插件接口定义

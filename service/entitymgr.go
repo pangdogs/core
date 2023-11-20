@@ -9,8 +9,8 @@ import (
 	"sync"
 )
 
-// IEntityMgr 实体管理器接口
-type IEntityMgr interface {
+// EntityMgr 实体管理器接口
+type EntityMgr interface {
 	// GetContext 获取服务上下文
 	GetContext() Context
 	// GetEntity 查询实体
@@ -25,12 +25,12 @@ type IEntityMgr interface {
 	RemoveEntity(id uid.Id)
 }
 
-type _EntityMgr struct {
+type _EntityMgrBehavior struct {
 	ctx       Context
 	entityMap sync.Map
 }
 
-func (entityMgr *_EntityMgr) init(ctx Context) {
+func (entityMgr *_EntityMgrBehavior) init(ctx Context) {
 	if ctx == nil {
 		panic(fmt.Errorf("%w: %w: ctx is nil", ErrEntityMgr, exception.ErrArgs))
 	}
@@ -39,12 +39,12 @@ func (entityMgr *_EntityMgr) init(ctx Context) {
 }
 
 // GetContext 获取服务上下文
-func (entityMgr *_EntityMgr) GetContext() Context {
+func (entityMgr *_EntityMgrBehavior) GetContext() Context {
 	return entityMgr.ctx
 }
 
 // GetEntity 查询实体
-func (entityMgr *_EntityMgr) GetEntity(id uid.Id) (ec.ConcurrentEntity, bool) {
+func (entityMgr *_EntityMgrBehavior) GetEntity(id uid.Id) (ec.ConcurrentEntity, bool) {
 	v, ok := entityMgr.entityMap.Load(id)
 	if !ok {
 		return nil, false
@@ -54,7 +54,7 @@ func (entityMgr *_EntityMgr) GetEntity(id uid.Id) (ec.ConcurrentEntity, bool) {
 }
 
 // GetOrAddEntity 查询或添加实体
-func (entityMgr *_EntityMgr) GetOrAddEntity(entity ec.ConcurrentEntity) (ec.ConcurrentEntity, bool, error) {
+func (entityMgr *_EntityMgrBehavior) GetOrAddEntity(entity ec.ConcurrentEntity) (ec.ConcurrentEntity, bool, error) {
 	if entity == nil {
 		return nil, false, fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs)
 	}
@@ -72,7 +72,7 @@ func (entityMgr *_EntityMgr) GetOrAddEntity(entity ec.ConcurrentEntity) (ec.Conc
 }
 
 // AddEntity 添加实体
-func (entityMgr *_EntityMgr) AddEntity(entity ec.ConcurrentEntity) error {
+func (entityMgr *_EntityMgrBehavior) AddEntity(entity ec.ConcurrentEntity) error {
 	if entity == nil {
 		return fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs)
 	}
@@ -91,7 +91,7 @@ func (entityMgr *_EntityMgr) AddEntity(entity ec.ConcurrentEntity) error {
 }
 
 // GetAndRemoveEntity 查询并删除实体
-func (entityMgr *_EntityMgr) GetAndRemoveEntity(id uid.Id) (ec.ConcurrentEntity, bool) {
+func (entityMgr *_EntityMgrBehavior) GetAndRemoveEntity(id uid.Id) (ec.ConcurrentEntity, bool) {
 	v, loaded := entityMgr.entityMap.LoadAndDelete(id)
 	if !loaded {
 		return nil, false
@@ -100,6 +100,6 @@ func (entityMgr *_EntityMgr) GetAndRemoveEntity(id uid.Id) (ec.ConcurrentEntity,
 }
 
 // RemoveEntity 删除实体
-func (entityMgr *_EntityMgr) RemoveEntity(id uid.Id) {
+func (entityMgr *_EntityMgrBehavior) RemoveEntity(id uid.Id) {
 	entityMgr.entityMap.Delete(id)
 }

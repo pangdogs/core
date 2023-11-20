@@ -10,125 +10,98 @@ import (
 	"sync"
 )
 
-var componentLib _ComponentLib
-
-func init() {
-	componentLib.init()
+// ComponentLib 组件原型库
+type ComponentLib interface {
+	// Register 注册组件原型，不设置组件名称时，将会使用组件实例名称作为组件名称
+	Register(comp any, name ...string) ComponentPT
+	// Deregister 取消注册组件原型
+	Deregister(impl string)
+	// Get 获取组件原型
+	Get(impl string) (ComponentPT, bool)
+	// Range 遍历所有已注册的组件原型
+	Range(fun generic.Func1[ComponentPT, bool])
 }
 
-// RegisterComponent 注册组件原型，一般在init()函数中使用，线程安全。
-//
-//	@param name 组件名称，一般是组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
-//	@param comp 组件对象。
-//	@param descr 组件功能的描述说明。
-func RegisterComponent(name string, comp any, descr ...string) {
-	var _descr string
-	if len(descr) > 0 {
-		_descr = descr[0]
+var compLib = NewComponentLib()
+
+// DefaultComponentLib 默认组件库
+func DefaultComponentLib() ComponentLib {
+	return compLib
+}
+
+// NewComponentLib 创建组件原型库
+func NewComponentLib() ComponentLib {
+	return &_ComponentLib{
+		compMap: map[string]*ComponentPT{},
 	}
-	componentLib.RegisterComponent(name, comp, _descr)
-}
-
-// DeregisterComponent 取消注册组件原型，线程安全。
-//
-//	@param impl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld.HelloWorld`。
-func DeregisterComponent(impl string) {
-	componentLib.DeregisterComponent(impl)
-}
-
-// GetComponent 获取组件原型，线程安全。
-//
-//	@param impl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld.HelloWorld`。
-//	@return 组件原型，可以用于创建组件。
-//	@return 是否存在。
-func GetComponent(impl string) (ComponentPt, bool) {
-	return componentLib.Get(impl)
-}
-
-// RangeComponent 遍历所有已注册的组件原型，线程安全。
-//
-//	@param fun 遍历函数。
-func RangeComponent(fun generic.Func1[ComponentPt, bool]) {
-	componentLib.Range(fun)
 }
 
 type _ComponentLib struct {
 	sync.RWMutex
-	compPtMap  map[string]*ComponentPt
-	compPtList []*ComponentPt
+	compMap  map[string]*ComponentPT
+	compList []*ComponentPT
 }
 
-func (lib *_ComponentLib) init() {
-	lib.compPtMap = map[string]*ComponentPt{}
-}
-
-// RegisterComponent 注册组件原型，一般在init()函数中使用，线程安全。
-//
-//	@param name 组件名称，一般是组件实现的接口名称，实体将通过接口名称来获取组件，多个组件可以实现同一个接口。
-//	@param comp 组件对象。
-//	@param descr 组件功能的描述说明。
-func (lib *_ComponentLib) RegisterComponent(name string, comp any, descr string) {
+// Register 注册组件原型，不设置组件名称时，将会使用组件实例名称作为组件名称
+func (lib *_ComponentLib) Register(comp any, name ...string) ComponentPT {
 	if comp == nil {
 		panic(fmt.Errorf("%w: %w: comp is nil", ErrPt, exception.ErrArgs))
 	}
 
+	var _name string
+	if len(name) > 0 {
+		_name = name[0]
+	}
+
 	if tfComp, ok := comp.(reflect.Type); ok {
-		lib.register(name, tfComp, descr)
+		return lib.register(tfComp, _name)
 	} else {
-		lib.register(name, reflect.TypeOf(comp), descr)
+		return lib.register(reflect.TypeOf(comp), _name)
 	}
 }
 
-// DeregisterComponent 取消注册组件原型，线程安全。
-//
-//	@param impl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld.HelloWorld`。
-func (lib *_ComponentLib) DeregisterComponent(impl string) {
+// Deregister 取消注册组件原型
+func (lib *_ComponentLib) Deregister(impl string) {
 	lib.Lock()
 	defer lib.Unlock()
 
-	delete(lib.compPtMap, impl)
+	delete(lib.compMap, impl)
 
-	for i, compPt := range lib.compPtList {
-		if compPt.Implementation == impl {
-			lib.compPtList = append(lib.compPtList[:i], lib.compPtList[i+1:]...)
+	for i, comp := range lib.compList {
+		if comp.Implementation == impl {
+			lib.compList = append(lib.compList[:i], lib.compList[i+1:]...)
 			return
 		}
 	}
 }
 
-// Get 获取组件原型，线程安全。
-//
-//	@param impl 组件实现，格式为组件所在包路径+组件名，例如：`kit.golaxy.org/components/helloworld.HelloWorld`。
-//	@return 组件原型，可以用于创建组件。
-//	@return 是否存在。
-func (lib *_ComponentLib) Get(impl string) (ComponentPt, bool) {
+// Get 获取组件原型
+func (lib *_ComponentLib) Get(impl string) (ComponentPT, bool) {
 	lib.RLock()
 	defer lib.RUnlock()
 
-	compPt, ok := lib.compPtMap[impl]
+	comp, ok := lib.compMap[impl]
 	if !ok {
-		return ComponentPt{}, false
+		return ComponentPT{}, false
 	}
 
-	return *compPt, ok
+	return *comp, ok
 }
 
-// Range 遍历所有已注册的组件原型，线程安全。
-//
-//	@param fun 遍历函数。
-func (lib *_ComponentLib) Range(fun generic.Func1[ComponentPt, bool]) {
+// Range 遍历所有已注册的组件原型
+func (lib *_ComponentLib) Range(fun generic.Func1[ComponentPT, bool]) {
 	lib.RLock()
-	compPtList := append(make([]*ComponentPt, 0, len(lib.compPtList)), lib.compPtList...)
+	compList := append(make([]*ComponentPT, 0, len(lib.compList)), lib.compList...)
 	lib.RUnlock()
 
-	for _, compPt := range compPtList {
-		if !fun.Exec(*compPt) {
+	for _, comp := range compList {
+		if !fun.Exec(*comp) {
 			return
 		}
 	}
 }
 
-func (lib *_ComponentLib) register(name string, tfComp reflect.Type, descr string) {
+func (lib *_ComponentLib) register(tfComp reflect.Type, name string) ComponentPT {
 	lib.Lock()
 	defer lib.Unlock()
 
@@ -146,18 +119,26 @@ func (lib *_ComponentLib) register(name string, tfComp reflect.Type, descr strin
 		panic(fmt.Errorf("%w: component %q not implement ec.Component", ErrPt, compImpl))
 	}
 
-	_, ok := lib.compPtMap[compImpl]
-	if ok {
-		panic(fmt.Errorf("%w: component %q is already registered", ErrPt, compImpl))
+	if name == "" {
+		name = compImpl
 	}
 
-	compPt := &ComponentPt{
+	comp, ok := lib.compMap[compImpl]
+	if ok {
+		if comp.Name != name {
+			panic(fmt.Errorf("%w: component %q has already been registered with name %q", ErrPt, compImpl, comp.Name))
+		}
+		return *comp
+	}
+
+	comp = &ComponentPT{
 		Name:           name,
 		Implementation: compImpl,
-		Description:    descr,
 		tfComp:         tfComp,
 	}
 
-	lib.compPtMap[compImpl] = compPt
-	lib.compPtList = append(lib.compPtList, compPt)
+	lib.compMap[compImpl] = comp
+	lib.compList = append(lib.compList, comp)
+
+	return *comp
 }
