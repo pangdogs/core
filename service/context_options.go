@@ -40,8 +40,8 @@ func (Option) Default() option.Setting[ContextOptions] {
 		Option{}.ReportError(nil)(o)
 		Option{}.Name("")(o)
 		Option{}.PersistId(uid.Nil)(o)
-		Option{}.EntityLib(nil)(o)
-		Option{}.PluginBundle(nil)(o)
+		Option{}.EntityLib(pt.DefaultEntityLib())(o)
+		Option{}.PluginBundle(plugin.NewPluginBundle())(o)
 		Option{}.RunningHandler(nil)(o)
 	}
 }

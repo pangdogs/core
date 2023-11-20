@@ -42,7 +42,7 @@ func (_ContextOption) Default() option.Setting[ContextOptions] {
 		_ContextOption{}.ReportError(nil)(o)
 		_ContextOption{}.Name("")(o)
 		_ContextOption{}.PersistId(uid.Nil)(o)
-		_ContextOption{}.PluginBundle(nil)(o)
+		_ContextOption{}.PluginBundle(plugin.NewPluginBundle())(o)
 		_ContextOption{}.RunningHandler(nil)(o)
 		_ContextOption{}.FaceAnyAllocator(container.DefaultAllocator[iface.FaceAny]())(o)
 		_ContextOption{}.HookAllocator(container.DefaultAllocator[event.Hook]())(o)

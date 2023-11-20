@@ -22,6 +22,13 @@ type EntityLib interface {
 	Range(fun generic.Func1[EntityPT, bool])
 }
 
+var entityLib = NewEntityLib(DefaultComponentLib())
+
+// DefaultEntityLib 默认实体库
+func DefaultEntityLib() EntityLib {
+	return entityLib
+}
+
 // NewEntityLib 创建实体原型库
 func NewEntityLib(compLib ComponentLib) EntityLib {
 	if compLib == nil {
