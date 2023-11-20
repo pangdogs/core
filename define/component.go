@@ -1,14 +1,25 @@
 package define
 
-import "kit.golaxy.org/golaxy/util/types"
+import (
+	"kit.golaxy.org/golaxy/pt"
+	"kit.golaxy.org/golaxy/util/types"
+)
 
 // DefineComponent 定义组件
-func DefineComponent[COMP_IFACE, COMP any]() Component {
-	compIface := DefineComponentInterface[COMP_IFACE]()
-	compIface.Register(types.Zero[COMP]())
+func DefineComponent[COMP any](compLib pt.ComponentLib) Component {
+	comp := DefineComponentInterface[COMP](compLib).Register(types.Zero[COMP]())
 	return _Component{
-		name:           compIface.Name,
-		implementation: types.FullName[COMP](),
+		name:           comp.Name,
+		implementation: comp.Implementation,
+	}.Component()
+}
+
+// DefineComponentWithInterface 定义有接口的组件，接口名称将作为组件名
+func DefineComponentWithInterface[COMP, COMP_IFACE any](compLib pt.ComponentLib) Component {
+	comp := DefineComponentInterface[COMP_IFACE](compLib).Register(types.Zero[COMP]())
+	return _Component{
+		name:           comp.Name,
+		implementation: comp.Implementation,
 	}.Component()
 }
 
