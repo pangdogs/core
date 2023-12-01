@@ -4,7 +4,6 @@ go 1.20
 
 require (
 	github.com/alecthomas/kingpin/v2 v2.3.1
-	github.com/elliotchance/pie/v2 v2.8.0
 	github.com/segmentio/ksuid v1.0.4
 	golang.org/x/exp v0.0.0-20220321173239-a90fa8a75705
 )
