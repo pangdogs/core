@@ -11,9 +11,9 @@ import (
 type EntityLib interface {
 	EntityPTProvider
 	// Register 注册实体原型
-	Register(prototype string, comps []any) EntityPT
+	Register(prototype string, comps ...any) EntityPT
 	// Declare 声明实体原型，要求组件实例已注册
-	Declare(prototype string, compImpls []string) EntityPT
+	Declare(prototype string, compImpls ...string) EntityPT
 	// Deregister 取消注册实体原型
 	Deregister(prototype string)
 	// Get 获取实体原型
@@ -54,7 +54,7 @@ func (lib *_EntityLib) GetEntityLib() EntityLib {
 }
 
 // Register 注册实体原型
-func (lib *_EntityLib) Register(prototype string, comps []any) EntityPT {
+func (lib *_EntityLib) Register(prototype string, comps ...any) EntityPT {
 	lib.Lock()
 	defer lib.Unlock()
 
@@ -79,7 +79,7 @@ func (lib *_EntityLib) Register(prototype string, comps []any) EntityPT {
 }
 
 // Declare 声明实体原型，要求组件实例已注册
-func (lib *_EntityLib) Declare(prototype string, compImpls []string) EntityPT {
+func (lib *_EntityLib) Declare(prototype string, compImpls ...string) EntityPT {
 	lib.Lock()
 	defer lib.Unlock()
 
