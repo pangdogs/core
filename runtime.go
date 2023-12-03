@@ -247,11 +247,6 @@ func (rt *RuntimeBehavior) connectEntity(entity ec.Entity) {
 }
 
 func (rt *RuntimeBehavior) disconnectEntity(entity ec.Entity) {
-	entity.RangeComponents(func(comp ec.Component) bool {
-		rt.disconnectComponent(comp)
-		return true
-	})
-
 	entityId := entity.GetId()
 
 	hooks, ok := rt.hooksMap[entityId]
@@ -264,6 +259,11 @@ func (rt *RuntimeBehavior) disconnectEntity(entity ec.Entity) {
 	}
 
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Shut)
+
+	entity.RangeComponents(func(comp ec.Component) bool {
+		rt.disconnectComponent(comp)
+		return true
+	})
 }
 
 func (rt *RuntimeBehavior) connectComponent(comp ec.Component) {
