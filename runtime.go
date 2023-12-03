@@ -164,9 +164,11 @@ func (rt *RuntimeBehavior) addComponents(entity ec.Entity, components []ec.Compo
 	}
 
 	for i := range components {
-		_comp := ec.UnsafeComponent(components[i])
-
 		rt.connectComponent(components[i])
+	}
+
+	for i := range components {
+		_comp := ec.UnsafeComponent(components[i])
 
 		if _comp.GetState() != ec.ComponentState_Awake {
 			continue
@@ -238,9 +240,19 @@ func (rt *RuntimeBehavior) connectEntity(entity ec.Entity) {
 	rt.hooksMap[entity.GetId()] = hooks
 
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Awake)
+
+	entity.RangeComponents(func(comp ec.Component) bool {
+		rt.connectComponent(comp)
+		return true
+	})
 }
 
 func (rt *RuntimeBehavior) disconnectEntity(entity ec.Entity) {
+	entity.RangeComponents(func(comp ec.Component) bool {
+		rt.disconnectComponent(comp)
+		return true
+	})
+
 	entityId := entity.GetId()
 
 	hooks, ok := rt.hooksMap[entityId]
@@ -306,8 +318,6 @@ func (rt *RuntimeBehavior) initEntity(entity ec.Entity) {
 	entity.RangeComponents(func(comp ec.Component) bool {
 		_comp := ec.UnsafeComponent(comp)
 
-		rt.connectComponent(comp)
-
 		if _comp.GetState() != ec.ComponentState_Awake {
 			return true
 		}
@@ -369,8 +379,6 @@ func (rt *RuntimeBehavior) shutEntity(entity ec.Entity) {
 
 	entity.RangeComponents(func(comp ec.Component) bool {
 		_comp := ec.UnsafeComponent(comp)
-
-		rt.disconnectComponent(comp)
 
 		if _comp.GetState() != ec.ComponentState_Shut {
 			return true
