@@ -22,6 +22,12 @@ type EntityLib interface {
 	Range(fun generic.Func1[EntityPT, bool])
 }
 
+// CompWithName 注册实体原型并指定名称
+type CompWithName struct {
+	Comp any
+	Name string
+}
+
 var entityLib = NewEntityLib(DefaultComponentLib())
 
 // DefaultEntityLib 默认实体库
@@ -68,7 +74,20 @@ func (lib *_EntityLib) Register(prototype string, comps ...any) EntityPT {
 	}
 
 	for _, comp := range comps {
-		compPT := lib.compLib.Register(comp)
+		var compWithName CompWithName
+
+		switch c := comp.(type) {
+		case CompWithName:
+			compWithName = c
+		case *CompWithName:
+			compWithName = *c
+		default:
+			compWithName = CompWithName{
+				Comp: c,
+			}
+		}
+
+		compPT := lib.compLib.Register(compWithName.Comp, compWithName.Name)
 		entity.comps = append(entity.comps, compPT)
 	}
 
