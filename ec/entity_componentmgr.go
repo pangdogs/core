@@ -270,7 +270,7 @@ func (entity *EntityBehavior) accessComponent(comp Component) Component {
 		}
 	}
 
-	if comp.GetState() >= ComponentState_Detach {
+	if comp.GetState() >= ComponentState_Death {
 		return nil
 	}
 
