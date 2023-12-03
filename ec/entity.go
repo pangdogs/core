@@ -46,6 +46,8 @@ type Entity interface {
 	GetECParent() (Entity, bool)
 	// GetState 获取实体状态
 	GetState() EntityState
+	// GetMeta 获取Meta信息
+	GetMeta() Meta
 	// DestroySelf 销毁自身
 	DestroySelf()
 }
@@ -103,6 +105,11 @@ func (entity *EntityBehavior) GetECParent() (Entity, bool) {
 // GetState 获取实体状态
 func (entity *EntityBehavior) GetState() EntityState {
 	return entity.state
+}
+
+// GetMeta 获取Meta信息
+func (entity *EntityBehavior) GetMeta() Meta {
+	return entity.opts.Meta
 }
 
 // DestroySelf 销毁自身

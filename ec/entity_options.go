@@ -19,6 +19,7 @@ type EntityOptions struct {
 	Prototype          string                             // 实体原型名称
 	PersistId          uid.Id                             // 实体持久化Id
 	AwakeOnFirstAccess bool                               // 开启组件被首次访问时，检测并调用Awake()
+	Meta               Meta                               // Meta信息
 	FaceAnyAllocator   container.Allocator[iface.FaceAny] // 自定义FaceAny内存分配器，用于提高性能，通常传入运行时上下文中的FaceAnyAllocator
 	HookAllocator      container.Allocator[event.Hook]    // 自定义Hook内存分配器，用于提高性能，通常传入运行时上下文中的HookAllocator
 	GCCollector        container.GCCollector              // 自定义GC收集器，通常不传或者传入运行时上下文
@@ -31,6 +32,7 @@ func (Option) Default() option.Setting[EntityOptions] {
 		Option{}.Prototype("")(o)
 		Option{}.PersistId(uid.Nil)(o)
 		Option{}.AwakeOnFirstAccess(true)(o)
+		Option{}.Meta(nil)(o)
 		Option{}.FaceAnyAllocator(container.DefaultAllocator[iface.FaceAny]())(o)
 		Option{}.HookAllocator(container.DefaultAllocator[event.Hook]())(o)
 		Option{}.GCCollector(nil)(o)
@@ -62,6 +64,13 @@ func (Option) PersistId(id uid.Id) option.Setting[EntityOptions] {
 func (Option) AwakeOnFirstAccess(b bool) option.Setting[EntityOptions] {
 	return func(o *EntityOptions) {
 		o.AwakeOnFirstAccess = b
+	}
+}
+
+// Meta Meta信息
+func (Option) Meta(m Meta) option.Setting[EntityOptions] {
+	return func(o *EntityOptions) {
+		o.Meta = m
 	}
 }
 

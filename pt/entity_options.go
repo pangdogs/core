@@ -55,6 +55,13 @@ func (Option) AwakeOnFirstAccess(b bool) option.Setting[ConstructEntityOptions] 
 	}
 }
 
+// Meta Meta信息
+func (Option) Meta(m ec.Meta) option.Setting[ConstructEntityOptions] {
+	return func(o *ConstructEntityOptions) {
+		ec.Option{}.Meta(m)(&o.EntityOptions)
+	}
+}
+
 // FaceAnyAllocator 自定义FaceAny内存分配器，用于提高性能，通常传入运行时上下文中的FaceAnyAllocator
 func (Option) FaceAnyAllocator(allocator container.Allocator[iface.FaceAny]) option.Setting[ConstructEntityOptions] {
 	return func(o *ConstructEntityOptions) {

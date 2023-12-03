@@ -45,7 +45,7 @@ func (_EntityCreatorOption) Prototype(pt string) option.Setting[EntityCreatorOpt
 // PersistId 实体持久化Id
 func (_EntityCreatorOption) PersistId(id uid.Id) option.Setting[EntityCreatorOptions] {
 	return func(o *EntityCreatorOptions) {
-		ec.Option{}.PersistId(id)(&o.EntityOptions)
+		pt.Option{}.PersistId(id)(&o.ConstructEntityOptions)
 	}
 }
 
@@ -53,6 +53,13 @@ func (_EntityCreatorOption) PersistId(id uid.Id) option.Setting[EntityCreatorOpt
 func (_EntityCreatorOption) AwakeOnFirstAccess(b bool) option.Setting[EntityCreatorOptions] {
 	return func(o *EntityCreatorOptions) {
 		pt.Option{}.AwakeOnFirstAccess(b)(&o.ConstructEntityOptions)
+	}
+}
+
+// Meta Meta信息
+func (_EntityCreatorOption) Meta(m ec.Meta) option.Setting[EntityCreatorOptions] {
+	return func(o *EntityCreatorOptions) {
+		pt.Option{}.Meta(m)(&o.ConstructEntityOptions)
 	}
 }
 
