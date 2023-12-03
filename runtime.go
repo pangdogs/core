@@ -143,6 +143,7 @@ func (rt *RuntimeBehavior) OnEntityMgrEntityAddComponents(entityMgr runtime.Enti
 
 // OnEntityMgrEntityRemoveComponent 事件处理器：实体管理器中的实体删除组件
 func (rt *RuntimeBehavior) OnEntityMgrEntityRemoveComponent(entityMgr runtime.EntityMgr, entity ec.Entity, component ec.Component) {
+	rt.disconnectComponent(component)
 	rt.removeComponent(component)
 }
 
@@ -203,8 +204,6 @@ func (rt *RuntimeBehavior) addComponents(entity ec.Entity, components []ec.Compo
 }
 
 func (rt *RuntimeBehavior) removeComponent(component ec.Component) {
-	rt.disconnectComponent(component)
-
 	if component.GetState() != ec.ComponentState_Shut {
 		return
 	}
@@ -239,12 +238,12 @@ func (rt *RuntimeBehavior) connectEntity(entity ec.Entity) {
 
 	rt.hooksMap[entity.GetId()] = hooks
 
-	ec.UnsafeEntity(entity).SetState(ec.EntityState_Awake)
-
 	entity.RangeComponents(func(comp ec.Component) bool {
 		rt.connectComponent(comp)
 		return true
 	})
+
+	ec.UnsafeEntity(entity).SetState(ec.EntityState_Awake)
 }
 
 func (rt *RuntimeBehavior) disconnectEntity(entity ec.Entity) {
