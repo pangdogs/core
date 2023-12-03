@@ -178,3 +178,43 @@ func (ad AwaitDirector) All(ctxProvider service.ContextProvider, fun generic.Act
 		}, rtCtx, fun, rets, va)
 	}(&wg, rtCtx, fun, rets, va)
 }
+
+// Pipe 异步等待管道返回
+func (ad AwaitDirector) Pipe(ctxProvider service.ContextProvider, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va ...any) {
+	if ad.context == nil {
+		ad.context = context.Background()
+	}
+
+	if len(ad.asyncRets) <= 0 {
+		return
+	}
+
+	rtCtx := getRuntimeContext(ctxProvider)
+
+	for i := range ad.asyncRets {
+		asyncRet := ad.asyncRets[i]
+		if asyncRet == nil {
+			continue
+		}
+
+		go func(ctx context.Context, rtCtx runtime.Context, asyncRet runtime.AsyncRet, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va []any) {
+			for {
+				select {
+				case ret, ok := <-asyncRet:
+					if !ok {
+						return
+					}
+					rtCtx.CallVoid(func(va ...any) {
+						rtCtx := va[0].(runtime.Context)
+						fun := va[1].(generic.ActionVar2[runtime.Context, runtime.Ret, any])
+						ret := va[2].(runtime.Ret)
+						funVa := va[3].([]any)
+						fun.Exec(rtCtx, ret, funVa...)
+					}, rtCtx, fun, ret, va)
+				case <-ctx.Done():
+					return
+				}
+			}
+		}(ad.context, rtCtx, asyncRet, fun, va)
+	}
+}
