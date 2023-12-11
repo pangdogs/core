@@ -34,8 +34,8 @@ type _Component interface {
 	setFixed(v bool)
 	getFixed() bool
 	setState(state ComponentState)
-	setReflectValue(v reflect.Value)
-	getReflectValue() reflect.Value
+	setReflected(v reflect.Value)
+	getReflected() reflect.Value
 	getComposite() Component
 	setGCCollector(gcCollector container.GCCollector)
 	eventComponentDestroySelf() event.IEvent
@@ -50,7 +50,7 @@ type ComponentBehavior struct {
 	composite                  Component
 	fixed                      bool
 	state                      ComponentState
-	reflectValue               reflect.Value
+	reflected                  reflect.Value
 	_eventComponentDestroySelf event.Event
 	hooks                      []event.Hook
 }
@@ -130,18 +130,18 @@ func (comp *ComponentBehavior) setState(state ComponentState) {
 	}
 }
 
-func (comp *ComponentBehavior) setReflectValue(v reflect.Value) {
-	comp.reflectValue = v
+func (comp *ComponentBehavior) setReflected(v reflect.Value) {
+	comp.reflected = v
 }
 
-func (comp *ComponentBehavior) getReflectValue() reflect.Value {
-	if comp.reflectValue.IsValid() {
-		return comp.reflectValue
+func (comp *ComponentBehavior) getReflected() reflect.Value {
+	if comp.reflected.IsValid() {
+		return comp.reflected
 	}
 
-	comp.reflectValue = reflect.ValueOf(comp.composite)
+	comp.reflected = reflect.ValueOf(comp.composite)
 
-	return comp.reflectValue
+	return comp.reflected
 }
 
 func (comp *ComponentBehavior) getComposite() Component {

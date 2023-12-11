@@ -43,14 +43,14 @@ func (uc _UnsafeComponent) SetState(state ComponentState) {
 	uc.setState(state)
 }
 
-// SetReflectValue 设置反射值
-func (uc _UnsafeComponent) SetReflectValue(v reflect.Value) {
-	uc.setReflectValue(v)
+// SetReflected 设置反射值
+func (uc _UnsafeComponent) SetReflected(v reflect.Value) {
+	uc.setReflected(v)
 }
 
-// GetReflectValue 获取反射值
-func (uc _UnsafeComponent) GetReflectValue() reflect.Value {
-	return uc.getReflectValue()
+// GetReflected 获取反射值
+func (uc _UnsafeComponent) GetReflected() reflect.Value {
+	return uc.getReflected()
 }
 
 // GetComposite 获取扩展者

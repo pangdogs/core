@@ -17,7 +17,7 @@ func (pt ComponentPT) Construct() ec.Component {
 	vfComp := reflect.New(pt.tfComp)
 
 	comp := vfComp.Interface().(ec.Component)
-	ec.UnsafeComponent(comp).SetReflectValue(vfComp)
+	ec.UnsafeComponent(comp).SetReflected(vfComp)
 
 	return comp
 }

@@ -188,7 +188,7 @@ func as(entity ec.Entity, vfIface reflect.Value) bool {
 				return false
 			}
 
-			vfCompIface.Set(ec.UnsafeComponent(comp).GetReflectValue())
+			vfCompIface.Set(ec.UnsafeComponent(comp).GetReflected())
 		}
 
 		return true
@@ -204,7 +204,7 @@ func as(entity ec.Entity, vfIface reflect.Value) bool {
 			return false
 		}
 
-		vfIface.Set(ec.UnsafeComponent(comp).GetReflectValue())
+		vfIface.Set(ec.UnsafeComponent(comp).GetReflected())
 
 		return true
 

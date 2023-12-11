@@ -6,6 +6,7 @@ import (
 	"kit.golaxy.org/golaxy/util/generic"
 	"kit.golaxy.org/golaxy/util/iface"
 	"kit.golaxy.org/golaxy/util/types"
+	"reflect"
 	"sync"
 )
 
@@ -35,9 +36,10 @@ func NewPluginBundle() PluginBundle {
 
 // PluginInfo 插件信息
 type PluginInfo struct {
-	Name   string        // 插件名
-	Face   iface.FaceAny // 插件Face
-	Active bool          // 是否激活
+	Name      string        // 插件名
+	Face      iface.FaceAny // 插件Face
+	Reflected reflect.Value // 插件反射值
+	Active    bool          // 是否激活
 }
 
 type _PluginBundle struct {
@@ -73,9 +75,10 @@ func (bundle *_PluginBundle) Install(pluginFace iface.FaceAny, name ...string) P
 	}
 
 	pluginInfo := &PluginInfo{
-		Name:   _name,
-		Face:   pluginFace,
-		Active: false,
+		Name:      _name,
+		Face:      pluginFace,
+		Reflected: reflect.ValueOf(pluginFace.Iface),
+		Active:    false,
 	}
 
 	bundle.pluginList = append(bundle.pluginList, pluginInfo)
