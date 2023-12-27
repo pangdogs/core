@@ -76,7 +76,7 @@ func (ctx *ContextBehavior) GetEntityMgr() EntityMgr {
 
 // String implements fmt.Stringer
 func (ctx *ContextBehavior) String() string {
-	return fmt.Sprintf(`{"id":%q "name":%q}`, ctx.GetId(), ctx.GetName())
+	return fmt.Sprintf(`{"id":%q, "name":%q}`, ctx.GetId(), ctx.GetName())
 }
 
 func (ctx *ContextBehavior) init(opts ContextOptions) {

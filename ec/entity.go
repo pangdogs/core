@@ -141,7 +141,7 @@ func (entity *EntityBehavior) String() string {
 	if parent, ok := entity.GetECParent(); ok {
 		parentId = parent.GetId()
 	}
-	return fmt.Sprintf(`{"id":%q "prototype":%q "parent_id":%q "state":%q}`, entity.GetId(), entity.GetPrototype(), parentId, entity.GetState())
+	return fmt.Sprintf(`{"id":%q, "prototype":%q, "parent_id":%q, "state":%q}`, entity.GetId(), entity.GetPrototype(), parentId, entity.GetState())
 }
 
 func (entity *EntityBehavior) init(opts EntityOptions) {

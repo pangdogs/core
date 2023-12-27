@@ -151,7 +151,7 @@ func (ctx *ContextBehavior) CollectGC(gc container.GC) {
 
 // String implements fmt.Stringer
 func (ctx *ContextBehavior) String() string {
-	return fmt.Sprintf(`{"id":%q "name":%q}`, ctx.GetId(), ctx.GetName())
+	return fmt.Sprintf(`{"id":%q, "name":%q}`, ctx.GetId(), ctx.GetName())
 }
 
 func (ctx *ContextBehavior) init(servCtx service.Context, opts ContextOptions) {
