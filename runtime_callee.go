@@ -5,7 +5,6 @@ import (
 	"kit.golaxy.org/golaxy/internal/concurrent"
 	"kit.golaxy.org/golaxy/runtime"
 	"kit.golaxy.org/golaxy/util/generic"
-	"time"
 )
 
 var (
@@ -58,23 +57,11 @@ func (rt *RuntimeBehavior) pushCallTask(task _Task) (asyncRet chan runtime.Ret) 
 		}
 	}()
 
-	if rt.opts.ProcessQueueTimeout > 0 {
-		timeoutTimer := time.NewTimer(rt.opts.ProcessQueueTimeout)
-		defer timeoutTimer.Stop()
-
-		select {
-		case rt.processQueue <- task:
-			return
-		case <-timeoutTimer.C:
-			break
-		}
-	} else {
-		select {
-		case rt.processQueue <- task:
-			return
-		default:
-			break
-		}
+	select {
+	case rt.processQueue <- task:
+		return
+	default:
+		break
 	}
 
 	asyncRet <- runtime.MakeRet(nil, ErrProcessQueueFull)

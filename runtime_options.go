@@ -21,7 +21,6 @@ type RuntimeOptions struct {
 	CompositeFace        iface.Face[Runtime] // 扩展者，需要扩展运行时自身功能时需要使用
 	AutoRun              bool                // 是否开启自动运行
 	ProcessQueueCapacity int                 // 任务处理流水线大小
-	ProcessQueueTimeout  time.Duration       // 任务处理流水线满时，向其插入任务的超时时间，为0表示不等待直接报错
 	Frame                runtime.Frame       // 帧，设置为nil表示不使用帧更新特性
 	GCInterval           time.Duration       // GC间隔时长
 	CustomGC             CustomGC            // 自定义GC
@@ -33,7 +32,6 @@ func (_RuntimeOption) Default() option.Setting[RuntimeOptions] {
 		_RuntimeOption{}.CompositeFace(iface.Face[Runtime]{})(o)
 		_RuntimeOption{}.AutoRun(false)(o)
 		_RuntimeOption{}.ProcessQueueCapacity(128)(o)
-		_RuntimeOption{}.ProcessQueueTimeout(0)(o)
 		_RuntimeOption{}.Frame(nil)(o)
 		_RuntimeOption{}.GCInterval(10 * time.Second)(o)
 		_RuntimeOption{}.CustomGC(nil)(o)
@@ -61,13 +59,6 @@ func (_RuntimeOption) ProcessQueueCapacity(cap int) option.Setting[RuntimeOption
 			panic(fmt.Errorf("%w: %w: ProcessQueueCapacity less equal 0 is invalid", ErrRuntime, exception.ErrArgs))
 		}
 		o.ProcessQueueCapacity = cap
-	}
-}
-
-// ProcessQueueTimeout 任务处理流水线满时，向其插入任务的超时时间，为0表示不等待直接报错
-func (_RuntimeOption) ProcessQueueTimeout(dur time.Duration) option.Setting[RuntimeOptions] {
-	return func(o *RuntimeOptions) {
-		o.ProcessQueueTimeout = dur
 	}
 }
 
