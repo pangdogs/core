@@ -67,7 +67,7 @@ func (rt *RuntimeBehavior) makeFrameTasks(curFrames, totalFrames uint64, targetF
 				select {
 				case rt.processQueue <- _Task{kind: _TaskKind_Frame, action: rt.frameLoop}:
 					curFrames++
-				default:
+				case <-rt.ctx.Done():
 				}
 			}()
 		case <-rt.ctx.Done():
