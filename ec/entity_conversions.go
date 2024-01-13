@@ -1,7 +1,7 @@
 package ec
 
 import (
-	"kit.golaxy.org/golaxy/util/iface"
+	"git.golaxy.org/core/util/iface"
 )
 
 // GetComposite 获取实体的扩展者

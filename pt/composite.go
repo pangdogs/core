@@ -2,8 +2,8 @@ package pt
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/util/types"
+	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/util/types"
 	"reflect"
 	"strings"
 )

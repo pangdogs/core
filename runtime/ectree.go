@@ -2,14 +2,14 @@ package runtime
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/event"
-	"kit.golaxy.org/golaxy/internal/concurrent"
-	"kit.golaxy.org/golaxy/internal/exception"
-	"kit.golaxy.org/golaxy/util/container"
-	"kit.golaxy.org/golaxy/util/generic"
-	"kit.golaxy.org/golaxy/util/iface"
-	"kit.golaxy.org/golaxy/util/uid"
+	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/event"
+	"git.golaxy.org/core/internal/concurrent"
+	"git.golaxy.org/core/internal/exception"
+	"git.golaxy.org/core/util/container"
+	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/core/util/iface"
+	"git.golaxy.org/core/util/uid"
 )
 
 // ECTree EC树接口

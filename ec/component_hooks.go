@@ -1,6 +1,6 @@
 package ec
 
-import "kit.golaxy.org/golaxy/event"
+import "git.golaxy.org/core/event"
 
 // AutoHooks 保存绑定事件的hook，在组件销毁时自动解绑定
 func (comp *ComponentBehavior) AutoHooks(hooks ...event.Hook) {

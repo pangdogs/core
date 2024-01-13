@@ -1,8 +1,8 @@
-package golaxy
+package core
 
 import (
-	"kit.golaxy.org/golaxy/runtime"
-	"kit.golaxy.org/golaxy/service"
+	"git.golaxy.org/core/runtime"
+	"git.golaxy.org/core/service"
 )
 
 // LifecycleServicePluginInit 服务上的插件初始化回调，插件实现此接口即可使用

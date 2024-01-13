@@ -1,15 +1,15 @@
-package golaxy
+package core
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/event"
-	"kit.golaxy.org/golaxy/internal/concurrent"
-	"kit.golaxy.org/golaxy/runtime"
-	"kit.golaxy.org/golaxy/util/generic"
-	"kit.golaxy.org/golaxy/util/iface"
-	"kit.golaxy.org/golaxy/util/option"
-	"kit.golaxy.org/golaxy/util/uid"
+	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/event"
+	"git.golaxy.org/core/internal/concurrent"
+	"git.golaxy.org/core/runtime"
+	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/core/util/iface"
+	"git.golaxy.org/core/util/option"
+	"git.golaxy.org/core/util/uid"
 	"sync/atomic"
 )
 

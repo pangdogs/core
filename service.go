@@ -1,11 +1,11 @@
-package golaxy
+package core
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal/concurrent"
-	"kit.golaxy.org/golaxy/service"
-	"kit.golaxy.org/golaxy/util/iface"
-	"kit.golaxy.org/golaxy/util/option"
+	"git.golaxy.org/core/internal/concurrent"
+	"git.golaxy.org/core/service"
+	"git.golaxy.org/core/util/iface"
+	"git.golaxy.org/core/util/option"
 	"sync/atomic"
 )
 

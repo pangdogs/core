@@ -2,9 +2,9 @@ package event
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal/exception"
-	"kit.golaxy.org/golaxy/util/container"
-	"kit.golaxy.org/golaxy/util/iface"
+	"git.golaxy.org/core/internal/exception"
+	"git.golaxy.org/core/util/container"
+	"git.golaxy.org/core/util/iface"
 )
 
 // Hook 事件绑定句柄，主要用于重新绑定或解除绑定事件，由BindEvent()创建并返回，请勿自己创建

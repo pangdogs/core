@@ -1,6 +1,6 @@
-package golaxy
+package core
 
-import "kit.golaxy.org/golaxy/runtime"
+import "git.golaxy.org/core/runtime"
 
 func (rt *RuntimeBehavior) loopingBlinkFrame() {
 	frame := runtime.UnsafeFrame(rt.opts.Frame)

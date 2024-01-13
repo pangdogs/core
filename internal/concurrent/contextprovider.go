@@ -1,7 +1,7 @@
 package concurrent
 
 import (
-	"kit.golaxy.org/golaxy/util/iface"
+	"git.golaxy.org/core/util/iface"
 )
 
 // ContextProvider 上下文提供者

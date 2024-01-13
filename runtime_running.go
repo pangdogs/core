@@ -1,13 +1,13 @@
-package golaxy
+package core
 
 import (
 	"context"
 	"fmt"
-	"kit.golaxy.org/golaxy/event"
-	"kit.golaxy.org/golaxy/internal/concurrent"
-	"kit.golaxy.org/golaxy/plugin"
-	"kit.golaxy.org/golaxy/runtime"
-	"kit.golaxy.org/golaxy/util/generic"
+	"git.golaxy.org/core/event"
+	"git.golaxy.org/core/internal/concurrent"
+	"git.golaxy.org/core/plugin"
+	"git.golaxy.org/core/runtime"
+	"git.golaxy.org/core/util/generic"
 )
 
 // Run 运行，返回的channel用于线程同步，可以阻塞等待至运行结束

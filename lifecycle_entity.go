@@ -1,4 +1,4 @@
-package golaxy
+package core
 
 // LifecycleEntityAwake 实体的生命周期进入唤醒（awake）时的回调，实体实现此接口即可使用
 type LifecycleEntityAwake interface {

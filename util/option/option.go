@@ -2,8 +2,8 @@ package option
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal/exception"
-	"kit.golaxy.org/golaxy/util/generic"
+	"git.golaxy.org/core/internal/exception"
+	"git.golaxy.org/core/util/generic"
 )
 
 type Setting[T any] generic.Action1[*T]

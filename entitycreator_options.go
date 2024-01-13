@@ -1,13 +1,13 @@
-package golaxy
+package core
 
 import (
-	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/event"
-	"kit.golaxy.org/golaxy/pt"
-	"kit.golaxy.org/golaxy/util/container"
-	"kit.golaxy.org/golaxy/util/iface"
-	"kit.golaxy.org/golaxy/util/option"
-	"kit.golaxy.org/golaxy/util/uid"
+	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/event"
+	"git.golaxy.org/core/pt"
+	"git.golaxy.org/core/util/container"
+	"git.golaxy.org/core/util/iface"
+	"git.golaxy.org/core/util/option"
+	"git.golaxy.org/core/util/uid"
 )
 
 type _EntityCreatorOption struct{}

@@ -3,12 +3,12 @@ package service
 import (
 	"context"
 	"fmt"
-	"kit.golaxy.org/golaxy/internal/concurrent"
-	"kit.golaxy.org/golaxy/plugin"
-	"kit.golaxy.org/golaxy/pt"
-	"kit.golaxy.org/golaxy/util/iface"
-	"kit.golaxy.org/golaxy/util/option"
-	"kit.golaxy.org/golaxy/util/uid"
+	"git.golaxy.org/core/internal/concurrent"
+	"git.golaxy.org/core/plugin"
+	"git.golaxy.org/core/pt"
+	"git.golaxy.org/core/util/iface"
+	"git.golaxy.org/core/util/option"
+	"git.golaxy.org/core/util/uid"
 )
 
 // NewContext 创建服务上下文

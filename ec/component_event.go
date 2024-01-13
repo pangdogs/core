@@ -1,4 +1,4 @@
-//go:generate go run kit.golaxy.org/golaxy/event/eventcode --decl_file=$GOFILE gen_event --package=$GOPACKAGE
+//go:generate go run git.golaxy.org/core/event/eventcode --decl_file=$GOFILE gen_event --package=$GOPACKAGE
 
 package ec
 

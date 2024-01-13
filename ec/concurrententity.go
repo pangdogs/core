@@ -1,8 +1,8 @@
 package ec
 
 import (
-	"kit.golaxy.org/golaxy/internal/concurrent"
-	"kit.golaxy.org/golaxy/util/uid"
+	"git.golaxy.org/core/internal/concurrent"
+	"git.golaxy.org/core/util/uid"
 )
 
 // ConcurrentEntity 多线程安全的实体接口

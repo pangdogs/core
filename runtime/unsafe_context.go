@@ -1,7 +1,7 @@
 package runtime
 
 import (
-	"kit.golaxy.org/golaxy/service"
+	"git.golaxy.org/core/service"
 )
 
 // Deprecated: UnsafeContext 访问运行时上下文内部方法

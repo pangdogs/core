@@ -3,8 +3,8 @@ package concurrent
 import (
 	"context"
 	"fmt"
-	"kit.golaxy.org/golaxy/internal/exception"
-	"kit.golaxy.org/golaxy/util/generic"
+	"git.golaxy.org/core/internal/exception"
+	"git.golaxy.org/core/util/generic"
 )
 
 var (

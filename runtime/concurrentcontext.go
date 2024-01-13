@@ -1,8 +1,8 @@
 package runtime
 
 import (
-	"kit.golaxy.org/golaxy/internal/concurrent"
-	"kit.golaxy.org/golaxy/util/uid"
+	"git.golaxy.org/core/internal/concurrent"
+	"git.golaxy.org/core/util/uid"
 )
 
 // ConcurrentContext 多线程安全的运行时上下文接口

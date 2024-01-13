@@ -2,12 +2,12 @@ package ec
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/event"
-	"kit.golaxy.org/golaxy/internal/exception"
-	"kit.golaxy.org/golaxy/util/container"
-	"kit.golaxy.org/golaxy/util/generic"
-	"kit.golaxy.org/golaxy/util/iface"
-	"kit.golaxy.org/golaxy/util/uid"
+	"git.golaxy.org/core/event"
+	"git.golaxy.org/core/internal/exception"
+	"git.golaxy.org/core/util/container"
+	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/core/util/iface"
+	"git.golaxy.org/core/util/uid"
 )
 
 // _ComponentMgr 组件管理器接口

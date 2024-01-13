@@ -1,4 +1,4 @@
-package golaxy
+package core
 
 import (
 	"time"

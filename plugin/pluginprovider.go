@@ -2,8 +2,8 @@ package plugin
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal/exception"
-	"kit.golaxy.org/golaxy/util/iface"
+	"git.golaxy.org/core/internal/exception"
+	"git.golaxy.org/core/util/iface"
 )
 
 // PluginProvider 插件提供者

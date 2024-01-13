@@ -2,12 +2,12 @@ package ec
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/event"
-	"kit.golaxy.org/golaxy/internal/concurrent"
-	"kit.golaxy.org/golaxy/util/container"
-	"kit.golaxy.org/golaxy/util/iface"
-	"kit.golaxy.org/golaxy/util/option"
-	"kit.golaxy.org/golaxy/util/uid"
+	"git.golaxy.org/core/event"
+	"git.golaxy.org/core/internal/concurrent"
+	"git.golaxy.org/core/util/container"
+	"git.golaxy.org/core/util/iface"
+	"git.golaxy.org/core/util/option"
+	"git.golaxy.org/core/util/uid"
 )
 
 // NewEntity 创建实体

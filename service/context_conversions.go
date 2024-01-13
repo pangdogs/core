@@ -1,7 +1,7 @@
 package service
 
 import (
-	"kit.golaxy.org/golaxy/util/iface"
+	"git.golaxy.org/core/util/iface"
 )
 
 // GetComposite 获取服务上下文的扩展者

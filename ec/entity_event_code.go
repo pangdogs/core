@@ -4,8 +4,8 @@ package ec
 
 import (
 	"fmt"
-	event "kit.golaxy.org/golaxy/event"
-	iface "kit.golaxy.org/golaxy/util/iface"
+	event "git.golaxy.org/core/event"
+	iface "git.golaxy.org/core/util/iface"
 )
 
 type iAutoEventEntityDestroySelf interface {

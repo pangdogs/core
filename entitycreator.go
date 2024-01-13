@@ -1,12 +1,12 @@
-package golaxy
+package core
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/pt"
-	"kit.golaxy.org/golaxy/runtime"
-	"kit.golaxy.org/golaxy/service"
-	"kit.golaxy.org/golaxy/util/option"
+	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/pt"
+	"git.golaxy.org/core/runtime"
+	"git.golaxy.org/core/service"
+	"git.golaxy.org/core/util/option"
 )
 
 // CreateEntity 创建实体

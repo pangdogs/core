@@ -1,7 +1,7 @@
-//go:generate go run kit.golaxy.org/golaxy/event/eventcode --decl_file=$GOFILE gen_event --package=$GOPACKAGE
+//go:generate go run git.golaxy.org/core/event/eventcode --decl_file=$GOFILE gen_event --package=$GOPACKAGE
 package runtime
 
-import "kit.golaxy.org/golaxy/ec"
+import "git.golaxy.org/core/ec"
 
 // EventEntityMgrAddEntity [EmitUnExport] 事件：实体管理器添加实体
 type EventEntityMgrAddEntity interface {

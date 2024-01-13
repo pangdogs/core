@@ -2,10 +2,10 @@ package service
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/internal/concurrent"
-	"kit.golaxy.org/golaxy/util/generic"
-	"kit.golaxy.org/golaxy/util/uid"
+	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/internal/concurrent"
+	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/core/util/uid"
 	_ "unsafe"
 )
 
@@ -45,7 +45,7 @@ type Caller interface {
 	CallVoidDelegate(entityId uid.Id, fun generic.DelegateActionVar1[ec.Entity, any], va ...any) AsyncRet
 }
 
-//go:linkname getCaller kit.golaxy.org/golaxy/runtime.getCaller
+//go:linkname getCaller git.golaxy.org/core/runtime.getCaller
 func getCaller(ctxProvider concurrent.ContextProvider) concurrent.Caller
 
 func makeAsyncErr(err error) AsyncRet {

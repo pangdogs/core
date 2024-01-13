@@ -1,10 +1,10 @@
 package ec
 
 import (
-	"kit.golaxy.org/golaxy/event"
-	"kit.golaxy.org/golaxy/util/container"
-	"kit.golaxy.org/golaxy/util/iface"
-	"kit.golaxy.org/golaxy/util/uid"
+	"git.golaxy.org/core/event"
+	"git.golaxy.org/core/util/container"
+	"git.golaxy.org/core/util/iface"
+	"git.golaxy.org/core/util/uid"
 )
 
 // Deprecated: UnsafeEntity 访问实体内部函数

@@ -2,8 +2,8 @@ package pt
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal/exception"
-	"kit.golaxy.org/golaxy/util/generic"
+	"git.golaxy.org/core/internal/exception"
+	"git.golaxy.org/core/util/generic"
 	"sync"
 )
 
@@ -22,10 +22,9 @@ type EntityLib interface {
 	Range(fun generic.Func1[EntityPT, bool])
 }
 
-// CompWithName 注册实体原型并指定名称
-type CompWithName struct {
-	Comp any
-	Name string
+// CompNamePair 组件与组件名，用于注册实体原型
+func CompNamePair(comp any, name string) [2]any {
+	return [2]any{comp, name}
 }
 
 var entityLib = NewEntityLib(DefaultComponentLib())
@@ -74,20 +73,19 @@ func (lib *_EntityLib) Register(prototype string, comps ...any) EntityPT {
 	}
 
 	for _, comp := range comps {
-		var compWithName CompWithName
+		var compNamePaired [2]any
 
 		switch c := comp.(type) {
-		case CompWithName:
-			compWithName = c
-		case *CompWithName:
-			compWithName = *c
+		case [2]any:
+			compNamePaired = c
+		case *[2]any:
+			compNamePaired = *c
 		default:
-			compWithName = CompWithName{
-				Comp: c,
-			}
+			compNamePaired[0] = comp
+			compNamePaired[1] = ""
 		}
 
-		compPT := lib.compLib.Register(compWithName.Comp, compWithName.Name)
+		compPT := lib.compLib.Register(compNamePaired[0], compNamePaired[1].(string))
 		entity.comps = append(entity.comps, compPT)
 	}
 

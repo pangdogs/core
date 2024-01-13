@@ -1,8 +1,8 @@
-package golaxy
+package core
 
 import (
-	"kit.golaxy.org/golaxy/event"
-	"kit.golaxy.org/golaxy/runtime"
+	"git.golaxy.org/core/event"
+	"git.golaxy.org/core/runtime"
 )
 
 func (rt *RuntimeBehavior) gc() {

@@ -1,9 +1,9 @@
 package define
 
 import (
-	"kit.golaxy.org/golaxy/runtime"
-	"kit.golaxy.org/golaxy/util/generic"
-	"kit.golaxy.org/golaxy/util/types"
+	"git.golaxy.org/core/runtime"
+	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/core/util/types"
 )
 
 // DefineRuntimePluginInterface 定义运行时插件接口，因为仅有接口没有实现，所以不能用于向插件包安装插件

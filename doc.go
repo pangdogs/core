@@ -1,4 +1,4 @@
-// Package golaxy GOLAXY分布式服务开发框架，基于Actor编程模型（Actor Model），使用EC组件框架（Entity-Component）组织代码结构，可以像积木一样快速搭建游戏服务器应用。
+// package core GOLAXY分布式服务开发框架内核，基于Actor编程模型（Actor Model），使用EC组件框架（Entity-Component）组织代码结构，可以像积木一样快速搭建服务器应用。
 /*
    - 使用EC组件框架（Entity-Component）组织代码结构。
    - 并发模式基于Actor编程模型，实体（Entity）就是Actor，其中组件（Component）用于实现状态（state）与行为（behavior），运行时（Runtime）中的任务处理流水线就是邮箱（mailbox），
@@ -8,4 +8,4 @@
      同时也可以参考教程和代码，自己编写插件。
    - 框架对长连接、有状态、无状态和分布式特性支持比较完备，适合开发一些对实时性要求较高的APP服务器，例如游戏服务器、远程控制系统服务器。也可以接DHT网络，开发一些分布式应用，例如分布式文件存储、分布式聊天系统等等。
 */
-package golaxy
+package core

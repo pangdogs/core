@@ -1,8 +1,8 @@
 package define
 
 import (
-	"kit.golaxy.org/golaxy/pt"
-	"kit.golaxy.org/golaxy/util/types"
+	"git.golaxy.org/core/pt"
+	"git.golaxy.org/core/util/types"
 )
 
 // DefineComponent 定义组件

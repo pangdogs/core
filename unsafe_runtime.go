@@ -1,6 +1,6 @@
-package golaxy
+package core
 
-import "kit.golaxy.org/golaxy/runtime"
+import "git.golaxy.org/core/runtime"
 
 // Deprecated: UnsafeRuntime 访问运行时内部方法
 func UnsafeRuntime(runtime Runtime) _UnsafeRuntime {

@@ -1,8 +1,8 @@
-package golaxy
+package core
 
 import (
-	"kit.golaxy.org/golaxy/util/iface"
-	"kit.golaxy.org/golaxy/util/option"
+	"git.golaxy.org/core/util/iface"
+	"git.golaxy.org/core/util/option"
 )
 
 type _ServiceOption struct{}

@@ -1,10 +1,10 @@
 package define
 
 import (
-	"kit.golaxy.org/golaxy/plugin"
-	"kit.golaxy.org/golaxy/service"
-	"kit.golaxy.org/golaxy/util/generic"
-	"kit.golaxy.org/golaxy/util/types"
+	"git.golaxy.org/core/plugin"
+	"git.golaxy.org/core/service"
+	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/core/util/types"
 )
 
 // DefineServicePlugin 定义服务插件

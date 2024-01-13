@@ -1,8 +1,8 @@
 package runtime
 
 import (
-	"kit.golaxy.org/golaxy/internal/concurrent"
-	"kit.golaxy.org/golaxy/util/generic"
+	"git.golaxy.org/core/internal/concurrent"
+	"git.golaxy.org/core/util/generic"
 )
 
 var (

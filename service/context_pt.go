@@ -1,7 +1,7 @@
 package service
 
 import (
-	"kit.golaxy.org/golaxy/pt"
+	"git.golaxy.org/core/pt"
 )
 
 // GetEntityLib 获取实体原型库

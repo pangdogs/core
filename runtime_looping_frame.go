@@ -1,7 +1,7 @@
-package golaxy
+package core
 
 import (
-	"kit.golaxy.org/golaxy/runtime"
+	"git.golaxy.org/core/runtime"
 	"time"
 )
 

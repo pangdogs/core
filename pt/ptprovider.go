@@ -2,7 +2,7 @@ package pt
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal/exception"
+	"git.golaxy.org/core/internal/exception"
 )
 
 // EntityPTProvider 实体原型提供者

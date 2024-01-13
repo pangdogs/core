@@ -1,4 +1,4 @@
-package golaxy
+package core
 
 // LifecycleComponentAwake 组件的生命周期进入唤醒（awake）时的回调，组件实现此接口即可使用
 type LifecycleComponentAwake interface {

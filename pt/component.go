@@ -1,7 +1,7 @@
 package pt
 
 import (
-	"kit.golaxy.org/golaxy/ec"
+	"git.golaxy.org/core/ec"
 	"reflect"
 )
 

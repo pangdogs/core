@@ -1,7 +1,7 @@
-package golaxy
+package core
 
 import (
-	"kit.golaxy.org/golaxy/util/iface"
+	"git.golaxy.org/core/util/iface"
 )
 
 // GetRuntimeComposite 获取运行时的扩展者

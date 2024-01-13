@@ -1,4 +1,4 @@
-package golaxy
+package core
 
 // Running 运行接口
 type Running interface {

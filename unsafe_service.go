@@ -1,6 +1,6 @@
-package golaxy
+package core
 
-import "kit.golaxy.org/golaxy/service"
+import "git.golaxy.org/core/service"
 
 // Deprecated: UnsafeService 访问服务内部方法
 func UnsafeService(service Service) _UnsafeService {

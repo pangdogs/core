@@ -2,8 +2,8 @@ package generic
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal/exception"
-	"kit.golaxy.org/golaxy/util/types"
+	"git.golaxy.org/core/internal/exception"
+	"git.golaxy.org/core/util/types"
 )
 
 type FuncVar0[VA, R any] func(...VA) R

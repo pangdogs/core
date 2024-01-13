@@ -1,13 +1,13 @@
 package pt
 
 import (
-	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/event"
-	"kit.golaxy.org/golaxy/util/container"
-	"kit.golaxy.org/golaxy/util/generic"
-	"kit.golaxy.org/golaxy/util/iface"
-	"kit.golaxy.org/golaxy/util/option"
-	"kit.golaxy.org/golaxy/util/uid"
+	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/event"
+	"git.golaxy.org/core/util/container"
+	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/core/util/iface"
+	"git.golaxy.org/core/util/option"
+	"git.golaxy.org/core/util/uid"
 )
 
 // Option 所有选项设置器

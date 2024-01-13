@@ -2,10 +2,10 @@ package event
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal/exception"
-	"kit.golaxy.org/golaxy/util/container"
-	"kit.golaxy.org/golaxy/util/generic"
-	"kit.golaxy.org/golaxy/util/iface"
+	"git.golaxy.org/core/internal/exception"
+	"git.golaxy.org/core/util/container"
+	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/core/util/iface"
 )
 
 // EventRecursion 发生事件递归时的处理方式，事件递归是指事件发送过程中，在订阅者接收并处理事件的逻辑中，再次发送这个事件
@@ -33,7 +33,7 @@ var (
 	}
 
 	2.在定义事件的源码文件（.go）头部添加以下注释，在编译前自动化生成代码：
-	//go:generate go run kit.golaxy.org/golaxy/event/eventcode --decl_file=$GOFILE gen_event --package=$GOPACKAGE
+	//go:generate go run git.golaxy.org/core/event/eventcode --decl_file=$GOFILE gen_event --package=$GOPACKAGE
 
 定义事件的选项（添加到定义事件的注释里）：
 	1.发送事件的辅助代码的可见性

@@ -2,9 +2,9 @@ package pt
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/internal/exception"
-	"kit.golaxy.org/golaxy/util/option"
+	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/internal/exception"
+	"git.golaxy.org/core/util/option"
 )
 
 // EntityPT 实体原型

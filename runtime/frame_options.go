@@ -2,8 +2,8 @@ package runtime
 
 import (
 	"fmt"
-	"kit.golaxy.org/golaxy/internal/exception"
-	"kit.golaxy.org/golaxy/util/option"
+	"git.golaxy.org/core/internal/exception"
+	"git.golaxy.org/core/util/option"
 )
 
 type _FrameOption struct{}

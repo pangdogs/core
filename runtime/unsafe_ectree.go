@@ -1,8 +1,8 @@
 package runtime
 
 import (
-	"kit.golaxy.org/golaxy/ec"
-	"kit.golaxy.org/golaxy/util/uid"
+	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/util/uid"
 )
 
 // Deprecated: UnsafeECTree 访问EC树内部方法

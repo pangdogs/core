@@ -1,9 +1,9 @@
 package define
 
 import (
-	"kit.golaxy.org/golaxy/plugin"
-	"kit.golaxy.org/golaxy/util/generic"
-	"kit.golaxy.org/golaxy/util/types"
+	"git.golaxy.org/core/plugin"
+	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/core/util/types"
 )
 
 // DefinePlugin 定义通用插件
