@@ -1,6 +1,6 @@
 # core
 
-GOLAXY分布式服务开发框架的内核，本包仅提供线程模型与代码组织框架，不提供例如服务发现（Service Discovery）、消息队列与事件驱动架构（MQ and Broker）、分布式锁（Distributed Sync）等分布式服务特性，这些特性将会以官方插件形式提供。
+Golaxy分布式服务开发框架的内核，本包仅提供线程模型与代码组织框架，不提供例如服务发现（Service Discovery）、消息队列与事件驱动架构（MQ and Broker）、分布式锁（Distributed Sync）等分布式服务特性，这些特性将会以官方插件形式提供。
 
 本包提供的主要特性如下:
 
