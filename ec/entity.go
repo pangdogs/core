@@ -40,6 +40,8 @@ type Entity interface {
 	GetId() uid.Id
 	// GetPrototype 获取实体原型
 	GetPrototype() string
+	// GetScope 获取可访问作用域
+	GetScope() Scope
 	// GetECNodeState 获取EC节点状态
 	GetECNodeState() ECNodeState
 	// GetECParent 获取在EC树中的父实体
@@ -90,6 +92,11 @@ func (entity *EntityBehavior) GetId() uid.Id {
 // GetPrototype 获取实体原型
 func (entity *EntityBehavior) GetPrototype() string {
 	return entity.opts.Prototype
+}
+
+// GetScope 获取可访问作用域
+func (entity *EntityBehavior) GetScope() Scope {
+	return entity.opts.Scope
 }
 
 // GetECNodeState 获取EC节点状态

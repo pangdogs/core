@@ -17,6 +17,7 @@ type Option struct{}
 type EntityOptions struct {
 	CompositeFace      iface.Face[Entity]                 // 扩展者，在扩展实体自身能力时使用
 	Prototype          string                             // 实体原型名称
+	Scope              Scope                              // 可访问作用域
 	PersistId          uid.Id                             // 实体持久化Id
 	AwakeOnFirstAccess bool                               // 开启组件被首次访问时，检测并调用Awake()
 	Meta               Meta                               // Meta信息
@@ -30,6 +31,7 @@ func (Option) Default() option.Setting[EntityOptions] {
 	return func(o *EntityOptions) {
 		Option{}.CompositeFace(iface.Face[Entity]{})(o)
 		Option{}.Prototype("")(o)
+		Option{}.Scope(Scope_Local)(o)
 		Option{}.PersistId(uid.Nil)(o)
 		Option{}.AwakeOnFirstAccess(true)(o)
 		Option{}.Meta(nil)(o)
@@ -50,6 +52,13 @@ func (Option) CompositeFace(face iface.Face[Entity]) option.Setting[EntityOption
 func (Option) Prototype(pt string) option.Setting[EntityOptions] {
 	return func(o *EntityOptions) {
 		o.Prototype = pt
+	}
+}
+
+// Scope 可访问作用域
+func (Option) Scope(scope Scope) option.Setting[EntityOptions] {
+	return func(o *EntityOptions) {
+		o.Scope = scope
 	}
 }
 

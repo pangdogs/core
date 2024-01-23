@@ -41,7 +41,7 @@ func (creator EntityCreator) Spawn(settings ...option.Setting[EntityCreatorOptio
 
 	entity := pt.Using(service.Current(ctx), opts.Prototype).UnsafeConstruct(opts.ConstructEntityOptions)
 
-	if err := ctx.GetEntityMgr().AddEntity(entity, opts.Scope); err != nil {
+	if err := ctx.GetEntityMgr().AddEntity(entity); err != nil {
 		return nil, err
 	}
 

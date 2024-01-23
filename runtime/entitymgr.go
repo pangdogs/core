@@ -26,7 +26,7 @@ type EntityMgr interface {
 	// CountEntities 获取实体数量
 	CountEntities() int
 	// AddEntity 添加实体
-	AddEntity(entity ec.Entity, scope ec.Scope) error
+	AddEntity(entity ec.Entity) error
 	// RemoveEntity 删除实体
 	RemoveEntity(id uid.Id)
 
@@ -41,7 +41,6 @@ type EntityMgr interface {
 type _EntityInfo struct {
 	element *container.Element[iface.FaceAny]
 	hooks   [3]event.Hook
-	global  bool
 }
 
 type _EntityMgrBehavior struct {
@@ -139,12 +138,12 @@ func (entityMgr *_EntityMgrBehavior) CountEntities() int {
 }
 
 // AddEntity 添加实体
-func (entityMgr *_EntityMgrBehavior) AddEntity(entity ec.Entity, scope ec.Scope) error {
+func (entityMgr *_EntityMgrBehavior) AddEntity(entity ec.Entity) error {
 	if entity == nil {
 		panic(fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs))
 	}
 
-	switch scope {
+	switch entity.GetScope() {
 	case ec.Scope_Local, ec.Scope_Global:
 	default:
 		return fmt.Errorf("%w: %w: invalid scope", ErrEntityMgr, exception.ErrArgs)
@@ -177,7 +176,7 @@ func (entityMgr *_EntityMgrBehavior) AddEntity(entity ec.Entity, scope ec.Scope)
 		return true
 	})
 
-	if scope == ec.Scope_Global {
+	if entity.GetScope() == ec.Scope_Global {
 		_, loaded, err := service.Current(entityMgr).GetEntityMgr().GetOrAddEntity(entity)
 		if err != nil {
 			return err
@@ -190,7 +189,6 @@ func (entityMgr *_EntityMgrBehavior) AddEntity(entity ec.Entity, scope ec.Scope)
 	entityInfo := _EntityInfo{
 		element: entityMgr.entityList.PushBack(iface.MakeFaceAny(entity)),
 		hooks:   [3]event.Hook{ec.BindEventCompMgrAddComponents(entity, entityMgr), ec.BindEventCompMgrRemoveComponent(entity, entityMgr)},
-		global:  scope == ec.Scope_Global,
 	}
 	if _entity.GetOptions().AwakeOnFirstAccess {
 		entityInfo.hooks[2] = ec.BindEventCompMgrFirstAccessComponent(entity, entityMgr)
@@ -222,7 +220,7 @@ func (entityMgr *_EntityMgrBehavior) RemoveEntity(id uid.Id) {
 
 	entity.SetState(ec.EntityState_Leave)
 
-	if entityInfo.global {
+	if entity.GetScope() == ec.Scope_Global {
 		service.Current(entityMgr).GetEntityMgr().RemoveEntity(entity.GetId())
 	}
 

@@ -15,8 +15,7 @@ type _EntityCreatorOption struct{}
 // EntityCreatorOptions 实体构建器的所有选项
 type EntityCreatorOptions struct {
 	pt.ConstructEntityOptions
-	ParentID uid.Id   // 父实体Id
-	Scope    ec.Scope // 实体的可访问作用域
+	ParentID uid.Id // 父实体Id
 }
 
 // Default 默认值
@@ -24,7 +23,6 @@ func (_EntityCreatorOption) Default() option.Setting[EntityCreatorOptions] {
 	return func(o *EntityCreatorOptions) {
 		pt.Option{}.Default()(&o.ConstructEntityOptions)
 		_EntityCreatorOption{}.ParentId(uid.Nil)(o)
-		_EntityCreatorOption{}.Scope(ec.Scope_Local)(o)
 	}
 }
 
@@ -39,6 +37,13 @@ func (_EntityCreatorOption) CompositeFace(face iface.Face[ec.Entity]) option.Set
 func (_EntityCreatorOption) Prototype(pt string) option.Setting[EntityCreatorOptions] {
 	return func(o *EntityCreatorOptions) {
 		o.Prototype = pt
+	}
+}
+
+// Scope 实体的可访问作用域
+func (_EntityCreatorOption) Scope(scope ec.Scope) option.Setting[EntityCreatorOptions] {
+	return func(o *EntityCreatorOptions) {
+		pt.Option{}.Scope(scope)
 	}
 }
 
@@ -102,12 +107,5 @@ func (_EntityCreatorOption) EntityCtor(ctors pt.EntityCtor) option.Setting[Entit
 func (_EntityCreatorOption) ParentId(id uid.Id) option.Setting[EntityCreatorOptions] {
 	return func(o *EntityCreatorOptions) {
 		o.ParentID = id
-	}
-}
-
-// Scope 实体的可访问作用域
-func (_EntityCreatorOption) Scope(scope ec.Scope) option.Setting[EntityCreatorOptions] {
-	return func(o *EntityCreatorOptions) {
-		o.Scope = scope
 	}
 }

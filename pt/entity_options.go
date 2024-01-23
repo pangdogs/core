@@ -41,6 +41,13 @@ func (Option) CompositeFace(face iface.Face[ec.Entity]) option.Setting[Construct
 	}
 }
 
+// Scope 可访问作用域
+func (Option) Scope(s ec.Scope) option.Setting[ConstructEntityOptions] {
+	return func(o *ConstructEntityOptions) {
+		ec.Option{}.Scope(s)
+	}
+}
+
 // PersistId 实体持久化Id
 func (Option) PersistId(id uid.Id) option.Setting[ConstructEntityOptions] {
 	return func(o *ConstructEntityOptions) {
