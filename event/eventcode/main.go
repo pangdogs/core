@@ -53,8 +53,8 @@ func main() {
 	// 基础选项
 	declFile := kingpin.Flag("decl_file", "定义事件的源文件（.go）。").ExistingFile()
 	eventRegexp := kingpin.Flag("event_regexp", "匹配事件定义时，使用的正则表达式。").Default("^[eE]vent.+").String()
-	packageEventAlias := kingpin.Flag("package_event_alias", fmt.Sprintf("导入GOLAXY框架的`%s`包时使用的别名。", packageEventPath)).Default("event").String()
-	packageIfaceAlias := kingpin.Flag("package_iface_alias", fmt.Sprintf("导入GOLAXY框架的`%s`包时使用的别名。", packageIfacePath)).Default("iface").String()
+	packageEventAlias := kingpin.Flag("package_event_alias", fmt.Sprintf("导入Golaxy框架的`%s`包时使用的别名。", packageEventPath)).Default("event").String()
+	packageIfaceAlias := kingpin.Flag("package_iface_alias", fmt.Sprintf("导入Golaxy框架的`%s`包时使用的别名。", packageIfacePath)).Default("iface").String()
 
 	// 生成事件代码相关选项
 	eventCmd := kingpin.Command("gen_event", "通过定义的事件，生成事件辅助代码。")

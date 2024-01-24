@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	ErrGolaxy   = errors.New("golaxy")   // GOLAXY框架错误
+	ErrGolaxy   = errors.New("golaxy")   // Golaxy框架错误
 	ErrPanicked = errors.New("panicked") // panic错误
 	ErrArgs     = errors.New("args")     // 参数错误
 )
