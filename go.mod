@@ -1,6 +1,8 @@
 module git.golaxy.org/core
 
-go 1.20
+go 1.21
+
+toolchain go1.21.6
 
 require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
