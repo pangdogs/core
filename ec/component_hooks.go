@@ -2,8 +2,8 @@ package ec
 
 import "git.golaxy.org/core/event"
 
-// AutoHooks 保存绑定事件的hook，在组件销毁时自动解绑定
-func (comp *ComponentBehavior) AutoHooks(hooks ...event.Hook) {
+// ManagedHooks 托管hook，在组件销毁时自动解绑定
+func (comp *ComponentBehavior) ManagedHooks(hooks ...event.Hook) {
 	for i := len(comp.hooks) - 1; i >= 0; i-- {
 		if !comp.hooks[i].IsBound() {
 			comp.hooks = append(comp.hooks[:i], comp.hooks[i+1:]...)
