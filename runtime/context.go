@@ -58,6 +58,8 @@ type Context interface {
 	GetHookAllocator() container.Allocator[event.Hook]
 	// ActivateEvent 启用事件
 	ActivateEvent(event event.IEventCtrl, recursion event.EventRecursion)
+	// ManagedHooks 托管hook，在运行时停止时自动解绑定
+	ManagedHooks(hooks ...event.Hook)
 }
 
 type _Context interface {
@@ -79,6 +81,7 @@ type ContextBehavior struct {
 	entityMgr _EntityMgrBehavior
 	ecTree    _ECTreeBehavior
 	callee    Callee
+	hooks     []event.Hook
 	gcList    []container.GC
 }
 
@@ -123,6 +126,16 @@ func (ctx *ContextBehavior) ActivateEvent(event event.IEventCtrl, recursion even
 		panic(fmt.Errorf("%w: %w: event is nil", ErrContext, exception.ErrArgs))
 	}
 	event.Init(ctx.GetAutoRecover(), ctx.GetReportError(), recursion, ctx.GetHookAllocator(), ctx.opts.CompositeFace.Iface)
+}
+
+// ManagedHooks 托管hook，在运行时停止时自动解绑定
+func (ctx *ContextBehavior) ManagedHooks(hooks ...event.Hook) {
+	for i := len(ctx.hooks) - 1; i >= 0; i-- {
+		if !ctx.hooks[i].IsBound() {
+			ctx.hooks = append(ctx.hooks[:i], ctx.hooks[i+1:]...)
+		}
+	}
+	ctx.hooks = append(ctx.hooks, hooks...)
 }
 
 // GetContext 获取上下文
@@ -199,4 +212,16 @@ func (ctx *ContextBehavior) changeRunningState(state RunningState) {
 	ctx.entityMgr.changeRunningState(state)
 	ctx.ecTree.changeRunningState(state)
 	ctx.opts.RunningHandler.Call(ctx.GetAutoRecover(), ctx.GetReportError(), nil, ctx.opts.CompositeFace.Iface, state)
+
+	switch state {
+	case RunningState_Terminated:
+		ctx.cleanHooks()
+	}
+}
+
+func (ctx *ContextBehavior) cleanHooks() {
+	for i := range ctx.hooks {
+		ctx.hooks[i].Unbind()
+	}
+	ctx.hooks = nil
 }
