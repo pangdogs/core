@@ -69,7 +69,7 @@ package %s
 		fmt.Fprintf(code, `
 type I%[1]s interface {
 %[2]s}
-`, ctx.EventTabName, eventsCode)
+`, strings.Title(ctx.EventTabName), eventsCode)
 	}
 
 	// 生成事件表
