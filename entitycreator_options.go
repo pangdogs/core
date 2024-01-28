@@ -43,7 +43,7 @@ func (_EntityCreatorOption) Prototype(pt string) option.Setting[EntityCreatorOpt
 // Scope 实体的可访问作用域
 func (_EntityCreatorOption) Scope(scope ec.Scope) option.Setting[EntityCreatorOptions] {
 	return func(o *EntityCreatorOptions) {
-		pt.Option{}.Scope(scope)
+		pt.Option{}.Scope(scope)(&o.ConstructEntityOptions)
 	}
 }
 
