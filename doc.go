@@ -1,4 +1,4 @@
-// package core Golaxy分布式服务开发框架的内核，主要提供Actor线程模型（Actor Model）和EC组件框架（Entity-Component）。
+// Package core Golaxy分布式服务开发框架的内核，主要提供Actor线程模型（Actor Model）和EC组件框架（Entity-Component）。
 /*
    - 使用EC组件框架（Entity-Component）组织代码结构。
    - 并发模式基于Actor编程模型，实体（Entity）就是Actor，其中组件（Component）用于实现状态（state）与行为（behavior），运行时（Runtime）中的任务处理流水线就是邮箱（mailbox），
