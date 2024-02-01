@@ -56,11 +56,6 @@ type RuntimeBehavior struct {
 	eventLateUpdate event.Event
 }
 
-// GetContext 获取上下文
-func (rt *RuntimeBehavior) GetContext() iface.Cache {
-	return rt.ctx.GetContext()
-}
-
 // GetCurrentContext 获取当前上下文
 func (rt *RuntimeBehavior) GetCurrentContext() iface.Cache {
 	return rt.ctx.GetCurrentContext()

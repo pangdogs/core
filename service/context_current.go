@@ -6,13 +6,13 @@ import (
 )
 
 type (
-	ContextProvider = concurrent.ContextProvider // 上下文提供者
+	ConcurrentContextProvider = concurrent.ConcurrentContextProvider // 多线程安全的上下文提供者
 )
 
 //go:linkname getServiceContext git.golaxy.org/core/runtime.getServiceContext
-func getServiceContext(ctxProvider concurrent.ContextProvider) Context
+func getServiceContext(ctxProvider concurrent.ConcurrentContextProvider) Context
 
 // Current 获取服务上下文
-func Current(ctxProvider ContextProvider) Context {
+func Current(ctxProvider ConcurrentContextProvider) Context {
 	return getServiceContext(ctxProvider)
 }

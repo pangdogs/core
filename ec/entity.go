@@ -33,7 +33,6 @@ type Entity interface {
 	_Entity
 	_ComponentMgr
 	concurrent.CurrentContextProvider
-	concurrent.ConcurrentContextProvider
 	fmt.Stringer
 
 	// GetId 获取实体Id
@@ -127,19 +126,14 @@ func (entity *EntityBehavior) DestroySelf() {
 	}
 }
 
-// GetContext 获取上下文
-func (entity *EntityBehavior) GetContext() iface.Cache {
-	return entity.context
-}
-
 // GetCurrentContext 获取当前上下文
 func (entity *EntityBehavior) GetCurrentContext() iface.Cache {
-	return entity.GetContext()
+	return entity.context
 }
 
 // GetConcurrentContext 解析线程安全的上下文
 func (entity *EntityBehavior) GetConcurrentContext() iface.Cache {
-	return entity.GetContext()
+	return entity.context
 }
 
 // String implements fmt.Stringer

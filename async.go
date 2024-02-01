@@ -5,17 +5,16 @@ import (
 	"fmt"
 	"git.golaxy.org/core/internal/concurrent"
 	"git.golaxy.org/core/runtime"
-	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/util/generic"
 	"time"
 	_ "unsafe"
 )
 
 //go:linkname getRuntimeContext git.golaxy.org/core/runtime.getRuntimeContext
-func getRuntimeContext(ctxProvider concurrent.ContextProvider) runtime.Context
+func getRuntimeContext(ctxProvider concurrent.CurrentContextProvider) runtime.Context
 
 // Async 异步执行代码，有返回值
-func Async(ctxProvider service.ContextProvider, fun generic.FuncVar1[runtime.Context, any, runtime.Ret], va ...any) runtime.AsyncRet {
+func Async(ctxProvider runtime.CurrentContextProvider, fun generic.FuncVar1[runtime.Context, any, runtime.Ret], va ...any) runtime.AsyncRet {
 	ctx := getRuntimeContext(ctxProvider)
 	return ctx.Call(func(va ...any) runtime.Ret {
 		ctx := va[0].(runtime.Context)
@@ -26,7 +25,7 @@ func Async(ctxProvider service.ContextProvider, fun generic.FuncVar1[runtime.Con
 }
 
 // AsyncVoid 异步执行代码，无返回值
-func AsyncVoid(ctxProvider service.ContextProvider, fun generic.ActionVar1[runtime.Context, any], va ...any) runtime.AsyncRet {
+func AsyncVoid(ctxProvider runtime.CurrentContextProvider, fun generic.ActionVar1[runtime.Context, any], va ...any) runtime.AsyncRet {
 	ctx := getRuntimeContext(ctxProvider)
 	return ctx.CallVoid(func(va ...any) {
 		ctx := va[0].(runtime.Context)

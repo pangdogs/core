@@ -83,14 +83,14 @@ func (comp *ComponentBehavior) DestroySelf() {
 	}
 }
 
-// GetContext 获取上下文
-func (comp *ComponentBehavior) GetContext() iface.Cache {
-	return comp.entity.GetContext()
-}
-
 // GetCurrentContext 获取当前上下文
 func (comp *ComponentBehavior) GetCurrentContext() iface.Cache {
 	return comp.entity.GetCurrentContext()
+}
+
+// GetConcurrentContext 获取多线程安全的上下文
+func (comp *ComponentBehavior) GetConcurrentContext() iface.Cache {
+	return comp.entity.GetConcurrentContext()
 }
 
 // String implements fmt.Stringer

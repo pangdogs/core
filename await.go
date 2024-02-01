@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"git.golaxy.org/core/internal/concurrent"
 	"git.golaxy.org/core/runtime"
-	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/util/generic"
 	"sync"
 	"sync/atomic"
@@ -30,7 +29,7 @@ type AwaitDirector struct {
 }
 
 // Any 异步等待任意一个结果返回
-func (ad AwaitDirector) Any(ctxProvider service.ContextProvider, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va ...any) {
+func (ad AwaitDirector) Any(ctxProvider runtime.CurrentContextProvider, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va ...any) {
 	if ad.context == nil {
 		ad.context = context.Background()
 	}
@@ -73,7 +72,7 @@ func (ad AwaitDirector) Any(ctxProvider service.ContextProvider, fun generic.Act
 }
 
 // AnyOK 异步等待任意一个结果成功返回
-func (ad AwaitDirector) AnyOK(ctxProvider service.ContextProvider, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va ...any) {
+func (ad AwaitDirector) AnyOK(ctxProvider runtime.CurrentContextProvider, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va ...any) {
 	if ad.context == nil {
 		ad.context = context.Background()
 	}
@@ -138,7 +137,7 @@ func (ad AwaitDirector) AnyOK(ctxProvider service.ContextProvider, fun generic.A
 }
 
 // All 异步等待所有结果返回
-func (ad AwaitDirector) All(ctxProvider service.ContextProvider, fun generic.ActionVar2[runtime.Context, []runtime.Ret, any], va ...any) {
+func (ad AwaitDirector) All(ctxProvider runtime.CurrentContextProvider, fun generic.ActionVar2[runtime.Context, []runtime.Ret, any], va ...any) {
 	if ad.context == nil {
 		ad.context = context.Background()
 	}
@@ -180,7 +179,7 @@ func (ad AwaitDirector) All(ctxProvider service.ContextProvider, fun generic.Act
 }
 
 // Pipe 异步等待管道返回
-func (ad AwaitDirector) Pipe(ctxProvider service.ContextProvider, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va ...any) {
+func (ad AwaitDirector) Pipe(ctxProvider runtime.CurrentContextProvider, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va ...any) {
 	if ad.context == nil {
 		ad.context = context.Background()
 	}

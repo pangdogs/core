@@ -94,14 +94,14 @@ func (entityMgr *_EntityMgrBehavior) changeRunningState(state RunningState) {
 	}
 }
 
-// GetContext 获取上下文
-func (entityMgr *_EntityMgrBehavior) GetContext() iface.Cache {
-	return entityMgr.ctx.GetContext()
-}
-
 // GetCurrentContext 获取当前上下文
 func (entityMgr *_EntityMgrBehavior) GetCurrentContext() iface.Cache {
 	return entityMgr.ctx.GetCurrentContext()
+}
+
+// GetConcurrentContext 获取多线程安全的上下文
+func (entityMgr *_EntityMgrBehavior) GetConcurrentContext() iface.Cache {
+	return entityMgr.ctx.GetConcurrentContext()
 }
 
 // GetEntity 查询实体

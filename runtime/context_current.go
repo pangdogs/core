@@ -29,25 +29,25 @@ func Concurrent(ctxProvider ConcurrentContextProvider) ConcurrentContext {
 	return iface.Cache2Iface[Context](ctxProvider.GetConcurrentContext())
 }
 
-func getCaller(ctxProvider concurrent.ContextProvider) concurrent.Caller {
+func getCaller(ctxProvider ConcurrentContextProvider) concurrent.Caller {
 	if ctxProvider == nil {
 		panic(fmt.Errorf("%w: %w: ctxProvider is nil", ErrContext, exception.ErrArgs))
 	}
-	return iface.Cache2Iface[Context](ctxProvider.GetContext())
+	return iface.Cache2Iface[Context](ctxProvider.GetConcurrentContext())
 }
 
-func getRuntimeContext(ctxProvider concurrent.ContextProvider) Context {
+func getRuntimeContext(ctxProvider CurrentContextProvider) Context {
 	if ctxProvider == nil {
 		panic(fmt.Errorf("%w: %w: ctxProvider is nil", ErrContext, exception.ErrArgs))
 	}
-	return iface.Cache2Iface[Context](ctxProvider.GetContext())
+	return iface.Cache2Iface[Context](ctxProvider.GetCurrentContext())
 }
 
-func getServiceContext(ctxProvider concurrent.ContextProvider) service.Context {
+func getServiceContext(ctxProvider ConcurrentContextProvider) service.Context {
 	if ctxProvider == nil {
 		panic(fmt.Errorf("%w: %w: ctxProvider is nil", ErrContext, exception.ErrArgs))
 	}
-	ctx := iface.Cache2Iface[Context](ctxProvider.GetContext())
+	ctx := iface.Cache2Iface[Context](ctxProvider.GetConcurrentContext())
 	if ctx == nil {
 		return nil
 	}
