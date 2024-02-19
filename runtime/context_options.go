@@ -38,8 +38,7 @@ func (_ContextOption) Default() option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
 		_ContextOption{}.CompositeFace(iface.Face[Context]{})(o)
 		_ContextOption{}.Context(nil)(o)
-		_ContextOption{}.AutoRecover(false)(o)
-		_ContextOption{}.ReportError(nil)(o)
+		_ContextOption{}.PanicHandling(false, nil)(o)
 		_ContextOption{}.Name("")(o)
 		_ContextOption{}.PersistId(uid.Nil)(o)
 		_ContextOption{}.PluginBundle(plugin.NewPluginBundle())(o)
@@ -63,17 +62,11 @@ func (_ContextOption) Context(ctx context.Context) option.Setting[ContextOptions
 	}
 }
 
-// AutoRecover 是否开启panic时自动恢复
-func (_ContextOption) AutoRecover(b bool) option.Setting[ContextOptions] {
+// PanicHandling panic时的处理方式
+func (_ContextOption) PanicHandling(autoRecover bool, reportError chan error) option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
-		o.AutoRecover = b
-	}
-}
-
-// ReportError panic时错误写入的error channel
-func (_ContextOption) ReportError(ch chan error) option.Setting[ContextOptions] {
-	return func(o *ContextOptions) {
-		o.ReportError = ch
+		o.AutoRecover = autoRecover
+		o.ReportError = reportError
 	}
 }
 
