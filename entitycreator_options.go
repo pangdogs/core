@@ -34,9 +34,9 @@ func (_EntityCreatorOption) CompositeFace(face iface.Face[ec.Entity]) option.Set
 }
 
 // Prototype 实体原型名称
-func (_EntityCreatorOption) Prototype(pt string) option.Setting[EntityCreatorOptions] {
+func (_EntityCreatorOption) Prototype(prototype string) option.Setting[EntityCreatorOptions] {
 	return func(o *EntityCreatorOptions) {
-		o.Prototype = pt
+		pt.Option{}.Prototype(prototype)(&o.ConstructEntityOptions)
 	}
 }
 

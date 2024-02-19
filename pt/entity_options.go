@@ -41,6 +41,13 @@ func (Option) CompositeFace(face iface.Face[ec.Entity]) option.Setting[Construct
 	}
 }
 
+// Prototype 实体原型名称
+func (Option) Prototype(pt string) option.Setting[ConstructEntityOptions] {
+	return func(o *ConstructEntityOptions) {
+		ec.Option{}.Prototype(pt)(&o.EntityOptions)
+	}
+}
+
 // Scope 可访问作用域
 func (Option) Scope(s ec.Scope) option.Setting[ConstructEntityOptions] {
 	return func(o *ConstructEntityOptions) {
