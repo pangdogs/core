@@ -10,8 +10,6 @@ import (
 	"time"
 )
 
-type _RuntimeOption struct{}
-
 type (
 	CustomGC = generic.DelegateAction1[Runtime] // 自定义GC函数
 )
@@ -25,6 +23,8 @@ type RuntimeOptions struct {
 	GCInterval           time.Duration       // GC间隔时长
 	CustomGC             CustomGC            // 自定义GC
 }
+
+type _RuntimeOption struct{}
 
 // Default 运行时的默认值
 func (_RuntimeOption) Default() option.Setting[RuntimeOptions] {

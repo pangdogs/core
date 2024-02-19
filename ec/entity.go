@@ -13,7 +13,7 @@ import (
 
 // NewEntity 创建实体
 func NewEntity(settings ...option.Setting[EntityOptions]) Entity {
-	return UnsafeNewEntity(option.Make(Option{}.Default(), settings...))
+	return UnsafeNewEntity(option.Make(With.Default(), settings...))
 }
 
 // Deprecated: UnsafeNewEntity 内部创建实体

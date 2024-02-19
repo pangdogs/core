@@ -14,7 +14,7 @@ import (
 
 // NewContext 创建服务上下文
 func NewContext(settings ...option.Setting[ContextOptions]) Context {
-	return UnsafeNewContext(option.Make(Option{}.Default(), settings...))
+	return UnsafeNewContext(option.Make(With.Default(), settings...))
 }
 
 // Deprecated: UnsafeNewContext 内部创建服务上下文

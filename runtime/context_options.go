@@ -13,8 +13,6 @@ import (
 	"git.golaxy.org/core/util/uid"
 )
 
-type _ContextOption struct{}
-
 type (
 	RunningHandler = generic.DelegateAction2[Context, RunningState] // 运行状态变化处理器
 )
@@ -32,6 +30,8 @@ type ContextOptions struct {
 	FaceAnyAllocator container.Allocator[iface.FaceAny] // 自定义FaceAny内存分配器，用于提高性能
 	HookAllocator    container.Allocator[event.Hook]    // 自定义Hook内存分配器，用于提高性能
 }
+
+type _ContextOption struct{}
 
 // Default 默认值
 func (_ContextOption) Default() option.Setting[ContextOptions] {

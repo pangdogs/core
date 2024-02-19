@@ -15,7 +15,7 @@ type EntityPT struct {
 
 // Construct 创建实体
 func (pt EntityPT) Construct(settings ...option.Setting[ConstructEntityOptions]) ec.Entity {
-	return pt.UnsafeConstruct(option.Make(Option{}.Default(), settings...))
+	return pt.UnsafeConstruct(option.Make(With.Default(), settings...))
 }
 
 // Deprecated: UnsafeConstruct 内部创建实体

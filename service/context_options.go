@@ -11,9 +11,6 @@ import (
 	"git.golaxy.org/core/util/uid"
 )
 
-// Option 所有选项设置器
-type Option struct{}
-
 type (
 	RunningHandler = generic.DelegateAction2[Context, RunningState] // 运行状态变化处理器
 )
@@ -31,36 +28,40 @@ type ContextOptions struct {
 	RunningHandler RunningHandler      // 运行状态变化处理器
 }
 
+var With _Option
+
+type _Option struct{}
+
 // Default 默认值
-func (Option) Default() option.Setting[ContextOptions] {
+func (_Option) Default() option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
-		Option{}.CompositeFace(iface.Face[Context]{})(o)
-		Option{}.Context(nil)(o)
-		Option{}.PanicHandling(false, nil)(o)
-		Option{}.Name("")(o)
-		Option{}.PersistId(uid.Nil)(o)
-		Option{}.EntityLib(pt.DefaultEntityLib())(o)
-		Option{}.PluginBundle(plugin.NewPluginBundle())(o)
-		Option{}.RunningHandler(nil)(o)
+		With.CompositeFace(iface.Face[Context]{})(o)
+		With.Context(nil)(o)
+		With.PanicHandling(false, nil)(o)
+		With.Name("")(o)
+		With.PersistId(uid.Nil)(o)
+		With.EntityLib(pt.DefaultEntityLib())(o)
+		With.PluginBundle(plugin.NewPluginBundle())(o)
+		With.RunningHandler(nil)(o)
 	}
 }
 
 // CompositeFace 扩展者，在扩展服务上下文自身能力时使用
-func (Option) CompositeFace(face iface.Face[Context]) option.Setting[ContextOptions] {
+func (_Option) CompositeFace(face iface.Face[Context]) option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
 		o.CompositeFace = face
 	}
 }
 
 // Context 父Context
-func (Option) Context(ctx context.Context) option.Setting[ContextOptions] {
+func (_Option) Context(ctx context.Context) option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
 		o.Context = ctx
 	}
 }
 
 // PanicHandling panic时的处理方式
-func (Option) PanicHandling(autoRecover bool, reportError chan error) option.Setting[ContextOptions] {
+func (_Option) PanicHandling(autoRecover bool, reportError chan error) option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
 		o.AutoRecover = autoRecover
 		o.ReportError = reportError
@@ -68,35 +69,35 @@ func (Option) PanicHandling(autoRecover bool, reportError chan error) option.Set
 }
 
 // Name 服务名称
-func (Option) Name(name string) option.Setting[ContextOptions] {
+func (_Option) Name(name string) option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
 		o.Name = name
 	}
 }
 
 // PersistId 服务持久化Id
-func (Option) PersistId(id uid.Id) option.Setting[ContextOptions] {
+func (_Option) PersistId(id uid.Id) option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
 		o.PersistId = id
 	}
 }
 
 // EntityLib 实体原型库
-func (Option) EntityLib(lib pt.EntityLib) option.Setting[ContextOptions] {
+func (_Option) EntityLib(lib pt.EntityLib) option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
 		o.EntityLib = lib
 	}
 }
 
 // PluginBundle 插件包
-func (Option) PluginBundle(bundle plugin.PluginBundle) option.Setting[ContextOptions] {
+func (_Option) PluginBundle(bundle plugin.PluginBundle) option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
 		o.PluginBundle = bundle
 	}
 }
 
 // RunningHandler 运行状态变化处理器
-func (Option) RunningHandler(handler RunningHandler) option.Setting[ContextOptions] {
+func (_Option) RunningHandler(handler RunningHandler) option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
 		o.RunningHandler = handler
 	}

@@ -5,12 +5,12 @@ import (
 	"git.golaxy.org/core/util/option"
 )
 
-type _ServiceOption struct{}
-
 // ServiceOptions 创建服务的所有选项
 type ServiceOptions struct {
 	CompositeFace iface.Face[Service] // 扩展者，在扩展服务自身功能时使用
 }
+
+type _ServiceOption struct{}
 
 // Default 默认值
 func (_ServiceOption) Default() option.Setting[ServiceOptions] {

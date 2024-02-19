@@ -6,14 +6,14 @@ import (
 	"git.golaxy.org/core/util/option"
 )
 
-type _FrameOption struct{}
-
 // FrameOptions 帧的所有选项
 type FrameOptions struct {
 	TargetFPS   float32 // 目标FPS
 	TotalFrames uint64  // 运行帧数上限
 	Blink       bool    // 是否是瞬时运行
 }
+
+type _FrameOption struct{}
 
 // Default 默认值
 func (_FrameOption) Default() option.Setting[FrameOptions] {
