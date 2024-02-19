@@ -36,15 +36,15 @@ type _ContextOption struct{}
 // Default 默认值
 func (_ContextOption) Default() option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
-		_ContextOption{}.CompositeFace(iface.Face[Context]{})(o)
-		_ContextOption{}.Context(nil)(o)
-		_ContextOption{}.PanicHandling(false, nil)(o)
-		_ContextOption{}.Name("")(o)
-		_ContextOption{}.PersistId(uid.Nil)(o)
-		_ContextOption{}.PluginBundle(plugin.NewPluginBundle())(o)
-		_ContextOption{}.RunningHandler(nil)(o)
-		_ContextOption{}.FaceAnyAllocator(container.DefaultAllocator[iface.FaceAny]())(o)
-		_ContextOption{}.HookAllocator(container.DefaultAllocator[event.Hook]())(o)
+		With.Context.CompositeFace(iface.Face[Context]{})(o)
+		With.Context.Context(nil)(o)
+		With.Context.PanicHandling(false, nil)(o)
+		With.Context.Name("")(o)
+		With.Context.PersistId(uid.Nil)(o)
+		With.Context.PluginBundle(plugin.NewPluginBundle())(o)
+		With.Context.RunningHandler(nil)(o)
+		With.Context.FaceAnyAllocator(container.DefaultAllocator[iface.FaceAny]())(o)
+		With.Context.HookAllocator(container.DefaultAllocator[event.Hook]())(o)
 	}
 }
 

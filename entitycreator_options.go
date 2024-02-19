@@ -22,7 +22,7 @@ type _EntityCreatorOption struct{}
 func (_EntityCreatorOption) Default() option.Setting[EntityCreatorOptions] {
 	return func(o *EntityCreatorOptions) {
 		pt.With.Default()(&o.ConstructEntityOptions)
-		_EntityCreatorOption{}.ParentId(uid.Nil)(o)
+		With.EntityCreator.ParentId(uid.Nil)(o)
 	}
 }
 

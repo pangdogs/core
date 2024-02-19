@@ -18,9 +18,9 @@ type _FrameOption struct{}
 // Default 默认值
 func (_FrameOption) Default() option.Setting[FrameOptions] {
 	return func(o *FrameOptions) {
-		_FrameOption{}.TargetFPS(30)(o)
-		_FrameOption{}.TotalFrames(0)(o)
-		_FrameOption{}.Blink(false)(o)
+		With.Frame.TargetFPS(30)(o)
+		With.Frame.TotalFrames(0)(o)
+		With.Frame.Blink(false)(o)
 	}
 }
 

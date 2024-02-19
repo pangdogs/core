@@ -16,7 +16,7 @@ import (
 
 // NewContext 创建运行时上下文
 func NewContext(servCtx service.Context, settings ...option.Setting[ContextOptions]) Context {
-	return UnsafeNewContext(servCtx, option.Make(_ContextOption{}.Default(), settings...))
+	return UnsafeNewContext(servCtx, option.Make(With.Context.Default(), settings...))
 }
 
 // Deprecated: UnsafeNewContext 内部创建运行时上下文

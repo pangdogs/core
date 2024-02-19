@@ -12,7 +12,7 @@ import (
 
 // NewService 创建服务
 func NewService(ctx service.Context, settings ...option.Setting[ServiceOptions]) Service {
-	return UnsafeNewService(ctx, option.Make(_ServiceOption{}.Default(), settings...))
+	return UnsafeNewService(ctx, option.Make(With.Service.Default(), settings...))
 }
 
 // Deprecated: UnsafeNewService 内部创建服务

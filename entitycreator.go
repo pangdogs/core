@@ -12,25 +12,25 @@ import (
 // CreateEntity 创建实体
 func CreateEntity(ctxProvider runtime.CurrentContextProvider, settings ...option.Setting[EntityCreatorOptions]) EntityCreator {
 	return EntityCreator{
-		Context: runtime.Current(ctxProvider),
-		Options: option.Make(_EntityCreatorOption{}.Default(), settings...),
+		context: runtime.Current(ctxProvider),
+		options: option.Make(With.EntityCreator.Default(), settings...),
 	}
 }
 
 // EntityCreator 实体构建器
 type EntityCreator struct {
-	Context runtime.Context      // 运行时上下文
-	Options EntityCreatorOptions // 实体构建器的所有选项
+	context runtime.Context      // 运行时上下文
+	options EntityCreatorOptions // 实体构建器的所有选项
 }
 
 // Spawn 创建实体
 func (creator EntityCreator) Spawn(settings ...option.Setting[EntityCreatorOptions]) (ec.Entity, error) {
-	if creator.Context == nil {
+	if creator.context == nil {
 		panic(fmt.Errorf("%w: setting context is nil", ErrGolaxy))
 	}
 
-	ctx := creator.Context
-	opts := option.Append(creator.Options, settings...)
+	ctx := creator.context
+	opts := option.Append(creator.options, settings...)
 
 	if !opts.ParentID.IsNil() {
 		_, err := runtime.UnsafeECTree(ctx.GetECTree()).FetchEntity(opts.ParentID)

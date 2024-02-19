@@ -15,7 +15,7 @@ type _ServiceOption struct{}
 // Default 默认值
 func (_ServiceOption) Default() option.Setting[ServiceOptions] {
 	return func(o *ServiceOptions) {
-		_ServiceOption{}.CompositeFace(iface.Face[Service]{})(o)
+		With.Service.CompositeFace(iface.Face[Service]{})(o)
 	}
 }
 

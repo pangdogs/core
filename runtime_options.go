@@ -29,12 +29,12 @@ type _RuntimeOption struct{}
 // Default 运行时的默认值
 func (_RuntimeOption) Default() option.Setting[RuntimeOptions] {
 	return func(o *RuntimeOptions) {
-		_RuntimeOption{}.CompositeFace(iface.Face[Runtime]{})(o)
-		_RuntimeOption{}.AutoRun(false)(o)
-		_RuntimeOption{}.ProcessQueueCapacity(128)(o)
-		_RuntimeOption{}.Frame(nil)(o)
-		_RuntimeOption{}.GCInterval(10 * time.Second)(o)
-		_RuntimeOption{}.CustomGC(nil)(o)
+		With.Runtime.CompositeFace(iface.Face[Runtime]{})(o)
+		With.Runtime.AutoRun(false)(o)
+		With.Runtime.ProcessQueueCapacity(128)(o)
+		With.Runtime.Frame(nil)(o)
+		With.Runtime.GCInterval(10 * time.Second)(o)
+		With.Runtime.CustomGC(nil)(o)
 	}
 }
 

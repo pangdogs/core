@@ -16,7 +16,7 @@ import (
 
 // NewRuntime 创建运行时
 func NewRuntime(ctx runtime.Context, settings ...option.Setting[RuntimeOptions]) Runtime {
-	return UnsafeNewRuntime(ctx, option.Make(_RuntimeOption{}.Default(), settings...))
+	return UnsafeNewRuntime(ctx, option.Make(With.Runtime.Default(), settings...))
 }
 
 // Deprecated: UnsafeNewRuntime 内部创建运行时
