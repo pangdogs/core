@@ -9,6 +9,7 @@ import (
 	"git.golaxy.org/core/util/generic"
 	"git.golaxy.org/core/util/iface"
 	"git.golaxy.org/core/util/option"
+	"git.golaxy.org/core/util/reinterpret"
 	"git.golaxy.org/core/util/uid"
 	"sync/atomic"
 )
@@ -37,6 +38,7 @@ type Runtime interface {
 	concurrent.CurrentContextProvider
 	concurrent.ConcurrentContextProvider
 	concurrent.Callee
+	reinterpret.CompositeProvider
 	Running
 }
 
@@ -64,6 +66,11 @@ func (rt *RuntimeBehavior) GetCurrentContext() iface.Cache {
 // GetConcurrentContext 获取多线程安全的上下文
 func (rt *RuntimeBehavior) GetConcurrentContext() iface.Cache {
 	return rt.ctx.GetConcurrentContext()
+}
+
+// GetCompositeFaceCache 支持重新解释类型
+func (rt *RuntimeBehavior) GetCompositeFaceCache() iface.Cache {
+	return rt.opts.CompositeFace.Cache
 }
 
 func (rt *RuntimeBehavior) init(ctx runtime.Context, opts RuntimeOptions) {

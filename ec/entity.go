@@ -7,6 +7,7 @@ import (
 	"git.golaxy.org/core/util/container"
 	"git.golaxy.org/core/util/iface"
 	"git.golaxy.org/core/util/option"
+	"git.golaxy.org/core/util/reinterpret"
 	"git.golaxy.org/core/util/uid"
 )
 
@@ -33,6 +34,7 @@ type Entity interface {
 	_Entity
 	_ComponentMgr
 	concurrent.CurrentContextProvider
+	reinterpret.CompositeProvider
 	fmt.Stringer
 
 	// GetId 获取实体Id
@@ -134,6 +136,11 @@ func (entity *EntityBehavior) GetCurrentContext() iface.Cache {
 // GetConcurrentContext 解析线程安全的上下文
 func (entity *EntityBehavior) GetConcurrentContext() iface.Cache {
 	return entity.context
+}
+
+// GetCompositeFaceCache 支持重新解释类型
+func (entity *EntityBehavior) GetCompositeFaceCache() iface.Cache {
+	return entity.opts.CompositeFace.Cache
 }
 
 // String implements fmt.Stringer

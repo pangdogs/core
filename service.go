@@ -6,6 +6,7 @@ import (
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/util/iface"
 	"git.golaxy.org/core/util/option"
+	"git.golaxy.org/core/util/reinterpret"
 	"sync/atomic"
 )
 
@@ -30,6 +31,7 @@ func UnsafeNewService(ctx service.Context, options ServiceOptions) Service {
 // Service 服务
 type Service interface {
 	_Service
+	reinterpret.CompositeProvider
 	Running
 
 	// GetContext 获取服务上下文
@@ -50,6 +52,11 @@ type ServiceBehavior struct {
 // GetContext 获取服务上下文
 func (serv *ServiceBehavior) GetContext() service.Context {
 	return serv.ctx
+}
+
+// GetCompositeFaceCache 支持重新解释类型
+func (serv *ServiceBehavior) GetCompositeFaceCache() iface.Cache {
+	return serv.opts.CompositeFace.Cache
 }
 
 func (serv *ServiceBehavior) init(ctx service.Context, opts ServiceOptions) {

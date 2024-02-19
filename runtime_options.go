@@ -18,7 +18,7 @@ type (
 
 // RuntimeOptions 创建运行时的所有选项
 type RuntimeOptions struct {
-	CompositeFace        iface.Face[Runtime] // 扩展者，需要扩展运行时自身功能时需要使用
+	CompositeFace        iface.Face[Runtime] // 扩展者，在扩展运行时自身能力时使用
 	AutoRun              bool                // 是否开启自动运行
 	ProcessQueueCapacity int                 // 任务处理流水线大小
 	Frame                runtime.Frame       // 帧，设置为nil表示不使用帧更新特性
@@ -38,7 +38,7 @@ func (_RuntimeOption) Default() option.Setting[RuntimeOptions] {
 	}
 }
 
-// CompositeFace 运行时的扩展者，需要扩展运行时自身功能时需要使用
+// CompositeFace 扩展者，在扩展运行时自身能力时使用
 func (_RuntimeOption) CompositeFace(face iface.Face[Runtime]) option.Setting[RuntimeOptions] {
 	return func(o *RuntimeOptions) {
 		o.CompositeFace = face

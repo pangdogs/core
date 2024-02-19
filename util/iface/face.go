@@ -9,10 +9,21 @@ func MakeFace[T any](iface T) Face[T] {
 }
 
 // MakeFaceAny 创建FaceAny
-func MakeFaceAny[T any](iface T) Face[any] {
+func MakeFaceAny[T any](iface T) FaceAny {
 	return Face[any]{
 		Iface: iface,
 		Cache: Iface2Cache[T](iface),
+	}
+}
+
+// MakeFacePair 创建Face对
+func MakeFacePair[T, C any](iface T, cache C) Face[T] {
+	if Iface2Cache(iface)[1] != Iface2Cache(cache)[1] {
+		panic("incorrect face pointer")
+	}
+	return Face[T]{
+		Iface: iface,
+		Cache: Iface2Cache[C](cache),
 	}
 }
 

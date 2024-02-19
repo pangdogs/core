@@ -10,6 +10,7 @@ import (
 	"git.golaxy.org/core/util/container"
 	"git.golaxy.org/core/util/iface"
 	"git.golaxy.org/core/util/option"
+	"git.golaxy.org/core/util/reinterpret"
 	"git.golaxy.org/core/util/uid"
 )
 
@@ -37,6 +38,7 @@ type Context interface {
 	concurrent.CurrentContextProvider
 	concurrent.Context
 	concurrent.Caller
+	reinterpret.CompositeProvider
 	plugin.PluginProvider
 	container.GCCollector
 	fmt.Stringer
@@ -145,6 +147,11 @@ func (ctx *ContextBehavior) GetCurrentContext() iface.Cache {
 // GetConcurrentContext 获取多线程安全的上下文
 func (ctx *ContextBehavior) GetConcurrentContext() iface.Cache {
 	return iface.Iface2Cache[Context](ctx.opts.CompositeFace.Iface)
+}
+
+// GetCompositeFaceCache 支持重新解释类型
+func (ctx *ContextBehavior) GetCompositeFaceCache() iface.Cache {
+	return ctx.opts.CompositeFace.Cache
 }
 
 // CollectGC 收集GC

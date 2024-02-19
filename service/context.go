@@ -8,6 +8,7 @@ import (
 	"git.golaxy.org/core/pt"
 	"git.golaxy.org/core/util/iface"
 	"git.golaxy.org/core/util/option"
+	"git.golaxy.org/core/util/reinterpret"
 	"git.golaxy.org/core/util/uid"
 )
 
@@ -33,6 +34,7 @@ func UnsafeNewContext(options ContextOptions) Context {
 type Context interface {
 	_Context
 	concurrent.Context
+	reinterpret.CompositeProvider
 	Caller
 	plugin.PluginProvider
 	pt.EntityPTProvider
@@ -72,6 +74,11 @@ func (ctx *ContextBehavior) GetId() uid.Id {
 // GetEntityMgr 获取实体管理器
 func (ctx *ContextBehavior) GetEntityMgr() EntityMgr {
 	return &ctx.entityMgr
+}
+
+// GetCompositeFaceCache 支持重新解释类型
+func (ctx *ContextBehavior) GetCompositeFaceCache() iface.Cache {
+	return ctx.opts.CompositeFace.Cache
 }
 
 // String implements fmt.Stringer

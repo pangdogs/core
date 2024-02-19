@@ -20,7 +20,7 @@ type (
 
 // ContextOptions 创建服务上下文的所有选项
 type ContextOptions struct {
-	CompositeFace  iface.Face[Context] // 扩展者，需要扩展服务上下文自身能力时需要使用
+	CompositeFace  iface.Face[Context] // 扩展者，在扩展服务上下文自身能力时使用
 	Context        context.Context     // 父Context
 	AutoRecover    bool                // 是否开启panic时自动恢复
 	ReportError    chan error          // panic时错误写入的error channel
@@ -46,7 +46,7 @@ func (Option) Default() option.Setting[ContextOptions] {
 	}
 }
 
-// CompositeFace 扩展者，需要扩展服务上下文自身能力时需要使用
+// CompositeFace 扩展者，在扩展服务上下文自身能力时使用
 func (Option) CompositeFace(face iface.Face[Context]) option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
 		o.CompositeFace = face
