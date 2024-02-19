@@ -6,5 +6,5 @@ import (
 )
 
 var (
-	ErrPt = fmt.Errorf("%w: pt", exception.ErrGolaxy) // 原型错误
+	ErrPt = fmt.Errorf("%w: pt", exception.ErrCore) // 原型错误
 )

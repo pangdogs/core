@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ErrAsyncRetClosed = fmt.Errorf("%w: async result closed", exception.ErrGolaxy)
+	ErrAsyncRetClosed = fmt.Errorf("%w: async result closed", exception.ErrCore)
 )
 
 // MakeRet 创建调用结果

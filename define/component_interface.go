@@ -11,7 +11,7 @@ import (
 // DefineComponentInterface 定义组件接口
 func DefineComponentInterface[COMP_IFACE any](compLib pt.ComponentLib) ComponentInterface {
 	if compLib == nil {
-		panic(fmt.Errorf("%w: %w: compLib is nil", exception.ErrGolaxy, exception.ErrArgs))
+		panic(fmt.Errorf("%w: %w: compLib is nil", exception.ErrCore, exception.ErrArgs))
 	}
 	return _ComponentInterface{
 		name:    types.FullName[COMP_IFACE](),

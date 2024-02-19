@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	ErrGolaxy   = errors.New("golaxy")   // Golaxy框架错误
+	ErrCore     = errors.New("core")     // Golaxy内核错误
 	ErrPanicked = errors.New("panicked") // panic错误
 	ErrArgs     = errors.New("args")     // 参数错误
 )
@@ -15,5 +15,5 @@ var (
 func PrintStackTrace(err error) error {
 	stackBuf := make([]byte, 4096)
 	n := runtime.Stack(stackBuf, false)
-	return fmt.Errorf("%w\nstack: %s\n", err, stackBuf[:n])
+	return fmt.Errorf("error => %w\nstack => %s\n", err, stackBuf[:n])
 }

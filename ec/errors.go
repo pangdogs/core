@@ -6,5 +6,5 @@ import (
 )
 
 var (
-	ErrEC = fmt.Errorf("%w: ec", exception.ErrGolaxy) // EC错误
+	ErrEC = fmt.Errorf("%w: ec", exception.ErrCore) // EC错误
 )

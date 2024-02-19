@@ -6,6 +6,6 @@ import (
 )
 
 var (
-	ErrEvent = fmt.Errorf("%w: event", exception.ErrGolaxy) // 事件错误
-	ErrArgs  = exception.ErrArgs                            // 参数错误
+	ErrEvent = fmt.Errorf("%w: event", exception.ErrCore) // 事件错误
+	ErrArgs  = exception.ErrArgs                          // 参数错误
 )

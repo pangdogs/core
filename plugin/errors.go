@@ -6,5 +6,5 @@ import (
 )
 
 var (
-	ErrPlugin = fmt.Errorf("%w: plugin", exception.ErrGolaxy) // 插件错误
+	ErrPlugin = fmt.Errorf("%w: plugin", exception.ErrCore) // 插件错误
 )
