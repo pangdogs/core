@@ -77,7 +77,7 @@ func Cast[T comparable](entity ec.Entity) T {
 	return iface
 }
 
-// Compose 复合组件接口
+// Compose 创建组件复合器
 func Compose[T comparable](entity ec.Entity) *Composite[T] {
 	if entity == nil {
 		panic(fmt.Errorf("%w: %w: entity is nil", ErrPt, exception.ErrArgs))
@@ -87,7 +87,7 @@ func Compose[T comparable](entity ec.Entity) *Composite[T] {
 	}
 }
 
-// Composite 创建组件复合器，直接使用As()或Cast()时，无法检测提取后实体是否又更新组件，使用复合器可以解决此问题
+// Composite 组件复合器，直接使用As()或Cast()时，无法检测提取后实体是否又更新组件，使用复合器可以解决此问题
 /*
 示例：
 	type A interface {
