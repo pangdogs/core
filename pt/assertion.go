@@ -2,8 +2,8 @@ package pt
 
 import (
 	"fmt"
-	"git.golaxy.org/core"
 	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/internal/exception"
 	"git.golaxy.org/core/util/types"
 	"reflect"
 	"strings"
@@ -80,7 +80,7 @@ func Cast[T comparable](entity ec.Entity) T {
 // Compose 复合组件接口
 func Compose[T comparable](entity ec.Entity) *Composite[T] {
 	if entity == nil {
-		panic(fmt.Errorf("%w: %w: entity is nil", ErrPt, core.ErrArgs))
+		panic(fmt.Errorf("%w: %w: entity is nil", ErrPt, exception.ErrArgs))
 	}
 	return &Composite[T]{
 		entity: entity,
@@ -186,32 +186,37 @@ func as(entity ec.Entity, vfIface reflect.Value) bool {
 	switch vfIface.Kind() {
 	case reflect.Struct:
 		for i := 0; i < vfIface.NumField(); i++ {
-			vfCompIface := vfIface.Field(i)
+			vfField := vfIface.Field(i)
+			tfField := vfField.Type()
 
-			if vfCompIface.Kind() != reflect.Interface {
+			switch vfField.Kind() {
+			case reflect.Pointer:
+				tfField = tfField.Elem()
+				break
+			case reflect.Interface:
+				break
+			default:
 				return false
 			}
 
-			tfCompIface := vfCompIface.Type()
-
 			sb.Reset()
-			types.WriteTypeFullName(&sb, tfCompIface)
+			types.WriteTypeFullName(&sb, tfField)
 
 			comp := entity.GetComponent(sb.String())
 			if comp == nil {
 				return false
 			}
 
-			vfCompIface.Set(ec.UnsafeComponent(comp).GetReflected())
+			vfField.Set(ec.UnsafeComponent(comp).GetReflected())
 		}
 
 		return true
 
 	case reflect.Interface:
-		tfCompositeIface := vfIface.Type()
+		tfIface := vfIface.Type()
 
 		sb.Reset()
-		types.WriteTypeFullName(&sb, tfCompositeIface)
+		types.WriteTypeFullName(&sb, tfIface)
 
 		comp := entity.GetComponent(sb.String())
 		if comp == nil {
