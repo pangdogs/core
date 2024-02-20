@@ -7,13 +7,12 @@ import (
 )
 
 // CreateEntityPT 创建实体原型
-func CreateEntityPT(ctx service.Context, prototype string) EntityPTCreator {
+func CreateEntityPT(ctx service.Context) EntityPTCreator {
 	if ctx == nil {
 		panic(fmt.Errorf("%w: %w: ctx is nil", ErrGolaxy, ErrArgs))
 	}
 	return EntityPTCreator{
-		servCtx:   ctx,
-		prototype: prototype,
+		servCtx: ctx,
 	}
 }
 
@@ -22,6 +21,12 @@ type EntityPTCreator struct {
 	servCtx   service.Context
 	prototype string
 	comps     []any
+}
+
+// Prototype 设置实体原型名称
+func (c EntityPTCreator) Prototype(prototype string) EntityPTCreator {
+	c.prototype = prototype
+	return c
 }
 
 // AddComponent 添加组件
