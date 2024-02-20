@@ -2,6 +2,7 @@ package pt
 
 import (
 	"fmt"
+	"git.golaxy.org/core"
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/util/types"
 	"reflect"
@@ -35,14 +36,14 @@ import (
 	2.实体更新组件后，需要重新提取。
 */
 func As[T comparable](entity ec.Entity) (T, bool) {
-	compositeIface := types.Zero[T]()
-	vfCompositeIface := reflect.ValueOf(&compositeIface).Elem()
+	iface := types.Zero[T]()
+	vfIface := reflect.ValueOf(&iface).Elem()
 
-	if !as(entity, vfCompositeIface) {
+	if !as(entity, vfIface) {
 		return types.Zero[T](), false
 	}
 
-	return compositeIface, true
+	return iface, true
 }
 
 // Cast 从实体提取一些需要的组件接口，复合在一起直接使用，提取失败会panic
@@ -69,14 +70,24 @@ func As[T comparable](entity ec.Entity) (T, bool) {
 	2.实体更新组件后，需要重新提取。
 */
 func Cast[T comparable](entity ec.Entity) T {
-	entityFace, ok := As[T](entity)
+	iface, ok := As[T](entity)
 	if !ok {
 		panic(fmt.Errorf("%w: incorrect cast", ErrPt))
 	}
-	return entityFace
+	return iface
 }
 
-// Composite 创建组件复合提取器，直接使用As()或Cast()时，无法检测提取后实体是否又更新组件，使用提取器可以解决此问题
+// Compose 复合组件接口
+func Compose[T comparable](entity ec.Entity) *Composite[T] {
+	if entity == nil {
+		panic(fmt.Errorf("%w: %w: entity is nil", ErrPt, core.ErrArgs))
+	}
+	return &Composite[T]{
+		entity: entity,
+	}
+}
+
+// Composite 创建组件复合器，直接使用As()或Cast()时，无法检测提取后实体是否又更新组件，使用复合器可以解决此问题
 /*
 示例：
 	type A interface {
@@ -92,7 +103,7 @@ func Cast[T comparable](entity ec.Entity) T {
 		B
 	}
 	...
-	cx := Composite[CompositeAB]{Entity: entity}
+	cx := Compose[CompositeAB](entity)
 	...
 	if v, ok := cx.As(); ok {
 		v.MethodA()
@@ -115,39 +126,42 @@ func Cast[T comparable](entity ec.Entity) T {
 	cx.Cast().MethodB()
 */
 type Composite[T comparable] struct {
-	Entity  ec.Entity
+	entity  ec.Entity
 	version int32
 	iface   T
 }
 
-// Clone 克隆
-func (c Composite[T]) Clone() *Composite[T] {
-	return &c
+// Entity 实体
+func (c *Composite[T]) Entity() ec.Entity {
+	if c.entity == nil {
+		panic(fmt.Errorf("%w: setting entity is nil", ErrPt))
+	}
+	return c.entity
 }
 
 // Changed 实体是否已更新组件
 func (c *Composite[T]) Changed() bool {
-	if c.Entity == nil {
-		return false
+	if c.entity == nil {
+		panic(fmt.Errorf("%w: setting entity is nil", ErrPt))
 	}
-	return c.version != ec.UnsafeEntity(c.Entity).GetVersion()
+	return c.version != ec.UnsafeEntity(c.entity).GetVersion()
 }
 
 // As 从实体提取一些需要的组件接口，复合在一起直接使用（实体更新组件后，会自动重新提取）
 func (c *Composite[T]) As() (T, bool) {
-	if c.Entity == nil {
-		return types.Zero[T](), false
+	if c.entity == nil {
+		panic(fmt.Errorf("%w: setting entity is nil", ErrPt))
 	}
 
 	if c.iface != types.Zero[T]() && !c.Changed() {
 		return c.iface, true
 	}
 
-	if !as(c.Entity, reflect.ValueOf(c.iface)) {
+	if !as(c.entity, reflect.ValueOf(c.iface)) {
 		return types.Zero[T](), false
 	}
 
-	c.version = ec.UnsafeEntity(c.Entity).GetVersion()
+	c.version = ec.UnsafeEntity(c.entity).GetVersion()
 
 	return c.iface, true
 }

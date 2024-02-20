@@ -1,5 +1,10 @@
 package iface
 
+import (
+	"fmt"
+	"git.golaxy.org/core/internal/exception"
+)
+
 // MakeFace 创建Face
 func MakeFace[T any](iface T) Face[T] {
 	return Face[T]{
@@ -19,7 +24,7 @@ func MakeFaceAny[T any](iface T) FaceAny {
 // MakeFacePair 创建Face对
 func MakeFacePair[T, C any](iface T, cache C) Face[T] {
 	if Iface2Cache(iface)[1] != Iface2Cache(cache)[1] {
-		panic("incorrect face pointer")
+		panic(fmt.Errorf("%w: incorrect face pointer", exception.ErrCore))
 	}
 	return Face[T]{
 		Iface: iface,
