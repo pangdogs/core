@@ -9,13 +9,20 @@ import (
 )
 
 // DefineComponentInterface 定义组件接口
-func DefineComponentInterface[COMP_IFACE any](compLib pt.ComponentLib) ComponentInterface {
-	if compLib == nil {
+func DefineComponentInterface[COMP_IFACE any](compLib ...pt.ComponentLib) ComponentInterface {
+	_compLib := pt.DefaultComponentLib()
+
+	if len(compLib) > 0 {
+		_compLib = compLib[0]
+	}
+
+	if _compLib == nil {
 		panic(fmt.Errorf("%w: %w: compLib is nil", exception.ErrCore, exception.ErrArgs))
 	}
+
 	return _ComponentInterface{
 		name:    types.FullName[COMP_IFACE](),
-		compLib: compLib,
+		compLib: _compLib,
 	}.ComponentInterface()
 }
 
