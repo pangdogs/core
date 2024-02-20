@@ -16,7 +16,7 @@ type _UnsafeECTree struct {
 	ECTree
 }
 
-// FetchEntity 访问实体
-func (ue _UnsafeECTree) FetchEntity(entityId uid.Id) (ec.Entity, error) {
-	return ue.fetchEntity(entityId)
+// GetAndCheckEntity 查询并检测实体
+func (ue _UnsafeECTree) GetAndCheckEntity(entityId uid.Id) (ec.Entity, error) {
+	return ue.getAndCheckEntity(entityId)
 }

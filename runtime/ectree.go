@@ -35,7 +35,7 @@ type ECTree interface {
 }
 
 type _ECTree interface {
-	fetchEntity(entityId uid.Id) (ec.Entity, error)
+	getAndCheckEntity(entityId uid.Id) (ec.Entity, error)
 }
 
 type _ECNode struct {
@@ -89,12 +89,12 @@ func (ecTree *_ECTreeBehavior) AddChild(parentId, childId uid.Id) error {
 		return fmt.Errorf("%w: %w: parentId and childId is %q, can't be equal", ErrECTree, exception.ErrArgs, parentId)
 	}
 
-	parent, err := ecTree.fetchEntity(parentId)
+	parent, err := ecTree.getAndCheckEntity(parentId)
 	if err != nil {
 		return err
 	}
 
-	child, err := ecTree.fetchEntity(childId)
+	child, err := ecTree.getAndCheckEntity(childId)
 	if err != nil {
 		return err
 	}
@@ -214,7 +214,7 @@ func (ecTree *_ECTreeBehavior) OnEntityMgrRemovingEntity(entityMgr EntityMgr, en
 	ecTree.RemoveChild(entity.GetId())
 }
 
-func (ecTree *_ECTreeBehavior) fetchEntity(entityId uid.Id) (ec.Entity, error) {
+func (ecTree *_ECTreeBehavior) getAndCheckEntity(entityId uid.Id) (ec.Entity, error) {
 	entity, ok := ecTree.ctx.GetEntityMgr().GetEntity(entityId)
 	if !ok {
 		return nil, fmt.Errorf("%w: entity %q not exist", ErrECTree, entityId)
