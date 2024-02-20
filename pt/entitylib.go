@@ -4,8 +4,30 @@ import (
 	"fmt"
 	"git.golaxy.org/core/internal/exception"
 	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/core/util/types"
 	"sync"
 )
+
+type _CompAlias struct {
+	Comp  any
+	Alias string
+}
+
+// CompAlias 组件与别名，用于注册实体原型时自定义组件别名
+func CompAlias(comp any, alias string) _CompAlias {
+	return _CompAlias{
+		Comp:  comp,
+		Alias: alias,
+	}
+}
+
+// CompInterface 组件与接口，用于注册实体原型时使用接口名作为别名
+func CompInterface[FACE any](comp any) _CompAlias {
+	return _CompAlias{
+		Comp:  comp,
+		Alias: types.FullName[FACE](),
+	}
+}
 
 // EntityLib 实体原型库
 type EntityLib interface {
@@ -13,18 +35,13 @@ type EntityLib interface {
 	// Register 注册实体原型
 	Register(prototype string, comps ...any) EntityPT
 	// Declare 声明实体原型，要求组件实例已注册
-	Declare(prototype string, compImpls ...string) EntityPT
+	Declare(prototype string, compNames ...string) EntityPT
 	// Deregister 取消注册实体原型
 	Deregister(prototype string)
 	// Get 获取实体原型
 	Get(prototype string) (EntityPT, bool)
 	// Range 遍历所有已注册的实体原型
 	Range(fun generic.Func1[EntityPT, bool])
-}
-
-// CompNamePair 组件与组件名，用于注册实体原型
-func CompNamePair(comp any, name string) [2]any {
-	return [2]any{comp, name}
 }
 
 var entityLib = NewEntityLib(DefaultComponentLib())
@@ -73,20 +90,18 @@ func (lib *_EntityLib) Register(prototype string, comps ...any) EntityPT {
 	}
 
 	for _, comp := range comps {
-		var compNamePaired [2]any
+		var ci _CompInfo
 
-		switch c := comp.(type) {
-		case [2]any:
-			compNamePaired = c
-		case *[2]any:
-			compNamePaired = *c
+		switch pt := comp.(type) {
+		case _CompAlias:
+			ci.Alias = pt.Alias
+			ci.PT = lib.compLib.Register(pt.Comp, pt.Alias)
 		default:
-			compNamePaired[0] = comp
-			compNamePaired[1] = ""
+			ci.PT = lib.compLib.Register(pt)
+			ci.Alias = ci.PT.Name
 		}
 
-		compPT := lib.compLib.Register(compNamePaired[0], compNamePaired[1].(string))
-		entity.comps = append(entity.comps, compPT)
+		entity.compInfos = append(entity.compInfos, ci)
 	}
 
 	lib.entityMap[prototype] = entity
@@ -96,7 +111,7 @@ func (lib *_EntityLib) Register(prototype string, comps ...any) EntityPT {
 }
 
 // Declare 声明实体原型，要求组件实例已注册
-func (lib *_EntityLib) Declare(prototype string, compImpls ...string) EntityPT {
+func (lib *_EntityLib) Declare(prototype string, compNames ...string) EntityPT {
 	lib.Lock()
 	defer lib.Unlock()
 
@@ -109,12 +124,15 @@ func (lib *_EntityLib) Declare(prototype string, compImpls ...string) EntityPT {
 		Prototype: prototype,
 	}
 
-	for _, compImpl := range compImpls {
-		comp, ok := lib.compLib.Get(compImpl)
+	for _, compName := range compNames {
+		compPT, ok := lib.compLib.Get(compName)
 		if !ok {
-			panic(fmt.Errorf("%w: entity %q component %q was not registered", ErrPt, prototype, compImpl))
+			panic(fmt.Errorf("%w: entity %q component %q was not registered", ErrPt, prototype, compName))
 		}
-		entity.comps = append(entity.comps, comp)
+		entity.compInfos = append(entity.compInfos, _CompInfo{
+			PT:    compPT,
+			Alias: compPT.Name,
+		})
 	}
 
 	lib.entityMap[prototype] = entity

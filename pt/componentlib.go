@@ -6,18 +6,21 @@ import (
 	"git.golaxy.org/core/internal/exception"
 	"git.golaxy.org/core/util/generic"
 	"git.golaxy.org/core/util/types"
+	"github.com/elliotchance/pie/v2"
 	"reflect"
 	"sync"
 )
 
 // ComponentLib 组件原型库
 type ComponentLib interface {
-	// Register 注册组件原型，不设置组件名称时，将会使用组件实例名称作为组件名称
-	Register(comp any, name ...string) ComponentPT
+	// Register 注册组件原型
+	Register(comp any, aliases ...string) ComponentPT
 	// Deregister 取消注册组件原型
-	Deregister(impl string)
+	Deregister(name string)
 	// Get 获取组件原型
-	Get(impl string) (ComponentPT, bool)
+	Get(name string) (ComponentPT, bool)
+	// GetAlias 使用别名获取组件原型
+	GetAlias(alias string) []ComponentPT
 	// Range 遍历所有已注册的组件原型
 	Range(fun generic.Func1[ComponentPT, bool])
 }
@@ -32,7 +35,8 @@ func DefaultComponentLib() ComponentLib {
 // NewComponentLib 创建组件原型库
 func NewComponentLib() ComponentLib {
 	return &_ComponentLib{
-		compMap: map[string]*ComponentPT{},
+		compMap:  map[string]*ComponentPT{},
+		aliasMap: map[string][]*ComponentPT{},
 	}
 }
 
@@ -40,52 +44,65 @@ type _ComponentLib struct {
 	sync.RWMutex
 	compMap  map[string]*ComponentPT
 	compList []*ComponentPT
+	aliasMap map[string][]*ComponentPT
 }
 
-// Register 注册组件原型，不设置组件名称时，将会使用组件实例名称作为组件名称
-func (lib *_ComponentLib) Register(comp any, name ...string) ComponentPT {
+// Register 注册组件原型
+func (lib *_ComponentLib) Register(comp any, aliases ...string) ComponentPT {
 	if comp == nil {
 		panic(fmt.Errorf("%w: %w: comp is nil", ErrPt, exception.ErrArgs))
 	}
 
-	var _name string
-	if len(name) > 0 {
-		_name = name[0]
-	}
-
 	if tfComp, ok := comp.(reflect.Type); ok {
-		return lib.register(tfComp, _name)
+		return lib.register(tfComp, aliases)
 	} else {
-		return lib.register(reflect.TypeOf(comp), _name)
+		return lib.register(reflect.TypeOf(comp), aliases)
 	}
 }
 
 // Deregister 取消注册组件原型
-func (lib *_ComponentLib) Deregister(impl string) {
+func (lib *_ComponentLib) Deregister(name string) {
 	lib.Lock()
 	defer lib.Unlock()
 
-	delete(lib.compMap, impl)
+	delete(lib.compMap, name)
 
 	for i, comp := range lib.compList {
-		if comp.Implementation == impl {
+		if comp.Name == name {
 			lib.compList = append(lib.compList[:i], lib.compList[i+1:]...)
-			return
+			break
 		}
 	}
+
+	lib.clearAliases(name)
 }
 
 // Get 获取组件原型
-func (lib *_ComponentLib) Get(impl string) (ComponentPT, bool) {
+func (lib *_ComponentLib) Get(name string) (ComponentPT, bool) {
 	lib.RLock()
 	defer lib.RUnlock()
 
-	comp, ok := lib.compMap[impl]
+	comp, ok := lib.compMap[name]
 	if !ok {
 		return ComponentPT{}, false
 	}
 
 	return *comp, ok
+}
+
+// GetAlias 使用别名获取组件原型
+func (lib *_ComponentLib) GetAlias(alias string) []ComponentPT {
+	lib.RLock()
+	defer lib.RUnlock()
+
+	comps := lib.aliasMap[alias]
+	ret := make([]ComponentPT, 0, len(comps))
+
+	for _, comp := range comps {
+		ret = append(ret, *comp)
+	}
+
+	return ret
 }
 
 // Range 遍历所有已注册的组件原型
@@ -101,7 +118,7 @@ func (lib *_ComponentLib) Range(fun generic.Func1[ComponentPT, bool]) {
 	}
 }
 
-func (lib *_ComponentLib) register(tfComp reflect.Type, name string) ComponentPT {
+func (lib *_ComponentLib) register(tfComp reflect.Type, aliases []string) ComponentPT {
 	lib.Lock()
 	defer lib.Unlock()
 
@@ -113,32 +130,49 @@ func (lib *_ComponentLib) register(tfComp reflect.Type, name string) ComponentPT
 		panic(fmt.Errorf("%w: anonymous component not allowed", ErrPt))
 	}
 
-	compImpl := types.AnyFullName(tfComp)
+	compName := types.AnyFullName(tfComp)
 
 	if !reflect.PointerTo(tfComp).Implements(reflect.TypeOf((*ec.Component)(nil)).Elem()) {
-		panic(fmt.Errorf("%w: component %q not implement ec.Component", ErrPt, compImpl))
+		panic(fmt.Errorf("%w: component %q not implement ec.Component", ErrPt, compName))
 	}
 
-	if name == "" {
-		name = compImpl
-	}
-
-	comp, ok := lib.compMap[compImpl]
+	comp, ok := lib.compMap[compName]
 	if ok {
-		if comp.Name != name {
-			panic(fmt.Errorf("%w: component %q has already been registered with name %q", ErrPt, compImpl, comp.Name))
-		}
+		lib.addAliases(comp, aliases)
 		return *comp
 	}
 
 	comp = &ComponentPT{
-		Name:           name,
-		Implementation: compImpl,
-		tfComp:         tfComp,
+		Name:   compName,
+		tfComp: tfComp,
 	}
 
-	lib.compMap[compImpl] = comp
+	lib.compMap[compName] = comp
 	lib.compList = append(lib.compList, comp)
+	lib.addAliases(comp, aliases)
 
 	return *comp
+}
+
+func (lib *_ComponentLib) addAliases(comp *ComponentPT, aliases []string) {
+	for _, alias := range aliases {
+		if !pie.Any(lib.aliasMap[alias], func(pt *ComponentPT) bool {
+			return pt.Name == comp.Name
+		}) {
+			lib.aliasMap[alias] = append(lib.aliasMap[alias], comp)
+		}
+	}
+}
+
+func (lib *_ComponentLib) clearAliases(compName string) {
+	for alias, comps := range lib.aliasMap {
+		if !pie.Any(comps, func(pt *ComponentPT) bool {
+			return pt.Name == compName
+		}) {
+			continue
+		}
+		lib.aliasMap[alias] = pie.Filter(comps, func(pt *ComponentPT) bool {
+			return pt.Name != compName
+		})
+	}
 }

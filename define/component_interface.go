@@ -21,8 +21,8 @@ func DefineComponentInterface[COMP_IFACE any](compLib pt.ComponentLib) Component
 
 // ComponentInterface 组件接口
 type ComponentInterface struct {
-	Name     string                             // 组件接口名称
-	Register generic.Func1[any, pt.ComponentPT] // 注册组件原型
+	Name     string                                         // 组件接口名称
+	Register generic.PairFunc1[any, pt.ComponentPT, string] // 注册组件原型
 }
 
 type _ComponentInterface struct {
@@ -30,9 +30,9 @@ type _ComponentInterface struct {
 	compLib pt.ComponentLib
 }
 
-func (c _ComponentInterface) register() generic.Func1[any, pt.ComponentPT] {
-	return func(comp any) pt.ComponentPT {
-		return c.compLib.Register(comp, c.name)
+func (c _ComponentInterface) register() generic.PairFunc1[any, pt.ComponentPT, string] {
+	return func(comp any) (pt.ComponentPT, string) {
+		return c.compLib.Register(comp, c.name), c.name
 	}
 }
 

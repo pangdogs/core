@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// As 从实体提取一些需要的组件接口，复合在一起直接使用
+// As 从实体提取一些需要的组件接口，复合在一起直接使用（适用未自定义名称的组件）
 /*
 示例：
 	type A interface {
@@ -46,7 +46,7 @@ func As[T comparable](entity ec.Entity) (T, bool) {
 	return iface, true
 }
 
-// Cast 从实体提取一些需要的组件接口，复合在一起直接使用，提取失败会panic
+// Cast 从实体提取一些需要的组件接口，复合在一起直接使用，提取失败会panic（适用未自定义名称的组件）
 /*
 示例：
 	type A interface {
@@ -87,7 +87,7 @@ func Compose[T comparable](entity ec.Entity) *Composite[T] {
 	}
 }
 
-// Composite 组件复合器，直接使用As()或Cast()时，无法检测提取后实体是否又更新组件，使用复合器可以解决此问题
+// Composite 组件复合器，直接使用As()或Cast()时，无法检测提取后实体是否又更新组件，使用复合器可以解决此问题（适用未自定义名称的组件）
 /*
 示例：
 	type A interface {

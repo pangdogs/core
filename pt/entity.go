@@ -7,10 +7,15 @@ import (
 	"git.golaxy.org/core/util/option"
 )
 
+type _CompInfo struct {
+	PT    ComponentPT
+	Alias string
+}
+
 // EntityPT 实体原型
 type EntityPT struct {
 	Prototype string // 实体原型名称
-	comps     []ComponentPT
+	compInfos []_CompInfo
 }
 
 // Construct 创建实体
@@ -30,12 +35,12 @@ func (pt EntityPT) Assemble(entity ec.Entity, componentCtor ComponentCtor, entit
 		panic(fmt.Errorf("%w: %w: entity is nil", ErrPt, exception.ErrArgs))
 	}
 
-	for i := range pt.comps {
-		compPT := pt.comps[i]
+	for i := range pt.compInfos {
+		compInfo := &pt.compInfos[i]
 
-		comp := compPT.Construct()
+		comp := compInfo.PT.Construct()
 
-		if err := entity.AddComponent(compPT.Name, comp); err != nil {
+		if err := entity.AddComponent(compInfo.Alias, comp); err != nil {
 			panic(fmt.Errorf("%w: %w", ErrPt, err))
 		}
 
