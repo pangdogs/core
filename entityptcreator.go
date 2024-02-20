@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"git.golaxy.org/core/pt"
 	"git.golaxy.org/core/service"
 )
 
@@ -20,13 +21,23 @@ func CreateEntityPT(ctx service.Context, prototype string) EntityPTCreator {
 type EntityPTCreator struct {
 	servCtx   service.Context
 	prototype string
+	comps     []any
 }
 
-func (c EntityPTCreator) AddComponent(comp any, name ...string) EntityPTCreator {
-	c.servCtx.GetEntityLib().Register(c.prototype)
+// AddComponent 添加组件
+func (c EntityPTCreator) AddComponent(comp any, alias ...string) EntityPTCreator {
+	if len(alias) > 0 {
+		c.comps = append(c.comps, pt.CompAlias(comp, alias[0]))
+	} else {
+		c.comps = append(c.comps, comp)
+	}
 	return c
 }
 
-func (c EntityPTCreator) AddComponentImpl(compImpl string, name ...string) EntityPTCreator {
-
+// Declare 声明实体原型
+func (c EntityPTCreator) Declare() {
+	if c.servCtx == nil {
+		panic(fmt.Errorf("%w: setting servCtx is nil", ErrGolaxy))
+	}
+	c.servCtx.GetEntityLib().Register(c.prototype, c.comps...)
 }
