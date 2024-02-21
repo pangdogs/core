@@ -1,4 +1,3 @@
-//go:generate stringer -type RunningState
 package service
 
 import (
