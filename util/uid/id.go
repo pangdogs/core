@@ -10,6 +10,11 @@ var (
 	New = func() Id {
 		return Id(ksuid.New().String())
 	}
+
+	// From generate id from string.
+	From = func(str string) Id {
+		return Id(str)
+	}
 )
 
 // Id represents a global unique id.
