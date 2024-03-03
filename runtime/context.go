@@ -12,6 +12,7 @@ import (
 	"git.golaxy.org/core/util/option"
 	"git.golaxy.org/core/util/reinterpret"
 	"git.golaxy.org/core/util/uid"
+	"reflect"
 )
 
 // NewContext 创建运行时上下文
@@ -70,6 +71,7 @@ type _Context interface {
 	setCallee(callee Callee)
 	getServiceCtx() service.Context
 	changeRunningState(state RunningState)
+	getReflected() reflect.Value
 	gc()
 }
 
@@ -78,6 +80,7 @@ type ContextBehavior struct {
 	concurrent.ContextBehavior
 	servCtx   service.Context
 	opts      ContextOptions
+	reflected reflect.Value
 	frame     Frame
 	entityMgr _EntityMgrBehavior
 	ecTree    _ECTreeBehavior
@@ -189,6 +192,7 @@ func (ctx *ContextBehavior) init(servCtx service.Context, opts ContextOptions) {
 
 	concurrent.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
 	ctx.servCtx = servCtx
+	ctx.reflected = reflect.ValueOf(ctx.opts.CompositeFace.Iface)
 	ctx.entityMgr.init(ctx.opts.CompositeFace.Iface)
 	ctx.ecTree.init(ctx.opts.CompositeFace.Iface)
 }
@@ -218,6 +222,10 @@ func (ctx *ContextBehavior) changeRunningState(state RunningState) {
 	case RunningState_Terminated:
 		ctx.cleanHooks()
 	}
+}
+
+func (ctx *ContextBehavior) getReflected() reflect.Value {
+	return ctx.reflected
 }
 
 func (ctx *ContextBehavior) cleanHooks() {

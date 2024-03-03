@@ -10,6 +10,7 @@ import (
 	"git.golaxy.org/core/util/option"
 	"git.golaxy.org/core/util/reinterpret"
 	"git.golaxy.org/core/util/uid"
+	"reflect"
 )
 
 // NewContext 创建服务上下文
@@ -52,12 +53,14 @@ type _Context interface {
 	init(opts ContextOptions)
 	getOptions() *ContextOptions
 	changeRunningState(state RunningState)
+	getReflected() reflect.Value
 }
 
 // ContextBehavior 服务上下文行为，在需要扩展服务上下文能力时，匿名嵌入至服务上下文结构体中
 type ContextBehavior struct {
 	concurrent.ContextBehavior
 	opts      ContextOptions
+	reflected reflect.Value
 	entityMgr _EntityMgrBehavior
 }
 
@@ -102,6 +105,7 @@ func (ctx *ContextBehavior) init(opts ContextOptions) {
 	}
 
 	concurrent.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
+	ctx.reflected = reflect.ValueOf(ctx.opts.CompositeFace.Iface)
 	ctx.entityMgr.init(ctx.opts.CompositeFace.Iface)
 }
 
@@ -111,4 +115,8 @@ func (ctx *ContextBehavior) getOptions() *ContextOptions {
 
 func (ctx *ContextBehavior) changeRunningState(state RunningState) {
 	ctx.opts.RunningHandler.Call(ctx.GetAutoRecover(), ctx.GetReportError(), nil, ctx.opts.CompositeFace.Iface, state)
+}
+
+func (ctx *ContextBehavior) getReflected() reflect.Value {
+	return ctx.reflected
 }

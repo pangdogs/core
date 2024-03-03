@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"git.golaxy.org/core/service"
+	"reflect"
 )
 
 // Deprecated: UnsafeContext 访问运行时上下文内部方法
@@ -43,6 +44,11 @@ func (uc _UnsafeContext) GetServiceCtx() service.Context {
 // ChangeRunningState 修改运行状态
 func (uc _UnsafeContext) ChangeRunningState(state RunningState) {
 	uc.changeRunningState(state)
+}
+
+// GetReflected 获取反射值
+func (uc _UnsafeContext) GetReflected() reflect.Value {
+	return uc.getReflected()
 }
 
 // GC GC
