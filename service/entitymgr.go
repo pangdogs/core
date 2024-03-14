@@ -71,6 +71,15 @@ func (entityMgr *_EntityMgrBehavior) GetOrAddEntity(entity ec.ConcurrentEntity) 
 	return actual.(ec.ConcurrentEntity), loaded, nil
 }
 
+// GetAndRemoveEntity 查询并删除实体
+func (entityMgr *_EntityMgrBehavior) GetAndRemoveEntity(id uid.Id) (ec.ConcurrentEntity, bool) {
+	v, loaded := entityMgr.entityMap.LoadAndDelete(id)
+	if !loaded {
+		return nil, false
+	}
+	return v.(ec.ConcurrentEntity), true
+}
+
 // AddEntity 添加实体
 func (entityMgr *_EntityMgrBehavior) AddEntity(entity ec.ConcurrentEntity) error {
 	if entity == nil {
@@ -88,15 +97,6 @@ func (entityMgr *_EntityMgrBehavior) AddEntity(entity ec.ConcurrentEntity) error
 	entityMgr.entityMap.Store(entity.GetId(), entity)
 
 	return nil
-}
-
-// GetAndRemoveEntity 查询并删除实体
-func (entityMgr *_EntityMgrBehavior) GetAndRemoveEntity(id uid.Id) (ec.ConcurrentEntity, bool) {
-	v, loaded := entityMgr.entityMap.LoadAndDelete(id)
-	if !loaded {
-		return nil, false
-	}
-	return v.(ec.ConcurrentEntity), true
 }
 
 // RemoveEntity 删除实体
