@@ -5,6 +5,7 @@ import (
 	"git.golaxy.org/core/internal/exception"
 	"git.golaxy.org/core/util/generic"
 	"git.golaxy.org/core/util/types"
+	"slices"
 	"sync"
 )
 
@@ -126,12 +127,9 @@ func (lib *_EntityLib) Deregister(prototype string) {
 
 	delete(lib.entityMap, prototype)
 
-	for i, entity := range lib.entityList {
-		if entity.Prototype == prototype {
-			lib.entityList = append(lib.entityList[:i], lib.entityList[i+1:]...)
-			return
-		}
-	}
+	lib.entityList = slices.DeleteFunc(lib.entityList, func(pt *EntityPT) bool {
+		return pt.Prototype == prototype
+	})
 }
 
 // Get 获取实体原型
@@ -150,11 +148,11 @@ func (lib *_EntityLib) Get(prototype string) (EntityPT, bool) {
 // Range 遍历所有已注册的实体原型
 func (lib *_EntityLib) Range(fun generic.Func1[EntityPT, bool]) {
 	lib.RLock()
-	entityList := append(make([]*EntityPT, 0, len(lib.entityList)), lib.entityList...)
+	copied := slices.Clone(lib.entityList)
 	lib.RUnlock()
 
-	for _, entity := range entityList {
-		if !fun.Exec(*entity) {
+	for i := range copied {
+		if !fun.Exec(*copied[i]) {
 			return
 		}
 	}

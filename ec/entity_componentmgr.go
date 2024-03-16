@@ -8,6 +8,7 @@ import (
 	"git.golaxy.org/core/util/generic"
 	"git.golaxy.org/core/util/iface"
 	"git.golaxy.org/core/util/uid"
+	"slices"
 )
 
 // _ComponentMgr 组件管理器接口
@@ -74,11 +75,9 @@ func (entity *EntityBehavior) GetComponents(name string) []Component {
 			}
 		}
 
-		for i := len(components) - 1; i >= 0; i-- {
-			if components[i] == nil {
-				components = append(components[:i], components[i+1:]...)
-			}
-		}
+		components = slices.DeleteFunc(components, func(comp Component) bool {
+			return comp == nil
+		})
 
 		return components
 	}

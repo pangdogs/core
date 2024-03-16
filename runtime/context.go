@@ -13,6 +13,7 @@ import (
 	"git.golaxy.org/core/util/reinterpret"
 	"git.golaxy.org/core/util/uid"
 	"reflect"
+	"slices"
 )
 
 // NewContext 创建运行时上下文
@@ -134,12 +135,9 @@ func (ctx *ContextBehavior) ActivateEvent(event event.IEventCtrl, recursion even
 
 // ManagedHooks 托管hook，在运行时停止时自动解绑定
 func (ctx *ContextBehavior) ManagedHooks(hooks ...event.Hook) {
-	for i := len(ctx.hooks) - 1; i >= 0; i-- {
-		if !ctx.hooks[i].IsBound() {
-			ctx.hooks = append(ctx.hooks[:i], ctx.hooks[i+1:]...)
-		}
-	}
-	ctx.hooks = append(ctx.hooks, hooks...)
+	ctx.hooks = slices.DeleteFunc(ctx.hooks, func(hook event.Hook) bool {
+		return !hook.IsBound()
+	})
 }
 
 // GetCurrentContext 获取当前上下文

@@ -8,6 +8,7 @@ import (
 	"git.golaxy.org/core/util/types"
 	"github.com/elliotchance/pie/v2"
 	"reflect"
+	"slices"
 	"sync"
 )
 
@@ -67,12 +68,9 @@ func (lib *_ComponentLib) Deregister(name string) {
 
 	delete(lib.compMap, name)
 
-	for i, comp := range lib.compList {
-		if comp.Name == name {
-			lib.compList = append(lib.compList[:i], lib.compList[i+1:]...)
-			break
-		}
-	}
+	lib.compList = slices.DeleteFunc(lib.compList, func(pt *ComponentPT) bool {
+		return pt.Name == name
+	})
 
 	lib.clearAliases(name)
 }
@@ -108,11 +106,11 @@ func (lib *_ComponentLib) GetAlias(alias string) []ComponentPT {
 // Range 遍历所有已注册的组件原型
 func (lib *_ComponentLib) Range(fun generic.Func1[ComponentPT, bool]) {
 	lib.RLock()
-	compList := append(make([]*ComponentPT, 0, len(lib.compList)), lib.compList...)
+	copied := slices.Clone(lib.compList)
 	lib.RUnlock()
 
-	for _, comp := range compList {
-		if !fun.Exec(*comp) {
+	for i := range copied {
+		if !fun.Exec(*copied[i]) {
 			return
 		}
 	}

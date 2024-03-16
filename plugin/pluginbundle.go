@@ -7,6 +7,7 @@ import (
 	"git.golaxy.org/core/util/iface"
 	"git.golaxy.org/core/util/types"
 	"reflect"
+	"slices"
 	"sync"
 )
 
@@ -103,12 +104,9 @@ func (bundle *_PluginBundle) Uninstall(name string) {
 
 	delete(bundle.pluginMap, name)
 
-	for i, pi := range bundle.pluginList {
-		if pi.Name == name {
-			bundle.pluginList = append(bundle.pluginList[:i], bundle.pluginList[i+1:]...)
-			return
-		}
-	}
+	bundle.pluginList = slices.DeleteFunc(bundle.pluginList, func(info *PluginInfo) bool {
+		return info.Name == name
+	})
 }
 
 // Get 获取插件
@@ -127,11 +125,11 @@ func (bundle *_PluginBundle) Get(name string) (PluginInfo, bool) {
 // Range 遍历所有已注册的插件
 func (bundle *_PluginBundle) Range(fun generic.Func1[PluginInfo, bool]) {
 	bundle.RLock()
-	pluginList := append(make([]*PluginInfo, 0, len(bundle.pluginList)), bundle.pluginList...)
+	copied := slices.Clone(bundle.pluginList)
 	bundle.RUnlock()
 
-	for i := range pluginList {
-		if !fun.Exec(*pluginList[i]) {
+	for i := range copied {
+		if !fun.Exec(*copied[i]) {
 			return
 		}
 	}
