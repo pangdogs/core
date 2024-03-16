@@ -138,11 +138,11 @@ func (bundle *_PluginBundle) Range(fun generic.Func1[PluginInfo, bool]) {
 // ReverseRange 反向遍历所有已注册的插件
 func (bundle *_PluginBundle) ReverseRange(fun generic.Func1[PluginInfo, bool]) {
 	bundle.RLock()
-	pluginList := append(make([]*PluginInfo, 0, len(bundle.pluginList)), bundle.pluginList...)
+	copied := slices.Clone(bundle.pluginList)
 	bundle.RUnlock()
 
-	for i := len(pluginList) - 1; i >= 0; i-- {
-		if !fun.Exec(*pluginList[i]) {
+	for i := len(copied) - 1; i >= 0; i-- {
+		if !fun.Exec(*copied[i]) {
 			return
 		}
 	}
