@@ -15,33 +15,31 @@ var (
 )
 
 // Await 异步等待结果返回
-func Await(ctx context.Context, asyncRet ...runtime.AsyncRet) AwaitDirector {
+func Await(ctxProvider runtime.CurrentContextProvider, asyncRet ...runtime.AsyncRet) AwaitDirector {
 	return AwaitDirector{
-		context:   ctx,
+		rtCtx:     getRuntimeContext(ctxProvider),
 		asyncRets: asyncRet,
 	}
 }
 
 // AwaitDirector 异步等待分发器
 type AwaitDirector struct {
-	context   context.Context
+	rtCtx     runtime.Context
 	asyncRets []runtime.AsyncRet
 }
 
 // Any 异步等待任意一个结果返回
-func (ad AwaitDirector) Any(ctxProvider runtime.CurrentContextProvider, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va ...any) {
-	if ad.context == nil {
-		ad.context = context.Background()
+func (ad AwaitDirector) Any(fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va ...any) {
+	if ad.rtCtx == nil {
+		panic(fmt.Errorf("%w: setting rtCtx is nil", ErrGolaxy))
 	}
 
 	if len(ad.asyncRets) <= 0 {
 		return
 	}
 
-	rtCtx := getRuntimeContext(ctxProvider)
-
 	var b atomic.Bool
-	ctx, cancel := context.WithCancel(ad.context)
+	ctx, cancel := context.WithCancel(ad.rtCtx)
 
 	for i := range ad.asyncRets {
 		asyncRet := ad.asyncRets[i]
@@ -67,25 +65,23 @@ func (ad AwaitDirector) Any(ctxProvider runtime.CurrentContextProvider, fun gene
 				funVa := va[3].([]any)
 				fun.Exec(rtCtx, ret, funVa...)
 			}, rtCtx, fun, ret, va)
-		}(&b, ctx, cancel, asyncRet, rtCtx, fun, va)
+		}(&b, ctx, cancel, asyncRet, ad.rtCtx, fun, va)
 	}
 }
 
 // AnyOK 异步等待任意一个结果成功返回
-func (ad AwaitDirector) AnyOK(ctxProvider runtime.CurrentContextProvider, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va ...any) {
-	if ad.context == nil {
-		ad.context = context.Background()
+func (ad AwaitDirector) AnyOK(fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va ...any) {
+	if ad.rtCtx == nil {
+		panic(fmt.Errorf("%w: setting rtCtx is nil", ErrGolaxy))
 	}
 
 	if len(ad.asyncRets) <= 0 {
 		return
 	}
 
-	rtCtx := getRuntimeContext(ctxProvider)
-
 	var wg sync.WaitGroup
 	var b atomic.Bool
-	ctx, cancel := context.WithCancel(ad.context)
+	ctx, cancel := context.WithCancel(ad.rtCtx)
 
 	for i := range ad.asyncRets {
 		asyncRet := ad.asyncRets[i]
@@ -116,11 +112,10 @@ func (ad AwaitDirector) AnyOK(ctxProvider runtime.CurrentContextProvider, fun ge
 				funVa := va[3].([]any)
 				fun.Exec(rtCtx, ret, funVa...)
 			}, rtCtx, fun, ret, va)
-		}(&wg, &b, ctx, cancel, asyncRet, rtCtx, fun, va)
+		}(&wg, &b, ctx, cancel, asyncRet, ad.rtCtx, fun, va)
 	}
 
-	go func(wg *sync.WaitGroup, b *atomic.Bool,
-		rtCtx runtime.Context, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va []any) {
+	go func(wg *sync.WaitGroup, b *atomic.Bool, rtCtx runtime.Context, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va []any) {
 		wg.Wait()
 
 		if b.Load() {
@@ -133,23 +128,21 @@ func (ad AwaitDirector) AnyOK(ctxProvider runtime.CurrentContextProvider, fun ge
 			funVa := va[2].([]any)
 			fun.Exec(rtCtx, concurrent.MakeRet(nil, ErrAllFailures), funVa...)
 		}, rtCtx, fun, va)
-	}(&wg, &b, rtCtx, fun, va)
+	}(&wg, &b, ad.rtCtx, fun, va)
 }
 
 // All 异步等待所有结果返回
-func (ad AwaitDirector) All(ctxProvider runtime.CurrentContextProvider, fun generic.ActionVar2[runtime.Context, []runtime.Ret, any], va ...any) {
-	if ad.context == nil {
-		ad.context = context.Background()
+func (ad AwaitDirector) All(fun generic.ActionVar2[runtime.Context, []runtime.Ret, any], va ...any) {
+	if ad.rtCtx == nil {
+		panic(fmt.Errorf("%w: setting rtCtx is nil", ErrGolaxy))
 	}
 
 	if len(ad.asyncRets) <= 0 {
 		return
 	}
 
-	rtCtx := getRuntimeContext(ctxProvider)
-
 	var wg sync.WaitGroup
-	ctx, cancel := context.WithCancel(ad.context)
+	ctx, cancel := context.WithCancel(ad.rtCtx)
 	rets := make([]runtime.Ret, len(ad.asyncRets))
 
 	for i := range ad.asyncRets {
@@ -175,20 +168,22 @@ func (ad AwaitDirector) All(ctxProvider runtime.CurrentContextProvider, fun gene
 			funVa := va[3].([]any)
 			fun.Exec(rtCtx, rets, funVa...)
 		}, rtCtx, fun, rets, va)
-	}(&wg, rtCtx, fun, rets, va)
+	}(&wg, ad.rtCtx, fun, rets, va)
 }
 
 // Pipe 异步等待管道返回
-func (ad AwaitDirector) Pipe(ctxProvider runtime.CurrentContextProvider, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va ...any) {
-	if ad.context == nil {
-		ad.context = context.Background()
+func (ad AwaitDirector) Pipe(ctx context.Context, fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va ...any) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	if ad.rtCtx == nil {
+		panic(fmt.Errorf("%w: setting rtCtx is nil", ErrGolaxy))
 	}
 
 	if len(ad.asyncRets) <= 0 {
 		return
 	}
-
-	rtCtx := getRuntimeContext(ctxProvider)
 
 	for i := range ad.asyncRets {
 		asyncRet := ad.asyncRets[i]
@@ -214,6 +209,6 @@ func (ad AwaitDirector) Pipe(ctxProvider runtime.CurrentContextProvider, fun gen
 					return
 				}
 			}
-		}(ad.context, rtCtx, asyncRet, fun, va)
+		}(ctx, ad.rtCtx, asyncRet, fun, va)
 	}
 }
