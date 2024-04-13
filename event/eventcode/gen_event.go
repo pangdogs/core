@@ -118,6 +118,12 @@ package %s
 			auto = false
 		}
 
+		var visibility string
+
+		if unicode.IsLower(rune(eventDecl.Name[0])) {
+			visibility = "_"
+		}
+
 		// 生成代码
 		if auto {
 			if eventDecl.FuncHasRet {
@@ -195,10 +201,9 @@ func %[9]s%[1]s%[7]s(evt %[6]sIEvent%[4]s) {
 			}
 		}
 
-		if unicode.IsUpper(rune(eventDecl.Name[0])) {
-			if eventDecl.FuncHasRet {
-				fmt.Fprintf(code, `
-func Handle%[1]s(fun func(%[3]s) bool) handle%[1]s {
+		if eventDecl.FuncHasRet {
+			fmt.Fprintf(code, `
+func %[5]sHandle%[1]s(fun func(%[3]s) bool) handle%[1]s {
 	return handle%[1]s(fun)
 }
 
@@ -207,10 +212,10 @@ type handle%[1]s func(%[3]s) bool
 func (handle handle%[1]s) %[2]s(%[3]s) bool {
 	return handle(%[4]s)
 }
-`, strings.Title(eventDecl.Name), eventDecl.FuncName, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "), eventDecl.FuncParams)
-			} else {
-				fmt.Fprintf(code, `
-func Handle%[1]s(fun func(%[3]s)) handle%[1]s {
+`, strings.Title(eventDecl.Name), eventDecl.FuncName, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "), eventDecl.FuncParams, visibility)
+		} else {
+			fmt.Fprintf(code, `
+func %[5]sHandle%[1]s(fun func(%[3]s)) handle%[1]s {
 	return handle%[1]s(fun)
 }
 
@@ -219,8 +224,7 @@ type handle%[1]s func(%[3]s)
 func (handle handle%[1]s) %[2]s(%[3]s) {
 	handle(%[4]s)
 }
-`, strings.Title(eventDecl.Name), eventDecl.FuncName, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "), eventDecl.FuncParams)
-			}
+`, strings.Title(eventDecl.Name), eventDecl.FuncName, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "), eventDecl.FuncParams, visibility)
 		}
 
 		fmt.Printf("Emit: %s\n", eventDecl.Name)
