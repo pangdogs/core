@@ -8,15 +8,15 @@ import (
 	"git.golaxy.org/core/util/iface"
 )
 
-// EventRecursion 发生事件递归时的处理方式，事件递归是指事件发送过程中，在订阅者接收并处理事件的逻辑中，再次发送这个事件
+// EventRecursion 发生事件递归时的处理方式（事件递归：事件发送过程中，在订阅者的逻辑中，再次发送这个事件）
 type EventRecursion int32
 
 const (
-	EventRecursion_Allow    EventRecursion = iota // 允许事件递归，但是逻辑有误时，会造成无限递归
-	EventRecursion_Disallow                       // 不允许事件递归，发生无限递归时会panic
-	EventRecursion_NotEmit                        // 不再发送事件，如果在订阅者逻辑中再次发送这个事件，那么不会再发送给任何订阅者
-	EventRecursion_Discard                        // 丢弃递归的事件，如果在订阅者逻辑中再次发送这个事件，那么不会再次发送给这个订阅者，但是会发送给其他订阅者
-	EventRecursion_Deepest                        // 深度优先处理递归事件，如果在订阅者逻辑中再次发送这个事件，那么会中断上一次事件发送过程，并在本次事件发送过程中，不会再次发送给这个订阅者
+	EventRecursion_Allow    EventRecursion = iota // 允许事件递归，可能会无限递归
+	EventRecursion_Disallow                       // 不允许事件递归，递归时会panic
+	EventRecursion_Discard                        // 丢弃递归的事件，不会再发送给任何订阅者
+	EventRecursion_Truncate                       // 截断递归的事件，不会再发送给当前订阅者，但是会发送给其他订阅者
+	EventRecursion_Deepest                        // 深度优先处理递归的事件，会中断当前事件发送过程，并在新的事件发送过程中，不会再次发送给这个订阅者
 )
 
 var (
@@ -51,7 +51,7 @@ var (
 		event{事件名} event.Event
 	}
 	func (c *Comp) Awake() {
-		runtime.Current(c).ActivateEvent(&c.event{事件名}, event.EventRecursion_NotEmit)
+		runtime.Current(c).ActivateEvent(&c.event{事件名}, event.EventRecursion_Discard)
 	}
 	func (c *Comp) Dispose() {
 		c.event{事件名}.Close()
@@ -162,7 +162,7 @@ func (event *Event) emit(fun generic.Func1[iface.Cache, bool]) {
 	}
 
 	switch event.eventRecursion {
-	case EventRecursion_NotEmit:
+	case EventRecursion_Discard:
 		if event.emitted > 0 {
 			return
 		}
@@ -189,7 +189,7 @@ func (event *Event) emit(fun generic.Func1[iface.Cache, bool]) {
 			if e.Value.received > 0 {
 				panic(fmt.Errorf("%w: recursive event disallowed", ErrEvent))
 			}
-		case EventRecursion_Discard:
+		case EventRecursion_Truncate:
 			if e.Value.received > 0 {
 				return true
 			}

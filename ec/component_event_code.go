@@ -28,3 +28,13 @@ func emitEventComponentDestroySelf(auto iAutoEventComponentDestroySelf, comp Com
 		return true
 	})
 }
+
+func HandleEventComponentDestroySelf(fun func(comp Component)) handleEventComponentDestroySelf {
+	return handleEventComponentDestroySelf(fun)
+}
+
+type handleEventComponentDestroySelf func(comp Component)
+
+func (handle handleEventComponentDestroySelf) OnComponentDestroySelf(comp Component) {
+	handle(comp)
+}

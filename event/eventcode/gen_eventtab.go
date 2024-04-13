@@ -81,14 +81,14 @@ type I%[1]s interface {
 
 			if strings.Contains(event.Comment, "[EventRecursion_Allow]") {
 				eventRecursion = eventPrefix + "EventRecursion_Allow"
-			} else if strings.Contains(event.Comment, "[EventRecursion_Discard]") {
-				eventRecursion = eventPrefix + "EventRecursion_Discard"
-			} else if strings.Contains(event.Comment, "[EventRecursion_Deepest]") {
-				eventRecursion = eventPrefix + "EventRecursion_Deepest"
 			} else if strings.Contains(event.Comment, "[EventRecursion_Disallow]") {
 				eventRecursion = eventPrefix + "EventRecursion_Disallow"
-			} else if strings.Contains(event.Comment, "[EventRecursion_NotEmit]") {
-				eventRecursion = eventPrefix + "EventRecursion_NotEmit"
+			} else if strings.Contains(event.Comment, "[EventRecursion_Discard]") {
+				eventRecursion = eventPrefix + "EventRecursion_Discard"
+			} else if strings.Contains(event.Comment, "[EventRecursion_Truncate]") {
+				eventRecursion = eventPrefix + "EventRecursion_Truncate"
+			} else if strings.Contains(event.Comment, "[EventRecursion_Deepest]") {
+				eventRecursion = eventPrefix + "EventRecursion_Deepest"
 			} else {
 				eventRecursion = "recursion"
 			}

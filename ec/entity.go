@@ -161,7 +161,7 @@ func (entity *EntityBehavior) init(opts EntityOptions) {
 
 	entity.componentList.Init(entity.opts.FaceAnyAllocator, entity.opts.GCCollector)
 
-	entity._eventEntityDestroySelf.Init(false, nil, event.EventRecursion_NotEmit, entity.opts.HookAllocator, entity.opts.GCCollector)
+	entity._eventEntityDestroySelf.Init(false, nil, event.EventRecursion_Discard, entity.opts.HookAllocator, entity.opts.GCCollector)
 	entity.eventCompMgrAddComponents.Init(false, nil, event.EventRecursion_Allow, entity.opts.HookAllocator, entity.opts.GCCollector)
 	entity.eventCompMgrRemoveComponent.Init(false, nil, event.EventRecursion_Allow, entity.opts.HookAllocator, entity.opts.GCCollector)
 	entity.eventCompMgrFirstAccessComponent.Init(false, nil, event.EventRecursion_Allow, entity.opts.HookAllocator, entity.opts.GCCollector)

@@ -28,3 +28,13 @@ func emitEventEntityDestroySelf(auto iAutoEventEntityDestroySelf, entity Entity)
 		return true
 	})
 }
+
+func HandleEventEntityDestroySelf(fun func(entity Entity)) handleEventEntityDestroySelf {
+	return handleEventEntityDestroySelf(fun)
+}
+
+type handleEventEntityDestroySelf func(entity Entity)
+
+func (handle handleEventEntityDestroySelf) OnEntityDestroySelf(entity Entity) {
+	handle(entity)
+}

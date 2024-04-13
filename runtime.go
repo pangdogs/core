@@ -224,7 +224,7 @@ func (rt *RuntimeBehavior) removeComponent(component ec.Component) {
 }
 
 func (rt *RuntimeBehavior) connectEntity(entity ec.Entity) {
-	if entity.GetState() != ec.EntityState_Entry {
+	if entity.GetState() != ec.EntityState_Enter {
 		return
 	}
 

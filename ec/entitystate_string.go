@@ -9,7 +9,7 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[EntityState_Birth-0]
-	_ = x[EntityState_Entry-1]
+	_ = x[EntityState_Enter-1]
 	_ = x[EntityState_Awake-2]
 	_ = x[EntityState_Start-3]
 	_ = x[EntityState_Living-4]
@@ -18,7 +18,7 @@ func _() {
 	_ = x[EntityState_Death-7]
 }
 
-const _EntityState_name = "EntityState_BirthEntityState_EntryEntityState_AwakeEntityState_StartEntityState_LivingEntityState_LeaveEntityState_ShutEntityState_Death"
+const _EntityState_name = "EntityState_BirthEntityState_EnterEntityState_AwakeEntityState_StartEntityState_LivingEntityState_LeaveEntityState_ShutEntityState_Death"
 
 var _EntityState_index = [...]uint8{0, 17, 34, 51, 68, 86, 103, 119, 136}
 

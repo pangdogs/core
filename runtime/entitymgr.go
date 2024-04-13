@@ -199,7 +199,7 @@ func (entityMgr *_EntityMgrBehavior) AddEntity(entity ec.Entity) error {
 
 	entityMgr.entityMap[entity.GetId()] = entityInfo
 
-	_entity.SetState(ec.EntityState_Entry)
+	_entity.SetState(ec.EntityState_Enter)
 
 	emitEventEntityMgrAddEntity(entityMgr, entityMgr, entity)
 

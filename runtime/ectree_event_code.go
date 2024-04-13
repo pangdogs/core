@@ -30,6 +30,16 @@ func emitEventECTreeAddChild(auto iAutoEventECTreeAddChild, ecTree ECTree, paren
 	})
 }
 
+func HandleEventECTreeAddChild(fun func(ecTree ECTree, parent, child ec.Entity)) handleEventECTreeAddChild {
+	return handleEventECTreeAddChild(fun)
+}
+
+type handleEventECTreeAddChild func(ecTree ECTree, parent, child ec.Entity)
+
+func (handle handleEventECTreeAddChild) OnAddChild(ecTree ECTree, parent, child ec.Entity) {
+	handle(ecTree, parent, child)
+}
+
 type iAutoEventECTreeRemoveChild interface {
 	EventECTreeRemoveChild() event.IEvent
 }
@@ -49,4 +59,14 @@ func emitEventECTreeRemoveChild(auto iAutoEventECTreeRemoveChild, ecTree ECTree,
 		iface.Cache2Iface[EventECTreeRemoveChild](subscriber).OnRemoveChild(ecTree, parent, child)
 		return true
 	})
+}
+
+func HandleEventECTreeRemoveChild(fun func(ecTree ECTree, parent, child ec.Entity)) handleEventECTreeRemoveChild {
+	return handleEventECTreeRemoveChild(fun)
+}
+
+type handleEventECTreeRemoveChild func(ecTree ECTree, parent, child ec.Entity)
+
+func (handle handleEventECTreeRemoveChild) OnRemoveChild(ecTree ECTree, parent, child ec.Entity) {
+	handle(ecTree, parent, child)
 }

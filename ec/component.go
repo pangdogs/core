@@ -102,7 +102,7 @@ func (comp *ComponentBehavior) init(name string, entity Entity, composite Compon
 	comp.name = name
 	comp.entity = entity
 	comp.composite = composite
-	comp._eventComponentDestroySelf.Init(false, nil, event.EventRecursion_NotEmit, hookAllocator, gcCollector)
+	comp._eventComponentDestroySelf.Init(false, nil, event.EventRecursion_Discard, hookAllocator, gcCollector)
 }
 
 func (comp *ComponentBehavior) setId(id uid.Id) {

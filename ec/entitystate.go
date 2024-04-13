@@ -6,7 +6,7 @@ type EntityState int8
 
 const (
 	EntityState_Birth  EntityState = iota // 出生
-	EntityState_Entry                     // 进入容器
+	EntityState_Enter                     // 进入容器
 	EntityState_Awake                     // 唤醒
 	EntityState_Start                     // 开始
 	EntityState_Living                    // 活跃

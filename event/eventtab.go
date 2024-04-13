@@ -10,8 +10,8 @@ package event
 	1.事件表初始化时，该事件使用的递归处理方式，不填表示使用事件表初始化参数值
 		[EventRecursion_Allow]
 		[EventRecursion_Disallow]
-		[EventRecursion_NotEmit]
 		[EventRecursion_Discard]
+		[EventRecursion_Truncate]
 		[EventRecursion_Deepest]
 */
 type IEventTab interface {

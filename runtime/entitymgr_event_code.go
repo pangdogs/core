@@ -30,6 +30,16 @@ func emitEventEntityMgrAddEntity(auto iAutoEventEntityMgrAddEntity, entityMgr En
 	})
 }
 
+func HandleEventEntityMgrAddEntity(fun func(entityMgr EntityMgr, entity ec.Entity)) handleEventEntityMgrAddEntity {
+	return handleEventEntityMgrAddEntity(fun)
+}
+
+type handleEventEntityMgrAddEntity func(entityMgr EntityMgr, entity ec.Entity)
+
+func (handle handleEventEntityMgrAddEntity) OnEntityMgrAddEntity(entityMgr EntityMgr, entity ec.Entity) {
+	handle(entityMgr, entity)
+}
+
 type iAutoEventEntityMgrRemovingEntity interface {
 	EventEntityMgrRemovingEntity() event.IEvent
 }
@@ -49,6 +59,16 @@ func emitEventEntityMgrRemovingEntity(auto iAutoEventEntityMgrRemovingEntity, en
 		iface.Cache2Iface[EventEntityMgrRemovingEntity](subscriber).OnEntityMgrRemovingEntity(entityMgr, entity)
 		return true
 	})
+}
+
+func HandleEventEntityMgrRemovingEntity(fun func(entityMgr EntityMgr, entity ec.Entity)) handleEventEntityMgrRemovingEntity {
+	return handleEventEntityMgrRemovingEntity(fun)
+}
+
+type handleEventEntityMgrRemovingEntity func(entityMgr EntityMgr, entity ec.Entity)
+
+func (handle handleEventEntityMgrRemovingEntity) OnEntityMgrRemovingEntity(entityMgr EntityMgr, entity ec.Entity) {
+	handle(entityMgr, entity)
 }
 
 type iAutoEventEntityMgrRemoveEntity interface {
@@ -72,6 +92,16 @@ func emitEventEntityMgrRemoveEntity(auto iAutoEventEntityMgrRemoveEntity, entity
 	})
 }
 
+func HandleEventEntityMgrRemoveEntity(fun func(entityMgr EntityMgr, entity ec.Entity)) handleEventEntityMgrRemoveEntity {
+	return handleEventEntityMgrRemoveEntity(fun)
+}
+
+type handleEventEntityMgrRemoveEntity func(entityMgr EntityMgr, entity ec.Entity)
+
+func (handle handleEventEntityMgrRemoveEntity) OnEntityMgrRemoveEntity(entityMgr EntityMgr, entity ec.Entity) {
+	handle(entityMgr, entity)
+}
+
 type iAutoEventEntityMgrEntityAddComponents interface {
 	EventEntityMgrEntityAddComponents() event.IEvent
 }
@@ -91,6 +121,16 @@ func emitEventEntityMgrEntityAddComponents(auto iAutoEventEntityMgrEntityAddComp
 		iface.Cache2Iface[EventEntityMgrEntityAddComponents](subscriber).OnEntityMgrEntityAddComponents(entityMgr, entity, components)
 		return true
 	})
+}
+
+func HandleEventEntityMgrEntityAddComponents(fun func(entityMgr EntityMgr, entity ec.Entity, components []ec.Component)) handleEventEntityMgrEntityAddComponents {
+	return handleEventEntityMgrEntityAddComponents(fun)
+}
+
+type handleEventEntityMgrEntityAddComponents func(entityMgr EntityMgr, entity ec.Entity, components []ec.Component)
+
+func (handle handleEventEntityMgrEntityAddComponents) OnEntityMgrEntityAddComponents(entityMgr EntityMgr, entity ec.Entity, components []ec.Component) {
+	handle(entityMgr, entity, components)
 }
 
 type iAutoEventEntityMgrEntityRemoveComponent interface {
@@ -114,6 +154,16 @@ func emitEventEntityMgrEntityRemoveComponent(auto iAutoEventEntityMgrEntityRemov
 	})
 }
 
+func HandleEventEntityMgrEntityRemoveComponent(fun func(entityMgr EntityMgr, entity ec.Entity, component ec.Component)) handleEventEntityMgrEntityRemoveComponent {
+	return handleEventEntityMgrEntityRemoveComponent(fun)
+}
+
+type handleEventEntityMgrEntityRemoveComponent func(entityMgr EntityMgr, entity ec.Entity, component ec.Component)
+
+func (handle handleEventEntityMgrEntityRemoveComponent) OnEntityMgrEntityRemoveComponent(entityMgr EntityMgr, entity ec.Entity, component ec.Component) {
+	handle(entityMgr, entity, component)
+}
+
 type iAutoEventEntityMgrEntityFirstAccessComponent interface {
 	EventEntityMgrEntityFirstAccessComponent() event.IEvent
 }
@@ -133,4 +183,14 @@ func emitEventEntityMgrEntityFirstAccessComponent(auto iAutoEventEntityMgrEntity
 		iface.Cache2Iface[EventEntityMgrEntityFirstAccessComponent](subscriber).OnEntityMgrEntityFirstAccessComponent(entityMgr, entity, component)
 		return true
 	})
+}
+
+func HandleEventEntityMgrEntityFirstAccessComponent(fun func(entityMgr EntityMgr, entity ec.Entity, component ec.Component)) handleEventEntityMgrEntityFirstAccessComponent {
+	return handleEventEntityMgrEntityFirstAccessComponent(fun)
+}
+
+type handleEventEntityMgrEntityFirstAccessComponent func(entityMgr EntityMgr, entity ec.Entity, component ec.Component)
+
+func (handle handleEventEntityMgrEntityFirstAccessComponent) OnEntityMgrEntityFirstAccessComponent(entityMgr EntityMgr, entity ec.Entity, component ec.Component) {
+	handle(entityMgr, entity, component)
 }

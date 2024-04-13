@@ -29,6 +29,16 @@ func emitEventCompMgrAddComponents(auto iAutoEventCompMgrAddComponents, entity E
 	})
 }
 
+func HandleEventCompMgrAddComponents(fun func(entity Entity, components []Component)) handleEventCompMgrAddComponents {
+	return handleEventCompMgrAddComponents(fun)
+}
+
+type handleEventCompMgrAddComponents func(entity Entity, components []Component)
+
+func (handle handleEventCompMgrAddComponents) OnCompMgrAddComponents(entity Entity, components []Component) {
+	handle(entity, components)
+}
+
 type iAutoEventCompMgrRemoveComponent interface {
 	EventCompMgrRemoveComponent() event.IEvent
 }
@@ -50,6 +60,16 @@ func emitEventCompMgrRemoveComponent(auto iAutoEventCompMgrRemoveComponent, enti
 	})
 }
 
+func HandleEventCompMgrRemoveComponent(fun func(entity Entity, component Component)) handleEventCompMgrRemoveComponent {
+	return handleEventCompMgrRemoveComponent(fun)
+}
+
+type handleEventCompMgrRemoveComponent func(entity Entity, component Component)
+
+func (handle handleEventCompMgrRemoveComponent) OnCompMgrRemoveComponent(entity Entity, component Component) {
+	handle(entity, component)
+}
+
 type iAutoEventCompMgrFirstAccessComponent interface {
 	EventCompMgrFirstAccessComponent() event.IEvent
 }
@@ -69,4 +89,14 @@ func emitEventCompMgrFirstAccessComponent(auto iAutoEventCompMgrFirstAccessCompo
 		iface.Cache2Iface[EventCompMgrFirstAccessComponent](subscriber).OnCompMgrFirstAccessComponent(entity, component)
 		return true
 	})
+}
+
+func HandleEventCompMgrFirstAccessComponent(fun func(entity Entity, component Component)) handleEventCompMgrFirstAccessComponent {
+	return handleEventCompMgrFirstAccessComponent(fun)
+}
+
+type handleEventCompMgrFirstAccessComponent func(entity Entity, component Component)
+
+func (handle handleEventCompMgrFirstAccessComponent) OnCompMgrFirstAccessComponent(entity Entity, component Component) {
+	handle(entity, component)
 }
