@@ -18,16 +18,6 @@ func emitEventUpdate(evt event.IEvent) {
 	})
 }
 
-func HandleEventUpdate(fun func()) handleEventUpdate {
-	return handleEventUpdate(fun)
-}
-
-type handleEventUpdate func()
-
-func (handle handleEventUpdate) Update() {
-	handle()
-}
-
 func emitEventLateUpdate(evt event.IEvent) {
 	if evt == nil {
 		panic(fmt.Errorf("%w: %w: evt is nil", event.ErrEvent, event.ErrArgs))
@@ -36,14 +26,4 @@ func emitEventLateUpdate(evt event.IEvent) {
 		iface.Cache2Iface[eventLateUpdate](subscriber).LateUpdate()
 		return true
 	})
-}
-
-func HandleEventLateUpdate(fun func()) handleEventLateUpdate {
-	return handleEventLateUpdate(fun)
-}
-
-type handleEventLateUpdate func()
-
-func (handle handleEventLateUpdate) LateUpdate() {
-	handle()
 }

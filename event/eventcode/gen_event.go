@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"unicode"
 )
 
 func genEvent(ctx *CommandContext) {
@@ -194,7 +195,21 @@ func %[9]s%[1]s%[7]s(evt %[6]sIEvent%[4]s) {
 			}
 		}
 
-		fmt.Fprintf(code, `
+		if unicode.IsUpper(rune(eventDecl.Name[0])) {
+			if eventDecl.FuncHasRet {
+				fmt.Fprintf(code, `
+func Handle%[1]s(fun func(%[3]s) bool) handle%[1]s {
+	return handle%[1]s(fun)
+}
+
+type handle%[1]s func(%[3]s) bool
+
+func (handle handle%[1]s) %[2]s(%[3]s) bool {
+	return handle(%[4]s)
+}
+`, strings.Title(eventDecl.Name), eventDecl.FuncName, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "), eventDecl.FuncParams)
+			} else {
+				fmt.Fprintf(code, `
 func Handle%[1]s(fun func(%[3]s)) handle%[1]s {
 	return handle%[1]s(fun)
 }
@@ -205,6 +220,8 @@ func (handle handle%[1]s) %[2]s(%[3]s) {
 	handle(%[4]s)
 }
 `, strings.Title(eventDecl.Name), eventDecl.FuncName, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "), eventDecl.FuncParams)
+			}
+		}
 
 		fmt.Printf("Emit: %s\n", eventDecl.Name)
 	}
