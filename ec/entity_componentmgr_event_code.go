@@ -8,18 +8,18 @@ import (
 	iface "git.golaxy.org/core/util/iface"
 )
 
-type iAutoEventCompMgrAddComponents interface {
+type _AutoEventCompMgrAddComponents interface {
 	EventCompMgrAddComponents() event.IEvent
 }
 
-func BindEventCompMgrAddComponents(auto iAutoEventCompMgrAddComponents, subscriber EventCompMgrAddComponents, priority ...int32) event.Hook {
+func BindEventCompMgrAddComponents(auto _AutoEventCompMgrAddComponents, subscriber EventCompMgrAddComponents, priority ...int32) event.Hook {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
 	return event.BindEvent[EventCompMgrAddComponents](auto.EventCompMgrAddComponents(), subscriber, priority...)
 }
 
-func emitEventCompMgrAddComponents(auto iAutoEventCompMgrAddComponents, entity Entity, components []Component) {
+func _EmitEventCompMgrAddComponents(auto _AutoEventCompMgrAddComponents, entity Entity, components []Component) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
@@ -29,28 +29,28 @@ func emitEventCompMgrAddComponents(auto iAutoEventCompMgrAddComponents, entity E
 	})
 }
 
-func HandleEventCompMgrAddComponents(fun func(entity Entity, components []Component)) handleEventCompMgrAddComponents {
-	return handleEventCompMgrAddComponents(fun)
+func HandleEventCompMgrAddComponents(fun func(entity Entity, components []Component)) EventCompMgrAddComponentsHandler {
+	return EventCompMgrAddComponentsHandler(fun)
 }
 
-type handleEventCompMgrAddComponents func(entity Entity, components []Component)
+type EventCompMgrAddComponentsHandler func(entity Entity, components []Component)
 
-func (handle handleEventCompMgrAddComponents) OnCompMgrAddComponents(entity Entity, components []Component) {
-	handle(entity, components)
+func (h EventCompMgrAddComponentsHandler) OnCompMgrAddComponents(entity Entity, components []Component) {
+	h(entity, components)
 }
 
-type iAutoEventCompMgrRemoveComponent interface {
+type _AutoEventCompMgrRemoveComponent interface {
 	EventCompMgrRemoveComponent() event.IEvent
 }
 
-func BindEventCompMgrRemoveComponent(auto iAutoEventCompMgrRemoveComponent, subscriber EventCompMgrRemoveComponent, priority ...int32) event.Hook {
+func BindEventCompMgrRemoveComponent(auto _AutoEventCompMgrRemoveComponent, subscriber EventCompMgrRemoveComponent, priority ...int32) event.Hook {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
 	return event.BindEvent[EventCompMgrRemoveComponent](auto.EventCompMgrRemoveComponent(), subscriber, priority...)
 }
 
-func emitEventCompMgrRemoveComponent(auto iAutoEventCompMgrRemoveComponent, entity Entity, component Component) {
+func _EmitEventCompMgrRemoveComponent(auto _AutoEventCompMgrRemoveComponent, entity Entity, component Component) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
@@ -60,28 +60,28 @@ func emitEventCompMgrRemoveComponent(auto iAutoEventCompMgrRemoveComponent, enti
 	})
 }
 
-func HandleEventCompMgrRemoveComponent(fun func(entity Entity, component Component)) handleEventCompMgrRemoveComponent {
-	return handleEventCompMgrRemoveComponent(fun)
+func HandleEventCompMgrRemoveComponent(fun func(entity Entity, component Component)) EventCompMgrRemoveComponentHandler {
+	return EventCompMgrRemoveComponentHandler(fun)
 }
 
-type handleEventCompMgrRemoveComponent func(entity Entity, component Component)
+type EventCompMgrRemoveComponentHandler func(entity Entity, component Component)
 
-func (handle handleEventCompMgrRemoveComponent) OnCompMgrRemoveComponent(entity Entity, component Component) {
-	handle(entity, component)
+func (h EventCompMgrRemoveComponentHandler) OnCompMgrRemoveComponent(entity Entity, component Component) {
+	h(entity, component)
 }
 
-type iAutoEventCompMgrFirstAccessComponent interface {
+type _AutoEventCompMgrFirstAccessComponent interface {
 	EventCompMgrFirstAccessComponent() event.IEvent
 }
 
-func BindEventCompMgrFirstAccessComponent(auto iAutoEventCompMgrFirstAccessComponent, subscriber EventCompMgrFirstAccessComponent, priority ...int32) event.Hook {
+func BindEventCompMgrFirstAccessComponent(auto _AutoEventCompMgrFirstAccessComponent, subscriber EventCompMgrFirstAccessComponent, priority ...int32) event.Hook {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
 	return event.BindEvent[EventCompMgrFirstAccessComponent](auto.EventCompMgrFirstAccessComponent(), subscriber, priority...)
 }
 
-func emitEventCompMgrFirstAccessComponent(auto iAutoEventCompMgrFirstAccessComponent, entity Entity, component Component) {
+func _EmitEventCompMgrFirstAccessComponent(auto _AutoEventCompMgrFirstAccessComponent, entity Entity, component Component) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
@@ -91,12 +91,12 @@ func emitEventCompMgrFirstAccessComponent(auto iAutoEventCompMgrFirstAccessCompo
 	})
 }
 
-func HandleEventCompMgrFirstAccessComponent(fun func(entity Entity, component Component)) handleEventCompMgrFirstAccessComponent {
-	return handleEventCompMgrFirstAccessComponent(fun)
+func HandleEventCompMgrFirstAccessComponent(fun func(entity Entity, component Component)) EventCompMgrFirstAccessComponentHandler {
+	return EventCompMgrFirstAccessComponentHandler(fun)
 }
 
-type handleEventCompMgrFirstAccessComponent func(entity Entity, component Component)
+type EventCompMgrFirstAccessComponentHandler func(entity Entity, component Component)
 
-func (handle handleEventCompMgrFirstAccessComponent) OnCompMgrFirstAccessComponent(entity Entity, component Component) {
-	handle(entity, component)
+func (h EventCompMgrFirstAccessComponentHandler) OnCompMgrFirstAccessComponent(entity Entity, component Component) {
+	h(entity, component)
 }

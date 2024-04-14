@@ -30,8 +30,8 @@ type ECTree interface {
 	// GetParent 获取子实体的父实体
 	GetParent(childId uid.Id) (ec.Entity, bool)
 
-	iAutoEventECTreeAddChild    // 事件：EC树中子实体加入父实体
-	iAutoEventECTreeRemoveChild // 事件：EC树中子实体离开父实体
+	_AutoEventECTreeAddChild    // 事件：EC树中子实体加入父实体
+	_AutoEventECTreeRemoveChild // 事件：EC树中子实体离开父实体
 }
 
 type _ECTree interface {
@@ -118,7 +118,7 @@ func (ecTree *_ECTreeBehavior) AddChild(parentId, childId uid.Id) error {
 	_child.SetECParent(parent)
 	_child.SetECNodeState(ec.ECNodeState_Attached)
 
-	emitEventECTreeAddChild(ecTree, ecTree, parent, child)
+	_EmitEventECTreeAddChild(ecTree, ecTree, parent, child)
 
 	return nil
 }
@@ -153,7 +153,7 @@ func (ecTree *_ECTreeBehavior) RemoveChild(childId uid.Id) {
 	delete(ecTree.ecTree, childId)
 	node.element.Escape()
 
-	emitEventECTreeRemoveChild(ecTree, ecTree, node.parent, child)
+	_EmitEventECTreeRemoveChild(ecTree, ecTree, node.parent, child)
 }
 
 // RangeChildren 遍历子实体

@@ -79,7 +79,7 @@ func (comp *ComponentBehavior) GetState() ComponentState {
 func (comp *ComponentBehavior) DestroySelf() {
 	switch comp.GetState() {
 	case ComponentState_Awake, ComponentState_Start, ComponentState_Living:
-		emitEventComponentDestroySelf(UnsafeComponent(comp), comp.composite)
+		_EmitEventComponentDestroySelf(UnsafeComponent(comp), comp.composite)
 	}
 }
 

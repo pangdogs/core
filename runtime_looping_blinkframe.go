@@ -51,8 +51,8 @@ func (rt *RuntimeBehavior) blinkFrameLoop() {
 	rt.changeRunningState(runtime.RunningState_FrameLoopBegin)
 	rt.changeRunningState(runtime.RunningState_FrameUpdateBegin)
 
-	emitEventUpdate(&rt.eventUpdate)
-	emitEventLateUpdate(&rt.eventLateUpdate)
+	_EmitEventUpdate(&rt.eventUpdate)
+	_EmitEventLateUpdate(&rt.eventLateUpdate)
 
 	rt.changeRunningState(runtime.RunningState_FrameUpdateEnd)
 	rt.changeRunningState(runtime.RunningState_FrameLoopEnd)

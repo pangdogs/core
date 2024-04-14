@@ -8,7 +8,7 @@ import (
 	iface "git.golaxy.org/core/util/iface"
 )
 
-func emitEventUpdate(evt event.IEvent) {
+func _EmitEventUpdate(evt event.IEvent) {
 	if evt == nil {
 		panic(fmt.Errorf("%w: %w: evt is nil", event.ErrEvent, event.ErrArgs))
 	}
@@ -18,17 +18,17 @@ func emitEventUpdate(evt event.IEvent) {
 	})
 }
 
-func _HandleEventUpdate(fun func()) handleEventUpdate {
-	return handleEventUpdate(fun)
+func _HandleEventUpdate(fun func()) _EventUpdateHandler {
+	return _EventUpdateHandler(fun)
 }
 
-type handleEventUpdate func()
+type _EventUpdateHandler func()
 
-func (handle handleEventUpdate) Update() {
-	handle()
+func (h _EventUpdateHandler) Update() {
+	h()
 }
 
-func emitEventLateUpdate(evt event.IEvent) {
+func _EmitEventLateUpdate(evt event.IEvent) {
 	if evt == nil {
 		panic(fmt.Errorf("%w: %w: evt is nil", event.ErrEvent, event.ErrArgs))
 	}
@@ -38,12 +38,12 @@ func emitEventLateUpdate(evt event.IEvent) {
 	})
 }
 
-func _HandleEventLateUpdate(fun func()) handleEventLateUpdate {
-	return handleEventLateUpdate(fun)
+func _HandleEventLateUpdate(fun func()) _EventLateUpdateHandler {
+	return _EventLateUpdateHandler(fun)
 }
 
-type handleEventLateUpdate func()
+type _EventLateUpdateHandler func()
 
-func (handle handleEventLateUpdate) LateUpdate() {
-	handle()
+func (h _EventLateUpdateHandler) LateUpdate() {
+	h()
 }

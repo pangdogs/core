@@ -9,18 +9,18 @@ import (
 	"git.golaxy.org/core/ec"
 )
 
-type iAutoEventECTreeAddChild interface {
+type _AutoEventECTreeAddChild interface {
 	EventECTreeAddChild() event.IEvent
 }
 
-func BindEventECTreeAddChild(auto iAutoEventECTreeAddChild, subscriber EventECTreeAddChild, priority ...int32) event.Hook {
+func BindEventECTreeAddChild(auto _AutoEventECTreeAddChild, subscriber EventECTreeAddChild, priority ...int32) event.Hook {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
 	return event.BindEvent[EventECTreeAddChild](auto.EventECTreeAddChild(), subscriber, priority...)
 }
 
-func emitEventECTreeAddChild(auto iAutoEventECTreeAddChild, ecTree ECTree, parent, child ec.Entity) {
+func _EmitEventECTreeAddChild(auto _AutoEventECTreeAddChild, ecTree ECTree, parent, child ec.Entity) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
@@ -30,28 +30,28 @@ func emitEventECTreeAddChild(auto iAutoEventECTreeAddChild, ecTree ECTree, paren
 	})
 }
 
-func HandleEventECTreeAddChild(fun func(ecTree ECTree, parent, child ec.Entity)) handleEventECTreeAddChild {
-	return handleEventECTreeAddChild(fun)
+func HandleEventECTreeAddChild(fun func(ecTree ECTree, parent, child ec.Entity)) EventECTreeAddChildHandler {
+	return EventECTreeAddChildHandler(fun)
 }
 
-type handleEventECTreeAddChild func(ecTree ECTree, parent, child ec.Entity)
+type EventECTreeAddChildHandler func(ecTree ECTree, parent, child ec.Entity)
 
-func (handle handleEventECTreeAddChild) OnAddChild(ecTree ECTree, parent, child ec.Entity) {
-	handle(ecTree, parent, child)
+func (h EventECTreeAddChildHandler) OnAddChild(ecTree ECTree, parent, child ec.Entity) {
+	h(ecTree, parent, child)
 }
 
-type iAutoEventECTreeRemoveChild interface {
+type _AutoEventECTreeRemoveChild interface {
 	EventECTreeRemoveChild() event.IEvent
 }
 
-func BindEventECTreeRemoveChild(auto iAutoEventECTreeRemoveChild, subscriber EventECTreeRemoveChild, priority ...int32) event.Hook {
+func BindEventECTreeRemoveChild(auto _AutoEventECTreeRemoveChild, subscriber EventECTreeRemoveChild, priority ...int32) event.Hook {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
 	return event.BindEvent[EventECTreeRemoveChild](auto.EventECTreeRemoveChild(), subscriber, priority...)
 }
 
-func emitEventECTreeRemoveChild(auto iAutoEventECTreeRemoveChild, ecTree ECTree, parent, child ec.Entity) {
+func _EmitEventECTreeRemoveChild(auto _AutoEventECTreeRemoveChild, ecTree ECTree, parent, child ec.Entity) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
@@ -61,12 +61,12 @@ func emitEventECTreeRemoveChild(auto iAutoEventECTreeRemoveChild, ecTree ECTree,
 	})
 }
 
-func HandleEventECTreeRemoveChild(fun func(ecTree ECTree, parent, child ec.Entity)) handleEventECTreeRemoveChild {
-	return handleEventECTreeRemoveChild(fun)
+func HandleEventECTreeRemoveChild(fun func(ecTree ECTree, parent, child ec.Entity)) EventECTreeRemoveChildHandler {
+	return EventECTreeRemoveChildHandler(fun)
 }
 
-type handleEventECTreeRemoveChild func(ecTree ECTree, parent, child ec.Entity)
+type EventECTreeRemoveChildHandler func(ecTree ECTree, parent, child ec.Entity)
 
-func (handle handleEventECTreeRemoveChild) OnRemoveChild(ecTree ECTree, parent, child ec.Entity) {
-	handle(ecTree, parent, child)
+func (h EventECTreeRemoveChildHandler) OnRemoveChild(ecTree ECTree, parent, child ec.Entity) {
+	h(ecTree, parent, child)
 }

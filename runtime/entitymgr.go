@@ -30,12 +30,12 @@ type EntityMgr interface {
 	// RemoveEntity 删除实体
 	RemoveEntity(id uid.Id)
 
-	iAutoEventEntityMgrAddEntity                  // 事件：实体管理器添加实体
-	iAutoEventEntityMgrRemovingEntity             // 事件：实体管理器开始删除实体
-	iAutoEventEntityMgrRemoveEntity               // 事件：实体管理器删除实体
-	iAutoEventEntityMgrEntityAddComponents        // 事件：实体管理器中的实体添加组件
-	iAutoEventEntityMgrEntityRemoveComponent      // 事件：实体管理器中的实体删除组件
-	iAutoEventEntityMgrEntityFirstAccessComponent // 事件：实体管理器中的实体首次访问组件
+	_AutoEventEntityMgrAddEntity                  // 事件：实体管理器添加实体
+	_AutoEventEntityMgrRemovingEntity             // 事件：实体管理器开始删除实体
+	_AutoEventEntityMgrRemoveEntity               // 事件：实体管理器删除实体
+	_AutoEventEntityMgrEntityAddComponents        // 事件：实体管理器中的实体添加组件
+	_AutoEventEntityMgrEntityRemoveComponent      // 事件：实体管理器中的实体删除组件
+	_AutoEventEntityMgrEntityFirstAccessComponent // 事件：实体管理器中的实体首次访问组件
 }
 
 type _EntityInfo struct {
@@ -76,7 +76,7 @@ func (entityMgr *_EntityMgrBehavior) changeRunningState(state RunningState) {
 	switch state {
 	case RunningState_Starting:
 		entityMgr.RangeEntities(func(entity ec.Entity) bool {
-			emitEventEntityMgrAddEntity(entityMgr, entityMgr, entity)
+			_EmitEventEntityMgrAddEntity(entityMgr, entityMgr, entity)
 			return true
 		})
 	case RunningState_Terminating:
@@ -201,7 +201,7 @@ func (entityMgr *_EntityMgrBehavior) AddEntity(entity ec.Entity) error {
 
 	_entity.SetState(ec.EntityState_Enter)
 
-	emitEventEntityMgrAddEntity(entityMgr, entityMgr, entity)
+	_EmitEventEntityMgrAddEntity(entityMgr, entityMgr, entity)
 
 	return nil
 }
@@ -224,7 +224,7 @@ func (entityMgr *_EntityMgrBehavior) RemoveEntity(id uid.Id) {
 		service.Current(entityMgr).GetEntityMgr().RemoveEntity(entity.GetId())
 	}
 
-	emitEventEntityMgrRemovingEntity(entityMgr, entityMgr, entity.Entity)
+	_EmitEventEntityMgrRemovingEntity(entityMgr, entityMgr, entity.Entity)
 
 	delete(entityMgr.entityMap, id)
 	entityInfo.element.Escape()
@@ -233,7 +233,7 @@ func (entityMgr *_EntityMgrBehavior) RemoveEntity(id uid.Id) {
 		entityInfo.hooks[i].Unbind()
 	}
 
-	emitEventEntityMgrRemoveEntity(entityMgr, entityMgr, entity.Entity)
+	_EmitEventEntityMgrRemoveEntity(entityMgr, entityMgr, entity.Entity)
 }
 
 // EventEntityMgrAddEntity 事件：实体管理器添加实体
@@ -275,13 +275,13 @@ func (entityMgr *_EntityMgrBehavior) OnCompMgrAddComponents(entity ec.Entity, co
 		}
 	}
 
-	emitEventEntityMgrEntityAddComponents(entityMgr, entityMgr, entity, components)
+	_EmitEventEntityMgrEntityAddComponents(entityMgr, entityMgr, entity, components)
 }
 
 func (entityMgr *_EntityMgrBehavior) OnCompMgrRemoveComponent(entity ec.Entity, component ec.Component) {
-	emitEventEntityMgrEntityRemoveComponent(entityMgr, entityMgr, entity, component)
+	_EmitEventEntityMgrEntityRemoveComponent(entityMgr, entityMgr, entity, component)
 }
 
 func (entityMgr *_EntityMgrBehavior) OnCompMgrFirstAccessComponent(entity ec.Entity, component ec.Component) {
-	emitEventEntityMgrEntityFirstAccessComponent(entityMgr, entityMgr, entity, component)
+	_EmitEventEntityMgrEntityFirstAccessComponent(entityMgr, entityMgr, entity, component)
 }

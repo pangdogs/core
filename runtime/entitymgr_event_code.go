@@ -9,18 +9,18 @@ import (
 	"git.golaxy.org/core/ec"
 )
 
-type iAutoEventEntityMgrAddEntity interface {
+type _AutoEventEntityMgrAddEntity interface {
 	EventEntityMgrAddEntity() event.IEvent
 }
 
-func BindEventEntityMgrAddEntity(auto iAutoEventEntityMgrAddEntity, subscriber EventEntityMgrAddEntity, priority ...int32) event.Hook {
+func BindEventEntityMgrAddEntity(auto _AutoEventEntityMgrAddEntity, subscriber EventEntityMgrAddEntity, priority ...int32) event.Hook {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
 	return event.BindEvent[EventEntityMgrAddEntity](auto.EventEntityMgrAddEntity(), subscriber, priority...)
 }
 
-func emitEventEntityMgrAddEntity(auto iAutoEventEntityMgrAddEntity, entityMgr EntityMgr, entity ec.Entity) {
+func _EmitEventEntityMgrAddEntity(auto _AutoEventEntityMgrAddEntity, entityMgr EntityMgr, entity ec.Entity) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
@@ -30,28 +30,28 @@ func emitEventEntityMgrAddEntity(auto iAutoEventEntityMgrAddEntity, entityMgr En
 	})
 }
 
-func HandleEventEntityMgrAddEntity(fun func(entityMgr EntityMgr, entity ec.Entity)) handleEventEntityMgrAddEntity {
-	return handleEventEntityMgrAddEntity(fun)
+func HandleEventEntityMgrAddEntity(fun func(entityMgr EntityMgr, entity ec.Entity)) EventEntityMgrAddEntityHandler {
+	return EventEntityMgrAddEntityHandler(fun)
 }
 
-type handleEventEntityMgrAddEntity func(entityMgr EntityMgr, entity ec.Entity)
+type EventEntityMgrAddEntityHandler func(entityMgr EntityMgr, entity ec.Entity)
 
-func (handle handleEventEntityMgrAddEntity) OnEntityMgrAddEntity(entityMgr EntityMgr, entity ec.Entity) {
-	handle(entityMgr, entity)
+func (h EventEntityMgrAddEntityHandler) OnEntityMgrAddEntity(entityMgr EntityMgr, entity ec.Entity) {
+	h(entityMgr, entity)
 }
 
-type iAutoEventEntityMgrRemovingEntity interface {
+type _AutoEventEntityMgrRemovingEntity interface {
 	EventEntityMgrRemovingEntity() event.IEvent
 }
 
-func BindEventEntityMgrRemovingEntity(auto iAutoEventEntityMgrRemovingEntity, subscriber EventEntityMgrRemovingEntity, priority ...int32) event.Hook {
+func BindEventEntityMgrRemovingEntity(auto _AutoEventEntityMgrRemovingEntity, subscriber EventEntityMgrRemovingEntity, priority ...int32) event.Hook {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
 	return event.BindEvent[EventEntityMgrRemovingEntity](auto.EventEntityMgrRemovingEntity(), subscriber, priority...)
 }
 
-func emitEventEntityMgrRemovingEntity(auto iAutoEventEntityMgrRemovingEntity, entityMgr EntityMgr, entity ec.Entity) {
+func _EmitEventEntityMgrRemovingEntity(auto _AutoEventEntityMgrRemovingEntity, entityMgr EntityMgr, entity ec.Entity) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
@@ -61,28 +61,28 @@ func emitEventEntityMgrRemovingEntity(auto iAutoEventEntityMgrRemovingEntity, en
 	})
 }
 
-func HandleEventEntityMgrRemovingEntity(fun func(entityMgr EntityMgr, entity ec.Entity)) handleEventEntityMgrRemovingEntity {
-	return handleEventEntityMgrRemovingEntity(fun)
+func HandleEventEntityMgrRemovingEntity(fun func(entityMgr EntityMgr, entity ec.Entity)) EventEntityMgrRemovingEntityHandler {
+	return EventEntityMgrRemovingEntityHandler(fun)
 }
 
-type handleEventEntityMgrRemovingEntity func(entityMgr EntityMgr, entity ec.Entity)
+type EventEntityMgrRemovingEntityHandler func(entityMgr EntityMgr, entity ec.Entity)
 
-func (handle handleEventEntityMgrRemovingEntity) OnEntityMgrRemovingEntity(entityMgr EntityMgr, entity ec.Entity) {
-	handle(entityMgr, entity)
+func (h EventEntityMgrRemovingEntityHandler) OnEntityMgrRemovingEntity(entityMgr EntityMgr, entity ec.Entity) {
+	h(entityMgr, entity)
 }
 
-type iAutoEventEntityMgrRemoveEntity interface {
+type _AutoEventEntityMgrRemoveEntity interface {
 	EventEntityMgrRemoveEntity() event.IEvent
 }
 
-func BindEventEntityMgrRemoveEntity(auto iAutoEventEntityMgrRemoveEntity, subscriber EventEntityMgrRemoveEntity, priority ...int32) event.Hook {
+func BindEventEntityMgrRemoveEntity(auto _AutoEventEntityMgrRemoveEntity, subscriber EventEntityMgrRemoveEntity, priority ...int32) event.Hook {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
 	return event.BindEvent[EventEntityMgrRemoveEntity](auto.EventEntityMgrRemoveEntity(), subscriber, priority...)
 }
 
-func emitEventEntityMgrRemoveEntity(auto iAutoEventEntityMgrRemoveEntity, entityMgr EntityMgr, entity ec.Entity) {
+func _EmitEventEntityMgrRemoveEntity(auto _AutoEventEntityMgrRemoveEntity, entityMgr EntityMgr, entity ec.Entity) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
@@ -92,28 +92,28 @@ func emitEventEntityMgrRemoveEntity(auto iAutoEventEntityMgrRemoveEntity, entity
 	})
 }
 
-func HandleEventEntityMgrRemoveEntity(fun func(entityMgr EntityMgr, entity ec.Entity)) handleEventEntityMgrRemoveEntity {
-	return handleEventEntityMgrRemoveEntity(fun)
+func HandleEventEntityMgrRemoveEntity(fun func(entityMgr EntityMgr, entity ec.Entity)) EventEntityMgrRemoveEntityHandler {
+	return EventEntityMgrRemoveEntityHandler(fun)
 }
 
-type handleEventEntityMgrRemoveEntity func(entityMgr EntityMgr, entity ec.Entity)
+type EventEntityMgrRemoveEntityHandler func(entityMgr EntityMgr, entity ec.Entity)
 
-func (handle handleEventEntityMgrRemoveEntity) OnEntityMgrRemoveEntity(entityMgr EntityMgr, entity ec.Entity) {
-	handle(entityMgr, entity)
+func (h EventEntityMgrRemoveEntityHandler) OnEntityMgrRemoveEntity(entityMgr EntityMgr, entity ec.Entity) {
+	h(entityMgr, entity)
 }
 
-type iAutoEventEntityMgrEntityAddComponents interface {
+type _AutoEventEntityMgrEntityAddComponents interface {
 	EventEntityMgrEntityAddComponents() event.IEvent
 }
 
-func BindEventEntityMgrEntityAddComponents(auto iAutoEventEntityMgrEntityAddComponents, subscriber EventEntityMgrEntityAddComponents, priority ...int32) event.Hook {
+func BindEventEntityMgrEntityAddComponents(auto _AutoEventEntityMgrEntityAddComponents, subscriber EventEntityMgrEntityAddComponents, priority ...int32) event.Hook {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
 	return event.BindEvent[EventEntityMgrEntityAddComponents](auto.EventEntityMgrEntityAddComponents(), subscriber, priority...)
 }
 
-func emitEventEntityMgrEntityAddComponents(auto iAutoEventEntityMgrEntityAddComponents, entityMgr EntityMgr, entity ec.Entity, components []ec.Component) {
+func _EmitEventEntityMgrEntityAddComponents(auto _AutoEventEntityMgrEntityAddComponents, entityMgr EntityMgr, entity ec.Entity, components []ec.Component) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
@@ -123,28 +123,28 @@ func emitEventEntityMgrEntityAddComponents(auto iAutoEventEntityMgrEntityAddComp
 	})
 }
 
-func HandleEventEntityMgrEntityAddComponents(fun func(entityMgr EntityMgr, entity ec.Entity, components []ec.Component)) handleEventEntityMgrEntityAddComponents {
-	return handleEventEntityMgrEntityAddComponents(fun)
+func HandleEventEntityMgrEntityAddComponents(fun func(entityMgr EntityMgr, entity ec.Entity, components []ec.Component)) EventEntityMgrEntityAddComponentsHandler {
+	return EventEntityMgrEntityAddComponentsHandler(fun)
 }
 
-type handleEventEntityMgrEntityAddComponents func(entityMgr EntityMgr, entity ec.Entity, components []ec.Component)
+type EventEntityMgrEntityAddComponentsHandler func(entityMgr EntityMgr, entity ec.Entity, components []ec.Component)
 
-func (handle handleEventEntityMgrEntityAddComponents) OnEntityMgrEntityAddComponents(entityMgr EntityMgr, entity ec.Entity, components []ec.Component) {
-	handle(entityMgr, entity, components)
+func (h EventEntityMgrEntityAddComponentsHandler) OnEntityMgrEntityAddComponents(entityMgr EntityMgr, entity ec.Entity, components []ec.Component) {
+	h(entityMgr, entity, components)
 }
 
-type iAutoEventEntityMgrEntityRemoveComponent interface {
+type _AutoEventEntityMgrEntityRemoveComponent interface {
 	EventEntityMgrEntityRemoveComponent() event.IEvent
 }
 
-func BindEventEntityMgrEntityRemoveComponent(auto iAutoEventEntityMgrEntityRemoveComponent, subscriber EventEntityMgrEntityRemoveComponent, priority ...int32) event.Hook {
+func BindEventEntityMgrEntityRemoveComponent(auto _AutoEventEntityMgrEntityRemoveComponent, subscriber EventEntityMgrEntityRemoveComponent, priority ...int32) event.Hook {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
 	return event.BindEvent[EventEntityMgrEntityRemoveComponent](auto.EventEntityMgrEntityRemoveComponent(), subscriber, priority...)
 }
 
-func emitEventEntityMgrEntityRemoveComponent(auto iAutoEventEntityMgrEntityRemoveComponent, entityMgr EntityMgr, entity ec.Entity, component ec.Component) {
+func _EmitEventEntityMgrEntityRemoveComponent(auto _AutoEventEntityMgrEntityRemoveComponent, entityMgr EntityMgr, entity ec.Entity, component ec.Component) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
@@ -154,28 +154,28 @@ func emitEventEntityMgrEntityRemoveComponent(auto iAutoEventEntityMgrEntityRemov
 	})
 }
 
-func HandleEventEntityMgrEntityRemoveComponent(fun func(entityMgr EntityMgr, entity ec.Entity, component ec.Component)) handleEventEntityMgrEntityRemoveComponent {
-	return handleEventEntityMgrEntityRemoveComponent(fun)
+func HandleEventEntityMgrEntityRemoveComponent(fun func(entityMgr EntityMgr, entity ec.Entity, component ec.Component)) EventEntityMgrEntityRemoveComponentHandler {
+	return EventEntityMgrEntityRemoveComponentHandler(fun)
 }
 
-type handleEventEntityMgrEntityRemoveComponent func(entityMgr EntityMgr, entity ec.Entity, component ec.Component)
+type EventEntityMgrEntityRemoveComponentHandler func(entityMgr EntityMgr, entity ec.Entity, component ec.Component)
 
-func (handle handleEventEntityMgrEntityRemoveComponent) OnEntityMgrEntityRemoveComponent(entityMgr EntityMgr, entity ec.Entity, component ec.Component) {
-	handle(entityMgr, entity, component)
+func (h EventEntityMgrEntityRemoveComponentHandler) OnEntityMgrEntityRemoveComponent(entityMgr EntityMgr, entity ec.Entity, component ec.Component) {
+	h(entityMgr, entity, component)
 }
 
-type iAutoEventEntityMgrEntityFirstAccessComponent interface {
+type _AutoEventEntityMgrEntityFirstAccessComponent interface {
 	EventEntityMgrEntityFirstAccessComponent() event.IEvent
 }
 
-func BindEventEntityMgrEntityFirstAccessComponent(auto iAutoEventEntityMgrEntityFirstAccessComponent, subscriber EventEntityMgrEntityFirstAccessComponent, priority ...int32) event.Hook {
+func BindEventEntityMgrEntityFirstAccessComponent(auto _AutoEventEntityMgrEntityFirstAccessComponent, subscriber EventEntityMgrEntityFirstAccessComponent, priority ...int32) event.Hook {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
 	return event.BindEvent[EventEntityMgrEntityFirstAccessComponent](auto.EventEntityMgrEntityFirstAccessComponent(), subscriber, priority...)
 }
 
-func emitEventEntityMgrEntityFirstAccessComponent(auto iAutoEventEntityMgrEntityFirstAccessComponent, entityMgr EntityMgr, entity ec.Entity, component ec.Component) {
+func _EmitEventEntityMgrEntityFirstAccessComponent(auto _AutoEventEntityMgrEntityFirstAccessComponent, entityMgr EntityMgr, entity ec.Entity, component ec.Component) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
@@ -185,12 +185,12 @@ func emitEventEntityMgrEntityFirstAccessComponent(auto iAutoEventEntityMgrEntity
 	})
 }
 
-func HandleEventEntityMgrEntityFirstAccessComponent(fun func(entityMgr EntityMgr, entity ec.Entity, component ec.Component)) handleEventEntityMgrEntityFirstAccessComponent {
-	return handleEventEntityMgrEntityFirstAccessComponent(fun)
+func HandleEventEntityMgrEntityFirstAccessComponent(fun func(entityMgr EntityMgr, entity ec.Entity, component ec.Component)) EventEntityMgrEntityFirstAccessComponentHandler {
+	return EventEntityMgrEntityFirstAccessComponentHandler(fun)
 }
 
-type handleEventEntityMgrEntityFirstAccessComponent func(entityMgr EntityMgr, entity ec.Entity, component ec.Component)
+type EventEntityMgrEntityFirstAccessComponentHandler func(entityMgr EntityMgr, entity ec.Entity, component ec.Component)
 
-func (handle handleEventEntityMgrEntityFirstAccessComponent) OnEntityMgrEntityFirstAccessComponent(entityMgr EntityMgr, entity ec.Entity, component ec.Component) {
-	handle(entityMgr, entity, component)
+func (h EventEntityMgrEntityFirstAccessComponentHandler) OnEntityMgrEntityFirstAccessComponent(entityMgr EntityMgr, entity ec.Entity, component ec.Component) {
+	h(entityMgr, entity, component)
 }

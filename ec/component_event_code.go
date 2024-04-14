@@ -8,18 +8,18 @@ import (
 	iface "git.golaxy.org/core/util/iface"
 )
 
-type iAutoEventComponentDestroySelf interface {
+type _AutoEventComponentDestroySelf interface {
 	EventComponentDestroySelf() event.IEvent
 }
 
-func BindEventComponentDestroySelf(auto iAutoEventComponentDestroySelf, subscriber EventComponentDestroySelf, priority ...int32) event.Hook {
+func BindEventComponentDestroySelf(auto _AutoEventComponentDestroySelf, subscriber EventComponentDestroySelf, priority ...int32) event.Hook {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
 	return event.BindEvent[EventComponentDestroySelf](auto.EventComponentDestroySelf(), subscriber, priority...)
 }
 
-func emitEventComponentDestroySelf(auto iAutoEventComponentDestroySelf, comp Component) {
+func _EmitEventComponentDestroySelf(auto _AutoEventComponentDestroySelf, comp Component) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
@@ -29,12 +29,12 @@ func emitEventComponentDestroySelf(auto iAutoEventComponentDestroySelf, comp Com
 	})
 }
 
-func HandleEventComponentDestroySelf(fun func(comp Component)) handleEventComponentDestroySelf {
-	return handleEventComponentDestroySelf(fun)
+func HandleEventComponentDestroySelf(fun func(comp Component)) EventComponentDestroySelfHandler {
+	return EventComponentDestroySelfHandler(fun)
 }
 
-type handleEventComponentDestroySelf func(comp Component)
+type EventComponentDestroySelfHandler func(comp Component)
 
-func (handle handleEventComponentDestroySelf) OnComponentDestroySelf(comp Component) {
-	handle(comp)
+func (h EventComponentDestroySelfHandler) OnComponentDestroySelf(comp Component) {
+	h(comp)
 }

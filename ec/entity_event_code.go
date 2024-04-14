@@ -8,18 +8,18 @@ import (
 	iface "git.golaxy.org/core/util/iface"
 )
 
-type iAutoEventEntityDestroySelf interface {
+type _AutoEventEntityDestroySelf interface {
 	EventEntityDestroySelf() event.IEvent
 }
 
-func BindEventEntityDestroySelf(auto iAutoEventEntityDestroySelf, subscriber EventEntityDestroySelf, priority ...int32) event.Hook {
+func BindEventEntityDestroySelf(auto _AutoEventEntityDestroySelf, subscriber EventEntityDestroySelf, priority ...int32) event.Hook {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
 	return event.BindEvent[EventEntityDestroySelf](auto.EventEntityDestroySelf(), subscriber, priority...)
 }
 
-func emitEventEntityDestroySelf(auto iAutoEventEntityDestroySelf, entity Entity) {
+func _EmitEventEntityDestroySelf(auto _AutoEventEntityDestroySelf, entity Entity) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
@@ -29,12 +29,12 @@ func emitEventEntityDestroySelf(auto iAutoEventEntityDestroySelf, entity Entity)
 	})
 }
 
-func HandleEventEntityDestroySelf(fun func(entity Entity)) handleEventEntityDestroySelf {
-	return handleEventEntityDestroySelf(fun)
+func HandleEventEntityDestroySelf(fun func(entity Entity)) EventEntityDestroySelfHandler {
+	return EventEntityDestroySelfHandler(fun)
 }
 
-type handleEventEntityDestroySelf func(entity Entity)
+type EventEntityDestroySelfHandler func(entity Entity)
 
-func (handle handleEventEntityDestroySelf) OnEntityDestroySelf(entity Entity) {
-	handle(entity)
+func (h EventEntityDestroySelfHandler) OnEntityDestroySelf(entity Entity) {
+	h(entity)
 }

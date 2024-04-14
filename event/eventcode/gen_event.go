@@ -99,7 +99,7 @@ package %s
 	// 生成事件发送代码
 	for _, eventDecl := range eventDeclTab {
 		// 是否导出事件发送代码
-		exportEmitStr := "emit"
+		exportEmitStr := "_Emit"
 		if ctx.EventDefExport {
 			exportEmitStr = "Emit"
 		}
@@ -107,7 +107,7 @@ package %s
 		if strings.Contains(eventDecl.Comment, "[EmitExport]") {
 			exportEmitStr = "Emit"
 		} else if strings.Contains(eventDecl.Comment, "[EmitUnExport]") {
-			exportEmitStr = "emit"
+			exportEmitStr = "_Emit"
 		}
 
 		auto := ctx.EventDefAuto
@@ -128,18 +128,18 @@ package %s
 		if auto {
 			if eventDecl.FuncHasRet {
 				fmt.Fprintf(code, `
-type iAuto%[1]s interface {
+type _Auto%[1]s interface {
 	%[1]s() %[6]sIEvent
 }
 
-func Bind%[1]s(auto iAuto%[1]s, subscriber %[2]s%[8]s, priority ...int32) %[6]sHook {
+func Bind%[1]s(auto _Auto%[1]s, subscriber %[2]s%[8]s, priority ...int32) %[6]sHook {
 	if auto == nil {
 		panic(fmt.Errorf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs))
 	}
 	return %[6]sBindEvent[%[2]s%[8]s](auto.%[1]s(), subscriber, priority...)
 }
 
-func %[9]s%[1]s%[7]s(auto iAuto%[1]s%[4]s) {
+func %[9]s%[1]s%[7]s(auto _Auto%[1]s%[4]s) {
 	if auto == nil {
 		panic(fmt.Errorf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs))
 	}
@@ -151,18 +151,18 @@ func %[9]s%[1]s%[7]s(auto iAuto%[1]s%[4]s) {
 
 			} else {
 				fmt.Fprintf(code, `
-type iAuto%[1]s interface {
+type _Auto%[1]s interface {
 	%[1]s() %[6]sIEvent
 }
 
-func Bind%[1]s(auto iAuto%[1]s, subscriber %[2]s%[8]s, priority ...int32) %[6]sHook {
+func Bind%[1]s(auto _Auto%[1]s, subscriber %[2]s%[8]s, priority ...int32) %[6]sHook {
 	if auto == nil {
 		panic(fmt.Errorf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs))
 	}
 	return %[6]sBindEvent[%[2]s%[8]s](auto.%[1]s(), subscriber, priority...)
 }
 
-func %[9]s%[1]s%[7]s(auto iAuto%[1]s%[4]s) {
+func %[9]s%[1]s%[7]s(auto _Auto%[1]s%[4]s) {
 	if auto == nil {
 		panic(fmt.Errorf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs))
 	}
@@ -203,26 +203,26 @@ func %[9]s%[1]s%[7]s(evt %[6]sIEvent%[4]s) {
 
 		if eventDecl.FuncHasRet {
 			fmt.Fprintf(code, `
-func %[5]sHandle%[1]s(fun func(%[3]s) bool) handle%[1]s {
-	return handle%[1]s(fun)
+func %[5]sHandle%[1]s(fun func(%[3]s) bool) %[5]s%[1]sHandler {
+	return %[1]sHandler(fun)
 }
 
-type handle%[1]s func(%[3]s) bool
+type %[5]s%[1]sHandler func(%[3]s) bool
 
-func (handle handle%[1]s) %[2]s(%[3]s) bool {
-	return handle(%[4]s)
+func (h %[5]s%[1]sHandler) %[2]s(%[3]s) bool {
+	return h(%[4]s)
 }
 `, strings.Title(eventDecl.Name), eventDecl.FuncName, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "), eventDecl.FuncParams, visibility)
 		} else {
 			fmt.Fprintf(code, `
-func %[5]sHandle%[1]s(fun func(%[3]s)) handle%[1]s {
-	return handle%[1]s(fun)
+func %[5]sHandle%[1]s(fun func(%[3]s)) %[5]s%[1]sHandler {
+	return %[5]s%[1]sHandler(fun)
 }
 
-type handle%[1]s func(%[3]s)
+type %[5]s%[1]sHandler func(%[3]s)
 
-func (handle handle%[1]s) %[2]s(%[3]s) {
-	handle(%[4]s)
+func (h %[5]s%[1]sHandler) %[2]s(%[3]s) {
+	h(%[4]s)
 }
 `, strings.Title(eventDecl.Name), eventDecl.FuncName, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "), eventDecl.FuncParams, visibility)
 		}

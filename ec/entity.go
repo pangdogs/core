@@ -124,7 +124,7 @@ func (entity *EntityBehavior) GetMeta() Meta {
 func (entity *EntityBehavior) DestroySelf() {
 	switch entity.GetState() {
 	case EntityState_Awake, EntityState_Start, EntityState_Living:
-		emitEventEntityDestroySelf(UnsafeEntity(entity), entity.opts.CompositeFace.Iface)
+		_EmitEventEntityDestroySelf(UnsafeEntity(entity), entity.opts.CompositeFace.Iface)
 	}
 }
 

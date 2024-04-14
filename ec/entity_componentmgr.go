@@ -34,9 +34,9 @@ type _ComponentMgr interface {
 	// RemoveComponentById 使用组件Id删除组件
 	RemoveComponentById(id uid.Id)
 
-	iAutoEventCompMgrAddComponents        // 事件：实体的组件管理器加入一些组件
-	iAutoEventCompMgrRemoveComponent      // 事件：实体的组件管理器删除组件
-	iAutoEventCompMgrFirstAccessComponent // 事件：实体的组件管理器首次访问组件
+	_AutoEventCompMgrAddComponents        // 事件：实体的组件管理器加入一些组件
+	_AutoEventCompMgrRemoveComponent      // 事件：实体的组件管理器删除组件
+	_AutoEventCompMgrFirstAccessComponent // 事件：实体的组件管理器首次访问组件
 }
 
 // GetComponent 使用名称查询组件，一般情况下名称指组件接口名称，也可以自定义名称，同个名称指向多个组件时，返回首个组件
@@ -120,7 +120,7 @@ func (entity *EntityBehavior) AddComponents(name string, components []Component)
 		}
 	}
 
-	emitEventCompMgrAddComponents(entity, entity.opts.CompositeFace.Iface, components)
+	_EmitEventCompMgrAddComponents(entity, entity.opts.CompositeFace.Iface, components)
 	return nil
 }
 
@@ -130,7 +130,7 @@ func (entity *EntityBehavior) AddComponent(name string, component Component) err
 		return err
 	}
 
-	emitEventCompMgrAddComponents(entity, entity.opts.CompositeFace.Iface, []Component{component})
+	_EmitEventCompMgrAddComponents(entity, entity.opts.CompositeFace.Iface, []Component{component})
 	return nil
 }
 
@@ -156,7 +156,7 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 
 		entity.version++
 
-		emitEventCompMgrRemoveComponent(entity, entity.opts.CompositeFace.Iface, comp)
+		_EmitEventCompMgrRemoveComponent(entity, entity.opts.CompositeFace.Iface, comp)
 
 		return true
 	}, e)
@@ -180,7 +180,7 @@ func (entity *EntityBehavior) RemoveComponentById(id uid.Id) {
 
 	entity.version++
 
-	emitEventCompMgrRemoveComponent(entity, entity.opts.CompositeFace.Iface, comp)
+	_EmitEventCompMgrRemoveComponent(entity, entity.opts.CompositeFace.Iface, comp)
 }
 
 // EventCompMgrAddComponents 事件：实体的组件管理器加入一些组件
@@ -265,7 +265,7 @@ func (entity *EntityBehavior) accessComponent(comp Component) Component {
 	if entity.opts.AwakeOnFirstAccess && comp.GetState() == ComponentState_Attach {
 		switch entity.GetState() {
 		case EntityState_Awake, EntityState_Start, EntityState_Living:
-			emitEventCompMgrFirstAccessComponent(entity, entity.opts.CompositeFace.Iface, comp)
+			_EmitEventCompMgrFirstAccessComponent(entity, entity.opts.CompositeFace.Iface, comp)
 		}
 	}
 
