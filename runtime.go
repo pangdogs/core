@@ -132,7 +132,7 @@ func (rt *RuntimeBehavior) OnEntityMgrEntityFirstAccessComponent(entityMgr runti
 	_comp.SetState(ec.ComponentState_Awake)
 
 	if compAwake, ok := component.(LifecycleComponentAwake); ok {
-		generic.CastAction0(compAwake.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+		generic.MakeAction0(compAwake.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
 
 	_comp.SetState(ec.ComponentState_Start)
@@ -178,7 +178,7 @@ func (rt *RuntimeBehavior) addComponents(entity ec.Entity, components []ec.Compo
 		}
 
 		if compAwake, ok := components[i].(LifecycleComponentAwake); ok {
-			generic.CastAction0(compAwake.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+			generic.MakeAction0(compAwake.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 		}
 
 		_comp.SetState(ec.ComponentState_Start)
@@ -198,7 +198,7 @@ func (rt *RuntimeBehavior) addComponents(entity ec.Entity, components []ec.Compo
 		}
 
 		if compStart, ok := components[i].(LifecycleComponentStart); ok {
-			generic.CastAction0(compStart.Start).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+			generic.MakeAction0(compStart.Start).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 		}
 
 		_comp.SetState(ec.ComponentState_Living)
@@ -211,13 +211,13 @@ func (rt *RuntimeBehavior) removeComponent(component ec.Component) {
 	}
 
 	if compShut, ok := component.(LifecycleComponentShut); ok {
-		generic.CastAction0(compShut.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+		generic.MakeAction0(compShut.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
 
 	ec.UnsafeComponent(component).SetState(ec.ComponentState_Death)
 
 	if compDispose, ok := component.(LifecycleComponentDispose); ok {
-		generic.CastAction0(compDispose.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+		generic.MakeAction0(compDispose.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
 
 	ec.UnsafeComponent(component).CleanHooks()
@@ -309,7 +309,7 @@ func (rt *RuntimeBehavior) initEntity(entity ec.Entity) {
 	}
 
 	if entityAwake, ok := entity.(LifecycleEntityAwake); ok {
-		generic.CastAction0(entityAwake.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+		generic.MakeAction0(entityAwake.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
 
 	if entity.GetState() != ec.EntityState_Awake {
@@ -324,7 +324,7 @@ func (rt *RuntimeBehavior) initEntity(entity ec.Entity) {
 		}
 
 		if compAwake, ok := comp.(LifecycleComponentAwake); ok {
-			generic.CastAction0(compAwake.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+			generic.MakeAction0(compAwake.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 		}
 
 		_comp.SetState(ec.ComponentState_Start)
@@ -344,7 +344,7 @@ func (rt *RuntimeBehavior) initEntity(entity ec.Entity) {
 		}
 
 		if compStart, ok := comp.(LifecycleComponentStart); ok {
-			generic.CastAction0(compStart.Start).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+			generic.MakeAction0(compStart.Start).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 		}
 
 		_comp.SetState(ec.ComponentState_Living)
@@ -359,7 +359,7 @@ func (rt *RuntimeBehavior) initEntity(entity ec.Entity) {
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Start)
 
 	if entityStart, ok := entity.(LifecycleEntityStart); ok {
-		generic.CastAction0(entityStart.Start).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+		generic.MakeAction0(entityStart.Start).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
 
 	if entity.GetState() != ec.EntityState_Start {
@@ -375,7 +375,7 @@ func (rt *RuntimeBehavior) shutEntity(entity ec.Entity) {
 	}
 
 	if entityShut, ok := entity.(LifecycleEntityShut); ok {
-		generic.CastAction0(entityShut.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+		generic.MakeAction0(entityShut.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
 
 	entity.RangeComponents(func(comp ec.Component) bool {
@@ -386,13 +386,13 @@ func (rt *RuntimeBehavior) shutEntity(entity ec.Entity) {
 		}
 
 		if compShut, ok := comp.(LifecycleComponentShut); ok {
-			generic.CastAction0(compShut.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+			generic.MakeAction0(compShut.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 		}
 
 		_comp.SetState(ec.ComponentState_Death)
 
 		if compDispose, ok := comp.(LifecycleComponentDispose); ok {
-			generic.CastAction0(compDispose.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+			generic.MakeAction0(compDispose.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 		}
 
 		ec.UnsafeComponent(comp).CleanHooks()
@@ -403,7 +403,7 @@ func (rt *RuntimeBehavior) shutEntity(entity ec.Entity) {
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Death)
 
 	if entityDispose, ok := entity.(LifecycleEntityDispose); ok {
-		generic.CastAction0(entityDispose.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+		generic.MakeAction0(entityDispose.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
 
 	ec.UnsafeEntity(entity).CleanHooks()

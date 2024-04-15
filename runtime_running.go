@@ -87,7 +87,7 @@ func (rt *RuntimeBehavior) initPlugin() {
 	if pluginBundle := runtime.UnsafeContext(rt.ctx).GetOptions().PluginBundle; pluginBundle != nil {
 		pluginBundle.Range(func(info plugin.PluginInfo) bool {
 			if pluginInit, ok := info.Face.Iface.(LifecycleRuntimePluginInit); ok {
-				generic.CastAction1(pluginInit.InitRP).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
+				generic.MakeAction1(pluginInit.InitRP).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
 			}
 			plugin.UnsafePluginBundle(pluginBundle).Activate(info.Name, true)
 			return true
@@ -100,7 +100,7 @@ func (rt *RuntimeBehavior) shutPlugin() {
 		pluginBundle.ReverseRange(func(info plugin.PluginInfo) bool {
 			plugin.UnsafePluginBundle(pluginBundle).Activate(info.Name, false)
 			if pluginShut, ok := info.Face.Iface.(LifecycleRuntimePluginShut); ok {
-				generic.CastAction1(pluginShut.ShutRP).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
+				generic.MakeAction1(pluginShut.ShutRP).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
 			}
 			return true
 		})

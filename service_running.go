@@ -83,7 +83,7 @@ func (serv *ServiceBehavior) initPlugin() {
 	if pluginBundle := service.UnsafeContext(serv.ctx).GetOptions().PluginBundle; pluginBundle != nil {
 		pluginBundle.Range(func(info plugin.PluginInfo) bool {
 			if pluginInit, ok := info.Face.Iface.(LifecycleServicePluginInit); ok {
-				generic.CastAction1(pluginInit.InitSP).Call(serv.ctx.GetAutoRecover(), serv.ctx.GetReportError(), serv.ctx)
+				generic.MakeAction1(pluginInit.InitSP).Call(serv.ctx.GetAutoRecover(), serv.ctx.GetReportError(), serv.ctx)
 			}
 			plugin.UnsafePluginBundle(pluginBundle).Activate(info.Name, true)
 			return true
@@ -96,7 +96,7 @@ func (serv *ServiceBehavior) shutPlugin() {
 		pluginBundle.ReverseRange(func(info plugin.PluginInfo) bool {
 			plugin.UnsafePluginBundle(pluginBundle).Activate(info.Name, false)
 			if pluginShut, ok := info.Face.Iface.(LifecycleServicePluginShut); ok {
-				generic.CastAction1(pluginShut.ShutSP).Call(serv.ctx.GetAutoRecover(), serv.ctx.GetReportError(), serv.ctx)
+				generic.MakeAction1(pluginShut.ShutSP).Call(serv.ctx.GetAutoRecover(), serv.ctx.GetReportError(), serv.ctx)
 			}
 			return true
 		})
