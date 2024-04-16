@@ -7,7 +7,6 @@ import (
 	"git.golaxy.org/core/internal/exception"
 	"git.golaxy.org/core/plugin"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/core/util/container"
 	"git.golaxy.org/core/util/iface"
 	"git.golaxy.org/core/util/option"
 	"git.golaxy.org/core/util/reinterpret"
@@ -42,7 +41,7 @@ type Context interface {
 	concurrent.Caller
 	reinterpret.CompositeProvider
 	plugin.PluginProvider
-	container.GCCollector
+	GCCollector
 	fmt.Stringer
 
 	// GetName 获取名称
@@ -55,10 +54,6 @@ type Context interface {
 	GetEntityMgr() EntityMgr
 	// GetECTree 获取主EC树
 	GetECTree() ECTree
-	// GetFaceAnyAllocator 获取FaceAny内存分配器
-	GetFaceAnyAllocator() container.Allocator[iface.FaceAny]
-	// GetHookAllocator 获取Hook内存分配器
-	GetHookAllocator() container.Allocator[event.Hook]
 	// ActivateEvent 启用事件
 	ActivateEvent(event event.IEventCtrl, recursion event.EventRecursion)
 	// ManagedHooks 托管hook，在运行时停止时自动解绑定
@@ -87,7 +82,7 @@ type ContextBehavior struct {
 	ecTree    _ECTreeBehavior
 	callee    Callee
 	hooks     []event.Hook
-	gcList    []container.GC
+	gcList    []GC
 }
 
 // GetName 获取名称
@@ -115,22 +110,12 @@ func (ctx *ContextBehavior) GetECTree() ECTree {
 	return &ctx.ecTree
 }
 
-// GetFaceAnyAllocator 获取FaceAny内存分配器
-func (ctx *ContextBehavior) GetFaceAnyAllocator() container.Allocator[iface.FaceAny] {
-	return ctx.opts.FaceAnyAllocator
-}
-
-// GetHookAllocator 获取Hook内存分配器
-func (ctx *ContextBehavior) GetHookAllocator() container.Allocator[event.Hook] {
-	return ctx.opts.HookAllocator
-}
-
 // ActivateEvent 启用事件
 func (ctx *ContextBehavior) ActivateEvent(event event.IEventCtrl, recursion event.EventRecursion) {
 	if event == nil {
 		panic(fmt.Errorf("%w: %w: event is nil", ErrContext, exception.ErrArgs))
 	}
-	event.Init(ctx.GetAutoRecover(), ctx.GetReportError(), recursion, ctx.GetHookAllocator(), ctx.opts.CompositeFace.Iface)
+	event.Init(ctx.GetAutoRecover(), ctx.GetReportError(), recursion)
 }
 
 // ManagedHooks 托管hook，在运行时停止时自动解绑定
@@ -156,7 +141,7 @@ func (ctx *ContextBehavior) GetCompositeFaceCache() iface.Cache {
 }
 
 // CollectGC 收集GC
-func (ctx *ContextBehavior) CollectGC(gc container.GC) {
+func (ctx *ContextBehavior) CollectGC(gc GC) {
 	if gc == nil || !gc.NeedGC() {
 		return
 	}

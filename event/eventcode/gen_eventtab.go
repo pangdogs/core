@@ -93,7 +93,7 @@ type I%[1]s interface {
 				eventRecursion = "recursion"
 			}
 
-			eventsRecursionCode += fmt.Sprintf("\t(*eventTab)[%d].Init(autoRecover, reportError, %s, hookAllocator, gcCollector)\n", i, eventRecursion)
+			eventsRecursionCode += fmt.Sprintf("\t(*eventTab)[%d].Init(autoRecover, reportError, %s)\n", i, eventRecursion)
 		}
 
 		var eventsAccessCode string
@@ -111,7 +111,7 @@ func (eventTab *%[1]s) %[2]s() %[3]sIEvent {
 		fmt.Fprintf(code, `
 type %[1]s [%[2]d]%[4]sEvent
 
-func (eventTab *%[1]s) Init(autoRecover bool, reportError chan error, recursion %[4]sEventRecursion, hookAllocator container.Allocator[%[4]sHook], gcCollector container.GCCollector) {
+func (eventTab *%[1]s) Init(autoRecover bool, reportError chan error, recursion %[4]sEventRecursion) {
 %[3]s}
 
 func (eventTab *%[1]s) Get(id int) %[4]sIEvent {

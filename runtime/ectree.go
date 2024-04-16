@@ -105,7 +105,7 @@ func (ecTree *_ECTreeBehavior) AddChild(parentId, childId uid.Id) error {
 
 	parentNode, ok := ecTree.ecTree[parentId]
 	if !ok || parentNode.children == nil {
-		parentNode.children = container.NewList[iface.FaceAny](ecTree.ctx.getOptions().FaceAnyAllocator, ecTree.ctx)
+		parentNode.children = container.NewList[iface.FaceAny]()
 		ecTree.ecTree[parentId] = parentNode
 	}
 

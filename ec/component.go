@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/internal/concurrent"
-	"git.golaxy.org/core/util/container"
 	"git.golaxy.org/core/util/iface"
 	"git.golaxy.org/core/util/uid"
 	"reflect"
@@ -29,7 +28,7 @@ type Component interface {
 }
 
 type _Component interface {
-	init(name string, entity Entity, composite Component, hookAllocator container.Allocator[event.Hook], gcCollector container.GCCollector)
+	init(name string, entity Entity, composite Component)
 	setId(id uid.Id)
 	setFixed(v bool)
 	getFixed() bool
@@ -37,7 +36,6 @@ type _Component interface {
 	setReflected(v reflect.Value)
 	getReflected() reflect.Value
 	getComposite() Component
-	setGCCollector(gcCollector container.GCCollector)
 	eventComponentDestroySelf() event.IEvent
 	cleanHooks()
 }
@@ -98,11 +96,11 @@ func (comp *ComponentBehavior) String() string {
 	return fmt.Sprintf(`{"id":%q, "name":%q, "entity_id":%q, "state":%q}`, comp.GetId(), comp.GetName(), comp.GetEntity().GetId(), comp.GetState())
 }
 
-func (comp *ComponentBehavior) init(name string, entity Entity, composite Component, hookAllocator container.Allocator[event.Hook], gcCollector container.GCCollector) {
+func (comp *ComponentBehavior) init(name string, entity Entity, composite Component) {
 	comp.name = name
 	comp.entity = entity
 	comp.composite = composite
-	comp._eventComponentDestroySelf.Init(false, nil, event.EventRecursion_Discard, hookAllocator, gcCollector)
+	comp._eventComponentDestroySelf.Init(false, nil, event.EventRecursion_Discard)
 }
 
 func (comp *ComponentBehavior) setId(id uid.Id) {
@@ -146,10 +144,6 @@ func (comp *ComponentBehavior) getReflected() reflect.Value {
 
 func (comp *ComponentBehavior) getComposite() Component {
 	return comp.composite
-}
-
-func (comp *ComponentBehavior) setGCCollector(gcCollector container.GCCollector) {
-	event.UnsafeEvent(&comp._eventComponentDestroySelf).SetGCCollector(gcCollector)
 }
 
 func (comp *ComponentBehavior) eventComponentDestroySelf() event.IEvent {

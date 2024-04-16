@@ -60,8 +60,7 @@ type _Entity interface {
 	getOptions() *EntityOptions
 	setId(id uid.Id)
 	setContext(ctx iface.Cache)
-	getVersion() int32
-	setGCCollector(gcCollector container.GCCollector)
+	getVersion() int64
 	setECNodeState(state ECNodeState)
 	setECParent(parent Entity)
 	setState(state EntityState)
@@ -76,7 +75,6 @@ type EntityBehavior struct {
 	ecNodeState                      ECNodeState
 	parent                           Entity
 	componentList                    container.List[iface.FaceAny]
-	version                          int32
 	state                            EntityState
 	_eventEntityDestroySelf          event.Event
 	eventCompMgrAddComponents        event.Event
@@ -159,12 +157,10 @@ func (entity *EntityBehavior) init(opts EntityOptions) {
 		entity.opts.CompositeFace = iface.MakeFace[Entity](entity)
 	}
 
-	entity.componentList.Init(entity.opts.FaceAnyAllocator, entity.opts.GCCollector)
-
-	entity._eventEntityDestroySelf.Init(false, nil, event.EventRecursion_Discard, entity.opts.HookAllocator, entity.opts.GCCollector)
-	entity.eventCompMgrAddComponents.Init(false, nil, event.EventRecursion_Allow, entity.opts.HookAllocator, entity.opts.GCCollector)
-	entity.eventCompMgrRemoveComponent.Init(false, nil, event.EventRecursion_Allow, entity.opts.HookAllocator, entity.opts.GCCollector)
-	entity.eventCompMgrFirstAccessComponent.Init(false, nil, event.EventRecursion_Allow, entity.opts.HookAllocator, entity.opts.GCCollector)
+	entity._eventEntityDestroySelf.Init(false, nil, event.EventRecursion_Discard)
+	entity.eventCompMgrAddComponents.Init(false, nil, event.EventRecursion_Allow)
+	entity.eventCompMgrRemoveComponent.Init(false, nil, event.EventRecursion_Allow)
+	entity.eventCompMgrFirstAccessComponent.Init(false, nil, event.EventRecursion_Allow)
 }
 
 func (entity *EntityBehavior) getOptions() *EntityOptions {
@@ -179,27 +175,8 @@ func (entity *EntityBehavior) setContext(ctx iface.Cache) {
 	entity.context = ctx
 }
 
-func (entity *EntityBehavior) getVersion() int32 {
-	return entity.version
-}
-
-func (entity *EntityBehavior) setGCCollector(gcCollector container.GCCollector) {
-	if entity.opts.GCCollector == gcCollector {
-		return
-	}
-	entity.opts.GCCollector = gcCollector
-
-	entity.componentList.SetGCCollector(gcCollector)
-	entity.componentList.Traversal(func(e *container.Element[iface.FaceAny]) bool {
-		comp := iface.Cache2Iface[Component](e.Value.Cache)
-		comp.setGCCollector(gcCollector)
-		return true
-	})
-
-	event.UnsafeEvent(&entity._eventEntityDestroySelf).SetGCCollector(gcCollector)
-	event.UnsafeEvent(&entity.eventCompMgrAddComponents).SetGCCollector(gcCollector)
-	event.UnsafeEvent(&entity.eventCompMgrRemoveComponent).SetGCCollector(gcCollector)
-	event.UnsafeEvent(&entity.eventCompMgrFirstAccessComponent).SetGCCollector(gcCollector)
+func (entity *EntityBehavior) getVersion() int64 {
+	return entity.componentList.Version()
 }
 
 func (entity *EntityBehavior) setECNodeState(state ECNodeState) {

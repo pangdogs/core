@@ -2,11 +2,7 @@ package runtime
 
 import (
 	"context"
-	"fmt"
-	"git.golaxy.org/core/event"
-	"git.golaxy.org/core/internal/exception"
 	"git.golaxy.org/core/plugin"
-	"git.golaxy.org/core/util/container"
 	"git.golaxy.org/core/util/generic"
 	"git.golaxy.org/core/util/iface"
 	"git.golaxy.org/core/util/option"
@@ -19,16 +15,14 @@ type (
 
 // ContextOptions 创建运行时上下文的所有选项
 type ContextOptions struct {
-	CompositeFace    iface.Face[Context]                // 扩展者，在扩展运行时上下文自身能力时使用
-	Context          context.Context                    // 父Context
-	AutoRecover      bool                               // 是否开启panic时自动恢复
-	ReportError      chan error                         // panic时错误写入的error channel
-	Name             string                             // 运行时名称
-	PersistId        uid.Id                             // 运行时持久化Id
-	PluginBundle     plugin.PluginBundle                // 插件包
-	RunningHandler   RunningHandler                     // 运行状态变化处理器
-	FaceAnyAllocator container.Allocator[iface.FaceAny] // 自定义FaceAny内存分配器，用于提高性能
-	HookAllocator    container.Allocator[event.Hook]    // 自定义Hook内存分配器，用于提高性能
+	CompositeFace  iface.Face[Context] // 扩展者，在扩展运行时上下文自身能力时使用
+	Context        context.Context     // 父Context
+	AutoRecover    bool                // 是否开启panic时自动恢复
+	ReportError    chan error          // panic时错误写入的error channel
+	Name           string              // 运行时名称
+	PersistId      uid.Id              // 运行时持久化Id
+	PluginBundle   plugin.PluginBundle // 插件包
+	RunningHandler RunningHandler      // 运行状态变化处理器
 }
 
 type _ContextOption struct{}
@@ -43,8 +37,6 @@ func (_ContextOption) Default() option.Setting[ContextOptions] {
 		With.Context.PersistId(uid.Nil)(o)
 		With.Context.PluginBundle(plugin.NewPluginBundle())(o)
 		With.Context.RunningHandler(nil)(o)
-		With.Context.FaceAnyAllocator(container.DefaultAllocator[iface.FaceAny]())(o)
-		With.Context.HookAllocator(container.DefaultAllocator[event.Hook]())(o)
 	}
 }
 
@@ -95,25 +87,5 @@ func (_ContextOption) PluginBundle(bundle plugin.PluginBundle) option.Setting[Co
 func (_ContextOption) RunningHandler(handler RunningHandler) option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
 		o.RunningHandler = handler
-	}
-}
-
-// FaceAnyAllocator 自定义FaceAny内存分配器，用于提高性能
-func (_ContextOption) FaceAnyAllocator(allocator container.Allocator[iface.FaceAny]) option.Setting[ContextOptions] {
-	return func(o *ContextOptions) {
-		if allocator == nil {
-			panic(fmt.Errorf("%w: %w: allocator is nil", ErrContext, exception.ErrArgs))
-		}
-		o.FaceAnyAllocator = allocator
-	}
-}
-
-// HookAllocator 自定义Hook内存分配器，用于提高性能
-func (_ContextOption) HookAllocator(allocator container.Allocator[event.Hook]) option.Setting[ContextOptions] {
-	return func(o *ContextOptions) {
-		if allocator == nil {
-			panic(fmt.Errorf("%w: %w: allocator is nil", ErrContext, exception.ErrArgs))
-		}
-		o.HookAllocator = allocator
 	}
 }

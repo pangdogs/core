@@ -92,8 +92,8 @@ func (rt *RuntimeBehavior) init(ctx runtime.Context, opts RuntimeOptions) {
 	rt.hooksMap = make(map[uid.Id][3]event.Hook)
 	rt.processQueue = make(chan _Task, rt.opts.ProcessQueueCapacity)
 
-	rt.eventUpdate.Init(ctx.GetAutoRecover(), ctx.GetReportError(), event.EventRecursion_Disallow, ctx.GetHookAllocator(), nil)
-	rt.eventLateUpdate.Init(ctx.GetAutoRecover(), ctx.GetReportError(), event.EventRecursion_Disallow, ctx.GetHookAllocator(), nil)
+	rt.eventUpdate.Init(ctx.GetAutoRecover(), ctx.GetReportError(), event.EventRecursion_Disallow)
+	rt.eventLateUpdate.Init(ctx.GetAutoRecover(), ctx.GetReportError(), event.EventRecursion_Disallow)
 
 	runtime.UnsafeContext(ctx).SetFrame(rt.opts.Frame)
 	runtime.UnsafeContext(ctx).SetCallee(rt.opts.CompositeFace.Iface)

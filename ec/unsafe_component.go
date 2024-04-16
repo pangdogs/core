@@ -2,7 +2,6 @@ package ec
 
 import (
 	"git.golaxy.org/core/event"
-	"git.golaxy.org/core/util/container"
 	"git.golaxy.org/core/util/uid"
 	"reflect"
 )
@@ -19,8 +18,8 @@ type _UnsafeComponent struct {
 }
 
 // Init 初始化
-func (uc _UnsafeComponent) Init(name string, entity Entity, composite Component, hookAllocator container.Allocator[event.Hook], gcCollector container.GCCollector) {
-	uc.init(name, entity, composite, hookAllocator, gcCollector)
+func (uc _UnsafeComponent) Init(name string, entity Entity, composite Component) {
+	uc.init(name, entity, composite)
 }
 
 // SetId 设置Id
@@ -58,16 +57,12 @@ func (uc _UnsafeComponent) GetComposite() Component {
 	return uc.getComposite()
 }
 
-// SetGCCollector 设置GC收集器
-func (uc _UnsafeComponent) SetGCCollector(gcCollector container.GCCollector) {
-	uc.setGCCollector(gcCollector)
-}
-
 // EventComponentDestroySelf 事件：组件销毁自身
 func (uc _UnsafeComponent) EventComponentDestroySelf() event.IEvent {
 	return uc.eventComponentDestroySelf()
 }
 
+// CleanHooks 清理所有的托管hook
 func (uc _UnsafeComponent) CleanHooks() {
 	uc.cleanHooks()
 }

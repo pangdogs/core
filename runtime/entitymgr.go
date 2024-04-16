@@ -61,7 +61,6 @@ func (entityMgr *_EntityMgrBehavior) init(ctx Context) {
 	}
 
 	entityMgr.ctx = ctx
-	entityMgr.entityList.Init(ctx.GetFaceAnyAllocator(), ctx)
 	entityMgr.entityMap = map[uid.Id]_EntityInfo{}
 
 	ctx.ActivateEvent(&entityMgr.eventEntityMgrAddEntity, event.EventRecursion_Allow)
@@ -192,9 +191,6 @@ func (entityMgr *_EntityMgrBehavior) AddEntity(entity ec.Entity) error {
 	}
 	if _entity.GetOptions().AwakeOnFirstAccess {
 		entityInfo.hooks[2] = ec.BindEventCompMgrFirstAccessComponent(entity, entityMgr)
-	}
-	if _entity.GetOptions().GCCollector == nil {
-		_entity.SetGCCollector(entityMgr.ctx)
 	}
 
 	entityMgr.entityMap[entity.GetId()] = entityInfo

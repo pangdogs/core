@@ -154,8 +154,6 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 		other.Escape()
 		comp.setState(ComponentState_Detach)
 
-		entity.version++
-
 		_EmitEventCompMgrRemoveComponent(entity, entity.opts.CompositeFace.Iface, comp)
 
 		return true
@@ -177,8 +175,6 @@ func (entity *EntityBehavior) RemoveComponentById(id uid.Id) {
 
 	e.Escape()
 	comp.setState(ComponentState_Detach)
-
-	entity.version++
 
 	_EmitEventCompMgrRemoveComponent(entity, entity.opts.CompositeFace.Iface, comp)
 }
@@ -207,7 +203,7 @@ func (entity *EntityBehavior) addSingleComponent(name string, component Componen
 		return fmt.Errorf("%w: invalid component state %q", ErrEC, component.GetState())
 	}
 
-	component.init(name, entity.opts.CompositeFace.Iface, component, entity.opts.HookAllocator, entity.opts.GCCollector)
+	component.init(name, entity.opts.CompositeFace.Iface, component)
 
 	face := iface.MakeFaceAny(component)
 
@@ -227,8 +223,6 @@ func (entity *EntityBehavior) addSingleComponent(name string, component Componen
 	}
 
 	component.setState(ComponentState_Attach)
-
-	entity.version++
 
 	return nil
 }

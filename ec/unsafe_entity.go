@@ -2,7 +2,6 @@ package ec
 
 import (
 	"git.golaxy.org/core/event"
-	"git.golaxy.org/core/util/container"
 	"git.golaxy.org/core/util/iface"
 	"git.golaxy.org/core/util/uid"
 )
@@ -39,13 +38,8 @@ func (ue _UnsafeEntity) SetContext(ctx iface.Cache) {
 }
 
 // GetVersion 获取组件列表变化版本号
-func (ue _UnsafeEntity) GetVersion() int32 {
+func (ue _UnsafeEntity) GetVersion() int64 {
 	return ue.getVersion()
-}
-
-// SetGCCollector 设置GC收集器
-func (ue _UnsafeEntity) SetGCCollector(gcCollector container.GCCollector) {
-	ue.setGCCollector(gcCollector)
 }
 
 // SetECNodeState 设置EC节点状态
@@ -68,6 +62,7 @@ func (ue _UnsafeEntity) EventEntityDestroySelf() event.IEvent {
 	return ue.eventEntityDestroySelf()
 }
 
-func (uc _UnsafeEntity) CleanHooks() {
-	uc.cleanHooks()
+// CleanHooks 清理所有的托管hook
+func (ue _UnsafeEntity) CleanHooks() {
+	ue.cleanHooks()
 }

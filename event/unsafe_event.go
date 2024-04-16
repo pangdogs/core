@@ -1,7 +1,6 @@
 package event
 
 import (
-	"git.golaxy.org/core/util/container"
 	"git.golaxy.org/core/util/iface"
 )
 
@@ -29,14 +28,4 @@ func (ue _UnsafeEvent) NewHook(subscriberFace iface.FaceAny, priority int32) Hoo
 // RemoveSubscriber 删除订阅者
 func (ue _UnsafeEvent) RemoveSubscriber(subscriber any) {
 	ue.removeSubscriber(subscriber)
-}
-
-// SetGCCollector 设置GC收集器
-func (ue _UnsafeEvent) SetGCCollector(gcCollector container.GCCollector) {
-	ue.setGCCollector(gcCollector)
-}
-
-// GC GC
-func (ue _UnsafeEvent) GC() {
-	ue.gc()
 }

@@ -2,8 +2,6 @@ package pt
 
 import (
 	"git.golaxy.org/core/ec"
-	"git.golaxy.org/core/event"
-	"git.golaxy.org/core/util/container"
 	"git.golaxy.org/core/util/generic"
 	"git.golaxy.org/core/util/iface"
 	"git.golaxy.org/core/util/option"
@@ -74,27 +72,6 @@ func (_Option) AwakeOnFirstAccess(b bool) option.Setting[ConstructEntityOptions]
 func (_Option) Meta(m ec.Meta) option.Setting[ConstructEntityOptions] {
 	return func(o *ConstructEntityOptions) {
 		ec.With.Meta(m)(&o.EntityOptions)
-	}
-}
-
-// FaceAnyAllocator 自定义FaceAny内存分配器，用于提高性能，通常传入运行时上下文中的FaceAnyAllocator
-func (_Option) FaceAnyAllocator(allocator container.Allocator[iface.FaceAny]) option.Setting[ConstructEntityOptions] {
-	return func(o *ConstructEntityOptions) {
-		ec.With.FaceAnyAllocator(allocator)(&o.EntityOptions)
-	}
-}
-
-// HookAllocator 自定义Hook内存分配器，用于提高性能，通常传入运行时上下文中的HookAllocator
-func (_Option) HookAllocator(allocator container.Allocator[event.Hook]) option.Setting[ConstructEntityOptions] {
-	return func(o *ConstructEntityOptions) {
-		ec.With.HookAllocator(allocator)(&o.EntityOptions)
-	}
-}
-
-// GCCollector 自定义GC收集器，通常不传或者传入运行时上下文
-func (_Option) GCCollector(collector container.GCCollector) option.Setting[ConstructEntityOptions] {
-	return func(o *ConstructEntityOptions) {
-		ec.With.GCCollector(collector)(&o.EntityOptions)
 	}
 }
 

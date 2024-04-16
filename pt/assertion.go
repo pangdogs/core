@@ -132,7 +132,7 @@ func Compose[T comparable](entity ec.Entity) *Composite[T] {
 */
 type Composite[T comparable] struct {
 	entity  ec.Entity
-	version int32
+	version int64
 	iface   T
 }
 

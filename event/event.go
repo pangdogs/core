@@ -86,14 +86,12 @@ type IEvent interface {
 	emit(fun generic.Func1[iface.Cache, bool])
 	newHook(subscriberFace iface.FaceAny, priority int32) Hook
 	removeSubscriber(subscriber any)
-	setGCCollector(gcCollector container.GCCollector)
-	gc()
 }
 
 // IEventCtrl 事件控制接口
 type IEventCtrl interface {
 	// Init 初始化事件
-	Init(autoRecover bool, reportError chan error, recursion EventRecursion, hookAllocator container.Allocator[Hook], gcCollector container.GCCollector)
+	Init(autoRecover bool, reportError chan error, recursion EventRecursion)
 	// Open 打开事件
 	Open()
 	// Close 关闭事件
@@ -110,13 +108,12 @@ type Event struct {
 	eventRecursion EventRecursion
 	emitted        int32
 	emitDepth      int32
-	emitBatch      int32
 	opened         bool
 	inited         bool
 }
 
 // Init 初始化事件
-func (event *Event) Init(autoRecover bool, reportError chan error, eventRecursion EventRecursion, hookAllocator container.Allocator[Hook], gcCollector container.GCCollector) {
+func (event *Event) Init(autoRecover bool, reportError chan error, eventRecursion EventRecursion) {
 	if event.inited {
 		panic(fmt.Errorf("%w: event is already initialized", ErrEvent))
 	}
@@ -124,7 +121,6 @@ func (event *Event) Init(autoRecover bool, reportError chan error, eventRecursio
 	event.autoRecover = autoRecover
 	event.reportError = reportError
 	event.eventRecursion = eventRecursion
-	event.subscribers.Init(hookAllocator, gcCollector)
 	event.inited = true
 
 	event.Open()
@@ -171,14 +167,14 @@ func (event *Event) emit(fun generic.Func1[iface.Cache, bool]) {
 	event.emitted++
 	defer func() { event.emitted-- }()
 	event.emitDepth = event.emitted
-	event.emitBatch++
+	ver := event.subscribers.Version()
 
 	event.subscribers.Traversal(func(e *container.Element[Hook]) bool {
 		if !event.opened {
 			return false
 		}
 
-		if e.Value.subscriberFace.IsNil() || e.Value.createdBatch == event.emitBatch {
+		if e.Value.subscriberFace.IsNil() || e.Version() > ver {
 			return true
 		}
 
@@ -225,22 +221,21 @@ func (event *Event) newHook(subscriberFace iface.FaceAny, priority int32) Hook {
 
 	hook := Hook{
 		subscriberFace: subscriberFace,
-		createdBatch:   event.emitBatch,
 		priority:       priority,
 	}
 
-	var mark *container.Element[Hook]
+	var at *container.Element[Hook]
 
 	event.subscribers.ReverseTraversal(func(other *container.Element[Hook]) bool {
 		if hook.priority >= other.Value.priority {
-			mark = other
+			at = other
 			return false
 		}
 		return true
 	})
 
-	if mark != nil {
-		hook.element = event.subscribers.InsertAfter(Hook{}, mark)
+	if at != nil {
+		hook.element = event.subscribers.InsertAfter(Hook{}, at)
 	} else {
 		hook.element = event.subscribers.PushFront(Hook{})
 	}
@@ -258,12 +253,4 @@ func (event *Event) removeSubscriber(subscriber any) {
 		}
 		return true
 	})
-}
-
-func (event *Event) setGCCollector(gcCollector container.GCCollector) {
-	event.subscribers.SetGCCollector(gcCollector)
-}
-
-func (event *Event) gc() {
-	event.subscribers.GC()
 }
