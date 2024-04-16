@@ -40,9 +40,6 @@ package %s
 		fmt.Fprintf(importCode, `
 	%s "%s"`, ctx.PackageEventAlias, packageEventPath)
 
-		fmt.Fprintf(importCode, `
-	container "git.golaxy.org/core/util/container"`)
-
 		fmt.Fprintf(importCode, "\n)\n")
 
 		fmt.Fprintf(code, importCode.String())
