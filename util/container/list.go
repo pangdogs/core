@@ -61,7 +61,7 @@ func (l *List[T]) PushBack(value T) *Element[T] {
 
 // InsertBefore 在链表指定位置前插入数据
 func (l *List[T]) InsertBefore(value T, at *Element[T]) *Element[T] {
-	if at == nil || at.list != l || at.escaped {
+	if !l.check(at) {
 		return nil
 	}
 	return l.insertValue(value, at._prev)
@@ -69,7 +69,7 @@ func (l *List[T]) InsertBefore(value T, at *Element[T]) *Element[T] {
 
 // InsertAfter 在链表指定位置后插入数据
 func (l *List[T]) InsertAfter(value T, at *Element[T]) *Element[T] {
-	if at == nil || at.list != l || at.escaped {
+	if !l.check(at) {
 		return nil
 	}
 	return l.insertValue(value, at)
@@ -77,7 +77,7 @@ func (l *List[T]) InsertAfter(value T, at *Element[T]) *Element[T] {
 
 // MoveToFront 移动元素至链表头部
 func (l *List[T]) MoveToFront(e *Element[T]) {
-	if e == nil || e.list != l || e.escaped || l.root._next == e {
+	if !l.check(e) || l.root._next == e {
 		return
 	}
 	l.move(e, &l.root)
@@ -85,7 +85,7 @@ func (l *List[T]) MoveToFront(e *Element[T]) {
 
 // MoveToBack 移动元素至链表尾部
 func (l *List[T]) MoveToBack(e *Element[T]) {
-	if e == nil || e.list != l || e.escaped || l.root._prev == e {
+	if !l.check(e) || l.root._prev == e {
 		return
 	}
 	l.move(e, l.root._prev)
@@ -93,7 +93,7 @@ func (l *List[T]) MoveToBack(e *Element[T]) {
 
 // MoveBefore 移动元素至链表指定位置前
 func (l *List[T]) MoveBefore(e, at *Element[T]) {
-	if e == nil || at == nil || e.list != l || at.list != l || e.escaped || at.escaped || e == at {
+	if !l.check(e) || !l.check(at) || e == at {
 		return
 	}
 	l.move(e, at._prev)
@@ -101,7 +101,7 @@ func (l *List[T]) MoveBefore(e, at *Element[T]) {
 
 // MoveAfter 移动元素至链表指定位置后
 func (l *List[T]) MoveAfter(e, at *Element[T]) {
-	if e == nil || at == nil || e.list != l || at.list != l || e.escaped || at.escaped || e == at {
+	if !l.check(e) || !l.check(at) || e == at {
 		return
 	}
 	l.move(e, at)
@@ -144,7 +144,7 @@ func (l *List[T]) Traversal(visitor func(e *Element[T]) bool) {
 
 // TraversalAt 从指定位置开始遍历元素
 func (l *List[T]) TraversalAt(visitor func(e *Element[T]) bool, at *Element[T]) {
-	if visitor == nil || at == nil || at.list != l {
+	if visitor == nil || !l.check(at) {
 		return
 	}
 
@@ -170,7 +170,7 @@ func (l *List[T]) ReverseTraversal(visitor func(e *Element[T]) bool) {
 
 // ReverseTraversalAt 从指定位置开始反向遍历元素
 func (l *List[T]) ReverseTraversalAt(visitor func(e *Element[T]) bool, at *Element[T]) {
-	if visitor == nil || at == nil || at.list != l {
+	if visitor == nil || !l.check(at) {
 		return
 	}
 
@@ -236,4 +236,8 @@ func (l *List[T]) move(e, at *Element[T]) *Element[T] {
 	l.ver++
 
 	return e
+}
+
+func (l *List[T]) check(e *Element[T]) bool {
+	return e != nil && e.list == l && !e.escaped
 }
