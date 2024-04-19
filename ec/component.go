@@ -136,9 +136,7 @@ func (comp *ComponentBehavior) getReflected() reflect.Value {
 	if comp.reflected.IsValid() {
 		return comp.reflected
 	}
-
 	comp.reflected = reflect.ValueOf(comp.composite)
-
 	return comp.reflected
 }
 

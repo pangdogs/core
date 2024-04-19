@@ -9,6 +9,7 @@ import (
 	"git.golaxy.org/core/util/option"
 	"git.golaxy.org/core/util/reinterpret"
 	"git.golaxy.org/core/util/uid"
+	"reflect"
 )
 
 // NewEntity 创建实体
@@ -64,6 +65,7 @@ type _Entity interface {
 	setECNodeState(state ECNodeState)
 	setECParent(parent Entity)
 	setState(state EntityState)
+	getReflected() reflect.Value
 	eventEntityDestroySelf() event.IEvent
 	cleanHooks()
 }
@@ -76,6 +78,7 @@ type EntityBehavior struct {
 	parent                           Entity
 	componentList                    container.List[iface.FaceAny]
 	state                            EntityState
+	reflected                        reflect.Value
 	_eventEntityDestroySelf          event.Event
 	eventCompMgrAddComponents        event.Event
 	eventCompMgrRemoveComponent      event.Event
@@ -202,6 +205,14 @@ func (entity *EntityBehavior) setState(state EntityState) {
 		entity.eventCompMgrRemoveComponent.Close()
 		entity.eventCompMgrFirstAccessComponent.Close()
 	}
+}
+
+func (entity *EntityBehavior) getReflected() reflect.Value {
+	if entity.reflected.IsValid() {
+		return entity.reflected
+	}
+	entity.reflected = reflect.ValueOf(entity.opts.CompositeFace.Iface)
+	return entity.reflected
 }
 
 func (entity *EntityBehavior) eventEntityDestroySelf() event.IEvent {

@@ -4,6 +4,7 @@ import (
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/util/iface"
 	"git.golaxy.org/core/util/uid"
+	"reflect"
 )
 
 // Deprecated: UnsafeEntity 访问实体内部函数
@@ -55,6 +56,11 @@ func (ue _UnsafeEntity) SetECParent(parent Entity) {
 // SetState 设置状态
 func (ue _UnsafeEntity) SetState(state EntityState) {
 	ue.setState(state)
+}
+
+// GetReflected 获取反射值
+func (ue _UnsafeEntity) GetReflected() reflect.Value {
+	return ue.getReflected()
 }
 
 // EventEntityDestroySelf 事件：实体销毁自身
