@@ -20,7 +20,7 @@ func (rt *RuntimeBehavior) PushCall(fun generic.FuncVar0[any, runtime.Ret], va .
 	})
 }
 
-// PushCallDelegate 将调用函数压入接受者的任务处理流水线，返回AsyncRet。
+// PushCallDelegate 将调用委托压入接受者的任务处理流水线，返回AsyncRet。
 func (rt *RuntimeBehavior) PushCallDelegate(fun generic.DelegateFuncVar0[any, runtime.Ret], va ...any) runtime.AsyncRet {
 	return rt.pushCallTask(_Task{
 		delegateFun: fun,
@@ -36,7 +36,7 @@ func (rt *RuntimeBehavior) PushCallVoid(fun generic.ActionVar0[any], va ...any) 
 	})
 }
 
-// PushCallVoidDelegate 将调用函数压入接受者的任务处理流水线，返回AsyncRet。
+// PushCallVoidDelegate 将调用委托压入接受者的任务处理流水线，返回AsyncRet。
 func (rt *RuntimeBehavior) PushCallVoidDelegate(fun generic.DelegateActionVar0[any], va ...any) runtime.AsyncRet {
 	return rt.pushCallTask(_Task{
 		delegateAction: fun,
@@ -45,7 +45,7 @@ func (rt *RuntimeBehavior) PushCallVoidDelegate(fun generic.DelegateActionVar0[a
 }
 
 func (rt *RuntimeBehavior) pushCallTask(task _Task) (asyncRet chan runtime.Ret) {
-	task.kind = _TaskKind_Call
+	task.typ = _TaskType_Call
 	task.asyncRet = concurrent.MakeAsyncRet()
 
 	asyncRet = task.asyncRet

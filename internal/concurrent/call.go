@@ -98,10 +98,10 @@ type Caller interface {
 type Callee interface {
 	// PushCall 将调用函数压入接受者的任务处理流水线，返回AsyncRet。
 	PushCall(fun generic.FuncVar0[any, Ret], va ...any) AsyncRet
-	// PushCallDelegate 将调用函数压入接受者的任务处理流水线，返回AsyncRet。
+	// PushCallDelegate 将调用委托压入接受者的任务处理流水线，返回AsyncRet。
 	PushCallDelegate(fun generic.DelegateFuncVar0[any, Ret], va ...any) AsyncRet
 	// PushCallVoid 将调用函数压入接受者的任务处理流水线，返回AsyncRet。
 	PushCallVoid(fun generic.ActionVar0[any], va ...any) AsyncRet
-	// PushCallVoidDelegate 将调用函数压入接受者的任务处理流水线，返回AsyncRet。
+	// PushCallVoidDelegate 将调用委托压入接受者的任务处理流水线，返回AsyncRet。
 	PushCallVoidDelegate(fun generic.DelegateActionVar0[any], va ...any) AsyncRet
 }

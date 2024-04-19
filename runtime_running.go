@@ -149,12 +149,12 @@ func (rt *RuntimeBehavior) mainLoop() {
 }
 
 func (rt *RuntimeBehavior) runTask(task _Task) {
-	switch task.kind {
-	case _TaskKind_Call:
+	switch task.typ {
+	case _TaskType_Call:
 		rt.changeRunningState(runtime.RunningState_RunCallBegin)
 		task.run(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 		rt.changeRunningState(runtime.RunningState_RunCallEnd)
-	case _TaskKind_Frame:
+	case _TaskType_Frame:
 		task.run(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
 }
