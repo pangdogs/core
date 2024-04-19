@@ -160,7 +160,7 @@ func ReadChan[T any](ctx context.Context, ch <-chan T) runtime.AsyncRet {
 	}
 
 	if ch == nil {
-		panic(fmt.Errorf("%w: %w: ch is nil", ErrGolaxy, ErrArgs))
+		panic(fmt.Errorf("%w: %w: ch is nil", ErrCore, ErrArgs))
 	}
 
 	asyncRet := concurrent.MakeAsyncRet()

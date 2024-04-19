@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	ErrCore     = errors.New("core")     // Golaxy内核错误
+	ErrCore     = errors.New("core")     // 内核错误
 	ErrPanicked = errors.New("panicked") // panic错误
 	ErrArgs     = errors.New("args")     // 参数错误
 )

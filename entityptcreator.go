@@ -9,7 +9,7 @@ import (
 // CreateEntityPT 创建实体原型
 func CreateEntityPT(ctx service.Context) EntityPTCreator {
 	if ctx == nil {
-		panic(fmt.Errorf("%w: %w: ctx is nil", ErrGolaxy, ErrArgs))
+		panic(fmt.Errorf("%w: %w: ctx is nil", ErrCore, ErrArgs))
 	}
 	return EntityPTCreator{
 		servCtx: ctx,
@@ -42,7 +42,7 @@ func (c EntityPTCreator) AddComponent(comp any, alias ...string) EntityPTCreator
 // Declare 声明实体原型
 func (c EntityPTCreator) Declare() {
 	if c.servCtx == nil {
-		panic(fmt.Errorf("%w: setting servCtx is nil", ErrGolaxy))
+		panic(fmt.Errorf("%w: setting servCtx is nil", ErrCore))
 	}
 	c.servCtx.GetEntityLib().Register(c.prototype, c.comps...)
 }

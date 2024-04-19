@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	ErrAllFailures = fmt.Errorf("%w: all of async result failures", ErrGolaxy)
+	ErrAllFailures = fmt.Errorf("%w: all of async result failures", ErrCore)
 )
 
 // Await 异步等待结果返回
@@ -31,7 +31,7 @@ type AwaitDirector struct {
 // Any 异步等待任意一个结果返回
 func (ad AwaitDirector) Any(fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va ...any) {
 	if ad.rtCtx == nil {
-		panic(fmt.Errorf("%w: setting rtCtx is nil", ErrGolaxy))
+		panic(fmt.Errorf("%w: setting rtCtx is nil", ErrCore))
 	}
 
 	if len(ad.asyncRets) <= 0 {
@@ -72,7 +72,7 @@ func (ad AwaitDirector) Any(fun generic.ActionVar2[runtime.Context, runtime.Ret,
 // AnyOK 异步等待任意一个结果成功返回
 func (ad AwaitDirector) AnyOK(fun generic.ActionVar2[runtime.Context, runtime.Ret, any], va ...any) {
 	if ad.rtCtx == nil {
-		panic(fmt.Errorf("%w: setting rtCtx is nil", ErrGolaxy))
+		panic(fmt.Errorf("%w: setting rtCtx is nil", ErrCore))
 	}
 
 	if len(ad.asyncRets) <= 0 {
@@ -134,7 +134,7 @@ func (ad AwaitDirector) AnyOK(fun generic.ActionVar2[runtime.Context, runtime.Re
 // All 异步等待所有结果返回
 func (ad AwaitDirector) All(fun generic.ActionVar2[runtime.Context, []runtime.Ret, any], va ...any) {
 	if ad.rtCtx == nil {
-		panic(fmt.Errorf("%w: setting rtCtx is nil", ErrGolaxy))
+		panic(fmt.Errorf("%w: setting rtCtx is nil", ErrCore))
 	}
 
 	if len(ad.asyncRets) <= 0 {
@@ -178,7 +178,7 @@ func (ad AwaitDirector) Pipe(ctx context.Context, fun generic.ActionVar2[runtime
 	}
 
 	if ad.rtCtx == nil {
-		panic(fmt.Errorf("%w: setting rtCtx is nil", ErrGolaxy))
+		panic(fmt.Errorf("%w: setting rtCtx is nil", ErrCore))
 	}
 
 	if len(ad.asyncRets) <= 0 {

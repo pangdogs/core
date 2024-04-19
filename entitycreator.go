@@ -83,7 +83,7 @@ func (c EntityCreator) ParentId(id uid.Id) EntityCreator {
 // Spawn 创建实体
 func (c EntityCreator) Spawn() (ec.Entity, error) {
 	if c.rtCtx == nil {
-		panic(fmt.Errorf("%w: setting rtCtx is nil", ErrGolaxy))
+		panic(fmt.Errorf("%w: setting rtCtx is nil", ErrCore))
 	}
 
 	if !c.parentId.IsNil() {
