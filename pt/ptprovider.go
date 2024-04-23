@@ -11,15 +11,15 @@ type EntityPTProvider interface {
 	GetEntityLib() EntityLib
 }
 
-// Using 使用实体原型
-func Using(entityPTProvider EntityPTProvider, prototype string) EntityPT {
+// For 使用实体原型
+func For(entityPTProvider EntityPTProvider, prototype string) EntityPT {
 	if entityPTProvider == nil {
 		panic(fmt.Errorf("%w: %w: entityPTProvider is nil", ErrPt, exception.ErrArgs))
 	}
 
 	entity, ok := entityPTProvider.GetEntityLib().Get(prototype)
 	if !ok {
-		panic(fmt.Errorf("%w: entity %q not registered", ErrPt, prototype))
+		panic(fmt.Errorf("%w: entity %q was not declared", ErrPt, prototype))
 	}
 
 	return entity

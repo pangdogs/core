@@ -19,7 +19,7 @@ func DefineComponent[COMP any](compLib ...pt.ComponentLib) Component {
 		panic(fmt.Errorf("%w: %w: compLib is nil", exception.ErrCore, exception.ErrArgs))
 	}
 
-	comp := _compLib.Register(types.Zero[COMP]())
+	comp := _compLib.Declare(types.Zero[COMP]())
 	return _Component{
 		name: comp.Name,
 	}.Component()

@@ -15,7 +15,7 @@ import (
 func CreateEntity(ctxProvider runtime.CurrentContextProvider) EntityCreator {
 	return EntityCreator{
 		rtCtx:   runtime.Current(ctxProvider),
-		options: option.Make(pt.With.Default()),
+		options: option.Make(ec.With.Default()),
 	}
 }
 
@@ -23,54 +23,42 @@ func CreateEntity(ctxProvider runtime.CurrentContextProvider) EntityCreator {
 type EntityCreator struct {
 	rtCtx    runtime.Context
 	parentId uid.Id
-	options  pt.ConstructEntityOptions
+	options  ec.EntityOptions
 }
 
 // CompositeFace 设置扩展者，在扩展实体自身能力时使用
 func (c EntityCreator) CompositeFace(face iface.Face[ec.Entity]) EntityCreator {
-	c.options = option.Append(c.options, pt.With.CompositeFace(face))
+	c.options = option.Append(c.options, ec.With.CompositeFace(face))
 	return c
 }
 
 // Prototype 设置实体原型名称
 func (c EntityCreator) Prototype(prototype string) EntityCreator {
-	c.options = option.Append(c.options, pt.With.Prototype(prototype))
+	c.options = option.Append(c.options, ec.With.Prototype(prototype))
 	return c
 }
 
 // Scope 设置实体的可访问作用域
 func (c EntityCreator) Scope(scope ec.Scope) EntityCreator {
-	c.options = option.Append(c.options, pt.With.Scope(scope))
+	c.options = option.Append(c.options, ec.With.Scope(scope))
 	return c
 }
 
 // PersistId 设置实体持久化Id
 func (c EntityCreator) PersistId(id uid.Id) EntityCreator {
-	c.options = option.Append(c.options, pt.With.PersistId(id))
+	c.options = option.Append(c.options, ec.With.PersistId(id))
 	return c
 }
 
 // AwakeOnFirstAccess 设置开启组件被首次访问时，检测并调用Awake()
 func (c EntityCreator) AwakeOnFirstAccess(b bool) EntityCreator {
-	c.options = option.Append(c.options, pt.With.AwakeOnFirstAccess(b))
+	c.options = option.Append(c.options, ec.With.AwakeOnFirstAccess(b))
 	return c
 }
 
 // Meta 设置Meta信息
 func (c EntityCreator) Meta(m ec.Meta) EntityCreator {
-	c.options = option.Append(c.options, pt.With.Meta(m))
-	return c
-}
-
-// ComponentCtor 设置组件构造函数
-func (c EntityCreator) ComponentCtor(ctors pt.ComponentCtor) EntityCreator {
-	c.options = option.Append(c.options, pt.With.ComponentCtor(ctors))
-	return c
-}
-
-// EntityCtor 设置实体构造函数
-func (c EntityCreator) EntityCtor(ctors pt.EntityCtor) EntityCreator {
-	c.options = option.Append(c.options, pt.With.EntityCtor(ctors))
+	c.options = option.Append(c.options, ec.With.Meta(m))
 	return c
 }
 
@@ -93,7 +81,7 @@ func (c EntityCreator) Spawn() (ec.Entity, error) {
 		}
 	}
 
-	entity := pt.Using(service.Current(c.rtCtx), c.options.Prototype).UnsafeConstruct(c.options)
+	entity := pt.For(service.Current(c.rtCtx), c.options.Prototype).UnsafeConstruct(c.options)
 
 	if err := c.rtCtx.GetEntityMgr().AddEntity(entity); err != nil {
 		return nil, err

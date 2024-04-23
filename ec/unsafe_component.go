@@ -47,11 +47,6 @@ func (uc _UnsafeComponent) SetReflected(v reflect.Value) {
 	uc.setReflected(v)
 }
 
-// GetReflected 获取反射值
-func (uc _UnsafeComponent) GetReflected() reflect.Value {
-	return uc.getReflected()
-}
-
 // GetComposite 获取扩展者
 func (uc _UnsafeComponent) GetComposite() Component {
 	return uc.getComposite()

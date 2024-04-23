@@ -50,6 +50,8 @@ type Entity interface {
 	GetECParent() (Entity, bool)
 	// GetState 获取实体状态
 	GetState() EntityState
+	// GetReflected 获取反射值
+	GetReflected() reflect.Value
 	// GetMeta 获取Meta信息
 	GetMeta() Meta
 	// DestroySelf 销毁自身
@@ -65,7 +67,7 @@ type _Entity interface {
 	setECNodeState(state ECNodeState)
 	setECParent(parent Entity)
 	setState(state EntityState)
-	getReflected() reflect.Value
+	setReflected(v reflect.Value)
 	eventEntityDestroySelf() event.IEvent
 	cleanHooks()
 }
@@ -116,6 +118,15 @@ func (entity *EntityBehavior) GetState() EntityState {
 	return entity.state
 }
 
+// GetReflected 获取反射值
+func (entity *EntityBehavior) GetReflected() reflect.Value {
+	if entity.reflected.IsValid() {
+		return entity.reflected
+	}
+	entity.reflected = reflect.ValueOf(entity.opts.CompositeFace.Iface)
+	return entity.reflected
+}
+
 // GetMeta 获取Meta信息
 func (entity *EntityBehavior) GetMeta() Meta {
 	return entity.opts.Meta
@@ -146,11 +157,7 @@ func (entity *EntityBehavior) GetCompositeFaceCache() iface.Cache {
 
 // String implements fmt.Stringer
 func (entity *EntityBehavior) String() string {
-	var parentId uid.Id
-	if parent, ok := entity.GetECParent(); ok {
-		parentId = parent.GetId()
-	}
-	return fmt.Sprintf(`{"id":%q, "prototype":%q, "parent_id":%q, "state":%q}`, entity.GetId(), entity.GetPrototype(), parentId, entity.GetState())
+	return fmt.Sprintf(`{"id":%q, "prototype":%q}`, entity.GetId(), entity.GetPrototype())
 }
 
 func (entity *EntityBehavior) init(opts EntityOptions) {
@@ -207,12 +214,8 @@ func (entity *EntityBehavior) setState(state EntityState) {
 	}
 }
 
-func (entity *EntityBehavior) getReflected() reflect.Value {
-	if entity.reflected.IsValid() {
-		return entity.reflected
-	}
-	entity.reflected = reflect.ValueOf(entity.opts.CompositeFace.Iface)
-	return entity.reflected
+func (entity *EntityBehavior) setReflected(v reflect.Value) {
+	entity.reflected = v
 }
 
 func (entity *EntityBehavior) eventEntityDestroySelf() event.IEvent {

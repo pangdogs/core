@@ -33,10 +33,10 @@ func CompInterface[FACE any](comp any) _CompAlias {
 // EntityLib 实体原型库
 type EntityLib interface {
 	EntityPTProvider
-	// Register 注册实体原型
-	Register(prototype string, comps ...any) EntityPT
-	// Deregister 取消注册实体原型
-	Deregister(prototype string)
+	// Declare 声明实体原型
+	Declare(prototype string, comps ...any) EntityPT
+	// Undeclare 取消声明实体原型
+	Undeclare(prototype string)
 	// Get 获取实体原型
 	Get(prototype string) (EntityPT, bool)
 	// Range 遍历所有已注册的实体原型
@@ -74,14 +74,14 @@ func (lib *_EntityLib) GetEntityLib() EntityLib {
 	return lib
 }
 
-// Register 注册实体原型
-func (lib *_EntityLib) Register(prototype string, comps ...any) EntityPT {
+// Declare 声明体原型
+func (lib *_EntityLib) Declare(prototype string, comps ...any) EntityPT {
 	lib.Lock()
 	defer lib.Unlock()
 
 	_, ok := lib.entityMap[prototype]
 	if ok {
-		panic(fmt.Errorf("%w: entity %q is already registered", ErrPt, prototype))
+		panic(fmt.Errorf("%w: entity %q is already declared", ErrPt, prototype))
 	}
 
 	entity := &EntityPT{
@@ -89,7 +89,7 @@ func (lib *_EntityLib) Register(prototype string, comps ...any) EntityPT {
 	}
 
 	for _, comp := range comps {
-		var ci _CompInfo
+		var ci CompInfo
 
 	retry:
 		switch pt := comp.(type) {
@@ -100,18 +100,18 @@ func (lib *_EntityLib) Register(prototype string, comps ...any) EntityPT {
 		case string:
 			compPT, ok := lib.compLib.Get(pt)
 			if !ok {
-				panic(fmt.Errorf("%w: entity %q component %q was not registered", ErrPt, prototype, pt))
+				panic(fmt.Errorf("%w: entity %q component %q was not declared", ErrPt, prototype, pt))
 			}
 			ci.PT = compPT
 		default:
-			ci.PT = lib.compLib.Register(pt)
+			ci.PT = lib.compLib.Declare(pt)
 		}
 
 		if ci.Alias == "" {
 			ci.Alias = ci.PT.Name
 		}
 
-		entity.compInfos = append(entity.compInfos, ci)
+		entity.CompInfos = append(entity.CompInfos, ci)
 	}
 
 	lib.entityMap[prototype] = entity
@@ -120,8 +120,8 @@ func (lib *_EntityLib) Register(prototype string, comps ...any) EntityPT {
 	return *entity
 }
 
-// Deregister 取消注册实体原型
-func (lib *_EntityLib) Deregister(prototype string) {
+// Undeclare 取消声明实体原型
+func (lib *_EntityLib) Undeclare(prototype string) {
 	lib.Lock()
 	defer lib.Unlock()
 

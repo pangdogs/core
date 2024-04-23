@@ -14,10 +14,10 @@ import (
 
 // ComponentLib 组件原型库
 type ComponentLib interface {
-	// Register 注册组件原型
-	Register(comp any, aliases ...string) ComponentPT
-	// Deregister 取消注册组件原型
-	Deregister(name string)
+	// Declare 声明组件原型
+	Declare(comp any, aliases ...string) ComponentPT
+	// Undeclare 取消声明组件原型
+	Undeclare(name string)
 	// Get 获取组件原型
 	Get(name string) (ComponentPT, bool)
 	// GetAlias 使用别名获取组件原型
@@ -48,8 +48,8 @@ type _ComponentLib struct {
 	aliasMap map[string][]*ComponentPT
 }
 
-// Register 注册组件原型
-func (lib *_ComponentLib) Register(comp any, aliases ...string) ComponentPT {
+// Declare 声明组件原型
+func (lib *_ComponentLib) Declare(comp any, aliases ...string) ComponentPT {
 	if comp == nil {
 		panic(fmt.Errorf("%w: %w: comp is nil", ErrPt, exception.ErrArgs))
 	}
@@ -61,8 +61,8 @@ func (lib *_ComponentLib) Register(comp any, aliases ...string) ComponentPT {
 	}
 }
 
-// Deregister 取消注册组件原型
-func (lib *_ComponentLib) Deregister(name string) {
+// Undeclare 取消声明组件原型
+func (lib *_ComponentLib) Undeclare(name string) {
 	lib.Lock()
 	defer lib.Unlock()
 
@@ -141,8 +141,8 @@ func (lib *_ComponentLib) register(tfComp reflect.Type, aliases []string) Compon
 	}
 
 	comp = &ComponentPT{
-		Name:   compName,
-		tfComp: tfComp,
+		Name:  compName,
+		RType: tfComp,
 	}
 
 	lib.compMap[compName] = comp

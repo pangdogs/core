@@ -23,6 +23,8 @@ type Component interface {
 	GetEntity() Entity
 	// GetState 获取组件状态
 	GetState() ComponentState
+	// GetReflected 获取反射值
+	GetReflected() reflect.Value
 	// DestroySelf 销毁自身
 	DestroySelf()
 }
@@ -34,7 +36,6 @@ type _Component interface {
 	getFixed() bool
 	setState(state ComponentState)
 	setReflected(v reflect.Value)
-	getReflected() reflect.Value
 	getComposite() Component
 	eventComponentDestroySelf() event.IEvent
 	cleanHooks()
@@ -71,6 +72,15 @@ func (comp *ComponentBehavior) GetEntity() Entity {
 // GetState 获取组件状态
 func (comp *ComponentBehavior) GetState() ComponentState {
 	return comp.state
+}
+
+// GetReflected 获取反射值
+func (comp *ComponentBehavior) GetReflected() reflect.Value {
+	if comp.reflected.IsValid() {
+		return comp.reflected
+	}
+	comp.reflected = reflect.ValueOf(comp.composite)
+	return comp.reflected
 }
 
 // DestroySelf 销毁自身
@@ -130,14 +140,6 @@ func (comp *ComponentBehavior) setState(state ComponentState) {
 
 func (comp *ComponentBehavior) setReflected(v reflect.Value) {
 	comp.reflected = v
-}
-
-func (comp *ComponentBehavior) getReflected() reflect.Value {
-	if comp.reflected.IsValid() {
-		return comp.reflected
-	}
-	comp.reflected = reflect.ValueOf(comp.composite)
-	return comp.reflected
 }
 
 func (comp *ComponentBehavior) getComposite() Component {

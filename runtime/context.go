@@ -48,6 +48,8 @@ type Context interface {
 	GetName() string
 	// GetId 获取运行时Id
 	GetId() uid.Id
+	// GetReflected 获取反射值
+	GetReflected() reflect.Value
 	// GetFrame 获取帧
 	GetFrame() Frame
 	// GetEntityMgr 获取实体管理器
@@ -67,7 +69,6 @@ type _Context interface {
 	setCallee(callee Callee)
 	getServiceCtx() service.Context
 	changeRunningState(state RunningState)
-	getReflected() reflect.Value
 	gc()
 }
 
@@ -93,6 +94,11 @@ func (ctx *ContextBehavior) GetName() string {
 // GetId 获取运行时Id
 func (ctx *ContextBehavior) GetId() uid.Id {
 	return ctx.opts.PersistId
+}
+
+// GetReflected 获取反射值
+func (ctx *ContextBehavior) GetReflected() reflect.Value {
+	return ctx.reflected
 }
 
 // GetFrame 获取帧
@@ -205,10 +211,6 @@ func (ctx *ContextBehavior) changeRunningState(state RunningState) {
 	case RunningState_Terminated:
 		ctx.cleanHooks()
 	}
-}
-
-func (ctx *ContextBehavior) getReflected() reflect.Value {
-	return ctx.reflected
 }
 
 func (ctx *ContextBehavior) cleanHooks() {

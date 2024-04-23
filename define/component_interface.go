@@ -39,7 +39,7 @@ type _ComponentInterface struct {
 
 func (c _ComponentInterface) register() generic.PairFunc1[any, pt.ComponentPT, string] {
 	return func(comp any) (pt.ComponentPT, string) {
-		return c.compLib.Register(comp, c.name), c.name
+		return c.compLib.Declare(comp, c.name), c.name
 	}
 }
 

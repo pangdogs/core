@@ -58,9 +58,9 @@ func (ue _UnsafeEntity) SetState(state EntityState) {
 	ue.setState(state)
 }
 
-// GetReflected 获取反射值
-func (ue _UnsafeEntity) GetReflected() reflect.Value {
-	return ue.getReflected()
+// SetReflected 设置反射值
+func (ue _UnsafeEntity) SetReflected(v reflect.Value) {
+	ue.setReflected(v)
 }
 
 // EventEntityDestroySelf 事件：实体销毁自身

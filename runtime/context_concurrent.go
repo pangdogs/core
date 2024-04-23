@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"fmt"
 	"git.golaxy.org/core/internal/concurrent"
 	"git.golaxy.org/core/util/uid"
 )
@@ -10,6 +11,7 @@ type ConcurrentContext interface {
 	concurrent.ConcurrentContextProvider
 	concurrent.Context
 	concurrent.Caller
+	fmt.Stringer
 
 	// GetName 获取名称
 	GetName() string

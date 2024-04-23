@@ -45,6 +45,8 @@ type Context interface {
 	GetName() string
 	// GetId 获取服务Id
 	GetId() uid.Id
+	// GetReflected 获取反射值
+	GetReflected() reflect.Value
 	// GetEntityMgr 获取实体管理器
 	GetEntityMgr() EntityMgr
 }
@@ -53,7 +55,6 @@ type _Context interface {
 	init(opts ContextOptions)
 	getOptions() *ContextOptions
 	changeRunningState(state RunningState)
-	getReflected() reflect.Value
 }
 
 // ContextBehavior 服务上下文行为，在需要扩展服务上下文能力时，匿名嵌入至服务上下文结构体中
@@ -72,6 +73,11 @@ func (ctx *ContextBehavior) GetName() string {
 // GetId 获取服务Id
 func (ctx *ContextBehavior) GetId() uid.Id {
 	return ctx.opts.PersistId
+}
+
+// GetReflected 获取反射值
+func (ctx *ContextBehavior) GetReflected() reflect.Value {
+	return ctx.reflected
 }
 
 // GetEntityMgr 获取实体管理器
@@ -115,8 +121,4 @@ func (ctx *ContextBehavior) getOptions() *ContextOptions {
 
 func (ctx *ContextBehavior) changeRunningState(state RunningState) {
 	ctx.opts.RunningHandler.Call(ctx.GetAutoRecover(), ctx.GetReportError(), nil, ctx.opts.CompositeFace.Iface, state)
-}
-
-func (ctx *ContextBehavior) getReflected() reflect.Value {
-	return ctx.reflected
 }
