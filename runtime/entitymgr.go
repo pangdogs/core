@@ -84,12 +84,12 @@ func (entityMgr *_EntityMgrBehavior) changeRunningState(state RunningState) {
 			return true
 		})
 	case RunningState_Terminated:
-		entityMgr.eventEntityMgrAddEntity.Clean()
-		entityMgr.eventEntityMgrRemovingEntity.Clean()
-		entityMgr.eventEntityMgrRemoveEntity.Clean()
-		entityMgr.eventEntityMgrEntityAddComponents.Clean()
-		entityMgr.eventEntityMgrEntityRemoveComponent.Clean()
-		entityMgr.eventEntityMgrEntityFirstAccessComponent.Clean()
+		entityMgr.eventEntityMgrAddEntity.Close()
+		entityMgr.eventEntityMgrRemovingEntity.Close()
+		entityMgr.eventEntityMgrRemoveEntity.Close()
+		entityMgr.eventEntityMgrEntityAddComponents.Close()
+		entityMgr.eventEntityMgrEntityRemoveComponent.Close()
+		entityMgr.eventEntityMgrEntityFirstAccessComponent.Close()
 	}
 }
 
