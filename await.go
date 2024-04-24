@@ -15,9 +15,9 @@ var (
 )
 
 // Await 异步等待结果返回
-func Await(ctxProvider runtime.CurrentContextProvider, asyncRet ...runtime.AsyncRet) AwaitDirector {
+func Await(provider runtime.CurrentContextProvider, asyncRet ...runtime.AsyncRet) AwaitDirector {
 	return AwaitDirector{
-		rtCtx:     getRuntimeContext(ctxProvider),
+		rtCtx:     getRuntimeContext(provider),
 		asyncRets: asyncRet,
 	}
 }

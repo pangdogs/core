@@ -31,7 +31,6 @@ type EntityMgr interface {
 	RemoveEntity(id uid.Id)
 
 	_AutoEventEntityMgrAddEntity                  // 事件：实体管理器添加实体
-	_AutoEventEntityMgrRemovingEntity             // 事件：实体管理器开始删除实体
 	_AutoEventEntityMgrRemoveEntity               // 事件：实体管理器删除实体
 	_AutoEventEntityMgrEntityAddComponents        // 事件：实体管理器中的实体添加组件
 	_AutoEventEntityMgrEntityRemoveComponent      // 事件：实体管理器中的实体删除组件
@@ -45,10 +44,9 @@ type _EntityInfo struct {
 
 type _EntityMgrBehavior struct {
 	ctx                                      Context
-	entityMap                                map[uid.Id]_EntityInfo
+	entityIdx                                map[uid.Id]_EntityInfo
 	entityList                               container.List[iface.FaceAny]
 	eventEntityMgrAddEntity                  event.Event
-	eventEntityMgrRemovingEntity             event.Event
 	eventEntityMgrRemoveEntity               event.Event
 	eventEntityMgrEntityAddComponents        event.Event
 	eventEntityMgrEntityRemoveComponent      event.Event
@@ -61,10 +59,9 @@ func (entityMgr *_EntityMgrBehavior) init(ctx Context) {
 	}
 
 	entityMgr.ctx = ctx
-	entityMgr.entityMap = map[uid.Id]_EntityInfo{}
+	entityMgr.entityIdx = map[uid.Id]_EntityInfo{}
 
 	ctx.ActivateEvent(&entityMgr.eventEntityMgrAddEntity, event.EventRecursion_Allow)
-	ctx.ActivateEvent(&entityMgr.eventEntityMgrRemovingEntity, event.EventRecursion_Allow)
 	ctx.ActivateEvent(&entityMgr.eventEntityMgrRemoveEntity, event.EventRecursion_Allow)
 	ctx.ActivateEvent(&entityMgr.eventEntityMgrEntityAddComponents, event.EventRecursion_Allow)
 	ctx.ActivateEvent(&entityMgr.eventEntityMgrEntityRemoveComponent, event.EventRecursion_Allow)
@@ -85,7 +82,6 @@ func (entityMgr *_EntityMgrBehavior) changeRunningState(state RunningState) {
 		})
 	case RunningState_Terminated:
 		entityMgr.eventEntityMgrAddEntity.Close()
-		entityMgr.eventEntityMgrRemovingEntity.Close()
 		entityMgr.eventEntityMgrRemoveEntity.Close()
 		entityMgr.eventEntityMgrEntityAddComponents.Close()
 		entityMgr.eventEntityMgrEntityRemoveComponent.Close()
@@ -105,16 +101,16 @@ func (entityMgr *_EntityMgrBehavior) GetConcurrentContext() iface.Cache {
 
 // GetEntity 查询实体
 func (entityMgr *_EntityMgrBehavior) GetEntity(id uid.Id) (ec.Entity, bool) {
-	e, ok := entityMgr.entityMap[id]
+	entityInfo, ok := entityMgr.entityIdx[id]
 	if !ok {
 		return nil, false
 	}
 
-	if e.element.Escaped() {
+	if entityInfo.element.Escaped() {
 		return nil, false
 	}
 
-	return iface.Cache2Iface[ec.Entity](e.element.Value.Cache), true
+	return iface.Cache2Iface[ec.Entity](entityInfo.element.Value.Cache), true
 }
 
 // RangeEntities 遍历所有实体
@@ -153,7 +149,7 @@ func (entityMgr *_EntityMgrBehavior) AddEntity(entity ec.Entity) error {
 	}
 
 	if !entity.GetId().IsNil() {
-		if _, ok := entityMgr.entityMap[entity.GetId()]; ok {
+		if _, ok := entityMgr.entityIdx[entity.GetId()]; ok {
 			return fmt.Errorf("%w: entity already existed", ErrEntityMgr)
 		}
 	}
@@ -193,18 +189,17 @@ func (entityMgr *_EntityMgrBehavior) AddEntity(entity ec.Entity) error {
 		entityInfo.hooks[2] = ec.BindEventCompMgrFirstAccessComponent(entity, entityMgr)
 	}
 
-	entityMgr.entityMap[entity.GetId()] = entityInfo
+	entityMgr.entityIdx[entity.GetId()] = entityInfo
 
 	_entity.SetState(ec.EntityState_Enter)
 
 	_EmitEventEntityMgrAddEntity(entityMgr, entityMgr, entity)
-
 	return nil
 }
 
 // RemoveEntity 删除实体
 func (entityMgr *_EntityMgrBehavior) RemoveEntity(id uid.Id) {
-	entityInfo, ok := entityMgr.entityMap[id]
+	entityInfo, ok := entityMgr.entityIdx[id]
 	if !ok {
 		return
 	}
@@ -216,17 +211,15 @@ func (entityMgr *_EntityMgrBehavior) RemoveEntity(id uid.Id) {
 
 	entity.SetState(ec.EntityState_Leave)
 
-	if entity.GetScope() == ec.Scope_Global {
-		service.Current(entityMgr).GetEntityMgr().RemoveEntity(entity.GetId())
-	}
-
-	_EmitEventEntityMgrRemovingEntity(entityMgr, entityMgr, entity.Entity)
-
-	delete(entityMgr.entityMap, id)
+	delete(entityMgr.entityIdx, id)
 	entityInfo.element.Escape()
 
 	for i := range entityInfo.hooks {
 		entityInfo.hooks[i].Unbind()
+	}
+
+	if entity.GetScope() == ec.Scope_Global {
+		service.Current(entityMgr).GetEntityMgr().RemoveEntity(entity.GetId())
 	}
 
 	_EmitEventEntityMgrRemoveEntity(entityMgr, entityMgr, entity.Entity)
@@ -235,11 +228,6 @@ func (entityMgr *_EntityMgrBehavior) RemoveEntity(id uid.Id) {
 // EventEntityMgrAddEntity 事件：实体管理器添加实体
 func (entityMgr *_EntityMgrBehavior) EventEntityMgrAddEntity() event.IEvent {
 	return &entityMgr.eventEntityMgrAddEntity
-}
-
-// EventEntityMgrRemovingEntity 事件：实体管理器开始删除实体
-func (entityMgr *_EntityMgrBehavior) EventEntityMgrRemovingEntity() event.IEvent {
-	return &entityMgr.eventEntityMgrRemovingEntity
 }
 
 // EventEntityMgrRemoveEntity 事件：实体管理器删除实体

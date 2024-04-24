@@ -12,7 +12,6 @@ import (
 	"git.golaxy.org/core/util/reinterpret"
 	"git.golaxy.org/core/util/uid"
 	"reflect"
-	"slices"
 )
 
 // NewContext 创建运行时上下文
@@ -54,8 +53,8 @@ type Context interface {
 	GetFrame() Frame
 	// GetEntityMgr 获取实体管理器
 	GetEntityMgr() EntityMgr
-	// GetECTree 获取主EC树
-	GetECTree() ECTree
+	// GetEntityTree 获取实体树
+	GetEntityTree() EntityTree
 	// ActivateEvent 启用事件
 	ActivateEvent(event event.IEventCtrl, recursion event.EventRecursion)
 	// ManagedHooks 托管hook，在运行时停止时自动解绑定
@@ -75,15 +74,15 @@ type _Context interface {
 // ContextBehavior 运行时上下文行为，在需要扩展运行时上下文能力时，匿名嵌入至运行时上下文结构体中
 type ContextBehavior struct {
 	concurrent.ContextBehavior
-	servCtx   service.Context
-	opts      ContextOptions
-	reflected reflect.Value
-	frame     Frame
-	entityMgr _EntityMgrBehavior
-	ecTree    _ECTreeBehavior
-	callee    Callee
-	hooks     []event.Hook
-	gcList    []GC
+	servCtx      service.Context
+	opts         ContextOptions
+	reflected    reflect.Value
+	frame        Frame
+	entityMgr    _EntityMgrBehavior
+	entityTree   _EntityTreeBehavior
+	callee       Callee
+	managedHooks []event.Hook
+	gcList       []GC
 }
 
 // GetName 获取名称
@@ -111,9 +110,9 @@ func (ctx *ContextBehavior) GetEntityMgr() EntityMgr {
 	return &ctx.entityMgr
 }
 
-// GetECTree 获取主EC树
-func (ctx *ContextBehavior) GetECTree() ECTree {
-	return &ctx.ecTree
+// GetEntityTree 获取主实体树
+func (ctx *ContextBehavior) GetEntityTree() EntityTree {
+	return &ctx.entityTree
 }
 
 // ActivateEvent 启用事件
@@ -122,13 +121,6 @@ func (ctx *ContextBehavior) ActivateEvent(event event.IEventCtrl, recursion even
 		panic(fmt.Errorf("%w: %w: event is nil", ErrContext, exception.ErrArgs))
 	}
 	event.Init(ctx.GetAutoRecover(), ctx.GetReportError(), recursion)
-}
-
-// ManagedHooks 托管hook，在运行时停止时自动解绑定
-func (ctx *ContextBehavior) ManagedHooks(hooks ...event.Hook) {
-	ctx.hooks = slices.DeleteFunc(ctx.hooks, func(hook event.Hook) bool {
-		return !hook.IsBound()
-	})
 }
 
 // GetCurrentContext 获取当前上下文
@@ -183,7 +175,7 @@ func (ctx *ContextBehavior) init(servCtx service.Context, opts ContextOptions) {
 	ctx.servCtx = servCtx
 	ctx.reflected = reflect.ValueOf(ctx.opts.CompositeFace.Iface)
 	ctx.entityMgr.init(ctx.opts.CompositeFace.Iface)
-	ctx.ecTree.init(ctx.opts.CompositeFace.Iface)
+	ctx.entityTree.init(ctx.opts.CompositeFace.Iface)
 }
 
 func (ctx *ContextBehavior) getOptions() *ContextOptions {
@@ -204,18 +196,11 @@ func (ctx *ContextBehavior) getServiceCtx() service.Context {
 
 func (ctx *ContextBehavior) changeRunningState(state RunningState) {
 	ctx.entityMgr.changeRunningState(state)
-	ctx.ecTree.changeRunningState(state)
+	ctx.entityTree.changeRunningState(state)
 	ctx.opts.RunningHandler.Call(ctx.GetAutoRecover(), ctx.GetReportError(), nil, ctx.opts.CompositeFace.Iface, state)
 
 	switch state {
 	case RunningState_Terminated:
-		ctx.cleanHooks()
+		ctx.cleanManagedHooks()
 	}
-}
-
-func (ctx *ContextBehavior) cleanHooks() {
-	for i := range ctx.hooks {
-		ctx.hooks[i].Unbind()
-	}
-	ctx.hooks = nil
 }

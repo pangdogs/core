@@ -115,7 +115,7 @@ func (entity *EntityBehavior) CountComponents() int {
 // AddComponents 使用同个名称添加多个组件，一般情况下名称指组件接口名称，也可以自定义名称
 func (entity *EntityBehavior) AddComponents(name string, components []Component) error {
 	for i := range components {
-		if err := entity.addSingleComponent(name, components[i]); err != nil {
+		if err := entity.addComponent(name, components[i]); err != nil {
 			return err
 		}
 	}
@@ -126,7 +126,7 @@ func (entity *EntityBehavior) AddComponents(name string, components []Component)
 
 // AddComponent 添加单个组件，因为同个名称可以指向多个组件，所以名称指向的组件已存在时，不会返回错误
 func (entity *EntityBehavior) AddComponent(name string, component Component) error {
-	if err := entity.addSingleComponent(name, component); err != nil {
+	if err := entity.addComponent(name, component); err != nil {
 		return err
 	}
 
@@ -155,7 +155,6 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 		comp.setState(ComponentState_Detach)
 
 		_EmitEventCompMgrRemoveComponent(entity, entity.opts.CompositeFace.Iface, comp)
-
 		return true
 	}, e)
 }
@@ -194,7 +193,7 @@ func (entity *EntityBehavior) EventCompMgrFirstAccessComponent() event.IEvent {
 	return &entity.eventCompMgrFirstAccessComponent
 }
 
-func (entity *EntityBehavior) addSingleComponent(name string, component Component) error {
+func (entity *EntityBehavior) addComponent(name string, component Component) error {
 	if component == nil {
 		return fmt.Errorf("%w: %w: component is nil", ErrEC, exception.ErrArgs)
 	}

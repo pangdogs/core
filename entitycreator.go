@@ -12,9 +12,9 @@ import (
 )
 
 // CreateEntity 创建实体
-func CreateEntity(ctxProvider runtime.CurrentContextProvider) EntityCreator {
+func CreateEntity(provider runtime.CurrentContextProvider) EntityCreator {
 	return EntityCreator{
-		rtCtx:   runtime.Current(ctxProvider),
+		rtCtx:   runtime.Current(provider),
 		options: option.Make(ec.With.Default()),
 	}
 }
@@ -75,7 +75,7 @@ func (c EntityCreator) Spawn() (ec.Entity, error) {
 	}
 
 	if !c.parentId.IsNil() {
-		_, err := runtime.UnsafeECTree(c.rtCtx.GetECTree()).GetAndCheckEntity(c.parentId)
+		_, err := runtime.UnsafeEntityTree(c.rtCtx.GetEntityTree()).GetAndCheckEntity(c.parentId)
 		if err != nil {
 			return nil, err
 		}
@@ -88,7 +88,7 @@ func (c EntityCreator) Spawn() (ec.Entity, error) {
 	}
 
 	if !c.parentId.IsNil() {
-		if err := c.rtCtx.GetECTree().AddChild(c.options.PersistId, entity.GetId()); err != nil {
+		if err := c.rtCtx.GetEntityTree().AddNode(c.parentId, entity.GetId()); err != nil {
 			entity.DestroySelf()
 			return nil, err
 		}

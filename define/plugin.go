@@ -26,20 +26,20 @@ type _Plugin[PLUGIN_IFACE, OPTION any] struct {
 }
 
 func (p _Plugin[PLUGIN_IFACE, OPTION]) install(creator generic.FuncVar0[OPTION, PLUGIN_IFACE]) generic.ActionVar1[plugin.PluginProvider, OPTION] {
-	return func(pluginBundle plugin.PluginProvider, options ...OPTION) {
-		plugin.Install[PLUGIN_IFACE](pluginBundle, creator(options...), p.name)
+	return func(provider plugin.PluginProvider, options ...OPTION) {
+		plugin.Install[PLUGIN_IFACE](provider, creator(options...), p.name)
 	}
 }
 
 func (p _Plugin[PLUGIN_IFACE, OPTION]) uninstall() generic.Action1[plugin.PluginProvider] {
-	return func(pluginBundle plugin.PluginProvider) {
-		plugin.Uninstall(pluginBundle, p.name)
+	return func(provider plugin.PluginProvider) {
+		plugin.Uninstall(provider, p.name)
 	}
 }
 
 func (p _Plugin[PLUGIN_IFACE, OPTION]) using() generic.Func1[plugin.PluginProvider, PLUGIN_IFACE] {
-	return func(pluginProvider plugin.PluginProvider) PLUGIN_IFACE {
-		return plugin.Using[PLUGIN_IFACE](pluginProvider, p.name)
+	return func(provider plugin.PluginProvider) PLUGIN_IFACE {
+		return plugin.Using[PLUGIN_IFACE](provider, p.name)
 	}
 }
 

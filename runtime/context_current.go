@@ -14,40 +14,40 @@ type (
 )
 
 // Current 获取当前运行时上下文
-func Current(ctxProvider CurrentContextProvider) Context {
-	if ctxProvider == nil {
-		panic(fmt.Errorf("%w: %w: ctxProvider is nil", ErrContext, exception.ErrArgs))
+func Current(provider CurrentContextProvider) Context {
+	if provider == nil {
+		panic(fmt.Errorf("%w: %w: provider is nil", ErrContext, exception.ErrArgs))
 	}
-	return iface.Cache2Iface[Context](ctxProvider.GetCurrentContext())
+	return iface.Cache2Iface[Context](provider.GetCurrentContext())
 }
 
 // Concurrent 获取多线程安全的运行时上下文
-func Concurrent(ctxProvider ConcurrentContextProvider) ConcurrentContext {
-	if ctxProvider == nil {
-		panic(fmt.Errorf("%w: %w: ctxProvider is nil", ErrContext, exception.ErrArgs))
+func Concurrent(provider ConcurrentContextProvider) ConcurrentContext {
+	if provider == nil {
+		panic(fmt.Errorf("%w: %w: provider is nil", ErrContext, exception.ErrArgs))
 	}
-	return iface.Cache2Iface[Context](ctxProvider.GetConcurrentContext())
+	return iface.Cache2Iface[Context](provider.GetConcurrentContext())
 }
 
-func getCaller(ctxProvider ConcurrentContextProvider) concurrent.Caller {
-	if ctxProvider == nil {
-		panic(fmt.Errorf("%w: %w: ctxProvider is nil", ErrContext, exception.ErrArgs))
+func getCaller(provider ConcurrentContextProvider) concurrent.Caller {
+	if provider == nil {
+		panic(fmt.Errorf("%w: %w: provider is nil", ErrContext, exception.ErrArgs))
 	}
-	return iface.Cache2Iface[Context](ctxProvider.GetConcurrentContext())
+	return iface.Cache2Iface[Context](provider.GetConcurrentContext())
 }
 
-func getRuntimeContext(ctxProvider CurrentContextProvider) Context {
-	if ctxProvider == nil {
-		panic(fmt.Errorf("%w: %w: ctxProvider is nil", ErrContext, exception.ErrArgs))
+func getRuntimeContext(provider CurrentContextProvider) Context {
+	if provider == nil {
+		panic(fmt.Errorf("%w: %w: provider is nil", ErrContext, exception.ErrArgs))
 	}
-	return iface.Cache2Iface[Context](ctxProvider.GetCurrentContext())
+	return iface.Cache2Iface[Context](provider.GetCurrentContext())
 }
 
-func getServiceContext(ctxProvider ConcurrentContextProvider) service.Context {
-	if ctxProvider == nil {
-		panic(fmt.Errorf("%w: %w: ctxProvider is nil", ErrContext, exception.ErrArgs))
+func getServiceContext(provider ConcurrentContextProvider) service.Context {
+	if provider == nil {
+		panic(fmt.Errorf("%w: %w: provider is nil", ErrContext, exception.ErrArgs))
 	}
-	ctx := iface.Cache2Iface[Context](ctxProvider.GetConcurrentContext())
+	ctx := iface.Cache2Iface[Context](provider.GetConcurrentContext())
 	if ctx == nil {
 		return nil
 	}

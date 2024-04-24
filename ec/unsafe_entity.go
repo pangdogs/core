@@ -43,14 +43,14 @@ func (ue _UnsafeEntity) GetVersion() int64 {
 	return ue.getVersion()
 }
 
-// SetECNodeState 设置EC节点状态
-func (ue _UnsafeEntity) SetECNodeState(state ECNodeState) {
-	ue.setECNodeState(state)
+// SetTreeNodeState 设置实体树节点状态
+func (ue _UnsafeEntity) SetTreeNodeState(state TreeNodeState) {
+	ue.setTreeNodeState(state)
 }
 
-// SetECParent 设置在EC树中的父实体
-func (ue _UnsafeEntity) SetECParent(parent Entity) {
-	ue.setECParent(parent)
+// SetTreeNodeParent 设置在实体树中的父实体
+func (ue _UnsafeEntity) SetTreeNodeParent(parent Entity) {
+	ue.setTreeNodeParent(parent)
 }
 
 // SetState 设置状态
@@ -68,7 +68,7 @@ func (ue _UnsafeEntity) EventEntityDestroySelf() event.IEvent {
 	return ue.eventEntityDestroySelf()
 }
 
-// CleanHooks 清理所有的托管hook
-func (ue _UnsafeEntity) CleanHooks() {
-	ue.cleanHooks()
+// CleanManagedHooks 清理所有的托管hook
+func (ue _UnsafeEntity) CleanManagedHooks() {
+	ue.cleanManagedHooks()
 }

@@ -31,7 +31,7 @@ type PluginBundle interface {
 // NewPluginBundle 创建插件包
 func NewPluginBundle() PluginBundle {
 	return &_PluginBundle{
-		pluginMap: map[string]*PluginInfo{},
+		pluginIdx: map[string]*PluginInfo{},
 	}
 }
 
@@ -45,7 +45,7 @@ type PluginInfo struct {
 
 type _PluginBundle struct {
 	sync.RWMutex
-	pluginMap  map[string]*PluginInfo
+	pluginIdx  map[string]*PluginInfo
 	pluginList []*PluginInfo
 }
 
@@ -70,7 +70,7 @@ func (bundle *_PluginBundle) Install(pluginFace iface.FaceAny, name ...string) P
 		_name = types.AnyFullName(pluginFace.Iface)
 	}
 
-	_, ok := bundle.pluginMap[_name]
+	_, ok := bundle.pluginIdx[_name]
 	if ok {
 		panic(fmt.Errorf("%w: plugin %q is already installed", ErrPlugin, name))
 	}
@@ -83,7 +83,7 @@ func (bundle *_PluginBundle) Install(pluginFace iface.FaceAny, name ...string) P
 	}
 
 	bundle.pluginList = append(bundle.pluginList, pluginInfo)
-	bundle.pluginMap[_name] = pluginInfo
+	bundle.pluginIdx[_name] = pluginInfo
 
 	return *pluginInfo
 }
@@ -93,7 +93,7 @@ func (bundle *_PluginBundle) Uninstall(name string) {
 	bundle.Lock()
 	defer bundle.Unlock()
 
-	pluginInfo, ok := bundle.pluginMap[name]
+	pluginInfo, ok := bundle.pluginIdx[name]
 	if !ok {
 		return
 	}
@@ -102,7 +102,7 @@ func (bundle *_PluginBundle) Uninstall(name string) {
 		panic(fmt.Errorf("%w: plugin %q is active, can't uninstall", ErrPlugin, name))
 	}
 
-	delete(bundle.pluginMap, name)
+	delete(bundle.pluginIdx, name)
 
 	bundle.pluginList = slices.DeleteFunc(bundle.pluginList, func(info *PluginInfo) bool {
 		return info.Name == name
@@ -114,7 +114,7 @@ func (bundle *_PluginBundle) Get(name string) (PluginInfo, bool) {
 	bundle.RLock()
 	defer bundle.RUnlock()
 
-	pluginInfo, ok := bundle.pluginMap[name]
+	pluginInfo, ok := bundle.pluginIdx[name]
 	if !ok {
 		return PluginInfo{}, false
 	}
@@ -152,7 +152,7 @@ func (bundle *_PluginBundle) activate(name string, b bool) {
 	bundle.Lock()
 	defer bundle.Unlock()
 
-	pluginInfo, ok := bundle.pluginMap[name]
+	pluginInfo, ok := bundle.pluginIdx[name]
 	if !ok {
 		return
 	}

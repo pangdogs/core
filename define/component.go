@@ -37,7 +37,7 @@ func DefineComponentWithInterface[COMP, COMP_IFACE any](compLib ...pt.ComponentL
 		panic(fmt.Errorf("%w: %w: compLib is nil", exception.ErrCore, exception.ErrArgs))
 	}
 
-	comp, ifaceName := DefineComponentInterface[COMP_IFACE](_compLib).Register(types.Zero[COMP]())
+	comp, ifaceName := DefineComponentInterface[COMP_IFACE](_compLib).Declare(types.Zero[COMP]())
 	return _Component{
 		name:          comp.Name,
 		interfaceName: ifaceName,

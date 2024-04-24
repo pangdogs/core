@@ -2,7 +2,7 @@
 /*
    - 运行时上下文（Context）
    - 实体管理器（EntityMgr）
-   - EC树（ECTree）
+   - 实体树（EntityTree）
    - 帧（Frame）
 */
 package runtime

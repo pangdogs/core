@@ -57,7 +57,7 @@ func (uc _UnsafeComponent) EventComponentDestroySelf() event.IEvent {
 	return uc.eventComponentDestroySelf()
 }
 
-// CleanHooks 清理所有的托管hook
-func (uc _UnsafeComponent) CleanHooks() {
-	uc.cleanHooks()
+// CleanManagedHooks 清理所有的托管hook
+func (uc _UnsafeComponent) CleanManagedHooks() {
+	uc.cleanManagedHooks()
 }

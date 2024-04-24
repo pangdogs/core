@@ -24,8 +24,8 @@ type _PluginInterface[PLUGIN_IFACE any] struct {
 }
 
 func (p _PluginInterface[PLUGIN_IFACE]) using() generic.Func1[plugin.PluginProvider, PLUGIN_IFACE] {
-	return func(pluginProvider plugin.PluginProvider) PLUGIN_IFACE {
-		return plugin.Using[PLUGIN_IFACE](pluginProvider, p.name)
+	return func(provider plugin.PluginProvider) PLUGIN_IFACE {
+		return plugin.Using[PLUGIN_IFACE](provider, p.name)
 	}
 }
 

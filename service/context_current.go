@@ -10,9 +10,9 @@ type (
 )
 
 //go:linkname getServiceContext git.golaxy.org/core/runtime.getServiceContext
-func getServiceContext(ctxProvider concurrent.ConcurrentContextProvider) Context
+func getServiceContext(provider concurrent.ConcurrentContextProvider) Context
 
 // Current 获取服务上下文
-func Current(ctxProvider ConcurrentContextProvider) Context {
-	return getServiceContext(ctxProvider)
+func Current(provider ConcurrentContextProvider) Context {
+	return getServiceContext(provider)
 }

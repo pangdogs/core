@@ -15,8 +15,8 @@ type CompInfo struct {
 
 // EntityPT 实体原型
 type EntityPT struct {
-	Prototype string     // 实体原型名称
-	CompInfos []CompInfo // 组件信息
+	Prototype  string     // 实体原型名称
+	Components []CompInfo // 组件信息
 }
 
 // Construct 创建实体
@@ -36,8 +36,8 @@ func (pt EntityPT) Assemble(entity ec.Entity) ec.Entity {
 		panic(fmt.Errorf("%w: %w: entity is nil", ErrPt, exception.ErrArgs))
 	}
 
-	for i := range pt.CompInfos {
-		compInfo := &pt.CompInfos[i]
+	for i := range pt.Components {
+		compInfo := &pt.Components[i]
 
 		comp := compInfo.PT.Construct()
 

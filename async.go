@@ -11,11 +11,11 @@ import (
 )
 
 //go:linkname getRuntimeContext git.golaxy.org/core/runtime.getRuntimeContext
-func getRuntimeContext(ctxProvider concurrent.CurrentContextProvider) runtime.Context
+func getRuntimeContext(provider concurrent.CurrentContextProvider) runtime.Context
 
 // Async 异步执行代码，有返回值
-func Async(ctxProvider runtime.CurrentContextProvider, fun generic.FuncVar1[runtime.Context, any, runtime.Ret], va ...any) runtime.AsyncRet {
-	ctx := getRuntimeContext(ctxProvider)
+func Async(provider runtime.CurrentContextProvider, fun generic.FuncVar1[runtime.Context, any, runtime.Ret], va ...any) runtime.AsyncRet {
+	ctx := getRuntimeContext(provider)
 	return ctx.Call(func(va ...any) runtime.Ret {
 		ctx := va[0].(runtime.Context)
 		fun := va[1].(generic.FuncVar1[runtime.Context, any, runtime.Ret])
@@ -25,8 +25,8 @@ func Async(ctxProvider runtime.CurrentContextProvider, fun generic.FuncVar1[runt
 }
 
 // AsyncVoid 异步执行代码，无返回值
-func AsyncVoid(ctxProvider runtime.CurrentContextProvider, fun generic.ActionVar1[runtime.Context, any], va ...any) runtime.AsyncRet {
-	ctx := getRuntimeContext(ctxProvider)
+func AsyncVoid(provider runtime.CurrentContextProvider, fun generic.ActionVar1[runtime.Context, any], va ...any) runtime.AsyncRet {
+	ctx := getRuntimeContext(provider)
 	return ctx.CallVoid(func(va ...any) {
 		ctx := va[0].(runtime.Context)
 		fun := va[1].(generic.ActionVar1[runtime.Context, any])

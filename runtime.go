@@ -220,7 +220,7 @@ func (rt *RuntimeBehavior) removeComponent(component ec.Component) {
 		generic.MakeAction0(compDispose.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
 
-	ec.UnsafeComponent(component).CleanHooks()
+	ec.UnsafeComponent(component).CleanManagedHooks()
 }
 
 func (rt *RuntimeBehavior) connectEntity(entity ec.Entity) {
@@ -395,7 +395,7 @@ func (rt *RuntimeBehavior) shutEntity(entity ec.Entity) {
 			generic.MakeAction0(compDispose.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 		}
 
-		ec.UnsafeComponent(comp).CleanHooks()
+		ec.UnsafeComponent(comp).CleanManagedHooks()
 
 		return true
 	})
@@ -406,5 +406,5 @@ func (rt *RuntimeBehavior) shutEntity(entity ec.Entity) {
 		generic.MakeAction0(entityDispose.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
 
-	ec.UnsafeEntity(entity).CleanHooks()
+	ec.UnsafeEntity(entity).CleanManagedHooks()
 }

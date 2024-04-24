@@ -13,12 +13,12 @@ type PluginProvider interface {
 }
 
 // Using 使用插件
-func Using[T any](pluginProvider PluginProvider, name string) T {
-	if pluginProvider == nil {
-		panic(fmt.Errorf("%w: %w: pluginProvider is nil", ErrPlugin, exception.ErrArgs))
+func Using[T any](provider PluginProvider, name string) T {
+	if provider == nil {
+		panic(fmt.Errorf("%w: %w: provider is nil", ErrPlugin, exception.ErrArgs))
 	}
 
-	pluginInfo, ok := pluginProvider.GetPluginBundle().Get(name)
+	pluginInfo, ok := provider.GetPluginBundle().Get(name)
 	if !ok {
 		panic(fmt.Errorf("%w: plugin %q not installed", ErrPlugin, name))
 	}
@@ -31,17 +31,17 @@ func Using[T any](pluginProvider PluginProvider, name string) T {
 }
 
 // Install 安装插件
-func Install[T any](pluginProvider PluginProvider, plugin T, name ...string) {
-	if pluginProvider == nil {
-		panic(fmt.Errorf("%w: %w: pluginProvider is nil", ErrPlugin, exception.ErrArgs))
+func Install[T any](provider PluginProvider, plugin T, name ...string) {
+	if provider == nil {
+		panic(fmt.Errorf("%w: %w: provider is nil", ErrPlugin, exception.ErrArgs))
 	}
-	pluginProvider.GetPluginBundle().Install(iface.MakeFaceAny(plugin), name...)
+	provider.GetPluginBundle().Install(iface.MakeFaceAny(plugin), name...)
 }
 
 // Uninstall 卸载插件
-func Uninstall(pluginProvider PluginProvider, name string) {
-	if pluginProvider == nil {
-		panic(fmt.Errorf("%w: %w: pluginProvider is nil", ErrPlugin, exception.ErrArgs))
+func Uninstall(provider PluginProvider, name string) {
+	if provider == nil {
+		panic(fmt.Errorf("%w: %w: provider is nil", ErrPlugin, exception.ErrArgs))
 	}
-	pluginProvider.GetPluginBundle().Uninstall(name)
+	provider.GetPluginBundle().Uninstall(name)
 }

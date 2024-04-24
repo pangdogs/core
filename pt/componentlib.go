@@ -6,7 +6,6 @@ import (
 	"git.golaxy.org/core/internal/exception"
 	"git.golaxy.org/core/util/generic"
 	"git.golaxy.org/core/util/types"
-	"github.com/elliotchance/pie/v2"
 	"reflect"
 	"slices"
 	"sync"
@@ -36,16 +35,16 @@ func DefaultComponentLib() ComponentLib {
 // NewComponentLib 创建组件原型库
 func NewComponentLib() ComponentLib {
 	return &_ComponentLib{
-		compMap:  map[string]*ComponentPT{},
-		aliasMap: map[string][]*ComponentPT{},
+		compIdx:  map[string]*ComponentPT{},
+		aliasTab: map[string][]*ComponentPT{},
 	}
 }
 
 type _ComponentLib struct {
 	sync.RWMutex
-	compMap  map[string]*ComponentPT
+	compIdx  map[string]*ComponentPT
 	compList []*ComponentPT
-	aliasMap map[string][]*ComponentPT
+	aliasTab map[string][]*ComponentPT
 }
 
 // Declare 声明组件原型
@@ -55,9 +54,9 @@ func (lib *_ComponentLib) Declare(comp any, aliases ...string) ComponentPT {
 	}
 
 	if tfComp, ok := comp.(reflect.Type); ok {
-		return lib.register(tfComp, aliases)
+		return lib.declare(tfComp, aliases)
 	} else {
-		return lib.register(reflect.TypeOf(comp), aliases)
+		return lib.declare(reflect.TypeOf(comp), aliases)
 	}
 }
 
@@ -66,13 +65,13 @@ func (lib *_ComponentLib) Undeclare(name string) {
 	lib.Lock()
 	defer lib.Unlock()
 
-	delete(lib.compMap, name)
+	delete(lib.compIdx, name)
 
 	lib.compList = slices.DeleteFunc(lib.compList, func(pt *ComponentPT) bool {
 		return pt.Name == name
 	})
 
-	lib.clearAliases(name)
+	lib.cleanAliases(name)
 }
 
 // Get 获取组件原型
@@ -80,7 +79,7 @@ func (lib *_ComponentLib) Get(name string) (ComponentPT, bool) {
 	lib.RLock()
 	defer lib.RUnlock()
 
-	comp, ok := lib.compMap[name]
+	comp, ok := lib.compIdx[name]
 	if !ok {
 		return ComponentPT{}, false
 	}
@@ -93,7 +92,7 @@ func (lib *_ComponentLib) GetAlias(alias string) []ComponentPT {
 	lib.RLock()
 	defer lib.RUnlock()
 
-	comps := lib.aliasMap[alias]
+	comps := lib.aliasTab[alias]
 	ret := make([]ComponentPT, 0, len(comps))
 
 	for _, comp := range comps {
@@ -116,7 +115,7 @@ func (lib *_ComponentLib) Range(fun generic.Func1[ComponentPT, bool]) {
 	}
 }
 
-func (lib *_ComponentLib) register(tfComp reflect.Type, aliases []string) ComponentPT {
+func (lib *_ComponentLib) declare(tfComp reflect.Type, aliases []string) ComponentPT {
 	lib.Lock()
 	defer lib.Unlock()
 
@@ -134,7 +133,7 @@ func (lib *_ComponentLib) register(tfComp reflect.Type, aliases []string) Compon
 		panic(fmt.Errorf("%w: component %q not implement ec.Component", ErrPt, compName))
 	}
 
-	comp, ok := lib.compMap[compName]
+	comp, ok := lib.compIdx[compName]
 	if ok {
 		lib.addAliases(comp, aliases)
 		return *comp
@@ -145,7 +144,7 @@ func (lib *_ComponentLib) register(tfComp reflect.Type, aliases []string) Compon
 		RType: tfComp,
 	}
 
-	lib.compMap[compName] = comp
+	lib.compIdx[compName] = comp
 	lib.compList = append(lib.compList, comp)
 	lib.addAliases(comp, aliases)
 
@@ -154,23 +153,18 @@ func (lib *_ComponentLib) register(tfComp reflect.Type, aliases []string) Compon
 
 func (lib *_ComponentLib) addAliases(comp *ComponentPT, aliases []string) {
 	for _, alias := range aliases {
-		if !pie.Any(lib.aliasMap[alias], func(pt *ComponentPT) bool {
+		if !slices.ContainsFunc(lib.aliasTab[alias], func(pt *ComponentPT) bool {
 			return pt.Name == comp.Name
 		}) {
-			lib.aliasMap[alias] = append(lib.aliasMap[alias], comp)
+			lib.aliasTab[alias] = append(lib.aliasTab[alias], comp)
 		}
 	}
 }
 
-func (lib *_ComponentLib) clearAliases(compName string) {
-	for alias, comps := range lib.aliasMap {
-		if !pie.Any(comps, func(pt *ComponentPT) bool {
+func (lib *_ComponentLib) cleanAliases(compName string) {
+	for alias, comps := range lib.aliasTab {
+		lib.aliasTab[alias] = slices.DeleteFunc(comps, func(pt *ComponentPT) bool {
 			return pt.Name == compName
-		}) {
-			continue
-		}
-		lib.aliasMap[alias] = pie.Filter(comps, func(pt *ComponentPT) bool {
-			return pt.Name != compName
 		})
 	}
 }

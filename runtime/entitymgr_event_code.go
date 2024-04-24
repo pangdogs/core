@@ -40,37 +40,6 @@ func (h EventEntityMgrAddEntityHandler) OnEntityMgrAddEntity(entityMgr EntityMgr
 	h(entityMgr, entity)
 }
 
-type _AutoEventEntityMgrRemovingEntity interface {
-	EventEntityMgrRemovingEntity() event.IEvent
-}
-
-func BindEventEntityMgrRemovingEntity(auto _AutoEventEntityMgrRemovingEntity, subscriber EventEntityMgrRemovingEntity, priority ...int32) event.Hook {
-	if auto == nil {
-		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
-	}
-	return event.BindEvent[EventEntityMgrRemovingEntity](auto.EventEntityMgrRemovingEntity(), subscriber, priority...)
-}
-
-func _EmitEventEntityMgrRemovingEntity(auto _AutoEventEntityMgrRemovingEntity, entityMgr EntityMgr, entity ec.Entity) {
-	if auto == nil {
-		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
-	}
-	event.UnsafeEvent(auto.EventEntityMgrRemovingEntity()).Emit(func(subscriber iface.Cache) bool {
-		iface.Cache2Iface[EventEntityMgrRemovingEntity](subscriber).OnEntityMgrRemovingEntity(entityMgr, entity)
-		return true
-	})
-}
-
-func HandleEventEntityMgrRemovingEntity(fun func(entityMgr EntityMgr, entity ec.Entity)) EventEntityMgrRemovingEntityHandler {
-	return EventEntityMgrRemovingEntityHandler(fun)
-}
-
-type EventEntityMgrRemovingEntityHandler func(entityMgr EntityMgr, entity ec.Entity)
-
-func (h EventEntityMgrRemovingEntityHandler) OnEntityMgrRemovingEntity(entityMgr EntityMgr, entity ec.Entity) {
-	h(entityMgr, entity)
-}
-
 type _AutoEventEntityMgrRemoveEntity interface {
 	EventEntityMgrRemoveEntity() event.IEvent
 }

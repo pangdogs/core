@@ -44,10 +44,10 @@ type Entity interface {
 	GetPrototype() string
 	// GetScope 获取可访问作用域
 	GetScope() Scope
-	// GetECNodeState 获取EC节点状态
-	GetECNodeState() ECNodeState
-	// GetECParent 获取在EC树中的父实体
-	GetECParent() (Entity, bool)
+	// GetTreeNodeState 获取实体树节点状态
+	GetTreeNodeState() TreeNodeState
+	// GetTreeNodeParent 获取在实体树中的父实体
+	GetTreeNodeParent() (Entity, bool)
 	// GetState 获取实体状态
 	GetState() EntityState
 	// GetReflected 获取反射值
@@ -64,19 +64,19 @@ type _Entity interface {
 	setId(id uid.Id)
 	setContext(ctx iface.Cache)
 	getVersion() int64
-	setECNodeState(state ECNodeState)
-	setECParent(parent Entity)
+	setTreeNodeState(state TreeNodeState)
+	setTreeNodeParent(parent Entity)
 	setState(state EntityState)
 	setReflected(v reflect.Value)
 	eventEntityDestroySelf() event.IEvent
-	cleanHooks()
+	cleanManagedHooks()
 }
 
 // EntityBehavior 实体行为，在需要扩展实体能力时，匿名嵌入至实体结构体中
 type EntityBehavior struct {
 	opts                             EntityOptions
 	context                          iface.Cache
-	ecNodeState                      ECNodeState
+	treeNodeState                    TreeNodeState
 	parent                           Entity
 	componentList                    container.List[iface.FaceAny]
 	state                            EntityState
@@ -85,7 +85,7 @@ type EntityBehavior struct {
 	eventCompMgrAddComponents        event.Event
 	eventCompMgrRemoveComponent      event.Event
 	eventCompMgrFirstAccessComponent event.Event
-	hooks                            []event.Hook
+	managedHooks                     []event.Hook
 }
 
 // GetId 获取实体Id
@@ -103,13 +103,13 @@ func (entity *EntityBehavior) GetScope() Scope {
 	return entity.opts.Scope
 }
 
-// GetECNodeState 获取EC节点状态
-func (entity *EntityBehavior) GetECNodeState() ECNodeState {
-	return entity.ecNodeState
+// GetTreeNodeState 获取实体树节点状态
+func (entity *EntityBehavior) GetTreeNodeState() TreeNodeState {
+	return entity.treeNodeState
 }
 
-// GetECParent 获取在EC树中的父实体
-func (entity *EntityBehavior) GetECParent() (Entity, bool) {
+// GetTreeNodeParent 获取在实体树中的父实体
+func (entity *EntityBehavior) GetTreeNodeParent() (Entity, bool) {
 	return entity.parent, entity.parent != nil
 }
 
@@ -189,11 +189,11 @@ func (entity *EntityBehavior) getVersion() int64 {
 	return entity.componentList.Version()
 }
 
-func (entity *EntityBehavior) setECNodeState(state ECNodeState) {
-	entity.ecNodeState = state
+func (entity *EntityBehavior) setTreeNodeState(state TreeNodeState) {
+	entity.treeNodeState = state
 }
 
-func (entity *EntityBehavior) setECParent(parent Entity) {
+func (entity *EntityBehavior) setTreeNodeParent(parent Entity) {
 	entity.parent = parent
 }
 

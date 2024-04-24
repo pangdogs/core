@@ -58,14 +58,14 @@ func NewEntityLib(compLib ComponentLib) EntityLib {
 
 	return &_EntityLib{
 		compLib:   compLib,
-		entityMap: map[string]*EntityPT{},
+		entityIdx: map[string]*EntityPT{},
 	}
 }
 
 type _EntityLib struct {
 	sync.RWMutex
 	compLib    ComponentLib
-	entityMap  map[string]*EntityPT
+	entityIdx  map[string]*EntityPT
 	entityList []*EntityPT
 }
 
@@ -79,7 +79,7 @@ func (lib *_EntityLib) Declare(prototype string, comps ...any) EntityPT {
 	lib.Lock()
 	defer lib.Unlock()
 
-	_, ok := lib.entityMap[prototype]
+	_, ok := lib.entityIdx[prototype]
 	if ok {
 		panic(fmt.Errorf("%w: entity %q is already declared", ErrPt, prototype))
 	}
@@ -89,12 +89,12 @@ func (lib *_EntityLib) Declare(prototype string, comps ...any) EntityPT {
 	}
 
 	for _, comp := range comps {
-		var ci CompInfo
+		var compInfo CompInfo
 
 	retry:
 		switch pt := comp.(type) {
 		case _CompAlias:
-			ci.Alias = pt.Alias
+			compInfo.Alias = pt.Alias
 			comp = pt.Comp
 			goto retry
 		case string:
@@ -102,19 +102,19 @@ func (lib *_EntityLib) Declare(prototype string, comps ...any) EntityPT {
 			if !ok {
 				panic(fmt.Errorf("%w: entity %q component %q was not declared", ErrPt, prototype, pt))
 			}
-			ci.PT = compPT
+			compInfo.PT = compPT
 		default:
-			ci.PT = lib.compLib.Declare(pt)
+			compInfo.PT = lib.compLib.Declare(pt)
 		}
 
-		if ci.Alias == "" {
-			ci.Alias = ci.PT.Name
+		if compInfo.Alias == "" {
+			compInfo.Alias = compInfo.PT.Name
 		}
 
-		entity.CompInfos = append(entity.CompInfos, ci)
+		entity.Components = append(entity.Components, compInfo)
 	}
 
-	lib.entityMap[prototype] = entity
+	lib.entityIdx[prototype] = entity
 	lib.entityList = append(lib.entityList, entity)
 
 	return *entity
@@ -125,7 +125,7 @@ func (lib *_EntityLib) Undeclare(prototype string) {
 	lib.Lock()
 	defer lib.Unlock()
 
-	delete(lib.entityMap, prototype)
+	delete(lib.entityIdx, prototype)
 
 	lib.entityList = slices.DeleteFunc(lib.entityList, func(pt *EntityPT) bool {
 		return pt.Prototype == prototype
@@ -137,7 +137,7 @@ func (lib *_EntityLib) Get(prototype string) (EntityPT, bool) {
 	lib.RLock()
 	defer lib.RUnlock()
 
-	entity, ok := lib.entityMap[prototype]
+	entity, ok := lib.entityIdx[prototype]
 	if !ok {
 		return EntityPT{}, false
 	}

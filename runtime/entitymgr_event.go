@@ -8,11 +8,6 @@ type EventEntityMgrAddEntity interface {
 	OnEntityMgrAddEntity(entityMgr EntityMgr, entity ec.Entity)
 }
 
-// EventEntityMgrRemovingEntity [EmitUnExport] 事件：实体管理器开始删除实体
-type EventEntityMgrRemovingEntity interface {
-	OnEntityMgrRemovingEntity(entityMgr EntityMgr, entity ec.Entity)
-}
-
 // EventEntityMgrRemoveEntity [EmitUnExport] 事件：实体管理器删除实体
 type EventEntityMgrRemoveEntity interface {
 	OnEntityMgrRemoveEntity(entityMgr EntityMgr, entity ec.Entity)
