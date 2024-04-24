@@ -34,7 +34,7 @@ func UnsafeNewRuntime(ctx runtime.Context, options RuntimeOptions) Runtime {
 
 // Runtime 运行时接口
 type Runtime interface {
-	_Runtime
+	iRuntime
 	concurrent.CurrentContextProvider
 	concurrent.ConcurrentContextProvider
 	concurrent.Callee
@@ -42,7 +42,7 @@ type Runtime interface {
 	Running
 }
 
-type _Runtime interface {
+type iRuntime interface {
 	init(ctx runtime.Context, opts RuntimeOptions)
 	getOptions() *RuntimeOptions
 }

@@ -34,7 +34,7 @@ func UnsafeNewContext(servCtx service.Context, options ContextOptions) Context {
 
 // Context 运行时上下文接口
 type Context interface {
-	_Context
+	iContext
 	concurrent.CurrentContextProvider
 	concurrent.Context
 	concurrent.Caller
@@ -61,7 +61,7 @@ type Context interface {
 	ManagedHooks(hooks ...event.Hook)
 }
 
-type _Context interface {
+type iContext interface {
 	init(servCtx service.Context, opts ContextOptions)
 	getOptions() *ContextOptions
 	setFrame(frame Frame)

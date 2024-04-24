@@ -141,8 +141,6 @@ func (rt *RuntimeBehavior) mainLoop() {
 
 	if frame == nil {
 		rt.loopingNoFrame()
-	} else if frame.GetBlink() {
-		rt.loopingBlinkFrame()
 	} else {
 		rt.loopingWithFrame()
 	}

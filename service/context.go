@@ -33,7 +33,7 @@ func UnsafeNewContext(options ContextOptions) Context {
 
 // Context 服务上下文
 type Context interface {
-	_Context
+	iContext
 	concurrent.Context
 	reinterpret.CompositeProvider
 	Caller
@@ -51,7 +51,7 @@ type Context interface {
 	GetEntityMgr() EntityMgr
 }
 
-type _Context interface {
+type iContext interface {
 	init(opts ContextOptions)
 	getOptions() *ContextOptions
 	changeRunningState(state RunningState)

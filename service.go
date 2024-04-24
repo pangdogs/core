@@ -30,7 +30,7 @@ func UnsafeNewService(ctx service.Context, options ServiceOptions) Service {
 
 // Service 服务
 type Service interface {
-	_Service
+	iService
 	reinterpret.CompositeProvider
 	Running
 
@@ -38,7 +38,7 @@ type Service interface {
 	GetContext() service.Context
 }
 
-type _Service interface {
+type iService interface {
 	init(ctx service.Context, opts ServiceOptions)
 	getOptions() *ServiceOptions
 }

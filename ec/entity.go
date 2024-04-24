@@ -32,8 +32,8 @@ func UnsafeNewEntity(options EntityOptions) Entity {
 
 // Entity 实体接口
 type Entity interface {
-	_Entity
-	_ComponentMgr
+	iEntity
+	iComponentMgr
 	concurrent.CurrentContextProvider
 	reinterpret.CompositeProvider
 	fmt.Stringer
@@ -58,7 +58,7 @@ type Entity interface {
 	DestroySelf()
 }
 
-type _Entity interface {
+type iEntity interface {
 	init(opts EntityOptions)
 	getOptions() *EntityOptions
 	setId(id uid.Id)

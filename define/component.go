@@ -7,8 +7,8 @@ import (
 	"git.golaxy.org/core/util/types"
 )
 
-// DefineComponent 定义组件
-func DefineComponent[COMP any](compLib ...pt.ComponentLib) Component {
+// Component 定义组件
+func Component[COMP any](compLib ...pt.ComponentLib) ComponentDefinition {
 	_compLib := pt.DefaultComponentLib()
 
 	if len(compLib) > 0 {
@@ -20,13 +20,13 @@ func DefineComponent[COMP any](compLib ...pt.ComponentLib) Component {
 	}
 
 	comp := _compLib.Declare(types.Zero[COMP]())
-	return _Component{
+	return _DefineComponent{
 		name: comp.Name,
 	}.Component()
 }
 
-// DefineComponentWithInterface 定义有接口的组件，接口名称将作为组件名
-func DefineComponentWithInterface[COMP, COMP_IFACE any](compLib ...pt.ComponentLib) Component {
+// ComponentWithInterface 定义有接口的组件，接口名称将作为组件名
+func ComponentWithInterface[COMP, COMP_IFACE any](compLib ...pt.ComponentLib) ComponentDefinition {
 	_compLib := pt.DefaultComponentLib()
 
 	if len(compLib) > 0 {
@@ -37,27 +37,27 @@ func DefineComponentWithInterface[COMP, COMP_IFACE any](compLib ...pt.ComponentL
 		panic(fmt.Errorf("%w: %w: compLib is nil", exception.ErrCore, exception.ErrArgs))
 	}
 
-	comp, ifaceName := DefineComponentInterface[COMP_IFACE](_compLib).Declare(types.Zero[COMP]())
-	return _Component{
+	comp, ifaceName := ComponentInterface[COMP_IFACE](_compLib).Declare(types.Zero[COMP]())
+	return _DefineComponent{
 		name:          comp.Name,
 		interfaceName: ifaceName,
 	}.Component()
 }
 
-// Component 组件
-type Component struct {
+// ComponentDefinition 组件定义
+type ComponentDefinition struct {
 	Name          string // 组件名称
 	InterfaceName string // 组件接口名称
 }
 
-type _Component struct {
+type _DefineComponent struct {
 	name, interfaceName string
 }
 
 // Component 生成组件定义
-func (c _Component) Component() Component {
-	return Component{
-		Name:          c.name,
-		InterfaceName: c.interfaceName,
+func (d _DefineComponent) Component() ComponentDefinition {
+	return ComponentDefinition{
+		Name:          d.name,
+		InterfaceName: d.interfaceName,
 	}
 }

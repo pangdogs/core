@@ -14,7 +14,7 @@ func NewFrame(settings ...option.Setting[FrameOptions]) Frame {
 
 // Frame 帧，在运行时初始化时可以设置帧，用于设置运行时帧更新方式，在逻辑运行过程中可以在运行时上下文中获取帧信息
 type Frame interface {
-	_Frame
+	iFrame
 
 	// GetTargetFPS 获取目标FPS
 	GetTargetFPS() float32
@@ -24,8 +24,6 @@ type Frame interface {
 	GetTotalFrames() uint64
 	// GetCurFrames 获取当前帧数
 	GetCurFrames() uint64
-	// GetBlink 获取是否是瞬时运行
-	GetBlink() bool
 	// GetRunningBeginTime 获取运行开始时间
 	GetRunningBeginTime() time.Time
 	// GetRunningElapseTime 获取运行持续时间
@@ -40,7 +38,7 @@ type Frame interface {
 	GetLastUpdateElapseTime() time.Duration
 }
 
-type _Frame interface {
+type iFrame interface {
 	setCurFrames(v uint64)
 	runningBegin()
 	runningEnd()
@@ -54,7 +52,6 @@ type _FrameBehavior struct {
 	options              FrameOptions
 	curFPS               float32
 	curFrames            uint64
-	blinkFrameTime       time.Duration
 	runningBeginTime     time.Time
 	runningElapseTime    time.Duration
 	loopBeginTime        time.Time
@@ -83,11 +80,6 @@ func (frame *_FrameBehavior) GetTotalFrames() uint64 {
 // GetCurFrames 获取当前帧数
 func (frame *_FrameBehavior) GetCurFrames() uint64 {
 	return frame.curFrames
-}
-
-// GetBlink 获取是否是瞬时运行
-func (frame *_FrameBehavior) GetBlink() bool {
-	return frame.options.Blink
 }
 
 // GetRunningBeginTime 获取运行开始时间
@@ -122,10 +114,6 @@ func (frame *_FrameBehavior) GetLastUpdateElapseTime() time.Duration {
 
 func (frame *_FrameBehavior) init(opts FrameOptions) {
 	frame.options = opts
-
-	if frame.options.Blink {
-		frame.blinkFrameTime = time.Duration(float64(time.Second) / float64(frame.options.TargetFPS))
-	}
 }
 
 func (frame *_FrameBehavior) setCurFrames(v uint64) {
@@ -152,9 +140,6 @@ func (frame *_FrameBehavior) runningBegin() {
 }
 
 func (frame *_FrameBehavior) runningEnd() {
-	if frame.options.Blink {
-		frame.curFPS = float32(float64(frame.curFrames) / time.Now().Sub(frame.runningBeginTime).Seconds())
-	}
 }
 
 func (frame *_FrameBehavior) loopBegin() {
@@ -162,24 +147,18 @@ func (frame *_FrameBehavior) loopBegin() {
 
 	frame.loopBeginTime = now
 
-	if !frame.options.Blink {
-		statInterval := now.Sub(frame.statFPSBeginTime).Seconds()
-		if statInterval >= 1 {
-			frame.curFPS = float32(float64(frame.statFPSFrames) / statInterval)
-			frame.statFPSBeginTime = now
-			frame.statFPSFrames = 0
-		}
+	statInterval := now.Sub(frame.statFPSBeginTime).Seconds()
+	if statInterval >= 1 {
+		frame.curFPS = float32(float64(frame.statFPSFrames) / statInterval)
+		frame.statFPSBeginTime = now
+		frame.statFPSFrames = 0
 	}
 }
 
 func (frame *_FrameBehavior) loopEnd() {
-	if frame.options.Blink {
-		frame.runningElapseTime += frame.blinkFrameTime
-	} else {
-		frame.lastLoopElapseTime = time.Now().Sub(frame.loopBeginTime)
-		frame.runningElapseTime += frame.lastLoopElapseTime
-		frame.statFPSFrames++
-	}
+	frame.lastLoopElapseTime = time.Now().Sub(frame.loopBeginTime)
+	frame.runningElapseTime += frame.lastLoopElapseTime
+	frame.statFPSFrames++
 }
 
 func (frame *_FrameBehavior) updateBegin() {

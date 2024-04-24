@@ -33,6 +33,7 @@ func CompInterface[FACE any](comp any) _CompAlias {
 // EntityLib 实体原型库
 type EntityLib interface {
 	EntityPTProvider
+
 	// Declare 声明实体原型
 	Declare(prototype string, comps ...any) EntityPT
 	// Undeclare 取消声明实体原型

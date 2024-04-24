@@ -11,8 +11,8 @@ import (
 	"slices"
 )
 
-// _ComponentMgr 组件管理器接口
-type _ComponentMgr interface {
+// iComponentMgr 组件管理器接口
+type iComponentMgr interface {
 	// GetComponent 使用名称查询组件，一般情况下名称指组件接口名称，也可以自定义名称，同个名称指向多个组件时，返回首个组件
 	GetComponent(name string) Component
 	// GetComponentById 使用组件Id查询组件

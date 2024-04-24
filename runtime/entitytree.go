@@ -14,7 +14,7 @@ import (
 
 // EntityTree 实体树接口
 type EntityTree interface {
-	_EntityTree
+	iEntityTree
 	concurrent.CurrentContextProvider
 
 	// AddNode 新增实体树节点。切换父实体时，RemoveNode()离开旧父实体，AddNode()加入新父实体
@@ -34,7 +34,7 @@ type EntityTree interface {
 	_AutoEventEntityTreeRemoveNode // 事件：删除实体树节点
 }
 
-type _EntityTree interface {
+type iEntityTree interface {
 	getAndCheckEntity(entityId uid.Id) (ec.Entity, error)
 }
 

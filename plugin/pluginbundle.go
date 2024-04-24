@@ -13,7 +13,9 @@ import (
 
 // PluginBundle 插件包
 type PluginBundle interface {
+	iPluginBundle
 	PluginProvider
+
 	// Install 安装插件，不设置插件名称时，将会使用插件实例名称作为插件名称
 	Install(pluginFace iface.FaceAny, name ...string) PluginInfo
 	// Uninstall 卸载插件
@@ -24,7 +26,9 @@ type PluginBundle interface {
 	Range(fun generic.Func1[PluginInfo, bool])
 	// ReverseRange 反向遍历所有已注册的插件
 	ReverseRange(fun generic.Func1[PluginInfo, bool])
+}
 
+type iPluginBundle interface {
 	activate(name string, b bool)
 }
 

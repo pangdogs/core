@@ -11,7 +11,7 @@ import (
 
 // Component 组件接口
 type Component interface {
-	_Component
+	iComponent
 	concurrent.CurrentContextProvider
 	fmt.Stringer
 
@@ -29,7 +29,7 @@ type Component interface {
 	DestroySelf()
 }
 
-type _Component interface {
+type iComponent interface {
 	init(name string, entity Entity, composite Component)
 	setId(id uid.Id)
 	setFixed(v bool)
@@ -103,7 +103,7 @@ func (comp *ComponentBehavior) GetConcurrentContext() iface.Cache {
 
 // String implements fmt.Stringer
 func (comp *ComponentBehavior) String() string {
-	return fmt.Sprintf(`{"id":%q, "name":%q, "entity_id":%q, "state":%q}`, comp.GetId(), comp.GetName(), comp.GetEntity().GetId(), comp.GetState())
+	return fmt.Sprintf(`{"id":%q, "name":%q, "entity_id":%q}`, comp.GetId(), comp.GetName(), comp.GetEntity().GetId())
 }
 
 func (comp *ComponentBehavior) init(name string, entity Entity, composite Component) {

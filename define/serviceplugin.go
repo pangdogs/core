@@ -7,15 +7,15 @@ import (
 	"git.golaxy.org/core/util/types"
 )
 
-// DefineServicePlugin 定义服务插件
-func DefineServicePlugin[PLUGIN_IFACE, OPTION any](creator generic.FuncVar0[OPTION, PLUGIN_IFACE]) ServicePlugin[PLUGIN_IFACE, OPTION] {
-	return _Plugin[PLUGIN_IFACE, OPTION]{
+// ServicePlugin 定义服务插件
+func ServicePlugin[PLUGIN_IFACE, OPTION any](creator generic.FuncVar0[OPTION, PLUGIN_IFACE]) ServicePluginDefinition[PLUGIN_IFACE, OPTION] {
+	return _DefinePlugin[PLUGIN_IFACE, OPTION]{
 		name: types.FullName[PLUGIN_IFACE](),
 	}.ServicePlugin(creator)
 }
 
-// ServicePlugin 服务插件，只能在服务上下文中安装与使用
-type ServicePlugin[PLUGIN_IFACE, OPTION any] struct {
+// ServicePluginDefinition 服务插件定义，只能在服务上下文中安装与使用
+type ServicePluginDefinition[PLUGIN_IFACE, OPTION any] struct {
 	Name      string                                            // 插件名称
 	Install   generic.ActionVar1[plugin.PluginProvider, OPTION] // 向插件包安装
 	Uninstall generic.Action1[plugin.PluginProvider]            // 从插件包卸载
@@ -23,11 +23,11 @@ type ServicePlugin[PLUGIN_IFACE, OPTION any] struct {
 }
 
 // ServicePlugin 生成服务插件定义
-func (p _Plugin[PLUGIN_IFACE, OPTION]) ServicePlugin(creator generic.FuncVar0[OPTION, PLUGIN_IFACE]) ServicePlugin[PLUGIN_IFACE, OPTION] {
-	return ServicePlugin[PLUGIN_IFACE, OPTION]{
-		Name:      p.name,
-		Install:   p.install(creator),
-		Uninstall: p.uninstall(),
-		Using:     func(ctx service.Context) PLUGIN_IFACE { return p.using()(ctx) },
+func (d _DefinePlugin[PLUGIN_IFACE, OPTION]) ServicePlugin(creator generic.FuncVar0[OPTION, PLUGIN_IFACE]) ServicePluginDefinition[PLUGIN_IFACE, OPTION] {
+	return ServicePluginDefinition[PLUGIN_IFACE, OPTION]{
+		Name:      d.name,
+		Install:   d.install(creator),
+		Uninstall: d.uninstall(),
+		Using:     func(ctx service.Context) PLUGIN_IFACE { return d.using()(ctx) },
 	}
 }

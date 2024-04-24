@@ -10,7 +10,6 @@ import (
 type FrameOptions struct {
 	TargetFPS   float32 // 目标FPS
 	TotalFrames uint64  // 运行帧数上限
-	Blink       bool    // 是否是瞬时运行
 }
 
 type _FrameOption struct{}
@@ -20,7 +19,6 @@ func (_FrameOption) Default() option.Setting[FrameOptions] {
 	return func(o *FrameOptions) {
 		With.Frame.TargetFPS(30)(o)
 		With.Frame.TotalFrames(0)(o)
-		With.Frame.Blink(false)(o)
 	}
 }
 
@@ -41,12 +39,5 @@ func (_FrameOption) TotalFrames(v uint64) option.Setting[FrameOptions] {
 			panic(fmt.Errorf("%w: %w: TotalFrames less 0 is invalid", ErrFrame, exception.ErrArgs))
 		}
 		o.TotalFrames = v
-	}
-}
-
-// Blink 是否是瞬时运行
-func (_FrameOption) Blink(blink bool) option.Setting[FrameOptions] {
-	return func(o *FrameOptions) {
-		o.Blink = blink
 	}
 }

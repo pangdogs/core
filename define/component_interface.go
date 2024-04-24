@@ -8,8 +8,8 @@ import (
 	"git.golaxy.org/core/util/types"
 )
 
-// DefineComponentInterface 定义组件接口
-func DefineComponentInterface[COMP_IFACE any](compLib ...pt.ComponentLib) ComponentInterface {
+// ComponentInterface 定义组件接口
+func ComponentInterface[COMP_IFACE any](compLib ...pt.ComponentLib) ComponentInterfaceDefinition {
 	_compLib := pt.DefaultComponentLib()
 
 	if len(compLib) > 0 {
@@ -20,33 +20,33 @@ func DefineComponentInterface[COMP_IFACE any](compLib ...pt.ComponentLib) Compon
 		panic(fmt.Errorf("%w: %w: compLib is nil", exception.ErrCore, exception.ErrArgs))
 	}
 
-	return _ComponentInterface{
+	return _DefineComponentInterface{
 		name:    types.FullName[COMP_IFACE](),
 		compLib: _compLib,
 	}.ComponentInterface()
 }
 
-// ComponentInterface 组件接口
-type ComponentInterface struct {
+// ComponentInterfaceDefinition 组件接口定义
+type ComponentInterfaceDefinition struct {
 	Name    string                                         // 组件接口名称
 	Declare generic.PairFunc1[any, pt.ComponentPT, string] // 声明组件原型
 }
 
-type _ComponentInterface struct {
+type _DefineComponentInterface struct {
 	name    string
 	compLib pt.ComponentLib
 }
 
-func (c _ComponentInterface) declare() generic.PairFunc1[any, pt.ComponentPT, string] {
+func (d _DefineComponentInterface) declare() generic.PairFunc1[any, pt.ComponentPT, string] {
 	return func(comp any) (pt.ComponentPT, string) {
-		return c.compLib.Declare(comp, c.name), c.name
+		return d.compLib.Declare(comp, d.name), d.name
 	}
 }
 
 // ComponentInterface 生成组件接口定义
-func (c _ComponentInterface) ComponentInterface() ComponentInterface {
-	return ComponentInterface{
-		Name:    c.name,
-		Declare: c.declare(),
+func (d _DefineComponentInterface) ComponentInterface() ComponentInterfaceDefinition {
+	return ComponentInterfaceDefinition{
+		Name:    d.name,
+		Declare: d.declare(),
 	}
 }
