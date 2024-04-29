@@ -6,9 +6,8 @@ toolchain go1.21.6
 
 require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
-	github.com/elliotchance/pie/v2 v2.8.0
 	github.com/segmentio/ksuid v1.0.4
-	golang.org/x/exp v0.0.0-20240112132812-db7319d0e0e3
+	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f
 )
 
 require (
