@@ -88,11 +88,18 @@ func (mgr *_EntityMgrBehavior) ChangeParentNode(entityId, parentId uid.Id) error
 		mgr.addToParentNode(entity, parent)
 		mgr.attachParentNode(entity, parent)
 	case ec.TreeNodeState_Attached:
+		if p, ok := entity.GetTreeNodeParent(); ok {
+			if p.GetId() == parent.GetId() {
+				return nil
+			}
+		}
+
 		for p, _ := parent.GetTreeNodeParent(); p != nil; p, _ = p.GetTreeNodeParent() {
 			if p.GetId() == entity.GetId() {
 				return fmt.Errorf("%w: detected a cycle in the tree structure", ErrEntityMgr)
 			}
 		}
+
 		mgr.changeParentNode(entity, parent)
 	default:
 		return fmt.Errorf("%w: invalid entity tree node state %q", ErrEntityMgr, entity.GetTreeNodeState())
