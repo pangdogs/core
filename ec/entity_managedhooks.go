@@ -14,8 +14,6 @@ func (entity *EntityBehavior) ManagedHooks(hooks ...event.Hook) {
 }
 
 func (entity *EntityBehavior) cleanManagedHooks() {
-	for i := range entity.managedHooks {
-		entity.managedHooks[i].Unbind()
-	}
+	event.Clean(entity.managedHooks)
 	entity.managedHooks = nil
 }

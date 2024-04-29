@@ -9,39 +9,13 @@ import (
 
 // Component 定义组件
 func Component[COMP any](compLib ...pt.ComponentLib) ComponentDefinition {
-	_compLib := pt.DefaultComponentLib()
-
-	if len(compLib) > 0 {
-		_compLib = compLib[0]
-	}
-
-	if _compLib == nil {
-		panic(fmt.Errorf("%w: %w: compLib is nil", exception.ErrCore, exception.ErrArgs))
-	}
-
-	comp := _compLib.Declare(types.Zero[COMP]())
-	return _DefineComponent{
-		name: comp.Name,
-	}.Component()
+	return defineComponent[COMP](getCompLib(compLib...), "")
 }
 
 // ComponentWithInterface 定义有接口的组件，接口名称将作为组件名
 func ComponentWithInterface[COMP, COMP_IFACE any](compLib ...pt.ComponentLib) ComponentDefinition {
-	_compLib := pt.DefaultComponentLib()
-
-	if len(compLib) > 0 {
-		_compLib = compLib[0]
-	}
-
-	if _compLib == nil {
-		panic(fmt.Errorf("%w: %w: compLib is nil", exception.ErrCore, exception.ErrArgs))
-	}
-
-	comp, ifaceName := ComponentInterface[COMP_IFACE](_compLib).Declare(types.Zero[COMP]())
-	return _DefineComponent{
-		name:          comp.Name,
-		interfaceName: ifaceName,
-	}.Component()
+	_compLib := getCompLib(compLib...)
+	return defineComponent[COMP](_compLib, ComponentInterface[COMP_IFACE](_compLib).Name)
 }
 
 // ComponentDefinition 组件定义
@@ -50,14 +24,20 @@ type ComponentDefinition struct {
 	InterfaceName string // 组件接口名称
 }
 
-type _DefineComponent struct {
-	name, interfaceName string
+func defineComponent[COMP any](compLib pt.ComponentLib, ifaceName string) ComponentDefinition {
+	if compLib == nil {
+		panic(fmt.Errorf("%w: %w: compLib is nil", exception.ErrCore, exception.ErrArgs))
+	}
+
+	return ComponentDefinition{
+		Name:          compLib.Declare(types.Zero[COMP]()).Name,
+		InterfaceName: ifaceName,
+	}
 }
 
-// Component 生成组件定义
-func (d _DefineComponent) Component() ComponentDefinition {
-	return ComponentDefinition{
-		Name:          d.name,
-		InterfaceName: d.interfaceName,
+func getCompLib(compLib ...pt.ComponentLib) pt.ComponentLib {
+	if len(compLib) > 0 && compLib[0] != nil {
+		return compLib[0]
 	}
+	return pt.DefaultComponentLib()
 }

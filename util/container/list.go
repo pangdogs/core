@@ -155,8 +155,8 @@ func (l *List[T]) TraversalAt(visitor func(e *Element[T]) bool, at *Element[T]) 
 	}
 }
 
-// ReverseTraversal 反向遍历元素
-func (l *List[T]) ReverseTraversal(visitor func(e *Element[T]) bool) {
+// ReversedTraversal 反向遍历元素
+func (l *List[T]) ReversedTraversal(visitor func(e *Element[T]) bool) {
 	if visitor == nil {
 		return
 	}
@@ -168,8 +168,8 @@ func (l *List[T]) ReverseTraversal(visitor func(e *Element[T]) bool) {
 	}
 }
 
-// ReverseTraversalAt 从指定位置开始反向遍历元素
-func (l *List[T]) ReverseTraversalAt(visitor func(e *Element[T]) bool, at *Element[T]) {
+// ReversedTraversalAt 从指定位置开始反向遍历元素
+func (l *List[T]) ReversedTraversalAt(visitor func(e *Element[T]) bool, at *Element[T]) {
 	if visitor == nil || !l.check(at) {
 		return
 	}

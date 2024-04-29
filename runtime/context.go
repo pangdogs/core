@@ -79,7 +79,6 @@ type ContextBehavior struct {
 	reflected    reflect.Value
 	frame        Frame
 	entityMgr    _EntityMgrBehavior
-	entityTree   _EntityTreeBehavior
 	callee       Callee
 	managedHooks []event.Hook
 	gcList       []GC
@@ -112,7 +111,7 @@ func (ctx *ContextBehavior) GetEntityMgr() EntityMgr {
 
 // GetEntityTree 获取主实体树
 func (ctx *ContextBehavior) GetEntityTree() EntityTree {
-	return &ctx.entityTree
+	return &ctx.entityMgr
 }
 
 // ActivateEvent 启用事件
@@ -175,7 +174,6 @@ func (ctx *ContextBehavior) init(servCtx service.Context, opts ContextOptions) {
 	ctx.servCtx = servCtx
 	ctx.reflected = reflect.ValueOf(ctx.opts.CompositeFace.Iface)
 	ctx.entityMgr.init(ctx.opts.CompositeFace.Iface)
-	ctx.entityTree.init(ctx.opts.CompositeFace.Iface)
 }
 
 func (ctx *ContextBehavior) getOptions() *ContextOptions {
@@ -196,7 +194,6 @@ func (ctx *ContextBehavior) getServiceCtx() service.Context {
 
 func (ctx *ContextBehavior) changeRunningState(state RunningState) {
 	ctx.entityMgr.changeRunningState(state)
-	ctx.entityTree.changeRunningState(state)
 	ctx.opts.RunningHandler.Call(ctx.GetAutoRecover(), ctx.GetReportError(), nil, ctx.opts.CompositeFace.Iface, state)
 
 	switch state {

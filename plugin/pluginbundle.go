@@ -24,8 +24,8 @@ type PluginBundle interface {
 	Get(name string) (PluginInfo, bool)
 	// Range 遍历所有已注册的插件
 	Range(fun generic.Func1[PluginInfo, bool])
-	// ReverseRange 反向遍历所有已注册的插件
-	ReverseRange(fun generic.Func1[PluginInfo, bool])
+	// ReversedRange 反向遍历所有已注册的插件
+	ReversedRange(fun generic.Func1[PluginInfo, bool])
 }
 
 type iPluginBundle interface {
@@ -139,8 +139,8 @@ func (bundle *_PluginBundle) Range(fun generic.Func1[PluginInfo, bool]) {
 	}
 }
 
-// ReverseRange 反向遍历所有已注册的插件
-func (bundle *_PluginBundle) ReverseRange(fun generic.Func1[PluginInfo, bool]) {
+// ReversedRange 反向遍历所有已注册的插件
+func (bundle *_PluginBundle) ReversedRange(fun generic.Func1[PluginInfo, bool]) {
 	bundle.RLock()
 	copied := slices.Clone(bundle.pluginList)
 	bundle.RUnlock()

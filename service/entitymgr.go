@@ -30,22 +30,22 @@ type _EntityMgrBehavior struct {
 	entityIdx sync.Map
 }
 
-func (entityMgr *_EntityMgrBehavior) init(ctx Context) {
+func (mgr *_EntityMgrBehavior) init(ctx Context) {
 	if ctx == nil {
 		panic(fmt.Errorf("%w: %w: ctx is nil", ErrEntityMgr, exception.ErrArgs))
 	}
 
-	entityMgr.ctx = ctx
+	mgr.ctx = ctx
 }
 
 // GetContext 获取服务上下文
-func (entityMgr *_EntityMgrBehavior) GetContext() Context {
-	return entityMgr.ctx
+func (mgr *_EntityMgrBehavior) GetContext() Context {
+	return mgr.ctx
 }
 
 // GetEntity 查询实体
-func (entityMgr *_EntityMgrBehavior) GetEntity(id uid.Id) (ec.ConcurrentEntity, bool) {
-	v, ok := entityMgr.entityIdx.Load(id)
+func (mgr *_EntityMgrBehavior) GetEntity(id uid.Id) (ec.ConcurrentEntity, bool) {
+	v, ok := mgr.entityIdx.Load(id)
 	if !ok {
 		return nil, false
 	}
@@ -54,7 +54,7 @@ func (entityMgr *_EntityMgrBehavior) GetEntity(id uid.Id) (ec.ConcurrentEntity, 
 }
 
 // GetOrAddEntity 查询或添加实体
-func (entityMgr *_EntityMgrBehavior) GetOrAddEntity(entity ec.ConcurrentEntity) (ec.ConcurrentEntity, bool, error) {
+func (mgr *_EntityMgrBehavior) GetOrAddEntity(entity ec.ConcurrentEntity) (ec.ConcurrentEntity, bool, error) {
 	if entity == nil {
 		return nil, false, fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs)
 	}
@@ -67,13 +67,13 @@ func (entityMgr *_EntityMgrBehavior) GetOrAddEntity(entity ec.ConcurrentEntity) 
 		return nil, false, fmt.Errorf("%w: entity context is nil", ErrEntityMgr)
 	}
 
-	actual, loaded := entityMgr.entityIdx.LoadOrStore(entity.GetId(), entity)
+	actual, loaded := mgr.entityIdx.LoadOrStore(entity.GetId(), entity)
 	return actual.(ec.ConcurrentEntity), loaded, nil
 }
 
 // GetAndRemoveEntity 查询并删除实体
-func (entityMgr *_EntityMgrBehavior) GetAndRemoveEntity(id uid.Id) (ec.ConcurrentEntity, bool) {
-	v, loaded := entityMgr.entityIdx.LoadAndDelete(id)
+func (mgr *_EntityMgrBehavior) GetAndRemoveEntity(id uid.Id) (ec.ConcurrentEntity, bool) {
+	v, loaded := mgr.entityIdx.LoadAndDelete(id)
 	if !loaded {
 		return nil, false
 	}
@@ -81,7 +81,7 @@ func (entityMgr *_EntityMgrBehavior) GetAndRemoveEntity(id uid.Id) (ec.Concurren
 }
 
 // AddEntity 添加实体
-func (entityMgr *_EntityMgrBehavior) AddEntity(entity ec.ConcurrentEntity) error {
+func (mgr *_EntityMgrBehavior) AddEntity(entity ec.ConcurrentEntity) error {
 	if entity == nil {
 		return fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs)
 	}
@@ -94,12 +94,12 @@ func (entityMgr *_EntityMgrBehavior) AddEntity(entity ec.ConcurrentEntity) error
 		return fmt.Errorf("%w: entity context is nil", ErrEntityMgr)
 	}
 
-	entityMgr.entityIdx.Store(entity.GetId(), entity)
+	mgr.entityIdx.Store(entity.GetId(), entity)
 
 	return nil
 }
 
 // RemoveEntity 删除实体
-func (entityMgr *_EntityMgrBehavior) RemoveEntity(id uid.Id) {
-	entityMgr.entityIdx.Delete(id)
+func (mgr *_EntityMgrBehavior) RemoveEntity(id uid.Id) {
+	mgr.entityIdx.Delete(id)
 }

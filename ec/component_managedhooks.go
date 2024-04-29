@@ -14,8 +14,6 @@ func (comp *ComponentBehavior) ManagedHooks(hooks ...event.Hook) {
 }
 
 func (comp *ComponentBehavior) cleanManagedHooks() {
-	for i := range comp.managedHooks {
-		comp.managedHooks[i].Unbind()
-	}
+	event.Clean(comp.managedHooks)
 	comp.managedHooks = nil
 }

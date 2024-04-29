@@ -97,7 +97,7 @@ func (rt *RuntimeBehavior) initPlugin() {
 
 func (rt *RuntimeBehavior) shutPlugin() {
 	if pluginBundle := runtime.UnsafeContext(rt.ctx).GetOptions().PluginBundle; pluginBundle != nil {
-		pluginBundle.ReverseRange(func(info plugin.PluginInfo) bool {
+		pluginBundle.ReversedRange(func(info plugin.PluginInfo) bool {
 			plugin.UnsafePluginBundle(pluginBundle).Activate(info.Name, false)
 			if pluginShut, ok := info.Face.Iface.(LifecycleRuntimePluginShut); ok {
 				generic.MakeAction1(pluginShut.ShutRP).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
@@ -127,9 +127,7 @@ func (rt *RuntimeBehavior) loopStart() (hooks [5]event.Hook) {
 func (rt *RuntimeBehavior) loopStop(hooks [5]event.Hook) {
 	frame := rt.opts.Frame
 
-	for i := range hooks {
-		hooks[i].Unbind()
-	}
+	event.Clean(hooks[:])
 
 	if frame != nil {
 		runtime.UnsafeFrame(frame).RunningEnd()

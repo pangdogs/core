@@ -42,6 +42,8 @@ type EntityLib interface {
 	Get(prototype string) (EntityPT, bool)
 	// Range 遍历所有已注册的实体原型
 	Range(fun generic.Func1[EntityPT, bool])
+	// ReversedRange 反向遍历所有已注册的实体原型
+	ReversedRange(fun generic.Func1[EntityPT, bool])
 }
 
 var entityLib = NewEntityLib(DefaultComponentLib())
@@ -153,6 +155,19 @@ func (lib *_EntityLib) Range(fun generic.Func1[EntityPT, bool]) {
 	lib.RUnlock()
 
 	for i := range copied {
+		if !fun.Exec(*copied[i]) {
+			return
+		}
+	}
+}
+
+// ReversedRange 反向遍历所有已注册的实体原型
+func (lib *_EntityLib) ReversedRange(fun generic.Func1[EntityPT, bool]) {
+	lib.RLock()
+	copied := slices.Clone(lib.entityList)
+	lib.RUnlock()
+
+	for i := len(copied) - 1; i >= 0; i-- {
 		if !fun.Exec(*copied[i]) {
 			return
 		}

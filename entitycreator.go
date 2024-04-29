@@ -74,22 +74,14 @@ func (c EntityCreator) Spawn() (ec.Entity, error) {
 		panic(fmt.Errorf("%w: setting rtCtx is nil", ErrCore))
 	}
 
-	if !c.parentId.IsNil() {
-		_, err := runtime.UnsafeEntityTree(c.rtCtx.GetEntityTree()).GetAndCheckEntity(c.parentId)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	entity := pt.For(service.Current(c.rtCtx), c.options.Prototype).UnsafeConstruct(c.options)
 
-	if err := c.rtCtx.GetEntityMgr().AddEntity(entity); err != nil {
-		return nil, err
-	}
-
-	if !c.parentId.IsNil() {
-		if err := c.rtCtx.GetEntityTree().AddNode(c.parentId, entity.GetId()); err != nil {
-			entity.DestroySelf()
+	if c.parentId.IsNil() {
+		if err := c.rtCtx.GetEntityMgr().AddEntity(entity); err != nil {
+			return nil, err
+		}
+	} else {
+		if err := c.rtCtx.GetEntityTree().AddNode(entity, c.parentId); err != nil {
 			return nil, err
 		}
 	}

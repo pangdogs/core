@@ -14,8 +14,6 @@ func (ctx *ContextBehavior) ManagedHooks(hooks ...event.Hook) {
 }
 
 func (ctx *ContextBehavior) cleanManagedHooks() {
-	for i := range ctx.managedHooks {
-		ctx.managedHooks[i].Unbind()
-	}
+	event.Clean(ctx.managedHooks)
 	ctx.managedHooks = nil
 }

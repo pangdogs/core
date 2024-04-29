@@ -11,7 +11,7 @@ type EntityPTProvider interface {
 	GetEntityLib() EntityLib
 }
 
-// For 使用实体原型
+// For 查询实体原型
 func For(provider EntityPTProvider, prototype string) EntityPT {
 	if provider == nil {
 		panic(fmt.Errorf("%w: %w: provider is nil", ErrPt, exception.ErrArgs))

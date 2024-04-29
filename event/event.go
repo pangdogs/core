@@ -65,7 +65,7 @@ var (
 
 	2.在需要订阅事件时，编写以下代码：
 	func (c *Comp) MethodXXX() {
-		{事件定义包名}.BindEvent{事件名}({发布者}, c)
+		{事件定义包名}.Bind{事件名}({发布者}, c)
 	}
 
 	3.如果订阅者生命周期小于发布者，那么需要记录hook并且在Dispose时解除绑定，示例如下：
@@ -74,7 +74,7 @@ var (
 		hook event.Hook
 	}
 	func (c *Comp) MethodXXX() {
-		c.hook = {事件定义包名}.BindEvent{事件名}({发布者}, c)
+		c.hook = {事件定义包名}.Bind{事件名}({发布者}, c)
 	}
 	func (c *Comp) Dispose() {
 		c.hook.Unbind()
@@ -226,7 +226,7 @@ func (event *Event) newHook(subscriberFace iface.FaceAny, priority int32) Hook {
 
 	var at *container.Element[Hook]
 
-	event.subscribers.ReverseTraversal(func(other *container.Element[Hook]) bool {
+	event.subscribers.ReversedTraversal(func(other *container.Element[Hook]) bool {
 		if hook.priority >= other.Value.priority {
 			at = other
 			return false
@@ -246,7 +246,7 @@ func (event *Event) newHook(subscriberFace iface.FaceAny, priority int32) Hook {
 }
 
 func (event *Event) removeSubscriber(subscriber any) {
-	event.subscribers.ReverseTraversal(func(other *container.Element[Hook]) bool {
+	event.subscribers.ReversedTraversal(func(other *container.Element[Hook]) bool {
 		if other.Value.subscriberFace.Iface == subscriber {
 			other.Escape()
 			return false

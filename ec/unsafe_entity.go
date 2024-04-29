@@ -43,6 +43,16 @@ func (ue _UnsafeEntity) GetVersion() int64 {
 	return ue.getVersion()
 }
 
+// SetState 设置状态
+func (ue _UnsafeEntity) SetState(state EntityState) {
+	ue.setState(state)
+}
+
+// SetReflected 设置反射值
+func (ue _UnsafeEntity) SetReflected(v reflect.Value) {
+	ue.setReflected(v)
+}
+
 // SetTreeNodeState 设置实体树节点状态
 func (ue _UnsafeEntity) SetTreeNodeState(state TreeNodeState) {
 	ue.setTreeNodeState(state)
@@ -53,14 +63,14 @@ func (ue _UnsafeEntity) SetTreeNodeParent(parent Entity) {
 	ue.setTreeNodeParent(parent)
 }
 
-// SetState 设置状态
-func (ue _UnsafeEntity) SetState(state EntityState) {
-	ue.setState(state)
+// EnterParentNode 进入父节点
+func (ue _UnsafeEntity) EnterParentNode() {
+	ue.enterParentNode()
 }
 
-// SetReflected 设置反射值
-func (ue _UnsafeEntity) SetReflected(v reflect.Value) {
-	ue.setReflected(v)
+// LeaveParentNode 离开父节点
+func (ue _UnsafeEntity) LeaveParentNode() {
+	ue.leaveParentNode()
 }
 
 // EventEntityDestroySelf 事件：实体销毁自身

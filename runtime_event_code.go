@@ -18,6 +18,21 @@ func _EmitEventUpdate(evt event.IEvent) {
 	})
 }
 
+func _EmitEventUpdateWithInterrupt(evt event.IEvent, interrupt func() bool) {
+	if evt == nil {
+		panic(fmt.Errorf("%w: %w: evt is nil", event.ErrEvent, event.ErrArgs))
+	}
+	event.UnsafeEvent(evt).Emit(func(subscriber iface.Cache) bool {
+		if interrupt != nil {
+			if interrupt() {
+				return false
+			}
+		}
+		iface.Cache2Iface[eventUpdate](subscriber).Update()
+		return true
+	})
+}
+
 func _HandleEventUpdate(fun func()) _EventUpdateHandler {
 	return _EventUpdateHandler(fun)
 }
@@ -33,6 +48,21 @@ func _EmitEventLateUpdate(evt event.IEvent) {
 		panic(fmt.Errorf("%w: %w: evt is nil", event.ErrEvent, event.ErrArgs))
 	}
 	event.UnsafeEvent(evt).Emit(func(subscriber iface.Cache) bool {
+		iface.Cache2Iface[eventLateUpdate](subscriber).LateUpdate()
+		return true
+	})
+}
+
+func _EmitEventLateUpdateWithInterrupt(evt event.IEvent, interrupt func() bool) {
+	if evt == nil {
+		panic(fmt.Errorf("%w: %w: evt is nil", event.ErrEvent, event.ErrArgs))
+	}
+	event.UnsafeEvent(evt).Emit(func(subscriber iface.Cache) bool {
+		if interrupt != nil {
+			if interrupt() {
+				return false
+			}
+		}
 		iface.Cache2Iface[eventLateUpdate](subscriber).LateUpdate()
 		return true
 	})

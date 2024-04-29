@@ -23,6 +23,8 @@ type ComponentLib interface {
 	GetAlias(alias string) []ComponentPT
 	// Range 遍历所有已注册的组件原型
 	Range(fun generic.Func1[ComponentPT, bool])
+	// ReversedRange 反向遍历所有已注册的组件原型
+	ReversedRange(fun generic.Func1[ComponentPT, bool])
 }
 
 var compLib = NewComponentLib()
@@ -109,6 +111,19 @@ func (lib *_ComponentLib) Range(fun generic.Func1[ComponentPT, bool]) {
 	lib.RUnlock()
 
 	for i := range copied {
+		if !fun.Exec(*copied[i]) {
+			return
+		}
+	}
+}
+
+// ReversedRange 反向遍历所有已注册的组件原型
+func (lib *_ComponentLib) ReversedRange(fun generic.Func1[ComponentPT, bool]) {
+	lib.RLock()
+	copied := slices.Clone(lib.compList)
+	lib.RUnlock()
+
+	for i := len(copied) - 1; i >= 0; i-- {
 		if !fun.Exec(*copied[i]) {
 			return
 		}

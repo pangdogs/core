@@ -8,95 +8,140 @@ import (
 	iface "git.golaxy.org/core/util/iface"
 )
 
-type _AutoEventCompMgrAddComponents interface {
-	EventCompMgrAddComponents() event.IEvent
+type iAutoEventComponentMgrAddComponents interface {
+	EventComponentMgrAddComponents() event.IEvent
 }
 
-func BindEventCompMgrAddComponents(auto _AutoEventCompMgrAddComponents, subscriber EventCompMgrAddComponents, priority ...int32) event.Hook {
+func BindEventComponentMgrAddComponents(auto iAutoEventComponentMgrAddComponents, subscriber EventComponentMgrAddComponents, priority ...int32) event.Hook {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
-	return event.BindEvent[EventCompMgrAddComponents](auto.EventCompMgrAddComponents(), subscriber, priority...)
+	return event.Bind[EventComponentMgrAddComponents](auto.EventComponentMgrAddComponents(), subscriber, priority...)
 }
 
-func _EmitEventCompMgrAddComponents(auto _AutoEventCompMgrAddComponents, entity Entity, components []Component) {
+func _EmitEventComponentMgrAddComponents(auto iAutoEventComponentMgrAddComponents, entity Entity, components []Component) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
-	event.UnsafeEvent(auto.EventCompMgrAddComponents()).Emit(func(subscriber iface.Cache) bool {
-		iface.Cache2Iface[EventCompMgrAddComponents](subscriber).OnCompMgrAddComponents(entity, components)
+	event.UnsafeEvent(auto.EventComponentMgrAddComponents()).Emit(func(subscriber iface.Cache) bool {
+		iface.Cache2Iface[EventComponentMgrAddComponents](subscriber).OnComponentMgrAddComponents(entity, components)
 		return true
 	})
 }
 
-func HandleEventCompMgrAddComponents(fun func(entity Entity, components []Component)) EventCompMgrAddComponentsHandler {
-	return EventCompMgrAddComponentsHandler(fun)
+func _EmitEventComponentMgrAddComponentsWithInterrupt(auto iAutoEventComponentMgrAddComponents, interrupt func(entity Entity, components []Component) bool, entity Entity, components []Component) {
+	if auto == nil {
+		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
+	}
+	event.UnsafeEvent(auto.EventComponentMgrAddComponents()).Emit(func(subscriber iface.Cache) bool {
+		if interrupt != nil {
+			if interrupt(entity, components) {
+				return false
+			}
+		}
+		iface.Cache2Iface[EventComponentMgrAddComponents](subscriber).OnComponentMgrAddComponents(entity, components)
+		return true
+	})
 }
 
-type EventCompMgrAddComponentsHandler func(entity Entity, components []Component)
+func HandleEventComponentMgrAddComponents(fun func(entity Entity, components []Component)) EventComponentMgrAddComponentsHandler {
+	return EventComponentMgrAddComponentsHandler(fun)
+}
 
-func (h EventCompMgrAddComponentsHandler) OnCompMgrAddComponents(entity Entity, components []Component) {
+type EventComponentMgrAddComponentsHandler func(entity Entity, components []Component)
+
+func (h EventComponentMgrAddComponentsHandler) OnComponentMgrAddComponents(entity Entity, components []Component) {
 	h(entity, components)
 }
 
-type _AutoEventCompMgrRemoveComponent interface {
-	EventCompMgrRemoveComponent() event.IEvent
+type iAutoEventComponentMgrRemoveComponent interface {
+	EventComponentMgrRemoveComponent() event.IEvent
 }
 
-func BindEventCompMgrRemoveComponent(auto _AutoEventCompMgrRemoveComponent, subscriber EventCompMgrRemoveComponent, priority ...int32) event.Hook {
+func BindEventComponentMgrRemoveComponent(auto iAutoEventComponentMgrRemoveComponent, subscriber EventComponentMgrRemoveComponent, priority ...int32) event.Hook {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
-	return event.BindEvent[EventCompMgrRemoveComponent](auto.EventCompMgrRemoveComponent(), subscriber, priority...)
+	return event.Bind[EventComponentMgrRemoveComponent](auto.EventComponentMgrRemoveComponent(), subscriber, priority...)
 }
 
-func _EmitEventCompMgrRemoveComponent(auto _AutoEventCompMgrRemoveComponent, entity Entity, component Component) {
+func _EmitEventComponentMgrRemoveComponent(auto iAutoEventComponentMgrRemoveComponent, entity Entity, component Component) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
-	event.UnsafeEvent(auto.EventCompMgrRemoveComponent()).Emit(func(subscriber iface.Cache) bool {
-		iface.Cache2Iface[EventCompMgrRemoveComponent](subscriber).OnCompMgrRemoveComponent(entity, component)
+	event.UnsafeEvent(auto.EventComponentMgrRemoveComponent()).Emit(func(subscriber iface.Cache) bool {
+		iface.Cache2Iface[EventComponentMgrRemoveComponent](subscriber).OnComponentMgrRemoveComponent(entity, component)
 		return true
 	})
 }
 
-func HandleEventCompMgrRemoveComponent(fun func(entity Entity, component Component)) EventCompMgrRemoveComponentHandler {
-	return EventCompMgrRemoveComponentHandler(fun)
+func _EmitEventComponentMgrRemoveComponentWithInterrupt(auto iAutoEventComponentMgrRemoveComponent, interrupt func(entity Entity, component Component) bool, entity Entity, component Component) {
+	if auto == nil {
+		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
+	}
+	event.UnsafeEvent(auto.EventComponentMgrRemoveComponent()).Emit(func(subscriber iface.Cache) bool {
+		if interrupt != nil {
+			if interrupt(entity, component) {
+				return false
+			}
+		}
+		iface.Cache2Iface[EventComponentMgrRemoveComponent](subscriber).OnComponentMgrRemoveComponent(entity, component)
+		return true
+	})
 }
 
-type EventCompMgrRemoveComponentHandler func(entity Entity, component Component)
+func HandleEventComponentMgrRemoveComponent(fun func(entity Entity, component Component)) EventComponentMgrRemoveComponentHandler {
+	return EventComponentMgrRemoveComponentHandler(fun)
+}
 
-func (h EventCompMgrRemoveComponentHandler) OnCompMgrRemoveComponent(entity Entity, component Component) {
+type EventComponentMgrRemoveComponentHandler func(entity Entity, component Component)
+
+func (h EventComponentMgrRemoveComponentHandler) OnComponentMgrRemoveComponent(entity Entity, component Component) {
 	h(entity, component)
 }
 
-type _AutoEventCompMgrFirstAccessComponent interface {
-	EventCompMgrFirstAccessComponent() event.IEvent
+type iAutoEventComponentMgrFirstAccessComponent interface {
+	EventComponentMgrFirstAccessComponent() event.IEvent
 }
 
-func BindEventCompMgrFirstAccessComponent(auto _AutoEventCompMgrFirstAccessComponent, subscriber EventCompMgrFirstAccessComponent, priority ...int32) event.Hook {
+func BindEventComponentMgrFirstAccessComponent(auto iAutoEventComponentMgrFirstAccessComponent, subscriber EventComponentMgrFirstAccessComponent, priority ...int32) event.Hook {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
-	return event.BindEvent[EventCompMgrFirstAccessComponent](auto.EventCompMgrFirstAccessComponent(), subscriber, priority...)
+	return event.Bind[EventComponentMgrFirstAccessComponent](auto.EventComponentMgrFirstAccessComponent(), subscriber, priority...)
 }
 
-func _EmitEventCompMgrFirstAccessComponent(auto _AutoEventCompMgrFirstAccessComponent, entity Entity, component Component) {
+func _EmitEventComponentMgrFirstAccessComponent(auto iAutoEventComponentMgrFirstAccessComponent, entity Entity, component Component) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
-	event.UnsafeEvent(auto.EventCompMgrFirstAccessComponent()).Emit(func(subscriber iface.Cache) bool {
-		iface.Cache2Iface[EventCompMgrFirstAccessComponent](subscriber).OnCompMgrFirstAccessComponent(entity, component)
+	event.UnsafeEvent(auto.EventComponentMgrFirstAccessComponent()).Emit(func(subscriber iface.Cache) bool {
+		iface.Cache2Iface[EventComponentMgrFirstAccessComponent](subscriber).OnComponentMgrFirstAccessComponent(entity, component)
 		return true
 	})
 }
 
-func HandleEventCompMgrFirstAccessComponent(fun func(entity Entity, component Component)) EventCompMgrFirstAccessComponentHandler {
-	return EventCompMgrFirstAccessComponentHandler(fun)
+func _EmitEventComponentMgrFirstAccessComponentWithInterrupt(auto iAutoEventComponentMgrFirstAccessComponent, interrupt func(entity Entity, component Component) bool, entity Entity, component Component) {
+	if auto == nil {
+		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
+	}
+	event.UnsafeEvent(auto.EventComponentMgrFirstAccessComponent()).Emit(func(subscriber iface.Cache) bool {
+		if interrupt != nil {
+			if interrupt(entity, component) {
+				return false
+			}
+		}
+		iface.Cache2Iface[EventComponentMgrFirstAccessComponent](subscriber).OnComponentMgrFirstAccessComponent(entity, component)
+		return true
+	})
 }
 
-type EventCompMgrFirstAccessComponentHandler func(entity Entity, component Component)
+func HandleEventComponentMgrFirstAccessComponent(fun func(entity Entity, component Component)) EventComponentMgrFirstAccessComponentHandler {
+	return EventComponentMgrFirstAccessComponentHandler(fun)
+}
 
-func (h EventCompMgrFirstAccessComponentHandler) OnCompMgrFirstAccessComponent(entity Entity, component Component) {
+type EventComponentMgrFirstAccessComponentHandler func(entity Entity, component Component)
+
+func (h EventComponentMgrFirstAccessComponentHandler) OnComponentMgrFirstAccessComponent(entity Entity, component Component) {
 	h(entity, component)
 }

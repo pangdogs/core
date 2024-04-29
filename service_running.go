@@ -93,7 +93,7 @@ func (serv *ServiceBehavior) initPlugin() {
 
 func (serv *ServiceBehavior) shutPlugin() {
 	if pluginBundle := service.UnsafeContext(serv.ctx).GetOptions().PluginBundle; pluginBundle != nil {
-		pluginBundle.ReverseRange(func(info plugin.PluginInfo) bool {
+		pluginBundle.ReversedRange(func(info plugin.PluginInfo) bool {
 			plugin.UnsafePluginBundle(pluginBundle).Activate(info.Name, false)
 			if pluginShut, ok := info.Face.Iface.(LifecycleServicePluginShut); ok {
 				generic.MakeAction1(pluginShut.ShutSP).Call(serv.ctx.GetAutoRecover(), serv.ctx.GetReportError(), serv.ctx)

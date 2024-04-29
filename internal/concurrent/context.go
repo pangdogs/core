@@ -8,6 +8,7 @@ import (
 
 // Context 上下文
 type Context interface {
+	iContext
 	context.Context
 
 	// GetParentContext 获取父上下文
@@ -20,7 +21,9 @@ type Context interface {
 	GetWaitGroup() *sync.WaitGroup
 	// GetCancelFunc 获取取消运行函数
 	GetCancelFunc() context.CancelFunc
+}
 
+type iContext interface {
 	init(parentCtx context.Context, autoRecover bool, reportError chan error)
 	setPaired(v bool) bool
 	getPaired() bool

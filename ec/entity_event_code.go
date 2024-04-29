@@ -8,22 +8,37 @@ import (
 	iface "git.golaxy.org/core/util/iface"
 )
 
-type _AutoEventEntityDestroySelf interface {
+type iAutoEventEntityDestroySelf interface {
 	EventEntityDestroySelf() event.IEvent
 }
 
-func BindEventEntityDestroySelf(auto _AutoEventEntityDestroySelf, subscriber EventEntityDestroySelf, priority ...int32) event.Hook {
+func BindEventEntityDestroySelf(auto iAutoEventEntityDestroySelf, subscriber EventEntityDestroySelf, priority ...int32) event.Hook {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
-	return event.BindEvent[EventEntityDestroySelf](auto.EventEntityDestroySelf(), subscriber, priority...)
+	return event.Bind[EventEntityDestroySelf](auto.EventEntityDestroySelf(), subscriber, priority...)
 }
 
-func _EmitEventEntityDestroySelf(auto _AutoEventEntityDestroySelf, entity Entity) {
+func _EmitEventEntityDestroySelf(auto iAutoEventEntityDestroySelf, entity Entity) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
 	event.UnsafeEvent(auto.EventEntityDestroySelf()).Emit(func(subscriber iface.Cache) bool {
+		iface.Cache2Iface[EventEntityDestroySelf](subscriber).OnEntityDestroySelf(entity)
+		return true
+	})
+}
+
+func _EmitEventEntityDestroySelfWithInterrupt(auto iAutoEventEntityDestroySelf, interrupt func(entity Entity) bool, entity Entity) {
+	if auto == nil {
+		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
+	}
+	event.UnsafeEvent(auto.EventEntityDestroySelf()).Emit(func(subscriber iface.Cache) bool {
+		if interrupt != nil {
+			if interrupt(entity) {
+				return false
+			}
+		}
 		iface.Cache2Iface[EventEntityDestroySelf](subscriber).OnEntityDestroySelf(entity)
 		return true
 	})

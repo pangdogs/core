@@ -5,7 +5,8 @@ package ec
 type TreeNodeState int8
 
 const (
-	TreeNodeState_Detached  TreeNodeState = iota // 已从实体树中脱离
+	TreeNodeState_Freedom   TreeNodeState = iota // 自由实体
+	TreeNodeState_Attaching                      // 正在加入实体树
 	TreeNodeState_Attached                       // 在实体树中
-	TreeNodeState_Detaching                      // 正在脱离
+	TreeNodeState_Detaching                      // 正在脱离实体树
 )

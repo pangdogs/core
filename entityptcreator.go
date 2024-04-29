@@ -6,8 +6,8 @@ import (
 	"git.golaxy.org/core/service"
 )
 
-// DefineEntity 定义实体
-func DefineEntity(ctx service.Context) EntityPTCreator {
+// CreateEntityPT 创建实体原型
+func CreateEntityPT(ctx service.Context) EntityPTCreator {
 	if ctx == nil {
 		panic(fmt.Errorf("%w: %w: ctx is nil", ErrCore, ErrArgs))
 	}
