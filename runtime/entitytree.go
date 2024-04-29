@@ -18,8 +18,6 @@ type EntityTree interface {
 
 	// AddNode 新增实体节点，会向实体管理器添加实体
 	AddNode(entity ec.Entity, parentId uid.Id) error
-	// ChangeParentNode 修改实体父节点
-	ChangeParentNode(entityId, parentId uid.Id) error
 	// PruningNode 实体树节点剪枝
 	PruningNode(entityId uid.Id)
 	// RangeChildren 遍历子实体
@@ -34,7 +32,9 @@ type EntityTree interface {
 	CountChildren(entityId uid.Id) int
 	// IsTop 是否是顶层节点
 	IsTop(entityId uid.Id) bool
-	// GetParent 获取子实体的父实体
+	// ChangeParent 修改父实体
+	ChangeParent(entityId, parentId uid.Id) error
+	// GetParent 获取父实体
 	GetParent(entityId uid.Id) (ec.Entity, bool)
 
 	iAutoEventEntityTreeAddNode    // 事件：新增实体树节点
@@ -52,60 +52,6 @@ func (mgr *_EntityMgrBehavior) AddNode(entity ec.Entity, parentId uid.Id) error 
 		return fmt.Errorf("%w: %w: parentId is nil", ErrEntityMgr, exception.ErrArgs)
 	}
 	return mgr.addEntity(entity, parentId)
-}
-
-// ChangeParentNode 修改实体父节点
-func (mgr *_EntityMgrBehavior) ChangeParentNode(entityId, parentId uid.Id) error {
-	entity, ok := mgr.GetEntity(entityId)
-	if !ok {
-		return fmt.Errorf("%w: entity not exist", ErrEntityMgr)
-	}
-
-	if entity.GetState() > ec.EntityState_Living {
-		return fmt.Errorf("%w: invalid entity state %q", ErrEntityMgr, entity.GetState())
-	}
-
-	if parentId.IsNil() {
-		mgr.PruningNode(entityId)
-		return nil
-	}
-
-	parent, ok := mgr.GetEntity(parentId)
-	if !ok {
-		return fmt.Errorf("%w: parent not exist", ErrEntityMgr)
-	}
-
-	if parent.GetState() > ec.EntityState_Living {
-		return fmt.Errorf("%w: invalid parent state %q", ErrEntityMgr, parent.GetState())
-	}
-
-	if parent.GetId() == entity.GetId() {
-		return fmt.Errorf("%w: parent and child cannot be the same", ErrEntityMgr)
-	}
-
-	switch entity.GetTreeNodeState() {
-	case ec.TreeNodeState_Freedom:
-		mgr.addToParentNode(entity, parent)
-		mgr.attachParentNode(entity, parent)
-	case ec.TreeNodeState_Attached:
-		if p, ok := entity.GetTreeNodeParent(); ok {
-			if p.GetId() == parent.GetId() {
-				return nil
-			}
-		}
-
-		for p, _ := parent.GetTreeNodeParent(); p != nil; p, _ = p.GetTreeNodeParent() {
-			if p.GetId() == entity.GetId() {
-				return fmt.Errorf("%w: detected a cycle in the tree structure", ErrEntityMgr)
-			}
-		}
-
-		mgr.changeParentNode(entity, parent)
-	default:
-		return fmt.Errorf("%w: invalid entity tree node state %q", ErrEntityMgr, entity.GetTreeNodeState())
-	}
-
-	return nil
 }
 
 // PruningNode 实体树节点剪枝
@@ -210,7 +156,61 @@ func (mgr *_EntityMgrBehavior) IsTop(entityId uid.Id) bool {
 	return node.parentElement == nil
 }
 
-// GetParent 获取子实体的父实体
+// ChangeParent 修改父实体
+func (mgr *_EntityMgrBehavior) ChangeParent(entityId, parentId uid.Id) error {
+	entity, ok := mgr.GetEntity(entityId)
+	if !ok {
+		return fmt.Errorf("%w: entity not exist", ErrEntityMgr)
+	}
+
+	if entity.GetState() > ec.EntityState_Living {
+		return fmt.Errorf("%w: invalid entity state %q", ErrEntityMgr, entity.GetState())
+	}
+
+	if parentId.IsNil() {
+		mgr.PruningNode(entityId)
+		return nil
+	}
+
+	parent, ok := mgr.GetEntity(parentId)
+	if !ok {
+		return fmt.Errorf("%w: parent not exist", ErrEntityMgr)
+	}
+
+	if parent.GetState() > ec.EntityState_Living {
+		return fmt.Errorf("%w: invalid parent state %q", ErrEntityMgr, parent.GetState())
+	}
+
+	if parent.GetId() == entity.GetId() {
+		return fmt.Errorf("%w: parent and child cannot be the same", ErrEntityMgr)
+	}
+
+	switch entity.GetTreeNodeState() {
+	case ec.TreeNodeState_Freedom:
+		mgr.addToParentNode(entity, parent)
+		mgr.attachParentNode(entity, parent)
+	case ec.TreeNodeState_Attached:
+		if p, ok := entity.GetTreeNodeParent(); ok {
+			if p.GetId() == parent.GetId() {
+				return nil
+			}
+		}
+
+		for p, _ := parent.GetTreeNodeParent(); p != nil; p, _ = p.GetTreeNodeParent() {
+			if p.GetId() == entity.GetId() {
+				return fmt.Errorf("%w: detected a cycle in the tree structure", ErrEntityMgr)
+			}
+		}
+
+		mgr.changeParentNode(entity, parent)
+	default:
+		return fmt.Errorf("%w: invalid entity tree node state %q", ErrEntityMgr, entity.GetTreeNodeState())
+	}
+
+	return nil
+}
+
+// GetParent 获取父实体
 func (mgr *_EntityMgrBehavior) GetParent(entityId uid.Id) (ec.Entity, bool) {
 	entity, ok := mgr.GetEntity(entityId)
 	if !ok {
