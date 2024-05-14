@@ -87,14 +87,13 @@ type I%[1]s interface {
 
 		// 生成事件Id
 		{
-			fmt.Fprintln(code, "const (")
-			fmt.Fprintf(code, `
-	_%[1]sId = %[2]sMakeEventTabId(&%[1]s{})
+			fmt.Fprintln(code, `
+var (`)
+			fmt.Fprintf(code, `	_%[1]sId = %[2]sMakeEventTabId(&%[1]s{})
 `, ctx.EventTabName, eventPrefix)
 
 			for i, event := range eventDeclTab {
-				fmt.Fprintf(code, `
-	%[2]sId = _%[1]sId + %[3]d
+				fmt.Fprintf(code, `	%[2]sId = _%[1]sId + %[3]d
 `, ctx.EventTabName, event.Name, i)
 			}
 
