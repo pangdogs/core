@@ -89,7 +89,7 @@ type I%[1]s interface {
 		{
 			fmt.Fprintln(code, `
 var (`)
-			fmt.Fprintf(code, `	_%[1]sId = %[2]sMakeEventTabId(&%[1]s{})
+			fmt.Fprintf(code, `	_%[1]sId = %[2]sDeclareEventTabId(&%[1]s{})
 `, ctx.EventTabName, eventPrefix)
 
 			for i, event := range eventDeclTab {

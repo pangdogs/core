@@ -1,9 +1,11 @@
 package event
 
 import (
+	"fmt"
 	"git.golaxy.org/core/util/types"
 	"hash/fnv"
 	"reflect"
+	"sync"
 )
 
 // IEventTab 本地事件表接口，方便管理多个事件
@@ -40,4 +42,27 @@ func MakeEventTabId(eventTab IEventTab) int {
 // MakeEventId 创建事件Id
 func MakeEventId(eventTab IEventTab, pos int32) int {
 	return MakeEventTabId(eventTab) + int(pos)
+}
+
+var (
+	declareEventTabs = &sync.Map{}
+	declareEvents    = &sync.Map{}
+)
+
+// DeclareEventTabId 声明事件表Id
+func DeclareEventTabId(eventTab IEventTab) int {
+	id := MakeEventTabId(eventTab)
+	if name, loaded := declareEventTabs.LoadOrStore(id, types.TypeFullName(reflect.ValueOf(eventTab).Elem().Type())); loaded {
+		panic(fmt.Errorf("event_tab(%d) has already been declared by %q", id, name))
+	}
+	return id
+}
+
+// DeclareEventId 声明事件Id
+func DeclareEventId(eventTab IEventTab, pos int32) int {
+	id := MakeEventTabId(eventTab) + int(pos)
+	if name, loaded := declareEvents.LoadOrStore(id, types.TypeFullName(reflect.ValueOf(eventTab).Elem().Type())); loaded {
+		panic(fmt.Errorf("event(%d) has already been declared by %q", id, name))
+	}
+	return id
 }
