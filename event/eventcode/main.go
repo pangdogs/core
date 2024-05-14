@@ -17,6 +17,7 @@ import (
 	"go/parser"
 	"go/token"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -78,11 +79,11 @@ func main() {
 	ctx.PackageIfaceAlias = strings.TrimSpace(*packageIfaceAlias)
 
 	if ctx.PackageEventAlias == "" {
-		panic("`gen_event --package_event_alias`设置的别名不能为空")
+		panic("`--package_event_alias`设置的别名不能为空")
 	}
 
 	if ctx.PackageIfaceAlias == "" {
-		panic("`gen_event --package_iface_alias`设置的别名不能为空")
+		panic("`--package_iface_alias`设置的别名不能为空")
 	}
 
 	switch cmd {
@@ -95,7 +96,11 @@ func main() {
 		ctx.EventDefAuto, _ = strconv.ParseBool(*eventDefAuto)
 
 		if ctx.EventPackage == "" {
-			panic("`gen_event --package`设置的包名不能为空")
+			if filepath.IsLocal(ctx.EventDir) {
+				ctx.EventPackage = os.Getenv("GOPACKAGE")
+			} else {
+				panic("`gen_event --package`设置的包名不能为空")
+			}
 		}
 
 		genEvent(ctx)
@@ -103,12 +108,16 @@ func main() {
 	case eventTabCmd.FullCommand():
 		loadDeclFile(ctx)
 
-		ctx.EventTabPackage = *eventTabPackage
-		ctx.EventTabDir = *eventTabDir
-		ctx.EventTabName = *eventTabName
+		ctx.EventTabPackage = strings.TrimSpace(*eventTabPackage)
+		ctx.EventTabDir = strings.TrimSpace(*eventTabDir)
+		ctx.EventTabName = strings.TrimSpace(*eventTabName)
 
 		if ctx.EventTabPackage == "" {
-			panic("`gen_eventtab --package`设置的包名不能为空")
+			if filepath.IsLocal(ctx.EventTabDir) {
+				ctx.EventTabPackage = os.Getenv("GOPACKAGE")
+			} else {
+				panic("`gen_eventtab --package`设置的包名不能为空")
+			}
 		}
 
 		if ctx.EventTabName == "" {

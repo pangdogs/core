@@ -11,14 +11,6 @@ import (
 )
 
 func genEvent(ctx *CommandContext) {
-	eventFile := ctx.EventDir
-
-	if eventFile == "" {
-		eventFile = strings.TrimSuffix(ctx.DeclFile, ".go") + "_code.go"
-	} else {
-		eventFile = strings.Join([]string{filepath.Dir(ctx.DeclFile), ctx.EventDir, filepath.Base(strings.TrimSuffix(ctx.DeclFile, ".go")) + "_code.go"}, string(filepath.Separator))
-	}
-
 	code := &bytes.Buffer{}
 
 	// 生成注释
@@ -288,9 +280,12 @@ func (h %[5]s%[1]sHandler) %[2]s(%[3]s) {
 		fmt.Printf("Emit: %s\n", eventDecl.Name)
 	}
 
-	os.MkdirAll(filepath.Dir(eventFile), os.ModePerm)
+	// 目标文件
+	targetFile := filepath.Join(filepath.Dir(ctx.DeclFile), ctx.EventDir, filepath.Base(strings.TrimSuffix(ctx.DeclFile, ".go"))+"_code.go")
 
-	if err := ioutil.WriteFile(eventFile, code.Bytes(), os.ModePerm); err != nil {
+	os.MkdirAll(filepath.Dir(targetFile), os.ModePerm)
+
+	if err := ioutil.WriteFile(targetFile, code.Bytes(), os.ModePerm); err != nil {
 		panic(err)
 	}
 }

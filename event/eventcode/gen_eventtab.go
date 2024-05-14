@@ -10,14 +10,6 @@ import (
 )
 
 func genEventTab(ctx *CommandContext) {
-	eventTabFile := ctx.EventTabDir
-
-	if eventTabFile == "" {
-		eventTabFile = strings.TrimSuffix(ctx.DeclFile, ".go") + "_tab_code.go"
-	} else {
-		eventTabFile = strings.Join([]string{filepath.Dir(ctx.DeclFile), ctx.EventTabDir, filepath.Base(strings.TrimSuffix(ctx.DeclFile, ".go")) + "_tab_code.go"}, string(filepath.Separator))
-	}
-
 	code := &bytes.Buffer{}
 
 	// 生成注释
@@ -93,16 +85,20 @@ type I%[1]s interface {
 			eventsRecursionCode += fmt.Sprintf("\t(*eventTab)[%d].Init(autoRecover, reportError, %s)\n", i, eventRecursion)
 		}
 
-		var eventsAccessCode string
+		// 生成事件Id
+		{
+			fmt.Fprintln(code, "const (")
+			fmt.Fprintf(code, `
+	_%[1]sId = %[2]sMakeEventTabId(&%[1]s{})
+`, ctx.EventTabName, eventPrefix)
 
-		for i, event := range eventDeclTab {
-			eventsAccessCode += fmt.Sprintf(`
-const %[2]sId int = %[4]d
+			for i, event := range eventDeclTab {
+				fmt.Fprintf(code, `
+	%[2]sId = _%[1]sId + %[3]d
+`, ctx.EventTabName, event.Name, i)
+			}
 
-func (eventTab *%[1]s) %[2]s() %[3]sIEvent {
-	return &(*eventTab)[%[2]sId]
-}
-`, ctx.EventTabName, event.Name, eventPrefix, i)
+			fmt.Fprintln(code, ")")
 		}
 
 		fmt.Fprintf(code, `
@@ -112,7 +108,14 @@ func (eventTab *%[1]s) Init(autoRecover bool, reportError chan error, recursion 
 %[3]s}
 
 func (eventTab *%[1]s) Get(id int) %[4]sIEvent {
-	return &(*eventTab)[id]
+	if _%[1]sId != id & 0xFFFFFFFF00000000 {
+		return nil
+	}
+	pos := id & 0xFFFFFFFF
+	if pos < 0 || pos >= len(*eventTab) {
+		return nil
+	}
+	return &(*eventTab)[pos]
 }
 
 func (eventTab *%[1]s) Open() {
@@ -132,15 +135,25 @@ func (eventTab *%[1]s) Clean() {
 		(*eventTab)[i].Clean()
 	}
 }
-%[5]s
-`, ctx.EventTabName, len(eventDeclTab), eventsRecursionCode, eventPrefix, eventsAccessCode)
+`, ctx.EventTabName, len(eventDeclTab), eventsRecursionCode, eventPrefix)
+	}
+
+	for i, event := range eventDeclTab {
+		fmt.Fprintf(code, `
+func (eventTab *%[1]s) %[2]s() %[4]sIEvent {
+	return &(*eventTab)[%[3]d]
+}
+`, ctx.EventTabName, event.Name, i, eventPrefix)
 	}
 
 	fmt.Printf("EventTab: %s\n", ctx.EventTabName)
 
-	os.MkdirAll(filepath.Dir(eventTabFile), os.ModePerm)
+	// 目标文件
+	targetFile := filepath.Join(filepath.Dir(ctx.DeclFile), ctx.EventTabDir, filepath.Base(strings.TrimSuffix(ctx.DeclFile, ".go"))+"_tab_code.go")
 
-	if err := ioutil.WriteFile(eventTabFile, code.Bytes(), os.ModePerm); err != nil {
+	os.MkdirAll(filepath.Dir(targetFile), os.ModePerm)
+
+	if err := ioutil.WriteFile(targetFile, code.Bytes(), os.ModePerm); err != nil {
 		panic(err)
 	}
 }

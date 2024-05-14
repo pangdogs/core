@@ -1,5 +1,11 @@
 package event
 
+import (
+	"git.golaxy.org/core/util/types"
+	"hash/fnv"
+	"reflect"
+)
+
 // IEventTab 本地事件表接口，方便管理多个事件
 /*
 使用方式：
@@ -18,4 +24,20 @@ type IEventTab interface {
 	IEventCtrl
 	// Get 获取事件
 	Get(id int) IEvent
+}
+
+// MakeEventTabId 创建事件表Id
+func MakeEventTabId(eventTab IEventTab) int {
+	hash := fnv.New32a()
+	rt := reflect.ValueOf(eventTab).Type()
+	if rt.PkgPath() == "" || rt.Name() == "" {
+		panic("unsupported type")
+	}
+	hash.Write([]byte(types.TypeFullName(rt)))
+	return int(hash.Sum32()) << 32
+}
+
+// MakeEventId 创建事件Id
+func MakeEventId(eventTab IEventTab, pos int32) int {
+	return MakeEventTabId(eventTab) + int(pos)
 }
