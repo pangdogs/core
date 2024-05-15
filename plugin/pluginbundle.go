@@ -71,7 +71,7 @@ func (bundle *_PluginBundle) Install(pluginFace iface.FaceAny, name ...string) P
 	if len(name) > 0 {
 		_name = name[0]
 	} else {
-		_name = types.AnyFullName(pluginFace.Iface)
+		_name = types.FullName(pluginFace.Iface)
 	}
 
 	_, ok := bundle.pluginIdx[_name]

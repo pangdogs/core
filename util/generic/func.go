@@ -19,7 +19,7 @@ func (f Func0[R]) Invoke() (r R, panicErr error) {
 
 func (f Func0[R]) Call(autoRecover bool, reportError chan error) (r R, panicErr error) {
 	if f == nil {
-		return types.Zero[R](), nil
+		return types.ZeroT[R](), nil
 	}
 
 	if autoRecover {
@@ -57,7 +57,7 @@ func (f Func1[A1, R]) Invoke(a1 A1) (r R, panicErr error) {
 
 func (f Func1[A1, R]) Call(autoRecover bool, reportError chan error, a1 A1) (r R, panicErr error) {
 	if f == nil {
-		return types.Zero[R](), nil
+		return types.ZeroT[R](), nil
 	}
 
 	if autoRecover {
@@ -95,7 +95,7 @@ func (f Func2[A1, A2, R]) Invoke(a1 A1, a2 A2) (r R, panicErr error) {
 
 func (f Func2[A1, A2, R]) Call(autoRecover bool, reportError chan error, a1 A1, a2 A2) (r R, panicErr error) {
 	if f == nil {
-		return types.Zero[R](), nil
+		return types.ZeroT[R](), nil
 	}
 
 	if autoRecover {
@@ -133,7 +133,7 @@ func (f Func3[A1, A2, A3, R]) Invoke(a1 A1, a2 A2, a3 A3) (r R, panicErr error) 
 
 func (f Func3[A1, A2, A3, R]) Call(autoRecover bool, reportError chan error, a1 A1, a2 A2, a3 A3) (r R, panicErr error) {
 	if f == nil {
-		return types.Zero[R](), nil
+		return types.ZeroT[R](), nil
 	}
 
 	if autoRecover {
@@ -171,7 +171,7 @@ func (f Func4[A1, A2, A3, A4, R]) Invoke(a1 A1, a2 A2, a3 A3, a4 A4) (r R, panic
 
 func (f Func4[A1, A2, A3, A4, R]) Call(autoRecover bool, reportError chan error, a1 A1, a2 A2, a3 A3, a4 A4) (r R, panicErr error) {
 	if f == nil {
-		return types.Zero[R](), nil
+		return types.ZeroT[R](), nil
 	}
 
 	if autoRecover {
@@ -218,7 +218,7 @@ func (f Func5[A1, A2, A3, A4, A5, R]) Call(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5,
 ) (r R, panicErr error) {
 	if f == nil {
-		return types.Zero[R](), nil
+		return types.ZeroT[R](), nil
 	}
 
 	if autoRecover {
@@ -265,7 +265,7 @@ func (f Func6[A1, A2, A3, A4, A5, A6, R]) Call(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6,
 ) (r R, panicErr error) {
 	if f == nil {
-		return types.Zero[R](), nil
+		return types.ZeroT[R](), nil
 	}
 
 	if autoRecover {
@@ -312,7 +312,7 @@ func (f Func7[A1, A2, A3, A4, A5, A6, A7, R]) Call(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7,
 ) (r R, panicErr error) {
 	if f == nil {
-		return types.Zero[R](), nil
+		return types.ZeroT[R](), nil
 	}
 
 	if autoRecover {
@@ -359,7 +359,7 @@ func (f Func8[A1, A2, A3, A4, A5, A6, A7, A8, R]) Call(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8,
 ) (r R, panicErr error) {
 	if f == nil {
-		return types.Zero[R](), nil
+		return types.ZeroT[R](), nil
 	}
 
 	if autoRecover {
@@ -406,7 +406,7 @@ func (f Func9[A1, A2, A3, A4, A5, A6, A7, A8, A9, R]) Call(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9,
 ) (r R, panicErr error) {
 	if f == nil {
-		return types.Zero[R](), nil
+		return types.ZeroT[R](), nil
 	}
 
 	if autoRecover {
@@ -453,7 +453,7 @@ func (f Func10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R]) Call(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10,
 ) (r R, panicErr error) {
 	if f == nil {
-		return types.Zero[R](), nil
+		return types.ZeroT[R](), nil
 	}
 
 	if autoRecover {
@@ -500,7 +500,7 @@ func (f Func11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R]) Call(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11,
 ) (r R, panicErr error) {
 	if f == nil {
-		return types.Zero[R](), nil
+		return types.ZeroT[R](), nil
 	}
 
 	if autoRecover {
@@ -547,7 +547,7 @@ func (f Func12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R]) Call(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12,
 ) (r R, panicErr error) {
 	if f == nil {
-		return types.Zero[R](), nil
+		return types.ZeroT[R](), nil
 	}
 
 	if autoRecover {
@@ -594,7 +594,7 @@ func (f Func13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R]) Call(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13,
 ) (r R, panicErr error) {
 	if f == nil {
-		return types.Zero[R](), nil
+		return types.ZeroT[R](), nil
 	}
 
 	if autoRecover {
@@ -641,7 +641,7 @@ func (f Func14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R]) 
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14,
 ) (r R, panicErr error) {
 	if f == nil {
-		return types.Zero[R](), nil
+		return types.ZeroT[R](), nil
 	}
 
 	if autoRecover {
@@ -688,7 +688,7 @@ func (f Func15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15,
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15,
 ) (r R, panicErr error) {
 	if f == nil {
-		return types.Zero[R](), nil
+		return types.ZeroT[R](), nil
 	}
 
 	if autoRecover {
@@ -735,7 +735,7 @@ func (f Func16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15,
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, a16 A16,
 ) (r R, panicErr error) {
 	if f == nil {
-		return types.Zero[R](), nil
+		return types.ZeroT[R](), nil
 	}
 
 	if autoRecover {

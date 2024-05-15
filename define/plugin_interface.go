@@ -18,7 +18,7 @@ type PluginInterfaceDefinition[PLUGIN_IFACE any] struct {
 }
 
 func definePluginInterface[PLUGIN_IFACE any]() PluginInterfaceDefinition[PLUGIN_IFACE] {
-	name := types.FullName[PLUGIN_IFACE]()
+	name := types.FullNameT[PLUGIN_IFACE]()
 
 	return PluginInterfaceDefinition[PLUGIN_IFACE]{
 		Name: name,

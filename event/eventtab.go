@@ -35,18 +35,18 @@ func MakeEventTabId(eventTab IEventTab) uint64 {
 	if rt.PkgPath() == "" || rt.Name() == "" {
 		panic("unsupported type")
 	}
-	hash.Write([]byte(types.TypeFullName(rt)))
+	hash.Write([]byte(types.FullNameRT(rt)))
 	return uint64(hash.Sum32()) << 32
 }
 
 // MakeEventTabIdT 创建事件表Id
 func MakeEventTabIdT[T any]() uint64 {
 	hash := fnv.New32a()
-	rt := reflect.TypeOf((*T)(nil)).Elem()
+	rt := reflect.TypeFor[T]()
 	if rt.PkgPath() == "" || rt.Name() == "" || !reflect.PointerTo(rt).Implements(reflect.TypeFor[IEventTab]()) {
 		panic("unsupported type")
 	}
-	hash.Write([]byte(types.TypeFullName(rt)))
+	hash.Write([]byte(types.FullNameRT(rt)))
 	return uint64(hash.Sum32()) << 32
 }
 
@@ -68,7 +68,7 @@ var (
 // DeclareEventTabId 声明事件表Id
 func DeclareEventTabId(eventTab IEventTab) uint64 {
 	id := MakeEventTabId(eventTab)
-	if name, loaded := declareEventTabs.LoadOrStore(id, types.TypeFullName(reflect.TypeOf(eventTab).Elem())); loaded {
+	if name, loaded := declareEventTabs.LoadOrStore(id, types.FullNameRT(reflect.TypeOf(eventTab).Elem())); loaded {
 		panic(fmt.Errorf("event_tab(%d) has already been declared by %q", id, name))
 	}
 	return id
@@ -77,7 +77,7 @@ func DeclareEventTabId(eventTab IEventTab) uint64 {
 // DeclareEventTabIdT 声明事件表Id
 func DeclareEventTabIdT[T any]() uint64 {
 	id := MakeEventTabIdT[T]()
-	if name, loaded := declareEventTabs.LoadOrStore(id, types.TypeFullName(reflect.TypeOf((*T)(nil)).Elem())); loaded {
+	if name, loaded := declareEventTabs.LoadOrStore(id, types.FullNameRT(reflect.TypeFor[T]())); loaded {
 		panic(fmt.Errorf("event_tab(%d) has already been declared by %q", id, name))
 	}
 	return id
@@ -86,7 +86,7 @@ func DeclareEventTabIdT[T any]() uint64 {
 // DeclareEventId 声明事件Id
 func DeclareEventId(eventTab IEventTab, pos int32) uint64 {
 	id := MakeEventTabId(eventTab) + uint64(pos)
-	if name, loaded := declareEvents.LoadOrStore(id, types.TypeFullName(reflect.TypeOf(eventTab).Elem())); loaded {
+	if name, loaded := declareEvents.LoadOrStore(id, types.FullNameRT(reflect.TypeOf(eventTab).Elem())); loaded {
 		panic(fmt.Errorf("event(%d) has already been declared by %q", id, name))
 	}
 	return id
@@ -95,7 +95,7 @@ func DeclareEventId(eventTab IEventTab, pos int32) uint64 {
 // DeclareEventIdT 声明事件Id
 func DeclareEventIdT[T any](pos int32) uint64 {
 	id := MakeEventTabIdT[T]() + uint64(pos)
-	if name, loaded := declareEvents.LoadOrStore(id, types.TypeFullName(reflect.TypeOf((*T)(nil)).Elem())); loaded {
+	if name, loaded := declareEvents.LoadOrStore(id, types.FullNameRT(reflect.TypeFor[T]())); loaded {
 		panic(fmt.Errorf("event(%d) has already been declared by %q", id, name))
 	}
 	return id

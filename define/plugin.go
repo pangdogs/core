@@ -26,7 +26,7 @@ func definePlugin[PLUGIN_IFACE, OPTION any](creator generic.FuncVar0[OPTION, PLU
 		panic(fmt.Errorf("%w: %w: creator is nil", exception.ErrCore, exception.ErrArgs))
 	}
 
-	name := types.FullName[PLUGIN_IFACE]()
+	name := types.FullNameT[PLUGIN_IFACE]()
 
 	return PluginDefinition[PLUGIN_IFACE, OPTION]{
 		Name: name,

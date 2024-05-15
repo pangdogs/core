@@ -26,7 +26,7 @@ func CompAlias(comp any, alias string) _CompAlias {
 func CompInterface[FACE any](comp any) _CompAlias {
 	return _CompAlias{
 		Comp:  comp,
-		Alias: types.FullName[FACE](),
+		Alias: types.FullNameT[FACE](),
 	}
 }
 

@@ -24,7 +24,7 @@ func defineComponentInterface[COMP_IFACE any](compLib pt.ComponentLib) Component
 		panic(fmt.Errorf("%w: %w: compLib is nil", exception.ErrCore, exception.ErrArgs))
 	}
 
-	name := types.FullName[COMP_IFACE]()
+	name := types.FullNameT[COMP_IFACE]()
 
 	return ComponentInterfaceDefinition{
 		Name: name,

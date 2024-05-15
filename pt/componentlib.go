@@ -142,7 +142,7 @@ func (lib *_ComponentLib) declare(tfComp reflect.Type, aliases []string) Compone
 		panic(fmt.Errorf("%w: anonymous component not allowed", ErrPt))
 	}
 
-	compName := types.AnyFullName(tfComp)
+	compName := types.FullName(tfComp)
 
 	if !reflect.PointerTo(tfComp).Implements(reflect.TypeOf((*ec.Component)(nil)).Elem()) {
 		panic(fmt.Errorf("%w: component %q not implement ec.Component", ErrPt, compName))

@@ -37,11 +37,11 @@ import (
 	3.如果组件使用自定义别名加入实体，那么无法使用此功能提取组件接口。
 */
 func As[T comparable](entity ec.Entity) (T, bool) {
-	iface := types.Zero[T]()
+	iface := types.ZeroT[T]()
 	vfIface := reflect.ValueOf(&iface).Elem()
 
 	if !as(entity, vfIface) {
-		return types.Zero[T](), false
+		return types.ZeroT[T](), false
 	}
 
 	return iface, true
@@ -158,12 +158,12 @@ func (c *Composite[T]) As() (T, bool) {
 		panic(fmt.Errorf("%w: setting entity is nil", ErrPt))
 	}
 
-	if c.iface != types.Zero[T]() && !c.Changed() {
+	if c.iface != types.ZeroT[T]() && !c.Changed() {
 		return c.iface, true
 	}
 
 	if !as(c.entity, reflect.ValueOf(c.iface)) {
-		return types.Zero[T](), false
+		return types.ZeroT[T](), false
 	}
 
 	c.version = ec.UnsafeEntity(c.entity).GetVersion()
@@ -205,7 +205,7 @@ func as(entity ec.Entity, vfIface reflect.Value) bool {
 			}
 
 			sb.Reset()
-			types.WriteTypeFullName(&sb, tfField)
+			types.WriteFullNameRT(&sb, tfField)
 
 			comp := entity.GetComponent(sb.String())
 			if comp == nil {
@@ -221,7 +221,7 @@ func as(entity ec.Entity, vfIface reflect.Value) bool {
 		tfIface := vfIface.Type()
 
 		sb.Reset()
-		types.WriteTypeFullName(&sb, tfIface)
+		types.WriteFullNameRT(&sb, tfIface)
 
 		comp := entity.GetComponent(sb.String())
 		if comp == nil {

@@ -19,7 +19,7 @@ func (f PairFunc0[R1, R2]) Invoke() (r1 R1, r2 R2, panicErr error) {
 
 func (f PairFunc0[R1, R2]) Call(autoRecover bool, reportError chan error) (r1 R1, r2 R2, panicErr error) {
 	if f == nil {
-		return types.Zero[R1](), types.Zero[R2](), nil
+		return types.ZeroT[R1](), types.ZeroT[R2](), nil
 	}
 
 	if autoRecover {
@@ -58,7 +58,7 @@ func (f PairFunc1[A1, R1, R2]) Invoke(a1 A1) (r1 R1, r2 R2, panicErr error) {
 
 func (f PairFunc1[A1, R1, R2]) Call(autoRecover bool, reportError chan error, a1 A1) (r1 R1, r2 R2, panicErr error) {
 	if f == nil {
-		return types.Zero[R1](), types.Zero[R2](), nil
+		return types.ZeroT[R1](), types.ZeroT[R2](), nil
 	}
 
 	if autoRecover {
@@ -97,7 +97,7 @@ func (f PairFunc2[A1, A2, R1, R2]) Invoke(a1 A1, a2 A2) (r1 R1, r2 R2, panicErr 
 
 func (f PairFunc2[A1, A2, R1, R2]) Call(autoRecover bool, reportError chan error, a1 A1, a2 A2) (r1 R1, r2 R2, panicErr error) {
 	if f == nil {
-		return types.Zero[R1](), types.Zero[R2](), nil
+		return types.ZeroT[R1](), types.ZeroT[R2](), nil
 	}
 
 	if autoRecover {
@@ -136,7 +136,7 @@ func (f PairFunc3[A1, A2, A3, R1, R2]) Invoke(a1 A1, a2 A2, a3 A3) (r1 R1, r2 R2
 
 func (f PairFunc3[A1, A2, A3, R1, R2]) Call(autoRecover bool, reportError chan error, a1 A1, a2 A2, a3 A3) (r1 R1, r2 R2, panicErr error) {
 	if f == nil {
-		return types.Zero[R1](), types.Zero[R2](), nil
+		return types.ZeroT[R1](), types.ZeroT[R2](), nil
 	}
 
 	if autoRecover {
@@ -175,7 +175,7 @@ func (f PairFunc4[A1, A2, A3, A4, R1, R2]) Invoke(a1 A1, a2 A2, a3 A3, a4 A4) (r
 
 func (f PairFunc4[A1, A2, A3, A4, R1, R2]) Call(autoRecover bool, reportError chan error, a1 A1, a2 A2, a3 A3, a4 A4) (r1 R1, r2 R2, panicErr error) {
 	if f == nil {
-		return types.Zero[R1](), types.Zero[R2](), nil
+		return types.ZeroT[R1](), types.ZeroT[R2](), nil
 	}
 
 	if autoRecover {
@@ -223,7 +223,7 @@ func (f PairFunc5[A1, A2, A3, A4, A5, R1, R2]) Call(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5,
 ) (r1 R1, r2 R2, panicErr error) {
 	if f == nil {
-		return types.Zero[R1](), types.Zero[R2](), nil
+		return types.ZeroT[R1](), types.ZeroT[R2](), nil
 	}
 
 	if autoRecover {
@@ -271,7 +271,7 @@ func (f PairFunc6[A1, A2, A3, A4, A5, A6, R1, R2]) Call(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6,
 ) (r1 R1, r2 R2, panicErr error) {
 	if f == nil {
-		return types.Zero[R1](), types.Zero[R2](), nil
+		return types.ZeroT[R1](), types.ZeroT[R2](), nil
 	}
 
 	if autoRecover {
@@ -319,7 +319,7 @@ func (f PairFunc7[A1, A2, A3, A4, A5, A6, A7, R1, R2]) Call(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7,
 ) (r1 R1, r2 R2, panicErr error) {
 	if f == nil {
-		return types.Zero[R1](), types.Zero[R2](), nil
+		return types.ZeroT[R1](), types.ZeroT[R2](), nil
 	}
 
 	if autoRecover {
@@ -367,7 +367,7 @@ func (f PairFunc8[A1, A2, A3, A4, A5, A6, A7, A8, R1, R2]) Call(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8,
 ) (r1 R1, r2 R2, panicErr error) {
 	if f == nil {
-		return types.Zero[R1](), types.Zero[R2](), nil
+		return types.ZeroT[R1](), types.ZeroT[R2](), nil
 	}
 
 	if autoRecover {
@@ -415,7 +415,7 @@ func (f PairFunc9[A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2]) Call(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9,
 ) (r1 R1, r2 R2, panicErr error) {
 	if f == nil {
-		return types.Zero[R1](), types.Zero[R2](), nil
+		return types.ZeroT[R1](), types.ZeroT[R2](), nil
 	}
 
 	if autoRecover {
@@ -463,7 +463,7 @@ func (f PairFunc10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R1, R2]) Call(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10,
 ) (r1 R1, r2 R2, panicErr error) {
 	if f == nil {
-		return types.Zero[R1](), types.Zero[R2](), nil
+		return types.ZeroT[R1](), types.ZeroT[R2](), nil
 	}
 
 	if autoRecover {
@@ -511,7 +511,7 @@ func (f PairFunc11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R1, R2]) Call(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11,
 ) (r1 R1, r2 R2, panicErr error) {
 	if f == nil {
-		return types.Zero[R1](), types.Zero[R2](), nil
+		return types.ZeroT[R1](), types.ZeroT[R2](), nil
 	}
 
 	if autoRecover {
@@ -559,7 +559,7 @@ func (f PairFunc12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2]) C
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12,
 ) (r1 R1, r2 R2, panicErr error) {
 	if f == nil {
-		return types.Zero[R1](), types.Zero[R2](), nil
+		return types.ZeroT[R1](), types.ZeroT[R2](), nil
 	}
 
 	if autoRecover {
@@ -607,7 +607,7 @@ func (f PairFunc13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13,
 ) (r1 R1, r2 R2, panicErr error) {
 	if f == nil {
-		return types.Zero[R1](), types.Zero[R2](), nil
+		return types.ZeroT[R1](), types.ZeroT[R2](), nil
 	}
 
 	if autoRecover {
@@ -655,7 +655,7 @@ func (f PairFunc14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, 
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14,
 ) (r1 R1, r2 R2, panicErr error) {
 	if f == nil {
-		return types.Zero[R1](), types.Zero[R2](), nil
+		return types.ZeroT[R1](), types.ZeroT[R2](), nil
 	}
 
 	if autoRecover {
@@ -703,7 +703,7 @@ func (f PairFunc15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, 
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15,
 ) (r1 R1, r2 R2, panicErr error) {
 	if f == nil {
-		return types.Zero[R1](), types.Zero[R2](), nil
+		return types.ZeroT[R1](), types.ZeroT[R2](), nil
 	}
 
 	if autoRecover {
@@ -751,7 +751,7 @@ func (f PairFunc16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, 
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, a16 A16,
 ) (r1 R1, r2 R2, panicErr error) {
 	if f == nil {
-		return types.Zero[R1](), types.Zero[R2](), nil
+		return types.ZeroT[R1](), types.ZeroT[R2](), nil
 	}
 
 	if autoRecover {
