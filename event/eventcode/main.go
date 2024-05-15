@@ -52,7 +52,7 @@ const (
 
 func main() {
 	// 基础选项
-	declFile := kingpin.Flag("decl_file", "定义事件的源文件（.go）。").ExistingFile()
+	declFile := kingpin.Flag("decl_file", "定义事件的源文件（.go）。").Default(os.Getenv("$GOFILE")).ExistingFile()
 	eventRegexp := kingpin.Flag("event_regexp", "匹配事件定义时，使用的正则表达式。").Default("^[eE]vent.+").String()
 	packageEventAlias := kingpin.Flag("package_event_alias", fmt.Sprintf("导入Golaxy框架的`%s`包时使用的别名。", packageEventPath)).Default("event").String()
 	packageIfaceAlias := kingpin.Flag("package_iface_alias", fmt.Sprintf("导入Golaxy框架的`%s`包时使用的别名。", packageIfacePath)).Default("iface").String()
@@ -96,7 +96,7 @@ func main() {
 		ctx.EventDefAuto, _ = strconv.ParseBool(*eventDefAuto)
 
 		if ctx.EventPackage == "" {
-			if filepath.IsLocal(ctx.EventDir) {
+			if ctx.EventDir == "" || filepath.IsLocal(ctx.EventDir) {
 				ctx.EventPackage = os.Getenv("GOPACKAGE")
 			} else {
 				panic("`gen_event --package`设置的包名不能为空")
@@ -113,7 +113,7 @@ func main() {
 		ctx.EventTabName = strings.TrimSpace(*eventTabName)
 
 		if ctx.EventTabPackage == "" {
-			if filepath.IsLocal(ctx.EventTabDir) {
+			if ctx.EventDir == "" || filepath.IsLocal(ctx.EventTabDir) {
 				ctx.EventTabPackage = os.Getenv("GOPACKAGE")
 			} else {
 				panic("`gen_eventtab --package`设置的包名不能为空")
