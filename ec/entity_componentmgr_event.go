@@ -1,4 +1,4 @@
-//go:generate go run git.golaxy.org/core/event/eventcode --decl_file=$GOFILE gen_event --package=$GOPACKAGE
+//go:generate go run git.golaxy.org/core/event/eventcode gen_event
 package ec
 
 // EventComponentMgrAddComponents [EmitUnExport] 事件：实体的组件管理器添加组件

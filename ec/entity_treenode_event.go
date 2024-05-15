@@ -1,4 +1,4 @@
-//go:generate go run git.golaxy.org/core/event/eventcode --decl_file=$GOFILE gen_event --package=$GOPACKAGE
+//go:generate go run git.golaxy.org/core/event/eventcode gen_event
 package ec
 
 // EventTreeNodeAddChild [EmitUnExport] 事件：实体节点添加子实体

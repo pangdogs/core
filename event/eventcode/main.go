@@ -2,9 +2,9 @@
 /*
 	- 可以生成事件（event）与事件表（event table）辅助代码。
 	- 用于生成事件辅助代码时，在事件定义代码源文件（.go）头部，添加以下注释：
-		//go:generate go run git.golaxy.org/core/event/eventcode --decl_file=$GOFILE gen_event --package=$GOPACKAGE
+		//go:generate go run git.golaxy.org/core/event/eventcode gen_event
 	- 用于生成事件表辅助代码时，在事件定义代码源文件（.go）头部，添加以下注释：
-		//go:generate go run git.golaxy.org/core/event/eventcode --decl_file=$GOFILE gen_eventtab --package=$GOPACKAGE --name={事件表名称}
+		//go:generate go run git.golaxy.org/core/event/eventcode gen_eventtab --name={事件表名称}
 	- 在cmd控制台中，进入事件定义代码源文件（.go）的目录，输入go generate指令即可生成代码，此外也可以使用IDE提供的go generate功能。
 	- 编译本包并执行eventcode --help，可以查看命令行参数，通过参数可以调整生成的代码。
 */
