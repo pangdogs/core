@@ -106,12 +106,12 @@ type %[1]s [%[2]d]%[4]sEvent
 func (eventTab *%[1]s) Init(autoRecover bool, reportError chan error, recursion %[4]sEventRecursion) {
 %[3]s}
 
-func (eventTab *%[1]s) Get(id int) %[4]sIEvent {
-	if _%[1]sId != int(uint(id) & 0xFFFFFFFF00000000) {
+func (eventTab *%[1]s) Get(id uint64) %[4]sIEvent {
+	if _%[1]sId != id & 0xFFFFFFFF00000000 {
 		return nil
 	}
 	pos := id & 0xFFFFFFFF
-	if pos < 0 || pos >= len(*eventTab) {
+	if pos >= uint64(len(*eventTab)) {
 		return nil
 	}
 	return &(*eventTab)[pos]
