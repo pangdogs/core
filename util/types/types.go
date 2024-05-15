@@ -17,6 +17,11 @@ func NewT[T any]() *T {
 	return &zero
 }
 
+// NewCopiedT 新建拷贝值
+func NewCopiedT[T any](src T) *T {
+	return &src
+}
+
 // Name 类型名
 func Name(i any) string {
 	t, ok := i.(reflect.Type)
