@@ -91,3 +91,12 @@ func DeclareEventId(eventTab IEventTab, pos int32) int {
 	}
 	return id
 }
+
+// DeclareEventIdT 声明事件Id
+func DeclareEventIdT[T any](pos int32) int {
+	id := MakeEventTabIdT[T]() + int(pos)
+	if name, loaded := declareEvents.LoadOrStore(id, types.TypeFullName(reflect.ValueOf((*T)(nil)).Elem().Type())); loaded {
+		panic(fmt.Errorf("event(%d) has already been declared by %q", id, name))
+	}
+	return id
+}
