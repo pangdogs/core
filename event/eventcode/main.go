@@ -52,21 +52,21 @@ const (
 
 func main() {
 	// 基础选项
-	declFile := kingpin.Flag("decl_file", "定义事件的源文件（.go）。").Default(os.Getenv("$GOFILE")).ExistingFile()
+	declFile := kingpin.Flag("decl_file", "定义事件的源文件（.go）。").Default(os.Getenv("GOFILE")).ExistingFile()
 	eventRegexp := kingpin.Flag("event_regexp", "匹配事件定义时，使用的正则表达式。").Default("^[eE]vent.+").String()
 	packageEventAlias := kingpin.Flag("package_event_alias", fmt.Sprintf("导入Golaxy框架的`%s`包时使用的别名。", packageEventPath)).Default("event").String()
 	packageIfaceAlias := kingpin.Flag("package_iface_alias", fmt.Sprintf("导入Golaxy框架的`%s`包时使用的别名。", packageIfacePath)).Default("iface").String()
 
 	// 生成事件代码相关选项
 	eventCmd := kingpin.Command("gen_event", "通过定义的事件，生成事件辅助代码。")
-	eventPackage := eventCmd.Flag("package", "生成事件辅助代码时，使用的包名。").String()
+	eventPackage := eventCmd.Flag("package", "生成事件辅助代码时，使用的包名。").Default(os.Getenv("GOPACKAGE")).String()
 	eventDir := eventCmd.Flag("dir", "生成事件辅助代码时，输出的源文件（.go）存放的相对目录。").String()
 	eventDefExport := eventCmd.Flag("default_export", "生成事件辅助代码时，发送事件的辅助代码的可见性，事件定义选项[EmitExport][EmitUnExport]可以覆盖此配置。").Default("true").String()
 	eventDefAuto := eventCmd.Flag("default_auto", "生成事件辅助代码时，是否生成简化绑定事件的辅助代码，事件定义选项[EmitAuto][EmitManual]可以覆盖此配置。").Default("true").String()
 
 	// 生成事件表代码相关选项
 	eventTabCmd := kingpin.Command("gen_eventtab", "通过定义的事件，生成事件表辅助代码。")
-	eventTabPackage := eventTabCmd.Flag("package", "生成事件表辅助代码，使用的包名。").String()
+	eventTabPackage := eventTabCmd.Flag("package", "生成事件表辅助代码，使用的包名。").Default(os.Getenv("GOPACKAGE")).String()
 	eventTabDir := eventTabCmd.Flag("dir", "生成事件表辅助代码时，输出的源文件（.go）存放的相对目录。").String()
 	eventTabName := eventTabCmd.Flag("name", "生成的事件表名称。").String()
 
@@ -96,11 +96,7 @@ func main() {
 		ctx.EventDefAuto, _ = strconv.ParseBool(*eventDefAuto)
 
 		if ctx.EventPackage == "" {
-			if ctx.EventDir == "" || filepath.IsLocal(ctx.EventDir) {
-				ctx.EventPackage = os.Getenv("GOPACKAGE")
-			} else {
-				panic("`gen_event --package`设置的包名不能为空")
-			}
+			panic("`gen_event --package`设置的包名不能为空")
 		}
 
 		genEvent(ctx)
@@ -113,11 +109,7 @@ func main() {
 		ctx.EventTabName = strings.TrimSpace(*eventTabName)
 
 		if ctx.EventTabPackage == "" {
-			if ctx.EventDir == "" || filepath.IsLocal(ctx.EventTabDir) {
-				ctx.EventTabPackage = os.Getenv("GOPACKAGE")
-			} else {
-				panic("`gen_eventtab --package`设置的包名不能为空")
-			}
+			panic("`gen_eventtab --package`设置的包名不能为空")
 		}
 
 		if ctx.EventTabName == "" {
