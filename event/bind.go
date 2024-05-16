@@ -20,7 +20,7 @@ func Bind[T any](event IEvent, subscriber T, priority ...int32) Hook {
 	return event.newHook(iface.MakeFaceAny(subscriber), _priority)
 }
 
-// Unbind 解绑定事件与订阅者，比使用事件绑定句柄解绑定性能差，且在同个订阅者多次绑定事件的情况下，只能从最后依次解除，无法指定解除哪一个
+// Unbind 解绑定事件与订阅者，在同个订阅者多次绑定事件的情况下，会以逆序依次解除，正常情况下应该使用事件钩子（Hook）解绑定，不应该使用该函数
 func Unbind(event IEvent, subscriber any) {
 	if event == nil {
 		panic(fmt.Errorf("%w: %w: event is nil", ErrEvent, exception.ErrArgs))

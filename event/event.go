@@ -24,7 +24,7 @@ var (
 	EventRecursionLimit = int32(128)
 )
 
-// IEvent 本地事件接口
+// IEvent 事件接口
 /*
 定义事件：
 	1.按以下格式编写一个接口，即完成事件的定义：
@@ -100,7 +100,7 @@ type IEventCtrl interface {
 	Clean()
 }
 
-// Event 本地事件
+// Event 事件
 type Event struct {
 	subscribers    container.List[Hook]
 	autoRecover    bool

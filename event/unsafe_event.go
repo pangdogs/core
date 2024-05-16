@@ -4,7 +4,7 @@ import (
 	"git.golaxy.org/core/util/iface"
 )
 
-// Deprecated: UnsafeEvent 访问本地事件内部方法
+// Deprecated: UnsafeEvent 访问事件内部方法
 func UnsafeEvent(event IEvent) _UnsafeEvent {
 	return _UnsafeEvent{
 		IEvent: event,
@@ -20,7 +20,7 @@ func (ue _UnsafeEvent) Emit(fun func(subscriber iface.Cache) bool) {
 	ue.emit(fun)
 }
 
-// NewHook 创建事件绑定句柄
+// NewHook 创建事件钩子
 func (ue _UnsafeEvent) NewHook(subscriberFace iface.FaceAny, priority int32) Hook {
 	return ue.newHook(subscriberFace, priority)
 }
