@@ -110,11 +110,11 @@ func (serv *ServiceBehavior) activatePlugin(pluginInfo plugin.PluginInfo) {
 	if pluginInit, ok := pluginInfo.Face.Iface.(LifecycleServicePluginInit); ok {
 		generic.MakeAction1(pluginInit.InitSP).Call(serv.ctx.GetAutoRecover(), serv.ctx.GetReportError(), serv.ctx)
 	}
-	plugin.UnsafePluginBundle(service.UnsafeContext(serv.ctx).GetOptions().PluginBundle).SetActive(pluginInfo.Name, true)
+	plugin.UnsafePluginBundle(serv.ctx.GetPluginBundle()).SetActive(pluginInfo.Name, true)
 }
 
 func (serv *ServiceBehavior) deactivatePlugin(pluginInfo plugin.PluginInfo) {
-	plugin.UnsafePluginBundle(service.UnsafeContext(serv.ctx).GetOptions().PluginBundle).SetActive(pluginInfo.Name, false)
+	plugin.UnsafePluginBundle(serv.ctx.GetPluginBundle()).SetActive(pluginInfo.Name, false)
 	if pluginShut, ok := pluginInfo.Face.Iface.(LifecycleServicePluginShut); ok {
 		generic.MakeAction1(pluginShut.ShutSP).Call(serv.ctx.GetAutoRecover(), serv.ctx.GetReportError(), serv.ctx)
 	}

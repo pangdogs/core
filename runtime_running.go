@@ -114,11 +114,11 @@ func (rt *RuntimeBehavior) activatePlugin(pluginInfo plugin.PluginInfo) {
 	if pluginInit, ok := pluginInfo.Face.Iface.(LifecycleRuntimePluginInit); ok {
 		generic.MakeAction1(pluginInit.InitRP).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
 	}
-	plugin.UnsafePluginBundle(runtime.UnsafeContext(rt.ctx).GetOptions().PluginBundle).SetActive(pluginInfo.Name, true)
+	plugin.UnsafePluginBundle(rt.ctx.GetPluginBundle()).SetActive(pluginInfo.Name, true)
 }
 
 func (rt *RuntimeBehavior) deactivatePlugin(pluginInfo plugin.PluginInfo) {
-	plugin.UnsafePluginBundle(runtime.UnsafeContext(rt.ctx).GetOptions().PluginBundle).SetActive(pluginInfo.Name, false)
+	plugin.UnsafePluginBundle(rt.ctx.GetPluginBundle()).SetActive(pluginInfo.Name, false)
 	if pluginShut, ok := pluginInfo.Face.Iface.(LifecycleRuntimePluginShut); ok {
 		generic.MakeAction1(pluginShut.ShutRP).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
 	}
