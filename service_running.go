@@ -80,10 +80,13 @@ func (serv *ServiceBehavior) changeRunningState(state service.RunningState) {
 }
 
 func (serv *ServiceBehavior) initPlugin() {
-	pluginBundle := service.UnsafeContext(serv.ctx).GetOptions().PluginBundle
+	pluginBundle := serv.ctx.GetPluginBundle()
 	if pluginBundle == nil {
 		return
 	}
+
+	plugin.UnsafePluginBundle(pluginBundle).SetInstallCB(serv.activatePlugin)
+	plugin.UnsafePluginBundle(pluginBundle).SetUninstallCB(serv.deactivatePlugin)
 
 	pluginBundle.Range(func(pluginInfo plugin.PluginInfo) bool {
 		serv.activatePlugin(pluginInfo)
@@ -92,7 +95,7 @@ func (serv *ServiceBehavior) initPlugin() {
 }
 
 func (serv *ServiceBehavior) shutPlugin() {
-	pluginBundle := service.UnsafeContext(serv.ctx).GetOptions().PluginBundle
+	pluginBundle := serv.ctx.GetPluginBundle()
 	if pluginBundle == nil {
 		return
 	}

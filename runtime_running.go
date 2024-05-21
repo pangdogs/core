@@ -84,7 +84,7 @@ func (rt *RuntimeBehavior) changeRunningState(state runtime.RunningState) {
 }
 
 func (rt *RuntimeBehavior) initPlugin() {
-	pluginBundle := runtime.UnsafeContext(rt.ctx).GetOptions().PluginBundle
+	pluginBundle := rt.ctx.GetPluginBundle()
 	if pluginBundle == nil {
 		return
 	}
@@ -99,7 +99,7 @@ func (rt *RuntimeBehavior) initPlugin() {
 }
 
 func (rt *RuntimeBehavior) shutPlugin() {
-	pluginBundle := runtime.UnsafeContext(rt.ctx).GetOptions().PluginBundle
+	pluginBundle := rt.ctx.GetPluginBundle()
 	if pluginBundle == nil {
 		return
 	}
