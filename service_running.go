@@ -80,25 +80,39 @@ func (serv *ServiceBehavior) changeRunningState(state service.RunningState) {
 }
 
 func (serv *ServiceBehavior) initPlugin() {
-	if pluginBundle := service.UnsafeContext(serv.ctx).GetOptions().PluginBundle; pluginBundle != nil {
-		pluginBundle.Range(func(info plugin.PluginInfo) bool {
-			if pluginInit, ok := info.Face.Iface.(LifecycleServicePluginInit); ok {
-				generic.MakeAction1(pluginInit.InitSP).Call(serv.ctx.GetAutoRecover(), serv.ctx.GetReportError(), serv.ctx)
-			}
-			plugin.UnsafePluginBundle(pluginBundle).Activate(info.Name, true)
-			return true
-		})
+	pluginBundle := service.UnsafeContext(serv.ctx).GetOptions().PluginBundle
+	if pluginBundle == nil {
+		return
 	}
+
+	pluginBundle.Range(func(pluginInfo plugin.PluginInfo) bool {
+		serv.activatePlugin(pluginInfo)
+		return true
+	})
 }
 
 func (serv *ServiceBehavior) shutPlugin() {
-	if pluginBundle := service.UnsafeContext(serv.ctx).GetOptions().PluginBundle; pluginBundle != nil {
-		pluginBundle.ReversedRange(func(info plugin.PluginInfo) bool {
-			plugin.UnsafePluginBundle(pluginBundle).Activate(info.Name, false)
-			if pluginShut, ok := info.Face.Iface.(LifecycleServicePluginShut); ok {
-				generic.MakeAction1(pluginShut.ShutSP).Call(serv.ctx.GetAutoRecover(), serv.ctx.GetReportError(), serv.ctx)
-			}
-			return true
-		})
+	pluginBundle := service.UnsafeContext(serv.ctx).GetOptions().PluginBundle
+	if pluginBundle == nil {
+		return
+	}
+
+	pluginBundle.ReversedRange(func(pluginInfo plugin.PluginInfo) bool {
+		serv.deactivatePlugin(pluginInfo)
+		return true
+	})
+}
+
+func (serv *ServiceBehavior) activatePlugin(pluginInfo plugin.PluginInfo) {
+	if pluginInit, ok := pluginInfo.Face.Iface.(LifecycleServicePluginInit); ok {
+		generic.MakeAction1(pluginInit.InitSP).Call(serv.ctx.GetAutoRecover(), serv.ctx.GetReportError(), serv.ctx)
+	}
+	plugin.UnsafePluginBundle(service.UnsafeContext(serv.ctx).GetOptions().PluginBundle).SetActive(pluginInfo.Name, true)
+}
+
+func (serv *ServiceBehavior) deactivatePlugin(pluginInfo plugin.PluginInfo) {
+	plugin.UnsafePluginBundle(service.UnsafeContext(serv.ctx).GetOptions().PluginBundle).SetActive(pluginInfo.Name, false)
+	if pluginShut, ok := pluginInfo.Face.Iface.(LifecycleServicePluginShut); ok {
+		generic.MakeAction1(pluginShut.ShutSP).Call(serv.ctx.GetAutoRecover(), serv.ctx.GetReportError(), serv.ctx)
 	}
 }

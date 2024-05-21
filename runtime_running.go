@@ -84,26 +84,43 @@ func (rt *RuntimeBehavior) changeRunningState(state runtime.RunningState) {
 }
 
 func (rt *RuntimeBehavior) initPlugin() {
-	if pluginBundle := runtime.UnsafeContext(rt.ctx).GetOptions().PluginBundle; pluginBundle != nil {
-		pluginBundle.Range(func(info plugin.PluginInfo) bool {
-			if pluginInit, ok := info.Face.Iface.(LifecycleRuntimePluginInit); ok {
-				generic.MakeAction1(pluginInit.InitRP).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
-			}
-			plugin.UnsafePluginBundle(pluginBundle).Activate(info.Name, true)
-			return true
-		})
+	pluginBundle := runtime.UnsafeContext(rt.ctx).GetOptions().PluginBundle
+	if pluginBundle == nil {
+		return
 	}
+
+	plugin.UnsafePluginBundle(pluginBundle).SetInstallCB(rt.activatePlugin)
+	plugin.UnsafePluginBundle(pluginBundle).SetUninstallCB(rt.deactivatePlugin)
+
+	pluginBundle.Range(func(pluginInfo plugin.PluginInfo) bool {
+		rt.activatePlugin(pluginInfo)
+		return true
+	})
 }
 
 func (rt *RuntimeBehavior) shutPlugin() {
-	if pluginBundle := runtime.UnsafeContext(rt.ctx).GetOptions().PluginBundle; pluginBundle != nil {
-		pluginBundle.ReversedRange(func(info plugin.PluginInfo) bool {
-			plugin.UnsafePluginBundle(pluginBundle).Activate(info.Name, false)
-			if pluginShut, ok := info.Face.Iface.(LifecycleRuntimePluginShut); ok {
-				generic.MakeAction1(pluginShut.ShutRP).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
-			}
-			return true
-		})
+	pluginBundle := runtime.UnsafeContext(rt.ctx).GetOptions().PluginBundle
+	if pluginBundle == nil {
+		return
+	}
+
+	pluginBundle.ReversedRange(func(pluginInfo plugin.PluginInfo) bool {
+		rt.deactivatePlugin(pluginInfo)
+		return true
+	})
+}
+
+func (rt *RuntimeBehavior) activatePlugin(pluginInfo plugin.PluginInfo) {
+	if pluginInit, ok := pluginInfo.Face.Iface.(LifecycleRuntimePluginInit); ok {
+		generic.MakeAction1(pluginInit.InitRP).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
+	}
+	plugin.UnsafePluginBundle(runtime.UnsafeContext(rt.ctx).GetOptions().PluginBundle).SetActive(pluginInfo.Name, true)
+}
+
+func (rt *RuntimeBehavior) deactivatePlugin(pluginInfo plugin.PluginInfo) {
+	plugin.UnsafePluginBundle(runtime.UnsafeContext(rt.ctx).GetOptions().PluginBundle).SetActive(pluginInfo.Name, false)
+	if pluginShut, ok := pluginInfo.Face.Iface.(LifecycleRuntimePluginShut); ok {
+		generic.MakeAction1(pluginShut.ShutRP).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
 	}
 }
 

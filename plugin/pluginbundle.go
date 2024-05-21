@@ -17,7 +17,7 @@ type PluginBundle interface {
 	PluginProvider
 
 	// Install 安装插件，不设置插件名称时，将会使用插件实例名称作为插件名称
-	Install(pluginFace iface.FaceAny, name ...string) PluginInfo
+	Install(pluginFace iface.FaceAny, name ...string)
 	// Uninstall 卸载插件
 	Uninstall(name string)
 	// Get 获取插件
@@ -29,7 +29,9 @@ type PluginBundle interface {
 }
 
 type iPluginBundle interface {
-	activate(name string, b bool)
+	setActive(name string, b bool)
+	setInstallCB(cb generic.Action1[PluginInfo])
+	setUninstallCB(cb generic.Action1[PluginInfo])
 }
 
 // NewPluginBundle 创建插件包
@@ -49,8 +51,9 @@ type PluginInfo struct {
 
 type _PluginBundle struct {
 	sync.RWMutex
-	pluginIdx  map[string]*PluginInfo
-	pluginList []*PluginInfo
+	pluginIdx              map[string]*PluginInfo
+	pluginList             []*PluginInfo
+	installCB, uninstallCB generic.Action1[PluginInfo]
 }
 
 // GetPluginBundle 获取插件包
@@ -59,58 +62,17 @@ func (bundle *_PluginBundle) GetPluginBundle() PluginBundle {
 }
 
 // Install 安装插件，不设置插件名称时，将会使用插件实例名称作为插件名称
-func (bundle *_PluginBundle) Install(pluginFace iface.FaceAny, name ...string) PluginInfo {
-	if pluginFace.IsNil() {
-		panic(fmt.Errorf("%w: %w: pluginFace is nil", ErrPlugin, exception.ErrArgs))
-	}
-
-	bundle.Lock()
-	defer bundle.Unlock()
-
-	var _name string
-	if len(name) > 0 {
-		_name = name[0]
-	} else {
-		_name = types.FullName(pluginFace.Iface)
-	}
-
-	_, ok := bundle.pluginIdx[_name]
-	if ok {
-		panic(fmt.Errorf("%w: plugin %q is already installed", ErrPlugin, name))
-	}
-
-	pluginInfo := &PluginInfo{
-		Name:      _name,
-		Face:      pluginFace,
-		Reflected: reflect.ValueOf(pluginFace.Iface),
-		Active:    false,
-	}
-
-	bundle.pluginList = append(bundle.pluginList, pluginInfo)
-	bundle.pluginIdx[_name] = pluginInfo
-
-	return *pluginInfo
+func (bundle *_PluginBundle) Install(pluginFace iface.FaceAny, name ...string) {
+	bundle.installCB.Exec(bundle.install(pluginFace, name...))
 }
 
 // Uninstall 卸载插件
 func (bundle *_PluginBundle) Uninstall(name string) {
-	bundle.Lock()
-	defer bundle.Unlock()
-
-	pluginInfo, ok := bundle.pluginIdx[name]
+	pluginInfo, ok := bundle.uninstall(name)
 	if !ok {
 		return
 	}
-
-	if pluginInfo.Active {
-		panic(fmt.Errorf("%w: plugin %q is active, can't uninstall", ErrPlugin, name))
-	}
-
-	delete(bundle.pluginIdx, name)
-
-	bundle.pluginList = slices.DeleteFunc(bundle.pluginList, func(info *PluginInfo) bool {
-		return info.Name == name
-	})
+	bundle.uninstallCB.Exec(pluginInfo)
 }
 
 // Get 获取插件
@@ -152,7 +114,7 @@ func (bundle *_PluginBundle) ReversedRange(fun generic.Func1[PluginInfo, bool]) 
 	}
 }
 
-func (bundle *_PluginBundle) activate(name string, b bool) {
+func (bundle *_PluginBundle) setActive(name string, b bool) {
 	bundle.Lock()
 	defer bundle.Unlock()
 
@@ -162,4 +124,63 @@ func (bundle *_PluginBundle) activate(name string, b bool) {
 	}
 
 	pluginInfo.Active = b
+}
+
+func (bundle *_PluginBundle) setInstallCB(cb generic.Action1[PluginInfo]) {
+	bundle.installCB = cb
+}
+
+func (bundle *_PluginBundle) setUninstallCB(cb generic.Action1[PluginInfo]) {
+	bundle.uninstallCB = cb
+}
+
+func (bundle *_PluginBundle) install(pluginFace iface.FaceAny, name ...string) PluginInfo {
+	if pluginFace.IsNil() {
+		panic(fmt.Errorf("%w: %w: pluginFace is nil", ErrPlugin, exception.ErrArgs))
+	}
+
+	bundle.Lock()
+	defer bundle.Unlock()
+
+	var _name string
+	if len(name) > 0 {
+		_name = name[0]
+	} else {
+		_name = types.FullName(pluginFace.Iface)
+	}
+
+	_, ok := bundle.pluginIdx[_name]
+	if ok {
+		panic(fmt.Errorf("%w: plugin %q is already installed", ErrPlugin, name))
+	}
+
+	pluginInfo := &PluginInfo{
+		Name:      _name,
+		Face:      pluginFace,
+		Reflected: reflect.ValueOf(pluginFace.Iface),
+		Active:    false,
+	}
+
+	bundle.pluginList = append(bundle.pluginList, pluginInfo)
+	bundle.pluginIdx[_name] = pluginInfo
+
+	return *pluginInfo
+}
+
+func (bundle *_PluginBundle) uninstall(name string) (PluginInfo, bool) {
+	bundle.Lock()
+	defer bundle.Unlock()
+
+	pluginInfo, ok := bundle.pluginIdx[name]
+	if !ok {
+		return PluginInfo{}, false
+	}
+
+	delete(bundle.pluginIdx, name)
+
+	bundle.pluginList = slices.DeleteFunc(bundle.pluginList, func(pluginInfo *PluginInfo) bool {
+		return pluginInfo.Name == name
+	})
+
+	return *pluginInfo, true
 }
