@@ -100,6 +100,9 @@ func (serv *ServiceBehavior) shutPlugin() {
 		return
 	}
 
+	plugin.UnsafePluginBundle(pluginBundle).SetInstallCB(nil)
+	plugin.UnsafePluginBundle(pluginBundle).SetUninstallCB(nil)
+
 	pluginBundle.ReversedRange(func(pluginInfo plugin.PluginInfo) bool {
 		serv.deactivatePlugin(pluginInfo)
 		return true

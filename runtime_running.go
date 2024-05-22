@@ -104,6 +104,9 @@ func (rt *RuntimeBehavior) shutPlugin() {
 		return
 	}
 
+	plugin.UnsafePluginBundle(pluginBundle).SetInstallCB(nil)
+	plugin.UnsafePluginBundle(pluginBundle).SetUninstallCB(nil)
+
 	pluginBundle.ReversedRange(func(pluginInfo plugin.PluginInfo) bool {
 		rt.deactivatePlugin(pluginInfo)
 		return true
