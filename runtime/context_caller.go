@@ -11,6 +11,7 @@ var (
 
 var (
 	MakeRet = concurrent.MakeRet // 创建调用结果
+	VoidRet = concurrent.VoidRet // 空调用结果
 )
 
 type (

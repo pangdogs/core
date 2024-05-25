@@ -11,6 +11,10 @@ var (
 	ErrAsyncRetClosed = fmt.Errorf("%w: async result closed", exception.ErrCore)
 )
 
+var (
+	VoidRet = MakeRet(nil, nil)
+)
+
 // MakeRet 创建调用结果
 func MakeRet(val any, err error) Ret {
 	return Ret{

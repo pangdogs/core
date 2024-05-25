@@ -132,7 +132,7 @@ func (ctx *ContextBehavior) CallVoid(entityId uid.Id, fun generic.ActionVar1[ec.
 
 		fun.Exec(entity, funVa...)
 
-		return concurrent.MakeRet(nil, nil)
+		return concurrent.VoidRet
 	}, entity, fun, va)
 }
 
@@ -158,7 +158,7 @@ func (ctx *ContextBehavior) CallVoidDelegate(entityId uid.Id, fun generic.Delega
 
 		fun.Exec(nil, entity, funVa...)
 
-		return concurrent.MakeRet(nil, nil)
+		return concurrent.VoidRet
 	}, entity, fun, va)
 }
 

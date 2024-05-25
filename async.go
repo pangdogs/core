@@ -85,7 +85,7 @@ func TimeAfter(ctx context.Context, dur time.Duration) runtime.AsyncRet {
 
 		select {
 		case <-timer.C:
-			asyncRet <- runtime.MakeRet(nil, nil)
+			asyncRet <- runtime.VoidRet
 		case <-ctx.Done():
 			break
 		}
@@ -110,7 +110,7 @@ func TimeAt(ctx context.Context, at time.Time) runtime.AsyncRet {
 
 		select {
 		case <-timer.C:
-			asyncRet <- runtime.MakeRet(nil, nil)
+			asyncRet <- runtime.VoidRet
 		case <-ctx.Done():
 			break
 		}
@@ -138,7 +138,7 @@ func TimeTick(ctx context.Context, dur time.Duration) runtime.AsyncRet {
 			select {
 			case <-tick.C:
 				select {
-				case asyncRet <- runtime.MakeRet(nil, nil):
+				case asyncRet <- runtime.VoidRet:
 				case <-ctx.Done():
 					break loop
 				}
