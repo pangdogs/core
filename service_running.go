@@ -11,7 +11,7 @@ import (
 )
 
 // Run 运行
-func (serv *ServiceBehavior) Run() {
+func (serv *ServiceBehavior) Run() <-chan struct{} {
 	ctx := serv.ctx
 
 	select {
@@ -27,6 +27,8 @@ func (serv *ServiceBehavior) Run() {
 	}
 
 	go serv.running()
+
+	return concurrent.UnsafeContext(ctx).GetTerminatedChan()
 }
 
 // Terminate 停止

@@ -88,6 +88,6 @@ func (ctx *ContextBehavior) getPaired() bool {
 	return ctx.paired.Load()
 }
 
-func (ctx *ContextBehavior) getTerminatedChan() <-chan struct{} {
+func (ctx *ContextBehavior) getTerminatedChan() chan struct{} {
 	return ctx.terminatedChan
 }

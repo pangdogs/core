@@ -11,7 +11,7 @@ import (
 )
 
 // Run 运行
-func (rt *RuntimeBehavior) Run() {
+func (rt *RuntimeBehavior) Run() <-chan struct{} {
 	ctx := rt.ctx
 
 	select {
@@ -27,6 +27,8 @@ func (rt *RuntimeBehavior) Run() {
 	}
 
 	go rt.running()
+
+	return concurrent.UnsafeContext(ctx).GetTerminatedChan()
 }
 
 // Terminate 停止
