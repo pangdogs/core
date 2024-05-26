@@ -36,7 +36,7 @@ func (pt EntityPT) Construct(settings ...option.Setting[ec.EntityOptions]) ec.En
 	if pt.AwakeOnFirstAccess != nil {
 		options.AwakeOnFirstAccess = *pt.AwakeOnFirstAccess
 	}
-	option.Append(options, settings...)
+	options = option.Append(options, settings...)
 	options.Prototype = pt.Prototype
 
 	return pt.assemble(ec.UnsafeNewEntity(options))
