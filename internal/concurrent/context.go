@@ -19,25 +19,27 @@ type Context interface {
 	GetReportError() chan error
 	// GetWaitGroup 获取等待组
 	GetWaitGroup() *sync.WaitGroup
-	// GetCancelFunc 获取取消运行函数
-	GetCancelFunc() context.CancelFunc
+	// Terminate 停止
+	Terminate() <-chan struct{}
 }
 
 type iContext interface {
 	init(parentCtx context.Context, autoRecover bool, reportError chan error)
 	setPaired(v bool) bool
 	getPaired() bool
+	getTerminatedChan() chan struct{}
 }
 
 // ContextBehavior 上下文行为
 type ContextBehavior struct {
 	context.Context
-	parentCtx   context.Context
-	autoRecover bool
-	reportError chan error
-	cancel      context.CancelFunc
-	wg          sync.WaitGroup
-	paired      atomic.Bool
+	parentCtx      context.Context
+	autoRecover    bool
+	reportError    chan error
+	cancel         context.CancelFunc
+	terminatedChan chan struct{}
+	wg             sync.WaitGroup
+	paired         atomic.Bool
 }
 
 // GetParentContext 获取父上下文
@@ -60,9 +62,10 @@ func (ctx *ContextBehavior) GetWaitGroup() *sync.WaitGroup {
 	return &ctx.wg
 }
 
-// GetCancelFunc 获取取消运行函数
-func (ctx *ContextBehavior) GetCancelFunc() context.CancelFunc {
-	return ctx.cancel
+// Terminate 停止
+func (ctx *ContextBehavior) Terminate() <-chan struct{} {
+	ctx.cancel()
+	return ctx.terminatedChan
 }
 
 func (ctx *ContextBehavior) init(parentCtx context.Context, autoRecover bool, reportError chan error) {
@@ -71,11 +74,10 @@ func (ctx *ContextBehavior) init(parentCtx context.Context, autoRecover bool, re
 	} else {
 		ctx.parentCtx = parentCtx
 	}
-
 	ctx.autoRecover = autoRecover
 	ctx.reportError = reportError
-
 	ctx.Context, ctx.cancel = context.WithCancel(ctx.parentCtx)
+	ctx.terminatedChan = make(chan struct{})
 }
 
 func (ctx *ContextBehavior) setPaired(v bool) bool {
@@ -84,4 +86,8 @@ func (ctx *ContextBehavior) setPaired(v bool) bool {
 
 func (ctx *ContextBehavior) getPaired() bool {
 	return ctx.paired.Load()
+}
+
+func (ctx *ContextBehavior) getTerminatedChan() <-chan struct{} {
+	return ctx.terminatedChan
 }

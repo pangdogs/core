@@ -11,7 +11,6 @@ import (
 	"git.golaxy.org/core/util/option"
 	"git.golaxy.org/core/util/reinterpret"
 	"git.golaxy.org/core/util/uid"
-	"sync/atomic"
 )
 
 // NewRuntime 创建运行时
@@ -51,7 +50,6 @@ type iRuntime interface {
 type RuntimeBehavior struct {
 	ctx             runtime.Context
 	opts            RuntimeOptions
-	started         atomic.Bool
 	hooksMap        map[uid.Id][3]event.Hook
 	processQueue    chan _Task
 	eventUpdate     event.Event

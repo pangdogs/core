@@ -10,36 +10,31 @@ import (
 	"git.golaxy.org/core/util/generic"
 )
 
-// Run 运行，返回的channel用于线程同步，可以阻塞等待至运行结束
-func (rt *RuntimeBehavior) Run() <-chan struct{} {
+// Run 运行
+func (rt *RuntimeBehavior) Run() {
 	ctx := rt.ctx
 
 	select {
 	case <-ctx.Done():
 		panic(fmt.Errorf("%w: %w", ErrRuntime, context.Canceled))
+	case <-concurrent.UnsafeContext(ctx).GetTerminatedChan():
+		panic(fmt.Errorf("%w: terminated", ErrRuntime))
 	default:
-	}
-
-	if !rt.started.CompareAndSwap(false, true) {
-		panic(fmt.Errorf("%w: running already started", ErrRuntime))
 	}
 
 	if parentCtx, ok := ctx.GetParentContext().(concurrent.Context); ok {
 		parentCtx.GetWaitGroup().Add(1)
 	}
 
-	shutChan := make(chan struct{}, 1)
-	go rt.running(shutChan)
-
-	return shutChan
+	go rt.running()
 }
 
 // Terminate 停止
-func (rt *RuntimeBehavior) Terminate() {
-	rt.ctx.GetCancelFunc()()
+func (rt *RuntimeBehavior) Terminate() <-chan struct{} {
+	return rt.ctx.Terminate()
 }
 
-func (rt *RuntimeBehavior) running(shutChan chan struct{}) {
+func (rt *RuntimeBehavior) running() {
 	ctx := rt.ctx
 
 	rt.changeRunningState(runtime.RunningState_Starting)
@@ -61,7 +56,7 @@ func (rt *RuntimeBehavior) running(shutChan chan struct{}) {
 		parentCtx.GetWaitGroup().Done()
 	}
 
-	shutChan <- struct{}{}
+	close(concurrent.UnsafeContext(rt.ctx).GetTerminatedChan())
 }
 
 func (rt *RuntimeBehavior) changeRunningState(state runtime.RunningState) {

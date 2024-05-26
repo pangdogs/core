@@ -7,7 +7,6 @@ import (
 	"git.golaxy.org/core/util/iface"
 	"git.golaxy.org/core/util/option"
 	"git.golaxy.org/core/util/reinterpret"
-	"sync/atomic"
 )
 
 // NewService 创建服务
@@ -44,9 +43,8 @@ type iService interface {
 }
 
 type ServiceBehavior struct {
-	ctx     service.Context
-	opts    ServiceOptions
-	started atomic.Bool
+	ctx  service.Context
+	opts ServiceOptions
 }
 
 // GetContext 获取服务上下文

@@ -10,36 +10,31 @@ import (
 	"time"
 )
 
-// Run 运行，返回的channel用于线程同步，可以阻塞等待至运行结束
-func (serv *ServiceBehavior) Run() <-chan struct{} {
+// Run 运行
+func (serv *ServiceBehavior) Run() {
 	ctx := serv.ctx
 
 	select {
 	case <-ctx.Done():
 		panic(fmt.Errorf("%w: %w", ErrService, context.Canceled))
+	case <-concurrent.UnsafeContext(ctx).GetTerminatedChan():
+		panic(fmt.Errorf("%w: terminated", ErrRuntime))
 	default:
-	}
-
-	if !serv.started.CompareAndSwap(false, true) {
-		panic(fmt.Errorf("%w: running already started", ErrService))
 	}
 
 	if parentCtx, ok := serv.ctx.GetParentContext().(concurrent.Context); ok {
 		parentCtx.GetWaitGroup().Add(1)
 	}
 
-	shutChan := make(chan struct{}, 1)
-	go serv.running(shutChan)
-
-	return shutChan
+	go serv.running()
 }
 
 // Terminate 停止
-func (serv *ServiceBehavior) Terminate() {
-	serv.ctx.GetCancelFunc()()
+func (serv *ServiceBehavior) Terminate() <-chan struct{} {
+	return serv.ctx.Terminate()
 }
 
-func (serv *ServiceBehavior) running(shutChan chan struct{}) {
+func (serv *ServiceBehavior) running() {
 	ctx := serv.ctx
 
 	serv.changeRunningState(service.RunningState_Starting)
@@ -65,7 +60,7 @@ loop:
 		parentCtx.GetWaitGroup().Done()
 	}
 
-	shutChan <- struct{}{}
+	close(concurrent.UnsafeContext(serv.ctx).GetTerminatedChan())
 }
 
 func (serv *ServiceBehavior) changeRunningState(state service.RunningState) {

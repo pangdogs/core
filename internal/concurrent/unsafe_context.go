@@ -29,3 +29,7 @@ func (uc _UnsafeContext) SetPaired(v bool) bool {
 func (uc _UnsafeContext) GetPaired() bool {
 	return uc.getPaired()
 }
+
+func (uc _UnsafeContext) GetTerminatedChan() chan struct{} {
+	return uc.getTerminatedChan()
+}
