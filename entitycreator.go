@@ -32,6 +32,12 @@ func (c EntityCreator) CompositeFace(face iface.Face[ec.Entity]) EntityCreator {
 	return c
 }
 
+// Composite 设置扩展者，在扩展实体自身能力时使用
+func (c EntityCreator) Composite(e ec.Entity) EntityCreator {
+	c.options = option.Append(c.options, ec.With.CompositeFace(iface.MakeFace(e)))
+	return c
+}
+
 // Prototype 设置实体原型名称
 func (c EntityCreator) Prototype(prototype string) EntityCreator {
 	c.options = option.Append(c.options, ec.With.Prototype(prototype))
