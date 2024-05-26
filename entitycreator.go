@@ -34,8 +34,8 @@ func (c EntityCreator) CompositeFace(face iface.Face[ec.Entity]) EntityCreator {
 }
 
 // Composite 设置扩展者，在扩展实体自身能力时使用
-func (c EntityCreator) Composite(e ec.Entity) EntityCreator {
-	c.settings = append(c.settings, ec.With.CompositeFace(iface.MakeFace(e)))
+func (c EntityCreator) Composite(composite ec.Entity) EntityCreator {
+	c.settings = append(c.settings, ec.With.CompositeFace(iface.MakeFace(composite)))
 	return c
 }
 

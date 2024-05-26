@@ -27,8 +27,8 @@ type EntityPTCreator struct {
 }
 
 // Composite 设置扩展者，在扩展实体自身能力时使用
-func (c EntityPTCreator) Composite(e ec.Entity) EntityPTCreator {
-	c.atti.Composite = e
+func (c EntityPTCreator) Composite(composite any) EntityPTCreator {
+	c.atti.Composite = composite
 	return c
 }
 
