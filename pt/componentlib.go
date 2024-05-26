@@ -55,11 +55,12 @@ func (lib *_ComponentLib) Declare(comp any, aliases ...string) ComponentPT {
 		panic(fmt.Errorf("%w: %w: comp is nil", ErrPt, exception.ErrArgs))
 	}
 
-	if tfComp, ok := comp.(reflect.Type); ok {
-		return lib.declare(tfComp, aliases)
-	} else {
-		return lib.declare(reflect.TypeOf(comp), aliases)
+	tfComp, ok := comp.(reflect.Type)
+	if !ok {
+		tfComp = reflect.TypeOf(comp)
 	}
+
+	return lib.declare(tfComp, aliases)
 }
 
 // Undeclare 取消声明组件原型
@@ -144,7 +145,7 @@ func (lib *_ComponentLib) declare(tfComp reflect.Type, aliases []string) Compone
 
 	compName := types.FullName(tfComp)
 
-	if !reflect.PointerTo(tfComp).Implements(reflect.TypeOf((*ec.Component)(nil)).Elem()) {
+	if !reflect.PointerTo(tfComp).Implements(reflect.TypeFor[ec.Component]()) {
 		panic(fmt.Errorf("%w: component %q not implement ec.Component", ErrPt, compName))
 	}
 
@@ -155,8 +156,8 @@ func (lib *_ComponentLib) declare(tfComp reflect.Type, aliases []string) Compone
 	}
 
 	comp = &ComponentPT{
-		Name:  compName,
-		RType: tfComp,
+		Name: compName,
+		RT:   tfComp,
 	}
 
 	lib.compIdx[compName] = comp

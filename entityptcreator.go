@@ -2,17 +2,19 @@ package core
 
 import (
 	"fmt"
+	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/pt"
 	"git.golaxy.org/core/service"
 )
 
 // CreateEntityPT 创建实体原型
-func CreateEntityPT(ctx service.Context) EntityPTCreator {
+func CreateEntityPT(ctx service.Context, prototype string) EntityPTCreator {
 	if ctx == nil {
 		panic(fmt.Errorf("%w: %w: ctx is nil", ErrCore, ErrArgs))
 	}
 	return EntityPTCreator{
-		servCtx: ctx,
+		servCtx:   ctx,
+		prototype: prototype,
 	}
 }
 
@@ -20,12 +22,25 @@ func CreateEntityPT(ctx service.Context) EntityPTCreator {
 type EntityPTCreator struct {
 	servCtx   service.Context
 	prototype string
+	atti      pt.Attribute
 	comps     []any
 }
 
-// Prototype 设置实体原型名称
-func (c EntityPTCreator) Prototype(prototype string) EntityPTCreator {
-	c.prototype = prototype
+// Composite 设置扩展者，在扩展实体自身能力时使用
+func (c EntityPTCreator) Composite(e ec.Entity) EntityPTCreator {
+	c.atti.Composite = e
+	return c
+}
+
+// Scope 设置实体的可访问作用域
+func (c EntityPTCreator) Scope(scope ec.Scope) EntityPTCreator {
+	c.atti.Scope = &scope
+	return c
+}
+
+// AwakeOnFirstAccess 设置开启组件被首次访问时，检测并调用Awake()
+func (c EntityPTCreator) AwakeOnFirstAccess(b bool) EntityPTCreator {
+	c.atti.AwakeOnFirstAccess = &b
 	return c
 }
 
@@ -44,5 +59,5 @@ func (c EntityPTCreator) Declare() {
 	if c.servCtx == nil {
 		panic(fmt.Errorf("%w: setting servCtx is nil", ErrCore))
 	}
-	c.servCtx.GetEntityLib().Declare(c.prototype, c.comps...)
+	c.servCtx.GetEntityLib().Declare(c.prototype, c.atti, c.comps...)
 }

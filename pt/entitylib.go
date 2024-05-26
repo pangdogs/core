@@ -2,9 +2,11 @@ package pt
 
 import (
 	"fmt"
+	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/internal/exception"
 	"git.golaxy.org/core/util/generic"
 	"git.golaxy.org/core/util/types"
+	"reflect"
 	"slices"
 	"sync"
 )
@@ -30,12 +32,19 @@ func CompInterface[FACE any](comp any) _CompAlias {
 	}
 }
 
+// Attribute 实体原型属性
+type Attribute struct {
+	Composite          any       // 实体类型
+	Scope              *ec.Scope // 可访问作用域
+	AwakeOnFirstAccess *bool     // 设置开启组件被首次访问时，检测并调用Awake()
+}
+
 // EntityLib 实体原型库
 type EntityLib interface {
 	EntityPTProvider
 
 	// Declare 声明实体原型
-	Declare(prototype string, comps ...any) EntityPT
+	Declare(prototype string, atti Attribute, comps ...any) EntityPT
 	// Undeclare 取消声明实体原型
 	Undeclare(prototype string)
 	// Get 获取实体原型
@@ -78,7 +87,7 @@ func (lib *_EntityLib) GetEntityLib() EntityLib {
 }
 
 // Declare 声明体原型
-func (lib *_EntityLib) Declare(prototype string, comps ...any) EntityPT {
+func (lib *_EntityLib) Declare(prototype string, atti Attribute, comps ...any) EntityPT {
 	lib.Lock()
 	defer lib.Unlock()
 
@@ -88,7 +97,27 @@ func (lib *_EntityLib) Declare(prototype string, comps ...any) EntityPT {
 	}
 
 	entity := &EntityPT{
-		Prototype: prototype,
+		Prototype:          prototype,
+		Scope:              atti.Scope,
+		AwakeOnFirstAccess: atti.AwakeOnFirstAccess,
+	}
+
+	if atti.Composite != nil {
+		tfComposite := reflect.TypeOf(atti.Composite)
+
+		for tfComposite.Kind() == reflect.Pointer || tfComposite.Kind() == reflect.Interface {
+			tfComposite = tfComposite.Elem()
+		}
+
+		if tfComposite.Name() == "" {
+			panic(fmt.Errorf("%w: anonymous entity composite not allowed", ErrPt))
+		}
+
+		if !reflect.PointerTo(tfComposite).Implements(reflect.TypeFor[ec.Entity]()) {
+			panic(fmt.Errorf("%w: entity composite %q not implement ec.Entity", ErrPt, types.FullNameRT(tfComposite)))
+		}
+
+		entity.CompositeRT = tfComposite
 	}
 
 	for _, comp := range comps {

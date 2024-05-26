@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/internal/exception"
+	"git.golaxy.org/core/util/iface"
 	"git.golaxy.org/core/util/option"
+	"reflect"
 )
 
 // CompInfo 组件信息
@@ -15,23 +17,32 @@ type CompInfo struct {
 
 // EntityPT 实体原型
 type EntityPT struct {
-	Prototype  string     // 实体原型名称
-	Components []CompInfo // 组件信息
+	Prototype          string       // 实体原型名称
+	CompositeRT        reflect.Type // 扩展者反射类型
+	Scope              *ec.Scope    // 可访问作用域
+	AwakeOnFirstAccess *bool        // 设置开启组件被首次访问时，检测并调用Awake()
+	Components         []CompInfo   // 组件信息
 }
 
 // Construct 创建实体
 func (pt EntityPT) Construct(settings ...option.Setting[ec.EntityOptions]) ec.Entity {
-	return pt.UnsafeConstruct(option.Make(ec.With.Default(), settings...))
-}
-
-// Deprecated: UnsafeConstruct 内部创建实体
-func (pt EntityPT) UnsafeConstruct(options ec.EntityOptions) ec.Entity {
+	options := option.Make(ec.With.Default())
+	if pt.CompositeRT != nil {
+		options.CompositeFace = iface.MakeFace(reflect.New(pt.CompositeRT).Interface().(ec.Entity))
+	}
+	if pt.Scope != nil {
+		options.Scope = *pt.Scope
+	}
+	if pt.AwakeOnFirstAccess != nil {
+		options.AwakeOnFirstAccess = *pt.AwakeOnFirstAccess
+	}
+	option.Append(options, settings...)
 	options.Prototype = pt.Prototype
-	return pt.Assemble(ec.UnsafeNewEntity(options))
+
+	return pt.assemble(ec.UnsafeNewEntity(options))
 }
 
-// Assemble 向实体安装组件
-func (pt EntityPT) Assemble(entity ec.Entity) ec.Entity {
+func (pt EntityPT) assemble(entity ec.Entity) ec.Entity {
 	if entity == nil {
 		panic(fmt.Errorf("%w: %w: entity is nil", ErrPt, exception.ErrArgs))
 	}
