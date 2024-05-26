@@ -6,4 +6,6 @@ type Running interface {
 	Run() <-chan struct{}
 	// Terminate 停止
 	Terminate() <-chan struct{}
+	// TerminatedChan 已停止chan
+	TerminatedChan() <-chan struct{}
 }
