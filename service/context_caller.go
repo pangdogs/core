@@ -57,7 +57,7 @@ func makeAsyncErr(err error) AsyncRet {
 
 func checkEntity(entity ec.Entity) error {
 	if entity.GetState() >= ec.EntityState_Leave {
-		return fmt.Errorf("%w: entity not living", ErrContext)
+		return fmt.Errorf("%w: entity not alive", ErrContext)
 	}
 	return nil
 }

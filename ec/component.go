@@ -86,7 +86,7 @@ func (comp *ComponentBehavior) GetReflected() reflect.Value {
 // DestroySelf 销毁自身
 func (comp *ComponentBehavior) DestroySelf() {
 	switch comp.GetState() {
-	case ComponentState_Awake, ComponentState_Start, ComponentState_Living:
+	case ComponentState_Awake, ComponentState_Start, ComponentState_Alive:
 		_EmitEventComponentDestroySelf(UnsafeComponent(comp), comp.composite)
 	}
 }

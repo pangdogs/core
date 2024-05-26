@@ -61,7 +61,7 @@ func (mgr *_EntityMgrBehavior) PruningNode(entityId uid.Id) {
 		return
 	}
 
-	if entity.GetState() != ec.EntityState_Living {
+	if entity.GetState() != ec.EntityState_Alive {
 		return
 	}
 
@@ -163,7 +163,7 @@ func (mgr *_EntityMgrBehavior) ChangeParent(entityId, parentId uid.Id) error {
 		return fmt.Errorf("%w: entity not exist", ErrEntityMgr)
 	}
 
-	if entity.GetState() > ec.EntityState_Living {
+	if entity.GetState() > ec.EntityState_Alive {
 		return fmt.Errorf("%w: invalid entity state %q", ErrEntityMgr, entity.GetState())
 	}
 
@@ -177,7 +177,7 @@ func (mgr *_EntityMgrBehavior) ChangeParent(entityId, parentId uid.Id) error {
 		return fmt.Errorf("%w: parent not exist", ErrEntityMgr)
 	}
 
-	if parent.GetState() > ec.EntityState_Living {
+	if parent.GetState() > ec.EntityState_Alive {
 		return fmt.Errorf("%w: invalid parent state %q", ErrEntityMgr, parent.GetState())
 	}
 
@@ -238,7 +238,7 @@ func (mgr *_EntityMgrBehavior) addToParentNode(entity, parent ec.Entity) {
 		panic(fmt.Errorf("%w: %w: parent is nil", ErrEntityMgr, exception.ErrArgs))
 	}
 
-	if entity.GetState() > ec.EntityState_Living || parent.GetState() > ec.EntityState_Living {
+	if entity.GetState() > ec.EntityState_Alive || parent.GetState() > ec.EntityState_Alive {
 		return
 	}
 
@@ -273,7 +273,7 @@ func (mgr *_EntityMgrBehavior) attachParentNode(entity, parent ec.Entity) {
 		panic(fmt.Errorf("%w: %w: parent is nil", ErrEntityMgr, exception.ErrArgs))
 	}
 
-	if entity.GetState() > ec.EntityState_Living || parent.GetState() > ec.EntityState_Living {
+	if entity.GetState() > ec.EntityState_Alive || parent.GetState() > ec.EntityState_Alive {
 		return
 	}
 
@@ -284,10 +284,10 @@ func (mgr *_EntityMgrBehavior) attachParentNode(entity, parent ec.Entity) {
 	ec.UnsafeEntity(entity).EnterParentNode()
 
 	_EmitEventEntityTreeAddNodeWithInterrupt(mgr, func(entityTree EntityTree, parent, child ec.Entity) bool {
-		return parent.GetState() > ec.EntityState_Living || child.GetState() > ec.EntityState_Living
+		return parent.GetState() > ec.EntityState_Alive || child.GetState() > ec.EntityState_Alive
 	}, mgr, parent, entity)
 
-	if entity.GetState() > ec.EntityState_Living || parent.GetState() > ec.EntityState_Living {
+	if entity.GetState() > ec.EntityState_Alive || parent.GetState() > ec.EntityState_Alive {
 		return
 	}
 	ec.UnsafeEntity(entity).SetTreeNodeState(ec.TreeNodeState_Attached)
@@ -348,7 +348,7 @@ func (mgr *_EntityMgrBehavior) changeParentNode(entity, parent ec.Entity) {
 		panic(fmt.Errorf("%w: %w: parent is nil", ErrEntityMgr, exception.ErrArgs))
 	}
 
-	if entity.GetState() > ec.EntityState_Living || parent.GetState() > ec.EntityState_Living {
+	if entity.GetState() > ec.EntityState_Alive || parent.GetState() > ec.EntityState_Alive {
 		return
 	}
 
@@ -360,7 +360,7 @@ func (mgr *_EntityMgrBehavior) changeParentNode(entity, parent ec.Entity) {
 
 	mgr.detachParentNode(entity)
 
-	if entity.GetState() > ec.EntityState_Living || parent.GetState() > ec.EntityState_Living {
+	if entity.GetState() > ec.EntityState_Alive || parent.GetState() > ec.EntityState_Alive {
 		return
 	}
 

@@ -12,15 +12,15 @@ func _() {
 	_ = x[ComponentState_Attach-1]
 	_ = x[ComponentState_Awake-2]
 	_ = x[ComponentState_Start-3]
-	_ = x[ComponentState_Living-4]
+	_ = x[ComponentState_Alive-4]
 	_ = x[ComponentState_Detach-5]
 	_ = x[ComponentState_Shut-6]
 	_ = x[ComponentState_Death-7]
 }
 
-const _ComponentState_name = "ComponentState_BirthComponentState_AttachComponentState_AwakeComponentState_StartComponentState_LivingComponentState_DetachComponentState_ShutComponentState_Death"
+const _ComponentState_name = "ComponentState_BirthComponentState_AttachComponentState_AwakeComponentState_StartComponentState_AliveComponentState_DetachComponentState_ShutComponentState_Death"
 
-var _ComponentState_index = [...]uint8{0, 20, 41, 61, 81, 102, 123, 142, 162}
+var _ComponentState_index = [...]uint8{0, 20, 41, 61, 81, 101, 122, 141, 161}
 
 func (i ComponentState) String() string {
 	if i < 0 || i >= ComponentState(len(_ComponentState_index)-1) {

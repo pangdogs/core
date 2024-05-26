@@ -63,11 +63,11 @@ func (entity *EntityBehavior) enterParentNode() {
 	}
 
 	_EmitEventTreeNodeEnterParentWithInterrupt(entity, func(child, parent Entity) bool {
-		return child.GetState() > EntityState_Living || parent.GetState() > EntityState_Living
+		return child.GetState() > EntityState_Alive || parent.GetState() > EntityState_Alive
 	}, entity.opts.CompositeFace.Iface, entity.treeNodeParent)
 
 	_EmitEventTreeNodeAddChildWithInterrupt(entity.treeNodeParent, func(parent, child Entity) bool {
-		return parent.GetState() > EntityState_Living || child.GetState() > EntityState_Living
+		return parent.GetState() > EntityState_Alive || child.GetState() > EntityState_Alive
 	}, entity.treeNodeParent, entity.opts.CompositeFace.Iface)
 }
 

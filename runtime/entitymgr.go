@@ -226,19 +226,19 @@ func (mgr *_EntityMgrBehavior) OnComponentMgrAddComponents(entity ec.Entity, com
 	}
 
 	_EmitEventEntityMgrEntityAddComponentsWithInterrupt(mgr, func(entityMgr EntityMgr, entity ec.Entity, components []ec.Component) bool {
-		return entity.GetState() > ec.EntityState_Living
+		return entity.GetState() > ec.EntityState_Alive
 	}, mgr, entity, components)
 }
 
 func (mgr *_EntityMgrBehavior) OnComponentMgrRemoveComponent(entity ec.Entity, component ec.Component) {
 	_EmitEventEntityMgrEntityRemoveComponentWithInterrupt(mgr, func(entityMgr EntityMgr, entity ec.Entity, component ec.Component) bool {
-		return entity.GetState() > ec.EntityState_Living
+		return entity.GetState() > ec.EntityState_Alive
 	}, mgr, entity, component)
 }
 
 func (mgr *_EntityMgrBehavior) OnComponentMgrFirstAccessComponent(entity ec.Entity, component ec.Component) {
 	_EmitEventEntityMgrEntityFirstAccessComponentWithInterrupt(mgr, func(entityMgr EntityMgr, entity ec.Entity, component ec.Component) bool {
-		return entity.GetState() > ec.EntityState_Living
+		return entity.GetState() > ec.EntityState_Alive
 	}, mgr, entity, component)
 }
 
@@ -255,7 +255,7 @@ func (mgr *_EntityMgrBehavior) addEntity(entity ec.Entity, parentId uid.Id) erro
 		if !ok {
 			return nil, fmt.Errorf("%w: parent not exist", ErrEntityMgr)
 		}
-		if parent.GetState() > ec.EntityState_Living {
+		if parent.GetState() > ec.EntityState_Alive {
 			return nil, fmt.Errorf("%w: invalid parent state %q", ErrEntityMgr, parent.GetState())
 		}
 		if parent.GetId() == entity.GetId() {
@@ -328,7 +328,7 @@ func (mgr *_EntityMgrBehavior) addEntity(entity ec.Entity, parentId uid.Id) erro
 	}
 
 	_EmitEventEntityMgrAddEntityWithInterrupt(mgr, func(entityMgr EntityMgr, entity ec.Entity) bool {
-		return entity.GetState() > ec.EntityState_Living
+		return entity.GetState() > ec.EntityState_Alive
 	}, mgr, entity)
 
 	if parent != nil {
@@ -346,7 +346,7 @@ func (mgr *_EntityMgrBehavior) removeEntity(id uid.Id) {
 
 	entity := iface.Cache2Iface[ec.Entity](entityInfo.element.Value.Cache)
 
-	if entity.GetState() > ec.EntityState_Living {
+	if entity.GetState() > ec.EntityState_Alive {
 		return
 	}
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Leave)

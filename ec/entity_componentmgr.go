@@ -190,7 +190,7 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 			return true
 		}
 
-		if comp.GetState() > ComponentState_Living {
+		if comp.GetState() > ComponentState_Alive {
 			return true
 		}
 		comp.setState(ComponentState_Detach)
@@ -215,7 +215,7 @@ func (entity *EntityBehavior) RemoveComponentById(id uid.Id) {
 		return
 	}
 
-	if comp.GetState() > ComponentState_Living {
+	if comp.GetState() > ComponentState_Alive {
 		return
 	}
 	comp.setState(ComponentState_Detach)
@@ -296,7 +296,7 @@ func (entity *EntityBehavior) getComponentElementById(id uid.Id) (*container.Ele
 func (entity *EntityBehavior) accessComponent(comp Component) Component {
 	if entity.opts.AwakeOnFirstAccess && comp.GetState() == ComponentState_Attach {
 		switch entity.GetState() {
-		case EntityState_Awake, EntityState_Start, EntityState_Living:
+		case EntityState_Awake, EntityState_Start, EntityState_Alive:
 			_EmitEventComponentMgrFirstAccessComponent(entity, entity.opts.CompositeFace.Iface, comp)
 		}
 	}
