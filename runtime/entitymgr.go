@@ -305,7 +305,7 @@ func (mgr *_EntityMgrBehavior) addEntity(entity ec.Entity, parentId uid.Id) erro
 			return err
 		}
 		if loaded {
-			return fmt.Errorf("%w: %w", ErrEntityMgr, err)
+			return fmt.Errorf("%w: entity already exists in service entity-mgr", ErrEntityMgr)
 		}
 	}
 
