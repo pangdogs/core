@@ -26,7 +26,7 @@ func Async(provider gctx.ConcurrentContextProvider, fun generic.FuncVar1[runtime
 }
 
 // AsyncVoid 异步执行代码，无返回值
-func AsyncVoid(provider gctx.CurrentContextProvider, fun generic.ActionVar1[runtime.Context, any], va ...any) async.AsyncRet {
+func AsyncVoid(provider gctx.ConcurrentContextProvider, fun generic.ActionVar1[runtime.Context, any], va ...any) async.AsyncRet {
 	ctx := getCaller(provider)
 	return ctx.CallVoid(func(va ...any) {
 		ctx := va[0].(runtime.Context)
