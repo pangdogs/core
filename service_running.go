@@ -67,7 +67,7 @@ loop:
 		parentCtx.GetWaitGroup().Done()
 	}
 
-	close(gctx.UnsafeContext(serv.ctx).GetTerminatedChan())
+	close(gctx.UnsafeContext(ctx).GetTerminatedChan())
 }
 
 func (serv *ServiceBehavior) changeRunningState(state service.RunningState) {

@@ -63,7 +63,7 @@ func (rt *RuntimeBehavior) running() {
 		parentCtx.GetWaitGroup().Done()
 	}
 
-	close(gctx.UnsafeContext(rt.ctx).GetTerminatedChan())
+	close(gctx.UnsafeContext(ctx).GetTerminatedChan())
 }
 
 func (rt *RuntimeBehavior) changeRunningState(state runtime.RunningState) {
