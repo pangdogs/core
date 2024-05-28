@@ -9,11 +9,15 @@ import (
 	"git.golaxy.org/core/utils/generic"
 	"sync"
 	"sync/atomic"
+	_ "unsafe"
 )
 
 var (
 	ErrAllFailures = fmt.Errorf("%w: all of async result failures", ErrCore)
 )
+
+//go:linkname getRuntimeContext git.golaxy.org/core/runtime.getRuntimeContext
+func getRuntimeContext(provider gctx.CurrentContextProvider) runtime.Context
 
 // Await 异步等待结果返回
 func Await(provider gctx.CurrentContextProvider, asyncRet ...async.AsyncRet) AwaitDirector {
