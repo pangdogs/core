@@ -1,71 +1,14 @@
-package concurrent
+package async
 
 import (
-	"context"
 	"fmt"
-	"git.golaxy.org/core/internal/exception"
-	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/core/utils/exception"
+	"git.golaxy.org/core/utils/generic"
 )
 
 var (
 	ErrAsyncRetClosed = fmt.Errorf("%w: async result closed", exception.ErrCore)
 )
-
-var (
-	VoidRet = MakeRet(nil, nil)
-)
-
-// MakeRet 创建调用结果
-func MakeRet(val any, err error) Ret {
-	return Ret{
-		Value: val,
-		Error: err,
-	}
-}
-
-// Ret 调用结果
-type Ret struct {
-	Value any   // 返回值
-	Error error // error
-}
-
-// OK 是否成功
-func (ret Ret) OK() bool {
-	return ret.Error == nil
-}
-
-// String implements fmt.Stringer
-func (ret Ret) String() string {
-	if ret.Error != nil {
-		return ret.Error.Error()
-	}
-	return fmt.Sprintf("%v", ret.Value)
-}
-
-// MakeAsyncRet 创建异步调用结果
-func MakeAsyncRet() chan Ret {
-	return make(chan Ret, 1)
-}
-
-// AsyncRet 异步调用结果
-type AsyncRet <-chan Ret
-
-// Wait 等待异步调用结果
-func (asyncRet AsyncRet) Wait(ctx context.Context) Ret {
-	if ctx == nil {
-		ctx = context.Background()
-	}
-
-	select {
-	case ret, ok := <-asyncRet:
-		if !ok {
-			return MakeRet(nil, ErrAsyncRetClosed)
-		}
-		return ret
-	case <-ctx.Done():
-		return MakeRet(nil, context.Canceled)
-	}
-}
 
 // Caller 异步调用发起者
 type Caller interface {

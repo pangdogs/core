@@ -2,9 +2,9 @@ package define
 
 import (
 	"fmt"
-	"git.golaxy.org/core/internal/exception"
 	"git.golaxy.org/core/pt"
-	"git.golaxy.org/core/util/types"
+	"git.golaxy.org/core/utils/exception"
+	"git.golaxy.org/core/utils/types"
 )
 
 // Component 定义组件

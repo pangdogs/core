@@ -1,8 +1,8 @@
 package core
 
 import (
-	"git.golaxy.org/core/runtime"
-	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/core/utils/async"
+	"git.golaxy.org/core/utils/generic"
 )
 
 type _TaskType int8
@@ -14,16 +14,16 @@ const (
 
 type _Task struct {
 	typ            _TaskType
-	fun            generic.FuncVar0[any, runtime.Ret]
-	delegateFun    generic.DelegateFuncVar0[any, runtime.Ret]
+	fun            generic.FuncVar0[any, async.Ret]
+	delegateFun    generic.DelegateFuncVar0[any, async.Ret]
 	action         generic.ActionVar0[any]
 	delegateAction generic.DelegateActionVar0[any]
 	va             []any
-	asyncRet       chan runtime.Ret
+	asyncRet       chan async.Ret
 }
 
 func (task _Task) run(autoRecover bool, reportError chan error) {
-	var ret runtime.Ret
+	var ret async.Ret
 	var panicErr error
 
 	if task.fun != nil {

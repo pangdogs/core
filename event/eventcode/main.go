@@ -47,7 +47,7 @@ type CommandContext struct {
 
 const (
 	packageEventPath = "git.golaxy.org/core/event"
-	packageIfacePath = "git.golaxy.org/core/util/iface"
+	packageIfacePath = "git.golaxy.org/core/utils/iface"
 )
 
 func main() {

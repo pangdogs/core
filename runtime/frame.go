@@ -1,7 +1,7 @@
 package runtime
 
 import (
-	"git.golaxy.org/core/util/option"
+	"git.golaxy.org/core/utils/option"
 	"time"
 )
 

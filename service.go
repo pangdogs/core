@@ -2,11 +2,11 @@ package core
 
 import (
 	"fmt"
-	"git.golaxy.org/core/internal/concurrent"
+	"git.golaxy.org/core/internal/gctx"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/core/util/iface"
-	"git.golaxy.org/core/util/option"
-	"git.golaxy.org/core/util/reinterpret"
+	"git.golaxy.org/core/utils/iface"
+	"git.golaxy.org/core/utils/option"
+	"git.golaxy.org/core/utils/reinterpret"
 )
 
 // NewService 创建服务
@@ -62,7 +62,7 @@ func (serv *ServiceBehavior) init(ctx service.Context, opts ServiceOptions) {
 		panic(fmt.Errorf("%w: %w: ctx is nil", ErrService, ErrArgs))
 	}
 
-	if !concurrent.UnsafeContext(ctx).SetPaired(true) {
+	if !gctx.UnsafeContext(ctx).SetPaired(true) {
 		panic(fmt.Errorf("%w: context already paired", ErrService))
 	}
 

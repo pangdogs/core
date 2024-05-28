@@ -2,8 +2,8 @@ package ec
 
 import (
 	"git.golaxy.org/core/event"
-	"git.golaxy.org/core/util/iface"
-	"git.golaxy.org/core/util/uid"
+	"git.golaxy.org/core/utils/iface"
+	"git.golaxy.org/core/utils/uid"
 	"reflect"
 )
 

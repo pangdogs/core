@@ -3,12 +3,12 @@ package ec
 import (
 	"fmt"
 	"git.golaxy.org/core/event"
-	"git.golaxy.org/core/internal/concurrent"
-	"git.golaxy.org/core/util/container"
-	"git.golaxy.org/core/util/iface"
-	"git.golaxy.org/core/util/option"
-	"git.golaxy.org/core/util/reinterpret"
-	"git.golaxy.org/core/util/uid"
+	"git.golaxy.org/core/internal/gctx"
+	"git.golaxy.org/core/utils/container"
+	"git.golaxy.org/core/utils/iface"
+	"git.golaxy.org/core/utils/option"
+	"git.golaxy.org/core/utils/reinterpret"
+	"git.golaxy.org/core/utils/uid"
 	"reflect"
 )
 
@@ -35,7 +35,7 @@ type Entity interface {
 	iEntity
 	iComponentMgr
 	iTreeNode
-	concurrent.CurrentContextProvider
+	gctx.CurrentContextProvider
 	reinterpret.CompositeProvider
 	fmt.Stringer
 

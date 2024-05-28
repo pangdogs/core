@@ -1,7 +1,7 @@
 package event
 
 import (
-	"git.golaxy.org/core/util/iface"
+	"git.golaxy.org/core/utils/iface"
 )
 
 // Deprecated: UnsafeEvent 访问事件内部方法

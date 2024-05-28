@@ -3,7 +3,7 @@ package define
 import (
 	"git.golaxy.org/core/plugin"
 	"git.golaxy.org/core/runtime"
-	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/core/utils/generic"
 )
 
 // RuntimePlugin 定义运行时插件

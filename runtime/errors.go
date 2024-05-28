@@ -2,7 +2,7 @@ package runtime
 
 import (
 	"fmt"
-	"git.golaxy.org/core/internal/exception"
+	"git.golaxy.org/core/utils/exception"
 )
 
 var (

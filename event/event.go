@@ -2,10 +2,10 @@ package event
 
 import (
 	"fmt"
-	"git.golaxy.org/core/internal/exception"
-	"git.golaxy.org/core/util/container"
-	"git.golaxy.org/core/util/generic"
-	"git.golaxy.org/core/util/iface"
+	"git.golaxy.org/core/utils/container"
+	"git.golaxy.org/core/utils/exception"
+	"git.golaxy.org/core/utils/generic"
+	"git.golaxy.org/core/utils/iface"
 )
 
 // EventRecursion 发生事件递归时的处理方式（事件递归：事件发送过程中，在订阅者的逻辑中，再次发送这个事件）

@@ -1,9 +1,9 @@
 package ec
 
 import (
-	"git.golaxy.org/core/util/iface"
-	"git.golaxy.org/core/util/option"
-	"git.golaxy.org/core/util/uid"
+	"git.golaxy.org/core/utils/iface"
+	"git.golaxy.org/core/utils/option"
+	"git.golaxy.org/core/utils/uid"
 )
 
 // EntityOptions 创建实体的所有选项

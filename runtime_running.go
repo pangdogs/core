@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"git.golaxy.org/core/event"
-	"git.golaxy.org/core/internal/concurrent"
+	"git.golaxy.org/core/internal/gctx"
 	"git.golaxy.org/core/plugin"
 	"git.golaxy.org/core/runtime"
-	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/core/utils/generic"
 )
 
 // Run 运行
@@ -22,13 +22,13 @@ func (rt *RuntimeBehavior) Run() <-chan struct{} {
 	default:
 	}
 
-	if parentCtx, ok := ctx.GetParentContext().(concurrent.Context); ok {
+	if parentCtx, ok := ctx.GetParentContext().(gctx.Context); ok {
 		parentCtx.GetWaitGroup().Add(1)
 	}
 
 	go rt.running()
 
-	return concurrent.UnsafeContext(ctx).GetTerminatedChan()
+	return gctx.UnsafeContext(ctx).GetTerminatedChan()
 }
 
 // Terminate 停止
@@ -59,11 +59,11 @@ func (rt *RuntimeBehavior) running() {
 
 	rt.changeRunningState(runtime.RunningState_Terminated)
 
-	if parentCtx, ok := ctx.GetParentContext().(concurrent.Context); ok {
+	if parentCtx, ok := ctx.GetParentContext().(gctx.Context); ok {
 		parentCtx.GetWaitGroup().Done()
 	}
 
-	close(concurrent.UnsafeContext(rt.ctx).GetTerminatedChan())
+	close(gctx.UnsafeContext(rt.ctx).GetTerminatedChan())
 }
 
 func (rt *RuntimeBehavior) changeRunningState(state runtime.RunningState) {

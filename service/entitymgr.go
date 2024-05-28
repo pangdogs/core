@@ -3,9 +3,9 @@ package service
 import (
 	"fmt"
 	"git.golaxy.org/core/ec"
-	"git.golaxy.org/core/internal/exception"
-	"git.golaxy.org/core/util/iface"
-	"git.golaxy.org/core/util/uid"
+	"git.golaxy.org/core/utils/exception"
+	"git.golaxy.org/core/utils/iface"
+	"git.golaxy.org/core/utils/uid"
 	"sync"
 )
 

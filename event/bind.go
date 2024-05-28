@@ -2,8 +2,8 @@ package event
 
 import (
 	"fmt"
-	"git.golaxy.org/core/internal/exception"
-	"git.golaxy.org/core/util/iface"
+	"git.golaxy.org/core/utils/exception"
+	"git.golaxy.org/core/utils/iface"
 )
 
 // Bind 绑定事件与订阅者，可以设置优先级调整回调先后顺序（升序）

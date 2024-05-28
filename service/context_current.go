@@ -1,18 +1,14 @@
 package service
 
 import (
-	"git.golaxy.org/core/internal/concurrent"
+	"git.golaxy.org/core/internal/gctx"
 	_ "unsafe"
 )
 
-type (
-	ConcurrentContextProvider = concurrent.ConcurrentContextProvider // 多线程安全的上下文提供者
-)
-
 //go:linkname getServiceContext git.golaxy.org/core/runtime.getServiceContext
-func getServiceContext(provider concurrent.ConcurrentContextProvider) Context
+func getServiceContext(provider gctx.ConcurrentContextProvider) Context
 
 // Current 获取服务上下文
-func Current(provider ConcurrentContextProvider) Context {
+func Current(provider gctx.ConcurrentContextProvider) Context {
 	return getServiceContext(provider)
 }

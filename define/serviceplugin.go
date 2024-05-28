@@ -3,7 +3,7 @@ package define
 import (
 	"git.golaxy.org/core/plugin"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/core/utils/generic"
 )
 
 // ServicePlugin 定义服务插件

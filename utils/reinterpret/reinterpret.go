@@ -1,6 +1,6 @@
 package reinterpret
 
-import "git.golaxy.org/core/util/iface"
+import "git.golaxy.org/core/utils/iface"
 
 // CompositeProvider 支持重新解释类型
 type CompositeProvider interface {

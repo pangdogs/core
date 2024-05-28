@@ -3,14 +3,15 @@ package runtime
 import (
 	"fmt"
 	"git.golaxy.org/core/event"
-	"git.golaxy.org/core/internal/concurrent"
-	"git.golaxy.org/core/internal/exception"
+	"git.golaxy.org/core/internal/gctx"
 	"git.golaxy.org/core/plugin"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/core/util/iface"
-	"git.golaxy.org/core/util/option"
-	"git.golaxy.org/core/util/reinterpret"
-	"git.golaxy.org/core/util/uid"
+	"git.golaxy.org/core/utils/async"
+	"git.golaxy.org/core/utils/exception"
+	"git.golaxy.org/core/utils/iface"
+	"git.golaxy.org/core/utils/option"
+	"git.golaxy.org/core/utils/reinterpret"
+	"git.golaxy.org/core/utils/uid"
 	"reflect"
 )
 
@@ -35,9 +36,9 @@ func UnsafeNewContext(servCtx service.Context, options ContextOptions) Context {
 // Context 运行时上下文接口
 type Context interface {
 	iContext
-	concurrent.CurrentContextProvider
-	concurrent.Context
-	concurrent.Caller
+	gctx.CurrentContextProvider
+	gctx.Context
+	async.Caller
 	reinterpret.CompositeProvider
 	plugin.PluginProvider
 	GCCollector
@@ -65,7 +66,7 @@ type iContext interface {
 	init(servCtx service.Context, opts ContextOptions)
 	getOptions() *ContextOptions
 	setFrame(frame Frame)
-	setCallee(callee Callee)
+	setCallee(callee async.Callee)
 	getServiceCtx() service.Context
 	changeRunningState(state RunningState)
 	gc()
@@ -73,13 +74,13 @@ type iContext interface {
 
 // ContextBehavior 运行时上下文行为，在需要扩展运行时上下文能力时，匿名嵌入至运行时上下文结构体中
 type ContextBehavior struct {
-	concurrent.ContextBehavior
+	gctx.ContextBehavior
 	servCtx      service.Context
 	opts         ContextOptions
 	reflected    reflect.Value
 	frame        Frame
 	entityMgr    _EntityMgrBehavior
-	callee       Callee
+	callee       async.Callee
 	managedHooks []event.Hook
 	gcList       []GC
 }
@@ -170,7 +171,7 @@ func (ctx *ContextBehavior) init(servCtx service.Context, opts ContextOptions) {
 		ctx.opts.PersistId = uid.New()
 	}
 
-	concurrent.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
+	gctx.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
 	ctx.servCtx = servCtx
 	ctx.reflected = reflect.ValueOf(ctx.opts.CompositeFace.Iface)
 	ctx.entityMgr.init(ctx.opts.CompositeFace.Iface)
@@ -184,7 +185,7 @@ func (ctx *ContextBehavior) setFrame(frame Frame) {
 	ctx.frame = frame
 }
 
-func (ctx *ContextBehavior) setCallee(callee Callee) {
+func (ctx *ContextBehavior) setCallee(callee async.Callee) {
 	ctx.callee = callee
 }
 

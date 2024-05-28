@@ -3,16 +3,16 @@ package ec
 import (
 	"fmt"
 	"git.golaxy.org/core/event"
-	"git.golaxy.org/core/internal/concurrent"
-	"git.golaxy.org/core/util/iface"
-	"git.golaxy.org/core/util/uid"
+	"git.golaxy.org/core/internal/gctx"
+	"git.golaxy.org/core/utils/iface"
+	"git.golaxy.org/core/utils/uid"
 	"reflect"
 )
 
 // Component 组件接口
 type Component interface {
 	iComponent
-	concurrent.CurrentContextProvider
+	gctx.CurrentContextProvider
 	fmt.Stringer
 
 	// GetId 获取组件Id

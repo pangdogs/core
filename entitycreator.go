@@ -3,16 +3,17 @@ package core
 import (
 	"fmt"
 	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/internal/gctx"
 	"git.golaxy.org/core/pt"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/core/util/iface"
-	"git.golaxy.org/core/util/option"
-	"git.golaxy.org/core/util/uid"
+	"git.golaxy.org/core/utils/iface"
+	"git.golaxy.org/core/utils/option"
+	"git.golaxy.org/core/utils/uid"
 )
 
 // CreateEntity 创建实体
-func CreateEntity(provider runtime.CurrentContextProvider, prototype string) EntityCreator {
+func CreateEntity(provider gctx.CurrentContextProvider, prototype string) EntityCreator {
 	return EntityCreator{
 		rtCtx:     runtime.Current(provider),
 		prototype: prototype,

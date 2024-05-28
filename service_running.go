@@ -3,10 +3,10 @@ package core
 import (
 	"context"
 	"fmt"
-	"git.golaxy.org/core/internal/concurrent"
+	"git.golaxy.org/core/internal/gctx"
 	"git.golaxy.org/core/plugin"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/core/util/generic"
+	"git.golaxy.org/core/utils/generic"
 	"time"
 )
 
@@ -22,13 +22,13 @@ func (serv *ServiceBehavior) Run() <-chan struct{} {
 	default:
 	}
 
-	if parentCtx, ok := serv.ctx.GetParentContext().(concurrent.Context); ok {
+	if parentCtx, ok := serv.ctx.GetParentContext().(gctx.Context); ok {
 		parentCtx.GetWaitGroup().Add(1)
 	}
 
 	go serv.running()
 
-	return concurrent.UnsafeContext(ctx).GetTerminatedChan()
+	return gctx.UnsafeContext(ctx).GetTerminatedChan()
 }
 
 // Terminate 停止
@@ -63,11 +63,11 @@ loop:
 
 	serv.changeRunningState(service.RunningState_Terminated)
 
-	if parentCtx, ok := ctx.GetParentContext().(concurrent.Context); ok {
+	if parentCtx, ok := ctx.GetParentContext().(gctx.Context); ok {
 		parentCtx.GetWaitGroup().Done()
 	}
 
-	close(concurrent.UnsafeContext(serv.ctx).GetTerminatedChan())
+	close(gctx.UnsafeContext(serv.ctx).GetTerminatedChan())
 }
 
 func (serv *ServiceBehavior) changeRunningState(state service.RunningState) {

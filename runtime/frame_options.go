@@ -2,8 +2,8 @@ package runtime
 
 import (
 	"fmt"
-	"git.golaxy.org/core/internal/exception"
-	"git.golaxy.org/core/util/option"
+	"git.golaxy.org/core/utils/exception"
+	"git.golaxy.org/core/utils/option"
 )
 
 // FrameOptions 帧的所有选项

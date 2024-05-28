@@ -1,8 +1,8 @@
 package core
 
 import (
-	"git.golaxy.org/core/util/iface"
-	"git.golaxy.org/core/util/option"
+	"git.golaxy.org/core/utils/iface"
+	"git.golaxy.org/core/utils/option"
 )
 
 // ServiceOptions 创建服务的所有选项

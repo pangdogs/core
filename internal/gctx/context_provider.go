@@ -1,7 +1,7 @@
-package concurrent
+package gctx
 
 import (
-	"git.golaxy.org/core/util/iface"
+	"git.golaxy.org/core/utils/iface"
 )
 
 // CurrentContextProvider 当前上下文提供者

@@ -3,13 +3,13 @@ package service
 import (
 	"context"
 	"fmt"
-	"git.golaxy.org/core/internal/concurrent"
+	"git.golaxy.org/core/internal/gctx"
 	"git.golaxy.org/core/plugin"
 	"git.golaxy.org/core/pt"
-	"git.golaxy.org/core/util/iface"
-	"git.golaxy.org/core/util/option"
-	"git.golaxy.org/core/util/reinterpret"
-	"git.golaxy.org/core/util/uid"
+	"git.golaxy.org/core/utils/iface"
+	"git.golaxy.org/core/utils/option"
+	"git.golaxy.org/core/utils/reinterpret"
+	"git.golaxy.org/core/utils/uid"
 	"reflect"
 )
 
@@ -34,7 +34,7 @@ func UnsafeNewContext(options ContextOptions) Context {
 // Context 服务上下文
 type Context interface {
 	iContext
-	concurrent.Context
+	gctx.Context
 	reinterpret.CompositeProvider
 	Caller
 	plugin.PluginProvider
@@ -59,7 +59,7 @@ type iContext interface {
 
 // ContextBehavior 服务上下文行为，在需要扩展服务上下文能力时，匿名嵌入至服务上下文结构体中
 type ContextBehavior struct {
-	concurrent.ContextBehavior
+	gctx.ContextBehavior
 	opts      ContextOptions
 	reflected reflect.Value
 	entityMgr _EntityMgrBehavior
@@ -110,7 +110,7 @@ func (ctx *ContextBehavior) init(opts ContextOptions) {
 		ctx.opts.PersistId = uid.New()
 	}
 
-	concurrent.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
+	gctx.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
 	ctx.reflected = reflect.ValueOf(ctx.opts.CompositeFace.Iface)
 	ctx.entityMgr.init(ctx.opts.CompositeFace.Iface)
 }

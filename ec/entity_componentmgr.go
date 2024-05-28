@@ -3,11 +3,11 @@ package ec
 import (
 	"fmt"
 	"git.golaxy.org/core/event"
-	"git.golaxy.org/core/internal/exception"
-	"git.golaxy.org/core/util/container"
-	"git.golaxy.org/core/util/generic"
-	"git.golaxy.org/core/util/iface"
-	"git.golaxy.org/core/util/uid"
+	"git.golaxy.org/core/utils/container"
+	"git.golaxy.org/core/utils/exception"
+	"git.golaxy.org/core/utils/generic"
+	"git.golaxy.org/core/utils/iface"
+	"git.golaxy.org/core/utils/uid"
 	"slices"
 )
 

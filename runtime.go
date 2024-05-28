@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/event"
-	"git.golaxy.org/core/internal/concurrent"
+	"git.golaxy.org/core/internal/gctx"
 	"git.golaxy.org/core/runtime"
-	"git.golaxy.org/core/util/generic"
-	"git.golaxy.org/core/util/iface"
-	"git.golaxy.org/core/util/option"
-	"git.golaxy.org/core/util/reinterpret"
-	"git.golaxy.org/core/util/uid"
+	"git.golaxy.org/core/utils/async"
+	"git.golaxy.org/core/utils/generic"
+	"git.golaxy.org/core/utils/iface"
+	"git.golaxy.org/core/utils/option"
+	"git.golaxy.org/core/utils/reinterpret"
+	"git.golaxy.org/core/utils/uid"
 )
 
 // NewRuntime 创建运行时
@@ -34,9 +35,9 @@ func UnsafeNewRuntime(ctx runtime.Context, options RuntimeOptions) Runtime {
 // Runtime 运行时接口
 type Runtime interface {
 	iRuntime
-	concurrent.CurrentContextProvider
-	concurrent.ConcurrentContextProvider
-	concurrent.Callee
+	gctx.CurrentContextProvider
+	gctx.ConcurrentContextProvider
+	async.Callee
 	reinterpret.CompositeProvider
 	Running
 }
@@ -76,7 +77,7 @@ func (rt *RuntimeBehavior) init(ctx runtime.Context, opts RuntimeOptions) {
 		panic(fmt.Errorf("%w: %w: ctx is nil", ErrRuntime, ErrArgs))
 	}
 
-	if !concurrent.UnsafeContext(ctx).SetPaired(true) {
+	if !gctx.UnsafeContext(ctx).SetPaired(true) {
 		panic(fmt.Errorf("%w: context already paired", ErrRuntime))
 	}
 

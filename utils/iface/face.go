@@ -2,7 +2,7 @@ package iface
 
 import (
 	"fmt"
-	"git.golaxy.org/core/internal/exception"
+	"git.golaxy.org/core/utils/exception"
 )
 
 // MakeFace 创建Face

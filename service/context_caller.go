@@ -3,15 +3,11 @@ package service
 import (
 	"fmt"
 	"git.golaxy.org/core/ec"
-	"git.golaxy.org/core/internal/concurrent"
-	"git.golaxy.org/core/util/generic"
-	"git.golaxy.org/core/util/uid"
+	"git.golaxy.org/core/internal/gctx"
+	"git.golaxy.org/core/utils/async"
+	"git.golaxy.org/core/utils/generic"
+	"git.golaxy.org/core/utils/uid"
 	_ "unsafe"
-)
-
-type (
-	Ret      = concurrent.Ret      // 调用结果
-	AsyncRet = concurrent.AsyncRet // 异步调用结果
 )
 
 // Caller 异步调用发起者
@@ -21,36 +17,36 @@ type Caller interface {
 	//	注意：
 	//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
 	//  - 调用过程中的panic信息，均会转换为error返回。
-	Call(entityId uid.Id, fun generic.FuncVar1[ec.Entity, any, Ret], va ...any) AsyncRet
+	Call(entityId uid.Id, fun generic.FuncVar1[ec.Entity, any, async.Ret], va ...any) async.AsyncRet
 
 	// CallDelegate 查找实体并异步调用委托，有返回值。不会阻塞当前线程，会返回AsyncRet。
 	//
 	//	注意：
 	//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
 	//  - 调用过程中的panic信息，均会转换为error返回。
-	CallDelegate(entityId uid.Id, fun generic.DelegateFuncVar1[ec.Entity, any, Ret], va ...any) AsyncRet
+	CallDelegate(entityId uid.Id, fun generic.DelegateFuncVar1[ec.Entity, any, async.Ret], va ...any) async.AsyncRet
 
 	// CallVoid 查找实体并异步调用函数，无返回值。在运行时中。不会阻塞当前线程，会返回AsyncRet。
 	//
 	//	注意：
 	//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
 	//  - 调用过程中的panic信息，均会转换为error返回。
-	CallVoid(entityId uid.Id, fun generic.ActionVar1[ec.Entity, any], va ...any) AsyncRet
+	CallVoid(entityId uid.Id, fun generic.ActionVar1[ec.Entity, any], va ...any) async.AsyncRet
 
 	// CallVoidDelegate 查找实体并异步调用委托，无返回值。在运行时中。不会阻塞当前线程，会返回AsyncRet。
 	//
 	//	注意：
 	//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
 	//  - 调用过程中的panic信息，均会转换为error返回。
-	CallVoidDelegate(entityId uid.Id, fun generic.DelegateActionVar1[ec.Entity, any], va ...any) AsyncRet
+	CallVoidDelegate(entityId uid.Id, fun generic.DelegateActionVar1[ec.Entity, any], va ...any) async.AsyncRet
 }
 
 //go:linkname getCaller git.golaxy.org/core/runtime.getCaller
-func getCaller(provider concurrent.ConcurrentContextProvider) concurrent.Caller
+func getCaller(provider gctx.ConcurrentContextProvider) async.Caller
 
-func makeAsyncErr(err error) AsyncRet {
-	asyncRet := concurrent.MakeAsyncRet()
-	asyncRet <- concurrent.MakeRet(nil, err)
+func makeAsyncErr(err error) async.AsyncRet {
+	asyncRet := async.MakeAsyncRet()
+	asyncRet <- async.MakeRet(nil, err)
 	close(asyncRet)
 	return asyncRet
 }
@@ -67,19 +63,19 @@ func checkEntity(entity ec.Entity) error {
 //		注意：
 //		- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
 //	 - 调用过程中的panic信息，均会转换为error返回。
-func (ctx *ContextBehavior) Call(entityId uid.Id, fun generic.FuncVar1[ec.Entity, any, Ret], va ...any) AsyncRet {
+func (ctx *ContextBehavior) Call(entityId uid.Id, fun generic.FuncVar1[ec.Entity, any, async.Ret], va ...any) async.AsyncRet {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
 		return makeAsyncErr(err)
 	}
 
-	return getCaller(entity).Call(func(va ...any) concurrent.Ret {
+	return getCaller(entity).Call(func(va ...any) async.Ret {
 		entity := va[0].(ec.Entity)
-		fun := va[1].(generic.FuncVar1[ec.Entity, any, Ret])
+		fun := va[1].(generic.FuncVar1[ec.Entity, any, async.Ret])
 		funVa := va[2].([]any)
 
 		if err := checkEntity(entity); err != nil {
-			return concurrent.MakeRet(nil, err)
+			return async.MakeRet(nil, err)
 		}
 
 		return fun.Exec(entity, funVa...)
@@ -91,19 +87,19 @@ func (ctx *ContextBehavior) Call(entityId uid.Id, fun generic.FuncVar1[ec.Entity
 //		注意：
 //		- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
 //	 - 调用过程中的panic信息，均会转换为error返回。
-func (ctx *ContextBehavior) CallDelegate(entityId uid.Id, fun generic.DelegateFuncVar1[ec.Entity, any, Ret], va ...any) AsyncRet {
+func (ctx *ContextBehavior) CallDelegate(entityId uid.Id, fun generic.DelegateFuncVar1[ec.Entity, any, async.Ret], va ...any) async.AsyncRet {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
 		return makeAsyncErr(err)
 	}
 
-	return getCaller(entity).Call(func(va ...any) concurrent.Ret {
+	return getCaller(entity).Call(func(va ...any) async.Ret {
 		entity := va[0].(ec.Entity)
-		fun := va[1].(generic.DelegateFuncVar1[ec.Entity, any, Ret])
+		fun := va[1].(generic.DelegateFuncVar1[ec.Entity, any, async.Ret])
 		funVa := va[2].([]any)
 
 		if err := checkEntity(entity); err != nil {
-			return concurrent.MakeRet(nil, err)
+			return async.MakeRet(nil, err)
 		}
 
 		return fun.Exec(nil, entity, funVa...)
@@ -115,24 +111,24 @@ func (ctx *ContextBehavior) CallDelegate(entityId uid.Id, fun generic.DelegateFu
 //		注意：
 //		- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
 //	 - 调用过程中的panic信息，均会转换为error返回。
-func (ctx *ContextBehavior) CallVoid(entityId uid.Id, fun generic.ActionVar1[ec.Entity, any], va ...any) AsyncRet {
+func (ctx *ContextBehavior) CallVoid(entityId uid.Id, fun generic.ActionVar1[ec.Entity, any], va ...any) async.AsyncRet {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
 		return makeAsyncErr(err)
 	}
 
-	return getCaller(entity).Call(func(va ...any) concurrent.Ret {
+	return getCaller(entity).Call(func(va ...any) async.Ret {
 		entity := va[0].(ec.Entity)
 		fun := va[1].(generic.ActionVar1[ec.Entity, any])
 		funVa := va[2].([]any)
 
 		if err := checkEntity(entity); err != nil {
-			return concurrent.MakeRet(nil, err)
+			return async.MakeRet(nil, err)
 		}
 
 		fun.Exec(entity, funVa...)
 
-		return concurrent.VoidRet
+		return async.VoidRet
 	}, entity, fun, va)
 }
 
@@ -141,24 +137,24 @@ func (ctx *ContextBehavior) CallVoid(entityId uid.Id, fun generic.ActionVar1[ec.
 //		注意：
 //		- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
 //	 - 调用过程中的panic信息，均会转换为error返回。
-func (ctx *ContextBehavior) CallVoidDelegate(entityId uid.Id, fun generic.DelegateActionVar1[ec.Entity, any], va ...any) AsyncRet {
+func (ctx *ContextBehavior) CallVoidDelegate(entityId uid.Id, fun generic.DelegateActionVar1[ec.Entity, any], va ...any) async.AsyncRet {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
 		return makeAsyncErr(err)
 	}
 
-	return getCaller(entity).Call(func(va ...any) concurrent.Ret {
+	return getCaller(entity).Call(func(va ...any) async.Ret {
 		entity := va[0].(ec.Entity)
 		fun := va[1].(generic.DelegateActionVar1[ec.Entity, any])
 		funVa := va[2].([]any)
 
 		if err := checkEntity(entity); err != nil {
-			return concurrent.MakeRet(nil, err)
+			return async.MakeRet(nil, err)
 		}
 
 		fun.Exec(nil, entity, funVa...)
 
-		return concurrent.VoidRet
+		return async.VoidRet
 	}, entity, fun, va)
 }
 

@@ -3,9 +3,9 @@ package pt
 import (
 	"fmt"
 	"git.golaxy.org/core/ec"
-	"git.golaxy.org/core/internal/exception"
-	"git.golaxy.org/core/util/iface"
-	"git.golaxy.org/core/util/option"
+	"git.golaxy.org/core/utils/exception"
+	"git.golaxy.org/core/utils/iface"
+	"git.golaxy.org/core/utils/option"
 	"reflect"
 )
 

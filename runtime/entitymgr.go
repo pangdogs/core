@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/event"
-	"git.golaxy.org/core/internal/concurrent"
-	"git.golaxy.org/core/internal/exception"
+	"git.golaxy.org/core/internal/gctx"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/core/util/container"
-	"git.golaxy.org/core/util/generic"
-	"git.golaxy.org/core/util/iface"
-	"git.golaxy.org/core/util/uid"
+	"git.golaxy.org/core/utils/container"
+	"git.golaxy.org/core/utils/exception"
+	"git.golaxy.org/core/utils/generic"
+	"git.golaxy.org/core/utils/iface"
+	"git.golaxy.org/core/utils/uid"
 )
 
 // EntityMgr 实体管理器接口
 type EntityMgr interface {
-	concurrent.CurrentContextProvider
+	gctx.CurrentContextProvider
 
 	// AddEntity 添加实体
 	AddEntity(entity ec.Entity) error

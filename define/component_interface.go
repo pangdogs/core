@@ -2,10 +2,10 @@ package define
 
 import (
 	"fmt"
-	"git.golaxy.org/core/internal/exception"
 	"git.golaxy.org/core/pt"
-	"git.golaxy.org/core/util/generic"
-	"git.golaxy.org/core/util/types"
+	"git.golaxy.org/core/utils/exception"
+	"git.golaxy.org/core/utils/generic"
+	"git.golaxy.org/core/utils/types"
 )
 
 // ComponentInterface 定义组件接口

@@ -1,6 +1,6 @@
 package plugin
 
-import "git.golaxy.org/core/util/generic"
+import "git.golaxy.org/core/utils/generic"
 
 // Deprecated: UnsafePluginBundle 访问插件包的内部方法
 func UnsafePluginBundle(pluginBundle PluginBundle) _UnsafePluginBundle {
