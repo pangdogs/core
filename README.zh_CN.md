@@ -1,4 +1,5 @@
 # CORE
+[English](./README.md) | [简体中文](./README.zh_CN.md)
 
 [**Golaxy分布式服务开发框架**](https://github.com/pangdogs/framework) 旨在为实时通信应用程序提供一个全面的服务端解决方案。框架基于EC系统与Actor线程模型，设计简洁、易于使用，特别适合用于开发游戏和远程控制系统。
 
