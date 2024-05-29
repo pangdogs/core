@@ -1,6 +1,7 @@
 # CORE
 [English](./README.md) | [简体中文](./README.zh_CN.md)
 
+## Introduction
 The [**Golaxy Distributed Service Development Framework**](https://github.com/pangdogs/framework) aims to provide a comprehensive server-side solution for real-time communication applications. Based on the EC system and Actor thread model, the framework is designed to be simple and easy to use, making it particularly suitable for developing games and remote control systems.
 
 This project is the [**core**](https://github.com/pangdogs/core) part of the framework, with the main features including:
@@ -14,7 +15,7 @@ This project is the [**core**](https://github.com/pangdogs/core) part of the fra
 - **Local Event System (`Local Event`)**: Based on a code generator, it provides an efficient local event mechanism within the independent runtime thread environment of Actors.
 - **Asynchronous Call Scheme (`Async/Await`)**: Supports asynchronous operations, simplifying the writing of asynchronous code, and enhancing the system's responsiveness.
 
-# Directory
+## Directory
 | Directory | Description |
 | --------- | ----------- |
 | [/](https://github.com/pangdogs/core) | Main implementation of service and runtime related functionalities. |
@@ -28,11 +29,11 @@ This project is the [**core**](https://github.com/pangdogs/core) part of the fra
 | [/service](https://github.com/pangdogs/core/tree/main/service) | Service Context. |
 | [/utils](https://github.com/pangdogs/core/tree/main/utils) | Various utility classes and functions. |
 
-# Examples
+## Examples
 
 For more details, see: [Examples](https://github.com/pangdogs/examples)
 
-# Installation
+## Installation
 ```
 go get -u git.golaxy.org/core
 ```
