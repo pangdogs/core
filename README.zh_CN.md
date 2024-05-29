@@ -1,6 +1,7 @@
 # CORE
 [English](./README.md) | [简体中文](./README.zh_CN.md)
 
+## 简介
 [**Golaxy分布式服务开发框架**](https://github.com/pangdogs/framework) 旨在为实时通信应用程序提供一个全面的服务端解决方案。框架基于EC系统与Actor线程模型，设计简洁、易于使用，特别适合用于开发游戏和远程控制系统。
 
 本项目是框架的 [**内核**](https://github.com/pangdogs/core) 部分，主要功能特性包括：
@@ -14,7 +15,7 @@
 - 本地事件系统（`Local Event`）：基于代码生成器，在Actor独立运行线程环境中，提供高效的本地事件机制。
 - 异步调用方案（`Async/Await`）：支持异步操作，简化异步代码的编写，提升系统的响应能力。
 
-# 目录
+## 目录
 | Directory | Description |
 | --------- | ----------- |
 | [/](https://github.com/pangdogs/core) | 主要实现服务与运行时相关功能。|
@@ -28,11 +29,11 @@
 | [/service](https://github.com/pangdogs/core/tree/main/service) | 服务上下文。 |
 | [/utils](https://github.com/pangdogs/core/tree/main/utils) | 一些工具类与函数。 |
 
-# 示例
+## 示例
 
 详见： [Examples](https://github.com/pangdogs/examples)
 
-# 安装
+## 安装
 ```
 go get -u git.golaxy.org/core
 ```
