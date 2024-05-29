@@ -1,4 +1,5 @@
 # CORE
+[English](./README.md) | [简体中文](./README.zh_CN.md)
 
 The [**Golaxy Distributed Service Development Framework**](https://github.com/pangdogs/framework) aims to provide a comprehensive server-side solution for real-time communication applications. Based on the EC system and Actor thread model, the framework is designed to be simple and easy to use, making it particularly suitable for developing games and remote control systems.
 
