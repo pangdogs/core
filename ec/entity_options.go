@@ -25,7 +25,7 @@ func (_Option) Default() option.Setting[EntityOptions] {
 	return func(o *EntityOptions) {
 		With.CompositeFace(iface.Face[Entity]{})(o)
 		With.Prototype("")(o)
-		With.Scope(Scope_Local)(o)
+		With.Scope(Scope_Global)(o)
 		With.PersistId(uid.Nil)(o)
 		With.AwakeOnFirstAccess(true)(o)
 		With.Meta(nil)(o)
