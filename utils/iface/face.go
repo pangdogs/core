@@ -28,11 +28,11 @@ func MakeFaceT[T any](iface T) Face[T] {
 	}
 }
 
-// MakeFaceAny 创建FaceAny
-func MakeFaceAny[T any](iface T) FaceAny {
+// MakeFaceAny 创建FaceAny，使用Cache，不使用接口
+func MakeFaceAny[C any](iface C) FaceAny {
 	return Face[any]{
 		Iface: iface,
-		Cache: Iface2Cache[T](iface),
+		Cache: Iface2Cache[C](iface),
 	}
 }
 
