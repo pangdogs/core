@@ -28,7 +28,7 @@ type EntityPT struct {
 func (pt EntityPT) Construct(settings ...option.Setting[ec.EntityOptions]) ec.Entity {
 	options := option.Make(ec.With.Default())
 	if pt.CompositeRT != nil {
-		options.CompositeFace = iface.MakeFace(reflect.New(pt.CompositeRT).Interface().(ec.Entity))
+		options.CompositeFace = iface.MakeFaceT(reflect.New(pt.CompositeRT).Interface().(ec.Entity))
 	}
 	if pt.Scope != nil {
 		options.Scope = *pt.Scope

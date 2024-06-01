@@ -153,7 +153,7 @@ func (entity *EntityBehavior) init(opts EntityOptions) {
 	entity.opts = opts
 
 	if entity.opts.CompositeFace.IsNil() {
-		entity.opts.CompositeFace = iface.MakeFace[Entity](entity)
+		entity.opts.CompositeFace = iface.MakeFaceT[Entity](entity)
 	}
 
 	entity._eventEntityDestroySelf.Init(false, nil, event.EventRecursion_Discard)

@@ -70,7 +70,7 @@ func (serv *ServiceBehavior) init(ctx service.Context, opts ServiceOptions) {
 	serv.opts = opts
 
 	if serv.opts.CompositeFace.IsNil() {
-		serv.opts.CompositeFace = iface.MakeFace[Service](serv)
+		serv.opts.CompositeFace = iface.MakeFaceT[Service](serv)
 	}
 
 	serv.changeRunningState(service.RunningState_Birth)

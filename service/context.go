@@ -99,7 +99,7 @@ func (ctx *ContextBehavior) init(opts ContextOptions) {
 	ctx.opts = opts
 
 	if ctx.opts.CompositeFace.IsNil() {
-		ctx.opts.CompositeFace = iface.MakeFace[Context](ctx)
+		ctx.opts.CompositeFace = iface.MakeFaceT[Context](ctx)
 	}
 
 	if ctx.opts.Context == nil {

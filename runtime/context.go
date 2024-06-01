@@ -160,7 +160,7 @@ func (ctx *ContextBehavior) init(servCtx service.Context, opts ContextOptions) {
 	ctx.opts = opts
 
 	if ctx.opts.CompositeFace.IsNil() {
-		ctx.opts.CompositeFace = iface.MakeFace[Context](ctx)
+		ctx.opts.CompositeFace = iface.MakeFaceT[Context](ctx)
 	}
 
 	if ctx.opts.Context == nil {

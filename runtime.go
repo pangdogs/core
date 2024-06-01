@@ -85,7 +85,7 @@ func (rt *RuntimeBehavior) init(ctx runtime.Context, opts RuntimeOptions) {
 	rt.opts = opts
 
 	if rt.opts.CompositeFace.IsNil() {
-		rt.opts.CompositeFace = iface.MakeFace[Runtime](rt)
+		rt.opts.CompositeFace = iface.MakeFaceT[Runtime](rt)
 	}
 
 	rt.hooksMap = make(map[uid.Id][3]event.Hook)
