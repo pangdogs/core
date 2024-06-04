@@ -10,6 +10,9 @@ import (
 	"git.golaxy.org/core/utils/uid"
 )
 
+// ConcurrentContextProvider 多线程安全的上下文提供者
+type ConcurrentContextProvider = gctx.ConcurrentContextProvider
+
 // ConcurrentContext 多线程安全的运行时上下文接口
 type ConcurrentContext interface {
 	gctx.ConcurrentContextProvider

@@ -7,6 +7,9 @@ import (
 	"git.golaxy.org/core/utils/iface"
 )
 
+// CurrentContextProvider 当前上下文提供者
+type CurrentContextProvider = gctx.CurrentContextProvider
+
 // Current 获取当前运行时上下文
 func Current(provider gctx.CurrentContextProvider) Context {
 	if provider == nil {
