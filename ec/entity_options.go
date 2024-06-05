@@ -2,6 +2,7 @@ package ec
 
 import (
 	"git.golaxy.org/core/utils/iface"
+	"git.golaxy.org/core/utils/meta"
 	"git.golaxy.org/core/utils/option"
 	"git.golaxy.org/core/utils/uid"
 )
@@ -13,7 +14,7 @@ type EntityOptions struct {
 	Scope              Scope              // 可访问作用域
 	PersistId          uid.Id             // 实体持久化Id
 	AwakeOnFirstAccess bool               // 开启组件被首次访问时，检测并调用Awake()
-	Meta               Meta               // Meta信息
+	Meta               meta.Meta          // Meta信息
 }
 
 var With _Option
@@ -68,7 +69,7 @@ func (_Option) AwakeOnFirstAccess(b bool) option.Setting[EntityOptions] {
 }
 
 // Meta Meta信息
-func (_Option) Meta(m Meta) option.Setting[EntityOptions] {
+func (_Option) Meta(m meta.Meta) option.Setting[EntityOptions] {
 	return func(o *EntityOptions) {
 		o.Meta = m
 	}

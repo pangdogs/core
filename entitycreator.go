@@ -8,6 +8,7 @@ import (
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/iface"
+	"git.golaxy.org/core/utils/meta"
 	"git.golaxy.org/core/utils/option"
 	"git.golaxy.org/core/utils/uid"
 )
@@ -59,7 +60,7 @@ func (c EntityCreator) AwakeOnFirstAccess(b bool) EntityCreator {
 }
 
 // Meta 设置Meta信息
-func (c EntityCreator) Meta(m ec.Meta) EntityCreator {
+func (c EntityCreator) Meta(m meta.Meta) EntityCreator {
 	c.settings = append(c.settings, ec.With.Meta(m))
 	return c
 }

@@ -6,6 +6,7 @@ import (
 	"git.golaxy.org/core/internal/gctx"
 	"git.golaxy.org/core/utils/container"
 	"git.golaxy.org/core/utils/iface"
+	"git.golaxy.org/core/utils/meta"
 	"git.golaxy.org/core/utils/option"
 	"git.golaxy.org/core/utils/reinterpret"
 	"git.golaxy.org/core/utils/uid"
@@ -50,7 +51,7 @@ type Entity interface {
 	// GetReflected 获取反射值
 	GetReflected() reflect.Value
 	// GetMeta 获取Meta信息
-	GetMeta() Meta
+	GetMeta() meta.Meta
 	// DestroySelf 销毁自身
 	DestroySelf()
 }
@@ -117,7 +118,7 @@ func (entity *EntityBehavior) GetReflected() reflect.Value {
 }
 
 // GetMeta 获取Meta信息
-func (entity *EntityBehavior) GetMeta() Meta {
+func (entity *EntityBehavior) GetMeta() meta.Meta {
 	return entity.opts.Meta
 }
 
