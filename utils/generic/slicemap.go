@@ -1,120 +1,108 @@
 package generic
 
 import (
+	"cmp"
 	"git.golaxy.org/core/utils/types"
 	"slices"
 )
 
-func MakeSliceMap[K comparable, V any](kvs ...KV[K, V]) SliceMap[K, V] {
-	kvs = slices.Clone(kvs)
-	for i := len(kvs) - 1; i >= 0; i-- {
-		it := kvs[i]
-
-		if !slices.ContainsFunc(kvs[:i], func(kv KV[K, V]) bool {
-			return kv.K == it.K
-		}) {
-			continue
-		}
-
-		kvs = append(kvs[:i], kvs[i+1:]...)
+func MakeSliceMap[K cmp.Ordered, V any](kvs ...KV[K, V]) SliceMap[K, V] {
+	m := make(SliceMap[K, V], 0, len(kvs))
+	for i := range kvs {
+		kv := kvs[i]
+		m.Add(kv.K, kv.V)
 	}
-	return kvs
+	return m
 }
 
-func NewSliceMap[K comparable, V any](kvs ...KV[K, V]) *SliceMap[K, V] {
-	kvs = slices.Clone(kvs)
-	for i := len(kvs) - 1; i >= 0; i-- {
-		it := kvs[i]
-
-		if !slices.ContainsFunc(kvs[:i], func(kv KV[K, V]) bool {
-			return kv.K == it.K
-		}) {
-			continue
-		}
-
-		kvs = append(kvs[:i], kvs[i+1:]...)
+func NewSliceMap[K cmp.Ordered, V any](kvs ...KV[K, V]) *SliceMap[K, V] {
+	m := make(SliceMap[K, V], 0, len(kvs))
+	for i := range kvs {
+		kv := kvs[i]
+		m.Add(kv.K, kv.V)
 	}
-	return (*SliceMap[K, V])(&kvs)
+	return &m
 }
 
-func MakeSliceMapFromGoMap[K comparable, V any](m map[K]V) SliceMap[K, V] {
+func MakeSliceMapFromGoMap[K cmp.Ordered, V any](m map[K]V) SliceMap[K, V] {
 	sm := make(SliceMap[K, V], 0, len(m))
 	for k, v := range m {
-		sm = append(sm, KV[K, V]{K: k, V: v})
+		sm.Add(k, v)
 	}
 	return sm
 }
 
-func NewSliceMapFromGoMap[K comparable, V any](m map[K]V) *SliceMap[K, V] {
+func NewSliceMapFromGoMap[K cmp.Ordered, V any](m map[K]V) *SliceMap[K, V] {
 	sm := make(SliceMap[K, V], 0, len(m))
 	for k, v := range m {
-		sm = append(sm, KV[K, V]{K: k, V: v})
+		sm.Add(k, v)
 	}
 	return &sm
 }
 
-type KV[K comparable, V any] struct {
+type KV[K cmp.Ordered, V any] struct {
 	K K
 	V V
 }
 
-type SliceMap[K comparable, V any] []KV[K, V]
+type SliceMap[K cmp.Ordered, V any] []KV[K, V]
 
 func (m *SliceMap[K, V]) Add(k K, v V) {
-	idx := slices.IndexFunc(*m, func(kv KV[K, V]) bool {
-		return kv.K == k
+	idx, ok := slices.BinarySearchFunc(*m, KV[K, V]{K: k}, func(a, b KV[K, V]) int {
+		return cmp.Compare(a.K, b.K)
 	})
-	if idx >= 0 {
+	if ok {
 		(*m)[idx] = KV[K, V]{K: k, V: v}
-		return
+	} else {
+		*m = slices.Insert(*m, idx, KV[K, V]{K: k, V: v})
 	}
-	*m = append(*m, KV[K, V]{K: k, V: v})
 }
 
 func (m *SliceMap[K, V]) TryAdd(k K, v V) bool {
-	idx := slices.IndexFunc(*m, func(kv KV[K, V]) bool {
-		return kv.K == k
+	idx, ok := slices.BinarySearchFunc(*m, KV[K, V]{K: k}, func(a, b KV[K, V]) int {
+		return cmp.Compare(a.K, b.K)
 	})
-	if idx >= 0 {
-		return false
+	if !ok {
+		*m = slices.Insert(*m, idx, KV[K, V]{K: k, V: v})
 	}
-	*m = append(*m, KV[K, V]{K: k, V: v})
-	return true
+	return !ok
 }
 
 func (m *SliceMap[K, V]) Delete(k K) bool {
-	var ok bool
-	*m = slices.DeleteFunc(*m, func(kv KV[K, V]) bool {
-		ok = kv.K == k
-		return ok
+	idx, ok := slices.BinarySearchFunc(*m, KV[K, V]{K: k}, func(a, b KV[K, V]) int {
+		return cmp.Compare(a.K, b.K)
 	})
+	if ok {
+		*m = slices.Delete(*m, idx, idx+1)
+	}
 	return ok
 }
 
 func (m SliceMap[K, V]) Get(k K) (V, bool) {
-	idx := slices.IndexFunc(m, func(kv KV[K, V]) bool {
-		return kv.K == k
+	idx, ok := slices.BinarySearchFunc(m, KV[K, V]{K: k}, func(a, b KV[K, V]) int {
+		return cmp.Compare(a.K, b.K)
 	})
-	if idx >= 0 {
+	if ok {
 		return m[idx].V, true
 	}
 	return types.ZeroT[V](), false
 }
 
 func (m SliceMap[K, V]) Value(k K) V {
-	idx := slices.IndexFunc(m, func(kv KV[K, V]) bool {
-		return kv.K == k
+	idx, ok := slices.BinarySearchFunc(m, KV[K, V]{K: k}, func(a, b KV[K, V]) int {
+		return cmp.Compare(a.K, b.K)
 	})
-	if idx >= 0 {
+	if ok {
 		return m[idx].V
 	}
 	return types.ZeroT[V]()
 }
 
 func (m SliceMap[K, V]) Exist(k K) bool {
-	return slices.ContainsFunc(m, func(kv KV[K, V]) bool {
-		return kv.K == k
+	_, ok := slices.BinarySearchFunc(m, KV[K, V]{K: k}, func(a, b KV[K, V]) int {
+		return cmp.Compare(a.K, b.K)
 	})
+	return ok
 }
 
 func (m SliceMap[K, V]) ToGoMap() map[K]V {
