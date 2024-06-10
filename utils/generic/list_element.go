@@ -1,4 +1,4 @@
-package container
+package generic
 
 func _NewElement[T any](value T) *Element[T] {
 	return &Element[T]{

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/internal/gctx"
-	"git.golaxy.org/core/utils/container"
+	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/meta"
 	"git.golaxy.org/core/utils/option"
@@ -72,7 +72,7 @@ type iEntity interface {
 type EntityBehavior struct {
 	opts                                  EntityOptions
 	context                               iface.Cache
-	componentList                         container.List[iface.FaceAny]
+	componentList                         generic.List[iface.FaceAny]
 	state                                 EntityState
 	reflected                             reflect.Value
 	treeNodeState                         TreeNodeState

@@ -5,7 +5,6 @@ import (
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/internal/gctx"
-	"git.golaxy.org/core/utils/container"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
@@ -42,8 +41,8 @@ type EntityTree interface {
 }
 
 type _TreeNode struct {
-	parentElement *container.Element[iface.FaceAny]
-	children      *container.List[iface.FaceAny]
+	parentAt *generic.Element[iface.FaceAny]
+	children *generic.List[iface.FaceAny]
 }
 
 // AddNode 新增实体节点，会向实体管理器添加实体
@@ -82,7 +81,7 @@ func (mgr *_EntityMgrBehavior) RangeChildren(entityId uid.Id, fun generic.Func1[
 		return
 	}
 
-	node.children.Traversal(func(e *container.Element[iface.FaceAny]) bool {
+	node.children.Traversal(func(e *generic.Element[iface.FaceAny]) bool {
 		return fun.Exec(iface.Cache2Iface[ec.Entity](e.Value.Cache))
 	})
 }
@@ -94,7 +93,7 @@ func (mgr *_EntityMgrBehavior) ReversedRangeChildren(entityId uid.Id, fun generi
 		return
 	}
 
-	node.children.ReversedTraversal(func(e *container.Element[iface.FaceAny]) bool {
+	node.children.ReversedTraversal(func(e *generic.Element[iface.FaceAny]) bool {
 		return fun.Exec(iface.Cache2Iface[ec.Entity](e.Value.Cache))
 	})
 }
@@ -108,7 +107,7 @@ func (mgr *_EntityMgrBehavior) FilterChildren(entityId uid.Id, fun generic.Func1
 
 	var entities []ec.Entity
 
-	node.children.Traversal(func(e *container.Element[iface.FaceAny]) bool {
+	node.children.Traversal(func(e *generic.Element[iface.FaceAny]) bool {
 		entity := iface.Cache2Iface[ec.Entity](e.Value.Cache)
 
 		if fun.Exec(entity) {
@@ -130,7 +129,7 @@ func (mgr *_EntityMgrBehavior) GetChildren(entityId uid.Id) []ec.Entity {
 
 	entities := make([]ec.Entity, 0, node.children.Len())
 
-	node.children.Traversal(func(e *container.Element[iface.FaceAny]) bool {
+	node.children.Traversal(func(e *generic.Element[iface.FaceAny]) bool {
 		entities = append(entities, iface.Cache2Iface[ec.Entity](e.Value.Cache))
 		return true
 	})
@@ -153,7 +152,7 @@ func (mgr *_EntityMgrBehavior) IsTop(entityId uid.Id) bool {
 	if !ok {
 		return false
 	}
-	return node.parentElement == nil
+	return node.parentAt == nil
 }
 
 // ChangeParent 修改父实体
@@ -247,18 +246,26 @@ func (mgr *_EntityMgrBehavior) addToParentNode(entity, parent ec.Entity) {
 	}
 
 	parentNode, ok := mgr.treeNodes[parent.GetId()]
-	if !ok || parentNode.children == nil {
-		parentNode = _TreeNode{
-			parentElement: parentNode.parentElement,
-			children:      container.NewList[iface.FaceAny](),
-		}
+	if !ok {
+		parentNode = &_TreeNode{}
 		mgr.treeNodes[parent.GetId()] = parentNode
 	}
-
-	mgr.treeNodes[entity.GetId()] = _TreeNode{
-		parentElement: parentNode.children.PushBack(iface.MakeFaceAny(entity)),
-		children:      nil,
+	if parentNode.children == nil {
+		parentNode.children = generic.NewList[iface.FaceAny]()
 	}
+
+	node, ok := mgr.treeNodes[entity.GetId()]
+	if !ok {
+		node = &_TreeNode{}
+		mgr.treeNodes[entity.GetId()] = node
+	}
+
+	if node.parentAt != nil {
+		node.parentAt.Escape()
+		node.parentAt = nil
+	}
+
+	node.parentAt = parentNode.children.PushBack(iface.MakeFaceAny(entity))
 
 	ec.UnsafeEntity(entity).SetTreeNodeParent(parent)
 	ec.UnsafeEntity(entity).SetTreeNodeState(ec.TreeNodeState_Attaching)
@@ -322,18 +329,14 @@ func (mgr *_EntityMgrBehavior) removeFromParentNode(entity ec.Entity) {
 	ec.UnsafeEntity(entity).SetTreeNodeParent(nil)
 	ec.UnsafeEntity(entity).SetTreeNodeState(ec.TreeNodeState_Freedom)
 
-	entityNode, ok := mgr.treeNodes[entity.GetId()]
+	node, ok := mgr.treeNodes[entity.GetId()]
 	if ok {
-		if entityNode.parentElement != nil {
-			entityNode.parentElement.Escape()
+		if node.parentAt != nil {
+			node.parentAt.Escape()
+			node.parentAt = nil
 		}
 
-		if entityNode.children != nil && entityNode.children.Len() > 0 {
-			mgr.treeNodes[entity.GetId()] = _TreeNode{
-				parentElement: nil,
-				children:      entityNode.children,
-			}
-		} else {
+		if node.children == nil || node.children.Len() <= 0 {
 			delete(mgr.treeNodes, entity.GetId())
 		}
 	}
@@ -365,24 +368,26 @@ func (mgr *_EntityMgrBehavior) changeParentNode(entity, parent ec.Entity) {
 	}
 
 	parentNode, ok := mgr.treeNodes[parent.GetId()]
-	if !ok || parentNode.children == nil {
-		parentNode = _TreeNode{
-			parentElement: parentNode.parentElement,
-			children:      container.NewList[iface.FaceAny](),
-		}
+	if !ok {
+		parentNode = &_TreeNode{}
 		mgr.treeNodes[parent.GetId()] = parentNode
+	}
+	if parentNode.children == nil {
+		parentNode.children = generic.NewList[iface.FaceAny]()
 	}
 
 	node, ok := mgr.treeNodes[entity.GetId()]
-	if ok {
-		node.parentElement.Escape()
-		node.parentElement = nil
+	if !ok {
+		node = &_TreeNode{}
+		mgr.treeNodes[entity.GetId()] = node
 	}
 
-	mgr.treeNodes[entity.GetId()] = _TreeNode{
-		parentElement: parentNode.children.PushBack(iface.MakeFaceAny(entity)),
-		children:      node.children,
+	if node.parentAt != nil {
+		node.parentAt.Escape()
+		node.parentAt = nil
 	}
+
+	node.parentAt = parentNode.children.PushBack(iface.MakeFaceAny(entity))
 
 	ec.UnsafeEntity(entity).SetTreeNodeParent(parent)
 	ec.UnsafeEntity(entity).SetTreeNodeState(ec.TreeNodeState_Attaching)

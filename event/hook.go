@@ -1,7 +1,7 @@
 package event
 
 import (
-	"git.golaxy.org/core/utils/container"
+	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
 )
 
@@ -9,21 +9,21 @@ import (
 type Hook struct {
 	subscriberFace iface.FaceAny
 	priority       int32
-	element        *container.Element[Hook]
+	at             *generic.Element[Hook]
 	received       int32
 }
 
 // Unbind 解绑定事件与订阅者
 func (hook *Hook) Unbind() {
-	if hook.element != nil {
-		hook.element.Escape()
-		hook.element = nil
+	if hook.at != nil {
+		hook.at.Escape()
+		hook.at = nil
 	}
 }
 
 // IsBound 是否已绑定事件
 func (hook *Hook) IsBound() bool {
-	return hook.element != nil && !hook.element.Escaped()
+	return hook.at != nil && !hook.at.Escaped()
 }
 
 // Clean 清理Hooks

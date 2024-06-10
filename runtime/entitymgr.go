@@ -6,7 +6,6 @@ import (
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/internal/gctx"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/core/utils/container"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
@@ -43,16 +42,16 @@ type EntityMgr interface {
 	iAutoEventEntityMgrEntityFirstAccessComponent // 事件：实体管理器中的实体首次访问组件
 }
 
-type _EntityInfo struct {
-	element *container.Element[iface.FaceAny]
-	hooks   [3]event.Hook
+type _EntityEntry struct {
+	at    *generic.Element[iface.FaceAny]
+	hooks [3]event.Hook
 }
 
 type _EntityMgrBehavior struct {
 	ctx                                      Context
-	entityIdx                                map[uid.Id]_EntityInfo
-	entityList                               container.List[iface.FaceAny]
-	treeNodes                                map[uid.Id]_TreeNode
+	entityIdx                                map[uid.Id]*_EntityEntry
+	entityList                               generic.List[iface.FaceAny]
+	treeNodes                                map[uid.Id]*_TreeNode
 	eventEntityMgrAddEntity                  event.Event
 	eventEntityMgrRemoveEntity               event.Event
 	eventEntityMgrEntityAddComponents        event.Event
@@ -68,8 +67,8 @@ func (mgr *_EntityMgrBehavior) init(ctx Context) {
 	}
 
 	mgr.ctx = ctx
-	mgr.entityIdx = map[uid.Id]_EntityInfo{}
-	mgr.treeNodes = map[uid.Id]_TreeNode{}
+	mgr.entityIdx = map[uid.Id]*_EntityEntry{}
+	mgr.treeNodes = map[uid.Id]*_TreeNode{}
 
 	ctx.ActivateEvent(&mgr.eventEntityMgrAddEntity, event.EventRecursion_Allow)
 	ctx.ActivateEvent(&mgr.eventEntityMgrRemoveEntity, event.EventRecursion_Allow)
@@ -125,16 +124,16 @@ func (mgr *_EntityMgrBehavior) RemoveEntity(id uid.Id) {
 
 // GetEntity 查询实体
 func (mgr *_EntityMgrBehavior) GetEntity(id uid.Id) (ec.Entity, bool) {
-	entityInfo, ok := mgr.entityIdx[id]
+	entry, ok := mgr.entityIdx[id]
 	if !ok {
 		return nil, false
 	}
 
-	if entityInfo.element.Escaped() {
+	if entry.at.Escaped() {
 		return nil, false
 	}
 
-	return iface.Cache2Iface[ec.Entity](entityInfo.element.Value.Cache), true
+	return iface.Cache2Iface[ec.Entity](entry.at.Value.Cache), true
 }
 
 // ContainsEntity 实体是否存在
@@ -145,14 +144,14 @@ func (mgr *_EntityMgrBehavior) ContainsEntity(id uid.Id) bool {
 
 // RangeEntities 遍历所有实体
 func (mgr *_EntityMgrBehavior) RangeEntities(fun generic.Func1[ec.Entity, bool]) {
-	mgr.entityList.Traversal(func(e *container.Element[iface.FaceAny]) bool {
+	mgr.entityList.Traversal(func(e *generic.Element[iface.FaceAny]) bool {
 		return fun.Exec(iface.Cache2Iface[ec.Entity](e.Value.Cache))
 	})
 }
 
 // ReversedRangeEntities 反向遍历所有实体
 func (mgr *_EntityMgrBehavior) ReversedRangeEntities(fun generic.Func1[ec.Entity, bool]) {
-	mgr.entityList.ReversedTraversal(func(e *container.Element[iface.FaceAny]) bool {
+	mgr.entityList.ReversedTraversal(func(e *generic.Element[iface.FaceAny]) bool {
 		return fun.Exec(iface.Cache2Iface[ec.Entity](e.Value.Cache))
 	})
 }
@@ -161,7 +160,7 @@ func (mgr *_EntityMgrBehavior) ReversedRangeEntities(fun generic.Func1[ec.Entity
 func (mgr *_EntityMgrBehavior) FilterEntities(fun generic.Func1[ec.Entity, bool]) []ec.Entity {
 	var entities []ec.Entity
 
-	mgr.entityList.Traversal(func(e *container.Element[iface.FaceAny]) bool {
+	mgr.entityList.Traversal(func(e *generic.Element[iface.FaceAny]) bool {
 		entity := iface.Cache2Iface[ec.Entity](e.Value.Cache)
 
 		if fun.Exec(entity) {
@@ -178,7 +177,7 @@ func (mgr *_EntityMgrBehavior) FilterEntities(fun generic.Func1[ec.Entity, bool]
 func (mgr *_EntityMgrBehavior) GetEntities() []ec.Entity {
 	entities := make([]ec.Entity, 0, mgr.entityList.Len())
 
-	mgr.entityList.Traversal(func(e *container.Element[iface.FaceAny]) bool {
+	mgr.entityList.Traversal(func(e *generic.Element[iface.FaceAny]) bool {
 		entities = append(entities, iface.Cache2Iface[ec.Entity](e.Value.Cache))
 		return true
 	})
@@ -309,17 +308,17 @@ func (mgr *_EntityMgrBehavior) addEntity(entity ec.Entity, parentId uid.Id) erro
 		}
 	}
 
-	entityInfo := _EntityInfo{
-		element: mgr.entityList.PushBack(iface.MakeFaceAny(entity)),
+	entry := &_EntityEntry{
+		at: mgr.entityList.PushBack(iface.MakeFaceAny(entity)),
 		hooks: [3]event.Hook{
 			ec.BindEventComponentMgrAddComponents(entity, mgr),
 			ec.BindEventComponentMgrRemoveComponent(entity, mgr),
 		},
 	}
 	if ec.UnsafeEntity(entity).GetOptions().AwakeOnFirstAccess {
-		entityInfo.hooks[2] = ec.BindEventComponentMgrFirstAccessComponent(entity, mgr)
+		entry.hooks[2] = ec.BindEventComponentMgrFirstAccessComponent(entity, mgr)
 	}
-	mgr.entityIdx[entity.GetId()] = entityInfo
+	mgr.entityIdx[entity.GetId()] = entry
 
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Enter)
 
@@ -339,12 +338,12 @@ func (mgr *_EntityMgrBehavior) addEntity(entity ec.Entity, parentId uid.Id) erro
 }
 
 func (mgr *_EntityMgrBehavior) removeEntity(id uid.Id) {
-	entityInfo, ok := mgr.entityIdx[id]
+	entry, ok := mgr.entityIdx[id]
 	if !ok {
 		return
 	}
 
-	entity := iface.Cache2Iface[ec.Entity](entityInfo.element.Value.Cache)
+	entity := iface.Cache2Iface[ec.Entity](entry.at.Value.Cache)
 
 	if entity.GetState() > ec.EntityState_Alive {
 		return
@@ -367,8 +366,8 @@ func (mgr *_EntityMgrBehavior) removeEntity(id uid.Id) {
 	mgr.removeFromParentNode(entity)
 
 	delete(mgr.entityIdx, id)
-	entityInfo.element.Escape()
-	event.Clean(entityInfo.hooks[:])
+	entry.at.Escape()
+	event.Clean(entry.hooks[:])
 
 	if entity.GetScope() == ec.Scope_Global {
 		service.Current(mgr).GetEntityMgr().RemoveEntity(entity.GetId())

@@ -2,7 +2,6 @@ package event
 
 import (
 	"fmt"
-	"git.golaxy.org/core/utils/container"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
@@ -102,7 +101,7 @@ type IEventCtrl interface {
 
 // Event 事件
 type Event struct {
-	subscribers    container.List[Hook]
+	subscribers    generic.List[Hook]
 	autoRecover    bool
 	reportError    chan error
 	eventRecursion EventRecursion
@@ -142,7 +141,7 @@ func (event *Event) Close() {
 
 // Clean 清除全部订阅者
 func (event *Event) Clean() {
-	event.subscribers.Traversal(func(e *container.Element[Hook]) bool {
+	event.subscribers.Traversal(func(e *generic.Element[Hook]) bool {
 		e.Value.Unbind()
 		return true
 	})
@@ -169,7 +168,7 @@ func (event *Event) emit(fun generic.Func1[iface.Cache, bool]) {
 	event.emitDepth = event.emitted
 	ver := event.subscribers.Version()
 
-	event.subscribers.Traversal(func(e *container.Element[Hook]) bool {
+	event.subscribers.Traversal(func(e *generic.Element[Hook]) bool {
 		if !event.opened {
 			return false
 		}
@@ -224,9 +223,9 @@ func (event *Event) newHook(subscriberFace iface.FaceAny, priority int32) Hook {
 		priority:       priority,
 	}
 
-	var at *container.Element[Hook]
+	var at *generic.Element[Hook]
 
-	event.subscribers.ReversedTraversal(func(other *container.Element[Hook]) bool {
+	event.subscribers.ReversedTraversal(func(other *generic.Element[Hook]) bool {
 		if hook.priority >= other.Value.priority {
 			at = other
 			return false
@@ -235,18 +234,18 @@ func (event *Event) newHook(subscriberFace iface.FaceAny, priority int32) Hook {
 	})
 
 	if at != nil {
-		hook.element = event.subscribers.InsertAfter(Hook{}, at)
+		hook.at = event.subscribers.InsertAfter(Hook{}, at)
 	} else {
-		hook.element = event.subscribers.PushFront(Hook{})
+		hook.at = event.subscribers.PushFront(Hook{})
 	}
 
-	hook.element.Value = hook
+	hook.at.Value = hook
 
 	return hook
 }
 
 func (event *Event) removeSubscriber(subscriber any) {
-	event.subscribers.ReversedTraversal(func(other *container.Element[Hook]) bool {
+	event.subscribers.ReversedTraversal(func(other *generic.Element[Hook]) bool {
 		if other.Value.subscriberFace.Iface == subscriber {
 			other.Escape()
 			return false

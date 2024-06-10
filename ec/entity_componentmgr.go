@@ -3,7 +3,6 @@ package ec
 import (
 	"fmt"
 	"git.golaxy.org/core/event"
-	"git.golaxy.org/core/utils/container"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
@@ -73,7 +72,7 @@ func (entity *EntityBehavior) ContainsComponentById(id uid.Id) bool {
 
 // RangeComponents 遍历所有组件
 func (entity *EntityBehavior) RangeComponents(fun generic.Func1[Component, bool]) {
-	entity.componentList.Traversal(func(e *container.Element[iface.FaceAny]) bool {
+	entity.componentList.Traversal(func(e *generic.Element[iface.FaceAny]) bool {
 		comp := entity.accessComponent(iface.Cache2Iface[Component](e.Value.Cache))
 		if comp == nil {
 			return true
@@ -84,7 +83,7 @@ func (entity *EntityBehavior) RangeComponents(fun generic.Func1[Component, bool]
 
 // ReversedRangeComponents 反向遍历所有组件
 func (entity *EntityBehavior) ReversedRangeComponents(fun generic.Func1[Component, bool]) {
-	entity.componentList.ReversedTraversal(func(e *container.Element[iface.FaceAny]) bool {
+	entity.componentList.ReversedTraversal(func(e *generic.Element[iface.FaceAny]) bool {
 		comp := entity.accessComponent(iface.Cache2Iface[Component](e.Value.Cache))
 		if comp == nil {
 			return true
@@ -97,7 +96,7 @@ func (entity *EntityBehavior) ReversedRangeComponents(fun generic.Func1[Componen
 func (entity *EntityBehavior) FilterComponents(fun generic.Func1[Component, bool]) []Component {
 	var components []Component
 
-	entity.componentList.Traversal(func(e *container.Element[iface.FaceAny]) bool {
+	entity.componentList.Traversal(func(e *generic.Element[iface.FaceAny]) bool {
 		comp := iface.Cache2Iface[Component](e.Value.Cache)
 		if fun.Exec(comp) {
 			components = append(components, comp)
@@ -122,7 +121,7 @@ func (entity *EntityBehavior) FilterComponents(fun generic.Func1[Component, bool
 func (entity *EntityBehavior) GetComponents() []Component {
 	components := make([]Component, 0, entity.componentList.Len())
 
-	entity.componentList.Traversal(func(e *container.Element[iface.FaceAny]) bool {
+	entity.componentList.Traversal(func(e *generic.Element[iface.FaceAny]) bool {
 		components = append(components, iface.Cache2Iface[Component](e.Value.Cache))
 		return true
 	})
@@ -180,7 +179,7 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 		return
 	}
 
-	entity.componentList.TraversalAt(func(other *container.Element[iface.FaceAny]) bool {
+	entity.componentList.TraversalAt(func(other *generic.Element[iface.FaceAny]) bool {
 		comp := iface.Cache2Iface[Component](other.Value.Cache)
 		if comp.GetName() != name {
 			return false
@@ -246,7 +245,7 @@ func (entity *EntityBehavior) addComponent(name string, component Component) err
 	face := iface.MakeFaceAny(component)
 
 	if e, ok := entity.getComponentElement(name); ok {
-		entity.componentList.TraversalAt(func(other *container.Element[iface.FaceAny]) bool {
+		entity.componentList.TraversalAt(func(other *generic.Element[iface.FaceAny]) bool {
 			if iface.Cache2Iface[Component](other.Value.Cache).GetName() == name {
 				e = other
 				return true
@@ -265,10 +264,10 @@ func (entity *EntityBehavior) addComponent(name string, component Component) err
 	return nil
 }
 
-func (entity *EntityBehavior) getComponentElement(name string) (*container.Element[iface.FaceAny], bool) {
-	var e *container.Element[iface.FaceAny]
+func (entity *EntityBehavior) getComponentElement(name string) (*generic.Element[iface.FaceAny], bool) {
+	var e *generic.Element[iface.FaceAny]
 
-	entity.componentList.Traversal(func(other *container.Element[iface.FaceAny]) bool {
+	entity.componentList.Traversal(func(other *generic.Element[iface.FaceAny]) bool {
 		if iface.Cache2Iface[Component](other.Value.Cache).GetName() == name {
 			e = other
 			return false
@@ -279,10 +278,10 @@ func (entity *EntityBehavior) getComponentElement(name string) (*container.Eleme
 	return e, e != nil
 }
 
-func (entity *EntityBehavior) getComponentElementById(id uid.Id) (*container.Element[iface.FaceAny], bool) {
-	var e *container.Element[iface.FaceAny]
+func (entity *EntityBehavior) getComponentElementById(id uid.Id) (*generic.Element[iface.FaceAny], bool) {
+	var e *generic.Element[iface.FaceAny]
 
-	entity.componentList.Traversal(func(other *container.Element[iface.FaceAny]) bool {
+	entity.componentList.Traversal(func(other *generic.Element[iface.FaceAny]) bool {
 		if iface.Cache2Iface[Component](other.Value.Cache).GetId() == id {
 			e = other
 			return false

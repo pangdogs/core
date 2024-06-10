@@ -1,5 +1,4 @@
-// Package container 提供常用的容器数据结构。
-package container
+package generic
 
 // NewList 创建链表
 func NewList[T any]() *List[T] {
