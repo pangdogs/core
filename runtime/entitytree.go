@@ -40,11 +40,6 @@ type EntityTree interface {
 	iAutoEventEntityTreeRemoveNode // 事件：删除实体树节点
 }
 
-type _TreeNode struct {
-	parentAt *generic.Element[iface.FaceAny]
-	children *generic.List[iface.FaceAny]
-}
-
 // AddNode 新增实体节点，会向实体管理器添加实体
 func (mgr *_EntityMgrBehavior) AddNode(entity ec.Entity, parentId uid.Id) error {
 	if parentId.IsNil() {
@@ -245,30 +240,7 @@ func (mgr *_EntityMgrBehavior) addToParentNode(entity, parent ec.Entity) {
 		return
 	}
 
-	parentNode, ok := mgr.treeNodes[parent.GetId()]
-	if !ok {
-		parentNode = &_TreeNode{}
-		mgr.treeNodes[parent.GetId()] = parentNode
-	}
-	if parentNode.children == nil {
-		parentNode.children = generic.NewList[iface.FaceAny]()
-	}
-
-	node, ok := mgr.treeNodes[entity.GetId()]
-	if !ok {
-		node = &_TreeNode{}
-		mgr.treeNodes[entity.GetId()] = node
-	}
-
-	if node.parentAt != nil {
-		node.parentAt.Escape()
-		node.parentAt = nil
-	}
-
-	node.parentAt = parentNode.children.PushBack(iface.MakeFaceAny(entity))
-
-	ec.UnsafeEntity(entity).SetTreeNodeParent(parent)
-	ec.UnsafeEntity(entity).SetTreeNodeState(ec.TreeNodeState_Attaching)
+	mgr.enterParent(entity, parent)
 }
 
 func (mgr *_EntityMgrBehavior) attachParentNode(entity, parent ec.Entity) {
@@ -297,6 +269,7 @@ func (mgr *_EntityMgrBehavior) attachParentNode(entity, parent ec.Entity) {
 	if entity.GetState() > ec.EntityState_Alive || parent.GetState() > ec.EntityState_Alive {
 		return
 	}
+
 	ec.UnsafeEntity(entity).SetTreeNodeState(ec.TreeNodeState_Attached)
 }
 
@@ -326,20 +299,7 @@ func (mgr *_EntityMgrBehavior) removeFromParentNode(entity ec.Entity) {
 		panic(fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs))
 	}
 
-	ec.UnsafeEntity(entity).SetTreeNodeParent(nil)
-	ec.UnsafeEntity(entity).SetTreeNodeState(ec.TreeNodeState_Freedom)
-
-	node, ok := mgr.treeNodes[entity.GetId()]
-	if ok {
-		if node.parentAt != nil {
-			node.parentAt.Escape()
-			node.parentAt = nil
-		}
-
-		if node.children == nil || node.children.Len() <= 0 {
-			delete(mgr.treeNodes, entity.GetId())
-		}
-	}
+	mgr.leaveParent(entity)
 }
 
 func (mgr *_EntityMgrBehavior) changeParentNode(entity, parent ec.Entity) {
@@ -367,6 +327,11 @@ func (mgr *_EntityMgrBehavior) changeParentNode(entity, parent ec.Entity) {
 		return
 	}
 
+	mgr.enterParent(entity, parent)
+	mgr.attachParentNode(entity, parent)
+}
+
+func (mgr *_EntityMgrBehavior) enterParent(entity, parent ec.Entity) {
 	parentNode, ok := mgr.treeNodes[parent.GetId()]
 	if !ok {
 		parentNode = &_TreeNode{}
@@ -391,6 +356,21 @@ func (mgr *_EntityMgrBehavior) changeParentNode(entity, parent ec.Entity) {
 
 	ec.UnsafeEntity(entity).SetTreeNodeParent(parent)
 	ec.UnsafeEntity(entity).SetTreeNodeState(ec.TreeNodeState_Attaching)
+}
 
-	mgr.attachParentNode(entity, parent)
+func (mgr *_EntityMgrBehavior) leaveParent(entity ec.Entity) {
+	ec.UnsafeEntity(entity).SetTreeNodeParent(nil)
+	ec.UnsafeEntity(entity).SetTreeNodeState(ec.TreeNodeState_Freedom)
+
+	node, ok := mgr.treeNodes[entity.GetId()]
+	if ok {
+		if node.parentAt != nil {
+			node.parentAt.Escape()
+			node.parentAt = nil
+		}
+
+		if node.children == nil || node.children.Len() <= 0 {
+			delete(mgr.treeNodes, entity.GetId())
+		}
+	}
 }

@@ -47,6 +47,11 @@ type _EntityEntry struct {
 	hooks [3]event.Hook
 }
 
+type _TreeNode struct {
+	parentAt *generic.Element[iface.FaceAny]
+	children *generic.List[iface.FaceAny]
+}
+
 type _EntityMgrBehavior struct {
 	ctx                                      Context
 	entityIdx                                map[uid.Id]*_EntityEntry
@@ -246,22 +251,7 @@ func (mgr *_EntityMgrBehavior) addEntity(entity ec.Entity, parentId uid.Id) erro
 		panic(fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs))
 	}
 
-	parent, err := func() (ec.Entity, error) {
-		if parentId.IsNil() {
-			return nil, nil
-		}
-		parent, ok := mgr.GetEntity(parentId)
-		if !ok {
-			return nil, fmt.Errorf("%w: parent not exist", ErrEntityMgr)
-		}
-		if parent.GetState() > ec.EntityState_Alive {
-			return nil, fmt.Errorf("%w: invalid parent state %q", ErrEntityMgr, parent.GetState())
-		}
-		if parent.GetId() == entity.GetId() {
-			return nil, fmt.Errorf("%w: parent and child cannot be the same", ErrEntityMgr)
-		}
-		return parent, nil
-	}()
+	parent, err := mgr.fetchParent(entity, parentId)
 	if err != nil {
 		return err
 	}
@@ -372,4 +362,25 @@ func (mgr *_EntityMgrBehavior) removeEntity(id uid.Id) {
 	if entity.GetScope() == ec.Scope_Global {
 		service.Current(mgr).GetEntityMgr().RemoveEntity(entity.GetId())
 	}
+}
+
+func (mgr *_EntityMgrBehavior) fetchParent(entity ec.Entity, parentId uid.Id) (ec.Entity, error) {
+	if parentId.IsNil() {
+		return nil, nil
+	}
+
+	parent, ok := mgr.GetEntity(parentId)
+	if !ok {
+		return nil, fmt.Errorf("%w: parent not exist", ErrEntityMgr)
+	}
+
+	if parent.GetState() > ec.EntityState_Alive {
+		return nil, fmt.Errorf("%w: invalid parent state %q", ErrEntityMgr, parent.GetState())
+	}
+
+	if parent.GetId() == entity.GetId() {
+		return nil, fmt.Errorf("%w: parent and child cannot be the same", ErrEntityMgr)
+	}
+
+	return parent, nil
 }
