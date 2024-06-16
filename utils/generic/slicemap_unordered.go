@@ -104,6 +104,10 @@ func (m UnorderedSliceMap[K, V]) Exist(k K) bool {
 	return idx >= 0
 }
 
+func (m UnorderedSliceMap[K, V]) Len() int {
+	return len(m)
+}
+
 func (m UnorderedSliceMap[K, V]) Range(fun Func2[K, V, bool]) {
 	for _, kv := range m {
 		if !fun.Exec(kv.K, kv.V) {

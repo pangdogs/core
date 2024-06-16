@@ -105,6 +105,10 @@ func (m SliceMap[K, V]) Exist(k K) bool {
 	return ok
 }
 
+func (m SliceMap[K, V]) Len() int {
+	return len(m)
+}
+
 func (m SliceMap[K, V]) Range(fun Func2[K, V, bool]) {
 	for _, kv := range m {
 		if !fun.Exec(kv.K, kv.V) {
