@@ -104,6 +104,20 @@ func (m UnorderedSliceMap[K, V]) Exist(k K) bool {
 	return idx >= 0
 }
 
+func (m UnorderedSliceMap[K, V]) Range(fun Func2[K, V, bool]) {
+	for _, kv := range m {
+		if !fun.Exec(kv.K, kv.V) {
+			return
+		}
+	}
+}
+
+func (m UnorderedSliceMap[K, V]) Each(fun Action2[K, V]) {
+	for _, kv := range m {
+		fun.Exec(kv.K, kv.V)
+	}
+}
+
 func (m UnorderedSliceMap[K, V]) ToGoMap() map[K]V {
 	gm := make(map[K]V, len(m))
 	for _, kv := range m {
