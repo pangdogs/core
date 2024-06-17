@@ -162,7 +162,7 @@ func (rt *RuntimeBehavior) mainLoop() {
 	if frame == nil {
 		rt.loopingNoFrame()
 	} else {
-		rt.loopingWithFrame()
+		rt.loopingRealTime()
 	}
 }
 

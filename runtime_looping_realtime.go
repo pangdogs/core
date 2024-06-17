@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func (rt *RuntimeBehavior) loopingWithFrame() {
+func (rt *RuntimeBehavior) loopingRealTime() {
 	gcTicker := time.NewTicker(rt.opts.GCInterval)
 	defer gcTicker.Stop()
 
