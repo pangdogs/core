@@ -45,6 +45,7 @@ loopEnding:
 		}
 	}
 
+	rt.runGC()
 	rt.frameLoopEnd()
 }
 

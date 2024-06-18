@@ -27,16 +27,19 @@ loop:
 
 	close(rt.processQueue)
 
+loopEnding:
 	for {
 		select {
 		case task, ok := <-rt.processQueue:
 			if !ok {
-				return
+				break loopEnding
 			}
 			rt.runTask(task)
 
 		default:
-			return
+			break loopEnding
 		}
 	}
+
+	rt.runGC()
 }
