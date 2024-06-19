@@ -21,9 +21,9 @@ type Frame interface {
 	// GetCurFPS 获取当前FPS
 	GetCurFPS() float32
 	// GetTotalFrames 获取运行帧数上限
-	GetTotalFrames() uint64
+	GetTotalFrames() int64
 	// GetCurFrames 获取当前帧数
-	GetCurFrames() uint64
+	GetCurFrames() int64
 	// GetRunningBeginTime 获取运行开始时间
 	GetRunningBeginTime() time.Time
 	// GetRunningElapseTime 获取运行持续时间
@@ -39,7 +39,7 @@ type Frame interface {
 }
 
 type iFrame interface {
-	setCurFrames(v uint64)
+	setCurFrames(v int64)
 	runningBegin()
 	runningEnd()
 	loopBegin()
@@ -51,7 +51,7 @@ type iFrame interface {
 type _FrameBehavior struct {
 	options              FrameOptions
 	curFPS               float32
-	curFrames            uint64
+	curFrames            int64
 	runningBeginTime     time.Time
 	runningElapseTime    time.Duration
 	loopBeginTime        time.Time
@@ -59,7 +59,7 @@ type _FrameBehavior struct {
 	updateBeginTime      time.Time
 	lastUpdateElapseTime time.Duration
 	statFPSBeginTime     time.Time
-	statFPSFrames        uint64
+	statFPSFrames        int64
 }
 
 // GetTargetFPS 获取目标FPS
@@ -73,12 +73,12 @@ func (frame *_FrameBehavior) GetCurFPS() float32 {
 }
 
 // GetTotalFrames 获取运行帧数上限
-func (frame *_FrameBehavior) GetTotalFrames() uint64 {
+func (frame *_FrameBehavior) GetTotalFrames() int64 {
 	return frame.options.TotalFrames
 }
 
 // GetCurFrames 获取当前帧数
-func (frame *_FrameBehavior) GetCurFrames() uint64 {
+func (frame *_FrameBehavior) GetCurFrames() int64 {
 	return frame.curFrames
 }
 
@@ -116,7 +116,7 @@ func (frame *_FrameBehavior) init(opts FrameOptions) {
 	frame.options = opts
 }
 
-func (frame *_FrameBehavior) setCurFrames(v uint64) {
+func (frame *_FrameBehavior) setCurFrames(v int64) {
 	frame.curFrames = v
 }
 

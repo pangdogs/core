@@ -9,7 +9,7 @@ import (
 // FrameOptions 帧的所有选项
 type FrameOptions struct {
 	TargetFPS   float32 // 目标FPS
-	TotalFrames uint64  // 运行帧数上限
+	TotalFrames int64   // 运行帧数上限
 }
 
 type _FrameOption struct{}
@@ -33,7 +33,7 @@ func (_FrameOption) TargetFPS(fps float32) option.Setting[FrameOptions] {
 }
 
 // TotalFrames 运行帧数上限
-func (_FrameOption) TotalFrames(v uint64) option.Setting[FrameOptions] {
+func (_FrameOption) TotalFrames(v int64) option.Setting[FrameOptions] {
 	return func(o *FrameOptions) {
 		if v < 0 {
 			panic(fmt.Errorf("%w: %w: TotalFrames less 0 is invalid", ErrFrame, exception.ErrArgs))

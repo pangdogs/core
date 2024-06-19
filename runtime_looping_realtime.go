@@ -49,7 +49,7 @@ loopEnding:
 	rt.frameLoopEnd()
 }
 
-func (rt *RuntimeBehavior) makeFrameTasks(curFrames, totalFrames uint64, targetFPS float32) {
+func (rt *RuntimeBehavior) makeFrameTasks(curFrames, totalFrames int64, targetFPS float32) {
 	updateTicker := time.NewTicker(time.Duration(float64(time.Second) / float64(targetFPS)))
 	defer updateTicker.Stop()
 

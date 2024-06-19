@@ -123,6 +123,22 @@ func (m SliceMap[K, V]) Each(fun Action2[K, V]) {
 	}
 }
 
+func (m SliceMap[K, V]) Keys() []K {
+	keys := make([]K, 0, m.Len())
+	for _, kv := range m {
+		keys = append(keys, kv.K)
+	}
+	return keys
+}
+
+func (m SliceMap[K, V]) Values() []V {
+	values := make([]V, 0, m.Len())
+	for _, kv := range m {
+		values = append(values, kv.V)
+	}
+	return values
+}
+
 func (m SliceMap[K, V]) ToUnorderedSliceMap() UnorderedSliceMap[K, V] {
 	rv := make(UnorderedSliceMap[K, V], 0, len(m))
 	for _, kv := range m {

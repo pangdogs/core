@@ -12,7 +12,7 @@ type _UnsafeFrame struct {
 }
 
 // SetCurFrames 设置当前帧号
-func (uf _UnsafeFrame) SetCurFrames(v uint64) {
+func (uf _UnsafeFrame) SetCurFrames(v int64) {
 	uf.setCurFrames(v)
 }
 
