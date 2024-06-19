@@ -86,7 +86,7 @@ func (mgr *_EntityMgrBehavior) init(ctx Context) {
 
 func (mgr *_EntityMgrBehavior) changeRunningState(state RunningState) {
 	switch state {
-	case RunningState_Starting:
+	case RunningState_Started:
 		mgr.RangeEntities(func(entity ec.Entity) bool {
 			_EmitEventEntityMgrAddEntity(mgr, mgr, entity)
 			return true
