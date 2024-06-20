@@ -138,6 +138,10 @@ func (m UnorderedSliceMap[K, V]) Values() []V {
 	return values
 }
 
+func (m UnorderedSliceMap[K, V]) Clone() UnorderedSliceMap[K, V] {
+	return slices.Clone(m)
+}
+
 func (m UnorderedSliceMap[K, V]) ToGoMap() map[K]V {
 	gm := make(map[K]V, len(m))
 	for _, kv := range m {
