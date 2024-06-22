@@ -32,7 +32,7 @@ var (
 	}
 
 	2.在定义事件的源码文件（.go）头部添加以下注释，在编译前自动化生成代码：
-	//go:generate go run git.golaxy.org/core/event/eventcode gen_event
+	//go:generate go run git.golaxy.org/core/event/eventc event
 
 定义事件的选项（添加到定义事件的注释里）：
 	1.发送事件的辅助代码的可见性

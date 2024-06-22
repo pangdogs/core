@@ -1,10 +1,10 @@
-// Package eventcode 使用go:generate功能，在编译前自动化生成代码
+// Package eventc 使用go:generate功能，在编译前自动化生成代码
 /*
 	- 可以生成事件（event）与事件表（event table）辅助代码。
 	- 用于生成事件辅助代码时，在事件定义代码源文件（.go）头部，添加以下注释：
-		//go:generate go run git.golaxy.org/core/event/eventcode gen_event
+		//go:generate go run git.golaxy.org/core/event/eventc event
 	- 用于生成事件表辅助代码时，在事件定义代码源文件（.go）头部，添加以下注释：
-		//go:generate go run git.golaxy.org/core/event/eventcode gen_eventtab --name={事件表名称}
+		//go:generate go run git.golaxy.org/core/event/eventc eventtab --name={事件表名称}
 	- 在cmd控制台中，进入事件定义代码源文件（.go）的目录，输入go generate指令即可生成代码，此外也可以使用IDE提供的go generate功能。
 	- 编译本包并执行eventcode --help，可以查看命令行参数，通过参数可以调整生成的代码。
 */
@@ -58,14 +58,14 @@ func main() {
 	packageIfaceAlias := kingpin.Flag("package_iface_alias", fmt.Sprintf("导入Golaxy框架的`%s`包时使用的别名。", packageIfacePath)).Default("iface").String()
 
 	// 生成事件代码相关选项
-	eventCmd := kingpin.Command("gen_event", "通过定义的事件，生成事件辅助代码。")
+	eventCmd := kingpin.Command("event", "通过定义的事件，生成事件辅助代码。")
 	eventPackage := eventCmd.Flag("package", "生成事件辅助代码时，使用的包名。").Default(os.Getenv("GOPACKAGE")).String()
 	eventDir := eventCmd.Flag("dir", "生成事件辅助代码时，输出的源文件（.go）存放的相对目录。").String()
 	eventDefExport := eventCmd.Flag("default_export", "生成事件辅助代码时，发送事件的辅助代码的可见性，事件定义选项[EmitExport][EmitUnExport]可以覆盖此配置。").Default("true").String()
 	eventDefAuto := eventCmd.Flag("default_auto", "生成事件辅助代码时，是否生成简化绑定事件的辅助代码，事件定义选项[EmitAuto][EmitManual]可以覆盖此配置。").Default("true").String()
 
 	// 生成事件表代码相关选项
-	eventTabCmd := kingpin.Command("gen_eventtab", "通过定义的事件，生成事件表辅助代码。")
+	eventTabCmd := kingpin.Command("eventtab", "通过定义的事件，生成事件表辅助代码。")
 	eventTabPackage := eventTabCmd.Flag("package", "生成事件表辅助代码，使用的包名。").Default(os.Getenv("GOPACKAGE")).String()
 	eventTabDir := eventTabCmd.Flag("dir", "生成事件表辅助代码时，输出的源文件（.go）存放的相对目录。").String()
 	eventTabName := eventTabCmd.Flag("name", "生成的事件表名称。").String()
@@ -96,7 +96,7 @@ func main() {
 		ctx.EventDefAuto, _ = strconv.ParseBool(*eventDefAuto)
 
 		if ctx.EventPackage == "" {
-			panic("`gen_event --package`设置的包名不能为空")
+			panic("`event --package`设置的包名不能为空")
 		}
 
 		genEvent(ctx)
@@ -109,11 +109,11 @@ func main() {
 		ctx.EventTabName = strings.TrimSpace(*eventTabName)
 
 		if ctx.EventTabPackage == "" {
-			panic("`gen_eventtab --package`设置的包名不能为空")
+			panic("`eventtab --package`设置的包名不能为空")
 		}
 
 		if ctx.EventTabName == "" {
-			panic("`gen_eventtab --name`设置的事件表名不能为空")
+			panic("`eventtab --name`设置的事件表名不能为空")
 		}
 
 		genEventTab(ctx)

@@ -277,7 +277,7 @@ func (h %[5]s%[1]sHandler) %[2]s(%[3]s) {
 `, strings.Title(eventDecl.Name), eventDecl.FuncName, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "), eventDecl.FuncParams, visibility)
 		}
 
-		fmt.Printf("Emit: %s\n", eventDecl.Name)
+		fmt.Printf("Event: %s\n", eventDecl.Name)
 	}
 
 	// 目标文件
