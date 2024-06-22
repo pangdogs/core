@@ -281,7 +281,7 @@ func (h %[5]s%[1]sHandler) %[2]s(%[3]s) {
 	}
 
 	// 目标文件
-	targetFile := filepath.Join(filepath.Dir(ctx.DeclFile), ctx.EventDir, filepath.Base(strings.TrimSuffix(ctx.DeclFile, ".go"))+"_code.go")
+	targetFile := filepath.Join(filepath.Dir(ctx.DeclFile), ctx.EventDir, filepath.Base(strings.TrimSuffix(ctx.DeclFile, ".go"))+".gen.go")
 
 	os.MkdirAll(filepath.Dir(targetFile), os.ModePerm)
 

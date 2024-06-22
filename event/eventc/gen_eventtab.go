@@ -148,7 +148,7 @@ func (eventTab *%[1]s) %[2]s() %[4]sIEvent {
 	fmt.Printf("EventTab: %s\n", ctx.EventTabName)
 
 	// 目标文件
-	targetFile := filepath.Join(filepath.Dir(ctx.DeclFile), ctx.EventTabDir, filepath.Base(strings.TrimSuffix(ctx.DeclFile, ".go"))+"_tab_code.go")
+	targetFile := filepath.Join(filepath.Dir(ctx.DeclFile), ctx.EventTabDir, filepath.Base(strings.TrimSuffix(ctx.DeclFile, ".go"))+".tab.gen.go")
 
 	os.MkdirAll(filepath.Dir(targetFile), os.ModePerm)
 
