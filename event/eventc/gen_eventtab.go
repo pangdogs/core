@@ -68,18 +68,24 @@ type I%[1]s interface {
 		for i, event := range eventDeclTab {
 			var eventRecursion string
 
-			if strings.Contains(event.Comment, "[EventRecursion_Allow]") {
-				eventRecursion = eventPrefix + "EventRecursion_Allow"
-			} else if strings.Contains(event.Comment, "[EventRecursion_Disallow]") {
-				eventRecursion = eventPrefix + "EventRecursion_Disallow"
-			} else if strings.Contains(event.Comment, "[EventRecursion_Discard]") {
-				eventRecursion = eventPrefix + "EventRecursion_Discard"
-			} else if strings.Contains(event.Comment, "[EventRecursion_Truncate]") {
-				eventRecursion = eventPrefix + "EventRecursion_Truncate"
-			} else if strings.Contains(event.Comment, "[EventRecursion_Deepest]") {
-				eventRecursion = eventPrefix + "EventRecursion_Deepest"
-			} else {
-				eventRecursion = "recursion"
+			// 解析atti
+			atti := parseGenAtti(event.Comment, "+event-tab-gen:")
+
+			if atti.Has("recursion") {
+				switch atti.Get("recursion") {
+				case "allow":
+					eventRecursion = eventPrefix + "EventRecursion_Allow"
+				case "disallow":
+					eventRecursion = eventPrefix + "EventRecursion_Disallow"
+				case "discard":
+					eventRecursion = eventPrefix + "EventRecursion_Discard"
+				case "truncate":
+					eventRecursion = eventPrefix + "EventRecursion_Truncate"
+				case "deepest":
+					eventRecursion = eventPrefix + "EventRecursion_Deepest"
+				default:
+					eventRecursion = "recursion"
+				}
 			}
 
 			eventsRecursionCode += fmt.Sprintf("\t(*eventTab)[%d].Init(autoRecover, reportError, %s)\n", i, eventRecursion)

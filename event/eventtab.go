@@ -8,11 +8,7 @@ package event
 
 定义事件的选项（添加到定义事件的注释里）：
 	1.事件表初始化时，该事件使用的递归处理方式，不填表示使用事件表初始化参数值
-		[EventRecursion_Allow]
-		[EventRecursion_Disallow]
-		[EventRecursion_Discard]
-		[EventRecursion_Truncate]
-		[EventRecursion_Deepest]
+		+event-tab-gen:recursion=[allow,disallow,discard,truncate,deepest]
 */
 type IEventTab interface {
 	IEventCtrl

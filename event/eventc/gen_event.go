@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"unicode"
 )
@@ -96,20 +97,29 @@ package %s
 			exportEmitStr = "Emit"
 		}
 
-		if strings.Contains(eventDecl.Comment, "[EmitExport]") {
-			exportEmitStr = "Emit"
-		} else if strings.Contains(eventDecl.Comment, "[EmitUnExport]") {
-			exportEmitStr = "_Emit"
-		}
-
+		// 是否生成事件auto代码
 		auto := ctx.EventDefAuto
 
-		if strings.Contains(eventDecl.Comment, "[EmitAuto]") {
-			auto = true
-		} else if strings.Contains(eventDecl.Comment, "[EmitManual]") {
-			auto = false
+		// 解析atti
+		atti := parseGenAtti(eventDecl.Comment, "+event-gen:")
+
+		if atti.Has("export") {
+			if b, err := strconv.ParseBool(atti.Get("export")); err == nil {
+				if b {
+					exportEmitStr = "Emit"
+				} else {
+					exportEmitStr = "_Emit"
+				}
+			}
 		}
 
+		if atti.Has("auto") {
+			if b, err := strconv.ParseBool(atti.Get("auto")); err == nil {
+				auto = b
+			}
+		}
+
+		// 事件可见性
 		var visibility string
 
 		if unicode.IsLower(rune(eventDecl.Name[0])) {

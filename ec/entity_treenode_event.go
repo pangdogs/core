@@ -1,22 +1,26 @@
 //go:generate go run git.golaxy.org/core/event/eventc event
 package ec
 
-// EventTreeNodeAddChild [EmitUnExport] 事件：实体节点添加子实体
+// EventTreeNodeAddChild 事件：实体节点添加子实体
+// +event-gen:export=0
 type EventTreeNodeAddChild interface {
 	OnTreeNodeAddChild(parent, child Entity)
 }
 
-// EventTreeNodeRemoveChild [EmitUnExport] 事件：实体节点删除子实体
+// EventTreeNodeRemoveChild 事件：实体节点删除子实体
+// +event-gen:export=0
 type EventTreeNodeRemoveChild interface {
 	OnTreeNodeRemoveChild(parent, child Entity)
 }
 
-// EventTreeNodeEnterParent [EmitUnExport] 事件：实体加入父实体节点
+// EventTreeNodeEnterParent 事件：实体加入父实体节点
+// +event-gen:export=0
 type EventTreeNodeEnterParent interface {
 	OnTreeNodeEnterParent(child, parent Entity)
 }
 
-// EventTreeNodeLeaveParent [EmitUnExport] 事件：实体离开父实体节点
+// EventTreeNodeLeaveParent 事件：实体离开父实体节点
+// +event-gen:export=0
 type EventTreeNodeLeaveParent interface {
 	OnTreeNodeLeaveParent(child, parent Entity)
 }

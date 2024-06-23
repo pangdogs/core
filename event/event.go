@@ -35,13 +35,11 @@ var (
 	//go:generate go run git.golaxy.org/core/event/eventc event
 
 定义事件的选项（添加到定义事件的注释里）：
-	1.发送事件的辅助代码的可见性
-		[EmitExport]：不可见
-		[EmitUnExport]：可见
+	1.发送事件的代码的可见性
+		+event-gen:export=[0,1]
 
-	2.是否生成简化绑定事件的辅助代码
-		[EmitAuto]：生成
-		[EmitManual]：不生成
+	2.是否生成简化绑定事件的代码
+		+event-gen:auto=[0,1]
 
 使用事件：
 	1.事件一般作为组件的成员，在组件Awake时初始化，组件Dispose时关闭，示例如下：
