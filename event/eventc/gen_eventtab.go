@@ -66,7 +66,7 @@ type I%[1]s interface {
 		var eventsRecursionCode string
 
 		for i, event := range eventDeclTab {
-			var eventRecursion string
+			eventRecursion := "recursion"
 
 			// 解析atti
 			atti := parseGenAtti(event.Comment, "+event-tab-gen:")
@@ -83,8 +83,6 @@ type I%[1]s interface {
 					eventRecursion = eventPrefix + "EventRecursion_Truncate"
 				case "deepest":
 					eventRecursion = eventPrefix + "EventRecursion_Deepest"
-				default:
-					eventRecursion = "recursion"
 				}
 			}
 
