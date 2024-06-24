@@ -72,26 +72,12 @@ func main() {
 		Short: "根据定义的事件，生成事件代码。（支持定义选项：+event-gen:export=[0,1]&auto=[0,1]）",
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())
-			{
-				pkg := viper.GetString("package")
-				if pkg == "" {
-					panic("[--package]值不能为空")
-				}
-			}
-			{
-				dir := viper.GetString("dir")
-				if dir == "" {
-					panic("[--dir]值不能为空")
-				}
-			}
 			loadDeclFile()
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 			genEvent()
 		},
 	}
-	eventCmd.Flags().String("package", os.Getenv("GOPACKAGE"), "生成事件代码时，使用的包名。")
-	eventCmd.Flags().String("dir", filepath.Dir(os.Getenv("GOFILE")), "生成事件代码时，输出代码文件（.go）的目录。")
 	eventCmd.Flags().Bool("default_export", true, "生成事件代码时，发送事件的代码的可见性，事件定义选项+event-gen:export=[0,1]可以覆盖此配置。")
 	eventCmd.Flags().Bool("default_auto", true, "生成事件代码时，是否生成简化绑定事件的代码，事件定义选项+event-gen:auto=[0,1]可以覆盖此配置。")
 

@@ -58,7 +58,7 @@ package %s
 	{
 		var eventsCode string
 
-		for _, event := range eventDeclTab {
+		for _, event := range eventDeclTab.Events {
 			eventsCode += fmt.Sprintf("\t%s() %sIEvent\n", event.Name, eventPrefix)
 		}
 
@@ -72,7 +72,7 @@ type I%[1]s interface {
 	{
 		var eventsRecursionCode string
 
-		for i, event := range eventDeclTab {
+		for i, event := range eventDeclTab.Events {
 			eventRecursion := "recursion"
 
 			// 解析atti
@@ -103,7 +103,7 @@ var (`)
 			fmt.Fprintf(code, `	_%[1]sId = %[2]sDeclareEventTabIdT[%[1]s]()
 `, tabName, eventPrefix)
 
-			for i, event := range eventDeclTab {
+			for i, event := range eventDeclTab.Events {
 				fmt.Fprintf(code, `	%[2]sId = _%[1]sId + %[3]d
 `, tabName, event.Name, i)
 			}
@@ -145,10 +145,10 @@ func (eventTab *%[1]s) Clean() {
 		(*eventTab)[i].Clean()
 	}
 }
-`, tabName, len(eventDeclTab), eventsRecursionCode, eventPrefix)
+`, tabName, len(eventDeclTab.Events), eventsRecursionCode, eventPrefix)
 	}
 
-	for i, event := range eventDeclTab {
+	for i, event := range eventDeclTab.Events {
 		fmt.Fprintf(code, `
 func (eventTab *%[1]s) %[2]s() %[4]sIEvent {
 	return &(*eventTab)[%[3]d]

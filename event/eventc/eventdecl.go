@@ -19,7 +19,10 @@ type EventDecl struct {
 	FuncHasRet         bool
 }
 
-type EventDeclTab []EventDecl
+type EventDeclTab struct {
+	Package string
+	Events  []EventDecl
+}
 
 func (tab *EventDeclTab) Parse() {
 	eventRegexp, err := regexp.Compile(viper.GetString("event_regexp"))
@@ -30,6 +33,8 @@ func (tab *EventDeclTab) Parse() {
 	fast := viper.Get("file_ast").(*ast.File)
 	fset := viper.Get("file_set").(*token.FileSet)
 	fdata := viper.Get("file_data").([]byte)
+
+	tab.Package = fast.Name.Name
 
 	ast.Inspect(fast, func(node ast.Node) bool {
 		ts, ok := node.(*ast.TypeSpec)
@@ -159,7 +164,7 @@ func (tab *EventDeclTab) Parse() {
 			eventFuncHasRet = true
 		}
 
-		eventInfo := EventDecl{
+		eventDecl := EventDecl{
 			Name:               eventName,
 			Comment:            eventComment,
 			FuncName:           eventFuncName,
@@ -170,7 +175,7 @@ func (tab *EventDeclTab) Parse() {
 			FuncHasRet:         eventFuncHasRet,
 		}
 
-		*tab = append(*tab, eventInfo)
+		tab.Events = append(tab.Events, eventDecl)
 
 		return true
 	})
