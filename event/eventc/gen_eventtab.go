@@ -158,7 +158,7 @@ func (eventTab *%[1]s) %[2]s() %[4]sIEvent {
 
 	fmt.Printf("EventTab: %s\n", tabName)
 
-	// 目标文件
+	// 输出文件
 	outFile := filepath.Join(dir, filepath.Base(strings.TrimSuffix(declFile, ".go"))+".tab.gen.go")
 
 	os.MkdirAll(filepath.Dir(outFile), os.ModePerm)

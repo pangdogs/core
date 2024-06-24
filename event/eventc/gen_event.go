@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"github.com/spf13/viper"
 	"go/ast"
+	"go/printer"
 	"go/token"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -24,7 +26,6 @@ func genEvent() {
 	defAuto := viper.GetBool("default_auto")
 	fast := viper.Get("file_ast").(*ast.File)
 	fset := viper.Get("file_set").(*token.FileSet)
-	fdata := viper.Get("file_data").([]byte)
 
 	code := &bytes.Buffer{}
 
@@ -41,6 +42,9 @@ package %s
 
 	// 生成import
 	{
+		sameEventAlias := path.Base(packageEventPath) == packageEventAlias
+		sameIfaceAlias := path.Base(packageIfacePath) == packageIfaceAlias
+
 		importCode := &bytes.Buffer{}
 
 		fmt.Fprintf(importCode, "\nimport (")
@@ -50,36 +54,32 @@ package %s
 	%s "%s"
 	%s "%s"`, packageEventAlias, packageEventPath, packageIfaceAlias, packageIfacePath)
 
-		for _, imp := range fast.Imports {
-			begin := fset.Position(imp.Pos()).Offset
-			end := fset.Position(imp.End()).Offset
+		for _, is := range fast.Imports {
+			var buf bytes.Buffer
+			printer.Fprint(&buf, fset, is)
 
-			impStr := string(fdata[begin:end])
+			switch buf.String() {
+			case fmt.Sprintf(`%s "%s"`, packageEventAlias, packageEventPath):
+				continue
+			case fmt.Sprintf(`%s "%s"`, packageIfaceAlias, packageIfacePath):
+				continue
+			}
 
-			switch imp.Path.Value {
-			case fmt.Sprintf(`"%s"`, packageEventPath):
-				if imp.Name == nil {
-					if packageEventAlias == "event" {
-						continue
-					}
-				} else {
-					if imp.Name.Name == packageEventAlias {
-						continue
-					}
-				}
-			case fmt.Sprintf(`"%s"`, packageIfacePath):
-				if imp.Name == nil {
-					if packageIfaceAlias == "iface" {
-						continue
-					}
-				} else {
-					if imp.Name.Name == packageIfaceAlias {
-						continue
-					}
+			if sameEventAlias {
+				switch buf.String() {
+				case fmt.Sprintf(`"%s"`, packageEventPath):
+					continue
 				}
 			}
 
-			fmt.Fprintf(importCode, "\n\t%s", impStr)
+			if sameIfaceAlias {
+				switch buf.String() {
+				case fmt.Sprintf(`"%s"`, packageIfacePath):
+					continue
+				}
+			}
+
+			fmt.Fprintf(importCode, "\n\t%s", buf.String())
 		}
 
 		fmt.Fprintf(importCode, "\n)\n")
@@ -304,7 +304,7 @@ func (h %[5]s%[1]sHandler) %[2]s(%[3]s) {
 		fmt.Printf("Event: %s\n", eventDecl.Name)
 	}
 
-	// 目标文件
+	// 输出文件
 	outFile := filepath.Join(dir, filepath.Base(strings.TrimSuffix(declFile, ".go"))+".gen.go")
 
 	os.MkdirAll(filepath.Dir(outFile), os.ModePerm)

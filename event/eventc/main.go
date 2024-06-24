@@ -55,6 +55,11 @@ func main() {
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()
 		},
+		CompletionOptions: cobra.CompletionOptions{
+			DisableDefaultCmd:   true,
+			DisableNoDescFlag:   true,
+			DisableDescriptions: true,
+		},
 	}
 	rootCmd.PersistentFlags().String("decl_file", os.Getenv("GOFILE"), "事件定义文件（.go）。")
 	rootCmd.PersistentFlags().String("event_regexp", "^[eE]vent.+", "匹配事件定义时，使用的正则表达式。")
