@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/spf13/viper"
 	"go/ast"
+	"go/token"
 	"regexp"
 )
 
@@ -19,13 +21,17 @@ type EventDecl struct {
 
 type EventDeclTab []EventDecl
 
-func (tab *EventDeclTab) Parse(ctx *CommandContext) {
-	eventRegexp, err := regexp.Compile(ctx.EventRegexp)
+func (tab *EventDeclTab) Parse() {
+	eventRegexp, err := regexp.Compile(viper.GetString("event_regexp"))
 	if err != nil {
 		panic(err)
 	}
 
-	ast.Inspect(ctx.FileAst, func(node ast.Node) bool {
+	fast := viper.Get("file_ast").(*ast.File)
+	fset := viper.Get("file_set").(*token.FileSet)
+	fdata := viper.Get("file_data").([]byte)
+
+	ast.Inspect(fast, func(node ast.Node) bool {
 		ts, ok := node.(*ast.TypeSpec)
 		if !ok {
 			return true
@@ -34,8 +40,8 @@ func (tab *EventDeclTab) Parse(ctx *CommandContext) {
 		eventName := ts.Name.Name
 		var eventComment string
 
-		for _, comment := range ctx.FileAst.Comments {
-			if ctx.FileSet.Position(comment.End()).Line+1 == ctx.FileSet.Position(node.Pos()).Line {
+		for _, comment := range fast.Comments {
+			if fset.Position(comment.End()).Line+1 == fset.Position(node.Pos()).Line {
 				eventComment = comment.Text()
 				break
 			}
@@ -90,10 +96,10 @@ func (tab *EventDeclTab) Parse(ctx *CommandContext) {
 				}
 				eventFuncParams += paramName
 
-				begin := ctx.FileSet.Position(param.Type.Pos())
-				end := ctx.FileSet.Position(param.Type.End())
+				begin := fset.Position(param.Type.Pos()).Offset
+				end := fset.Position(param.Type.End()).Offset
 
-				eventFuncParamsDecl += fmt.Sprintf(", %s %s", paramName, ctx.FileData[begin.Offset:end.Offset])
+				eventFuncParamsDecl += fmt.Sprintf(", %s %s", paramName, fdata[begin:end])
 			}
 		}
 
@@ -120,13 +126,13 @@ func (tab *EventDeclTab) Parse(ctx *CommandContext) {
 				}
 				eventFuncTypeParams += typeParamName
 
-				begin := ctx.FileSet.Position(typeParam.Type.Pos())
-				end := ctx.FileSet.Position(typeParam.Type.End())
+				begin := fset.Position(typeParam.Type.Pos()).Offset
+				end := fset.Position(typeParam.Type.End()).Offset
 
 				if eventFuncTypeParamsDecl != "" {
 					eventFuncTypeParamsDecl += ", "
 				}
-				eventFuncTypeParamsDecl += fmt.Sprintf("%s %s", typeParamName, ctx.FileData[begin.Offset:end.Offset])
+				eventFuncTypeParamsDecl += fmt.Sprintf("%s %s", typeParamName, fdata[begin:end])
 			}
 		}
 

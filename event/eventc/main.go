@@ -6,89 +6,127 @@
 	- 用于生成事件表代码时，在事件定义代码源文件（.go）头部，添加以下注释：
 		//go:generate go run git.golaxy.org/core/event/eventc eventtab --name={事件表名称}
 	- 在cmd控制台中，进入事件定义代码源文件（.go）的目录，输入go generate指令即可生成代码，此外也可以使用IDE提供的go generate功能。
-	- 编译本包并执行eventcode --help，可以查看命令行参数，通过参数可以调整生成的代码。
+	- 编译本包并执行eventc --help，可以查看命令行参数，通过参数可以调整生成的代码。
 */
 package main
 
 import (
 	"fmt"
-	"github.com/alecthomas/kingpin/v2"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
 )
 
 func main() {
 	// 基础选项
-	declFile := kingpin.Flag("decl_file", "定义事件的源文件（.go）。").Default(os.Getenv("GOFILE")).ExistingFile()
-	eventRegexp := kingpin.Flag("event_regexp", "匹配事件定义时，使用的正则表达式。").Default("^[eE]vent.+").String()
-	packageEventAlias := kingpin.Flag("package_event_alias", fmt.Sprintf("导入Golaxy框架的`%s`包时使用的别名。", packageEventPath)).Default("event").String()
-	packageIfaceAlias := kingpin.Flag("package_iface_alias", fmt.Sprintf("导入Golaxy框架的`%s`包时使用的别名。", packageIfacePath)).Default("iface").String()
+	rootCmd := &cobra.Command{
+		Short: "事件代码生成工具。",
+		PreRun: func(cmd *cobra.Command, args []string) {
+			viper.BindPFlags(cmd.Flags())
+			{
+				declFile := viper.GetString("decl_file")
+				if declFile == "" {
+					panic("[--decl_file]值不能为空")
+				}
+				if _, err := os.Stat(declFile); err != nil {
+					panic(fmt.Errorf("[--decl_file]文件错误，%s", err))
+				}
+			}
+			{
+				eventRegexp := viper.GetString("event_regexp")
+				if eventRegexp == "" {
+					panic("[--event_regexp]值不能为空")
+				}
+			}
+			{
+				packageEventAlias := viper.GetString("package_event_alias")
+				if packageEventAlias == "" {
+					panic("[--package_event_alias]值不能为空")
+				}
+			}
+			{
+				packageIfaceAlias := viper.GetString("package_iface_alias")
+				if packageIfaceAlias == "" {
+					panic("[--package_iface_alias]值不能为空")
+				}
+			}
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			cmd.Help()
+		},
+	}
+	rootCmd.PersistentFlags().String("decl_file", os.Getenv("GOFILE"), "事件定义文件（.go）。")
+	rootCmd.PersistentFlags().String("event_regexp", "^[eE]vent.+", "匹配事件定义时，使用的正则表达式。")
+	rootCmd.PersistentFlags().String("package_event_alias", "event", fmt.Sprintf("导入Golaxy框架的（%s）包时使用的别名。", packageEventPath))
+	rootCmd.PersistentFlags().String("package_iface_alias", "iface", fmt.Sprintf("导入Golaxy框架的（%s）包时使用的别名。", packageIfacePath))
 
 	// 生成事件代码相关选项
-	eventCmd := kingpin.Command("event", "通过定义的事件，生成事件代码。(定义选项：+event-gen:export=[0,1]&auto=[0,1])")
-	eventPackage := eventCmd.Flag("package", "生成事件代码时，使用的包名。").Default(os.Getenv("GOPACKAGE")).String()
-	eventDir := eventCmd.Flag("dir", "生成事件代码时，输出的源文件（.go）存放的相对目录。").String()
-	eventDefExport := eventCmd.Flag("default_export", "生成事件代码时，发送事件的代码的可见性，事件定义选项+event-gen:export=[0,1]可以覆盖此配置。").Default("true").String()
-	eventDefAuto := eventCmd.Flag("default_auto", "生成事件代码时，是否生成简化绑定事件的代码，事件定义选项+event-gen:auto=[0,1]可以覆盖此配置。").Default("true").String()
+	eventCmd := &cobra.Command{
+		Use:   "event",
+		Short: "根据定义的事件，生成事件代码。（支持定义选项：+event-gen:export=[0,1]&auto=[0,1]）",
+		PreRun: func(cmd *cobra.Command, args []string) {
+			viper.BindPFlags(cmd.Flags())
+			{
+				pkg := viper.GetString("package")
+				if pkg == "" {
+					panic("[--package]值不能为空")
+				}
+			}
+			{
+				dir := viper.GetString("dir")
+				if dir == "" {
+					panic("[--dir]值不能为空")
+				}
+			}
+			loadDeclFile()
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			genEvent()
+		},
+	}
+	eventCmd.Flags().String("package", os.Getenv("GOPACKAGE"), "生成事件代码时，使用的包名。")
+	eventCmd.Flags().String("dir", filepath.Dir(os.Getenv("GOFILE")), "生成事件代码时，输出代码文件（.go）的目录。")
+	eventCmd.Flags().Bool("default_export", true, "生成事件代码时，发送事件的代码的可见性，事件定义选项+event-gen:export=[0,1]可以覆盖此配置。")
+	eventCmd.Flags().Bool("default_auto", true, "生成事件代码时，是否生成简化绑定事件的代码，事件定义选项+event-gen:auto=[0,1]可以覆盖此配置。")
 
 	// 生成事件表代码相关选项
-	eventTabCmd := kingpin.Command("eventtab", "通过定义的事件，生成事件表代码。(定义选项：+event-tab-gen:recursion=[allow,disallow,discard,truncate,deepest]")
-	eventTabPackage := eventTabCmd.Flag("package", "生成事件表代码，使用的包名。").Default(os.Getenv("GOPACKAGE")).String()
-	eventTabDir := eventTabCmd.Flag("dir", "生成事件表代码时，输出的源文件（.go）存放的相对目录。").String()
-	eventTabName := eventTabCmd.Flag("name", "生成的事件表名称。").String()
-
-	cmd := kingpin.Parse()
-
-	ctx := &CommandContext{}
-	ctx.DeclFile, _ = filepath.Abs(*declFile)
-	ctx.EventRegexp = strings.TrimSpace(*eventRegexp)
-	ctx.PackageEventAlias = strings.TrimSpace(*packageEventAlias)
-	ctx.PackageIfaceAlias = strings.TrimSpace(*packageIfaceAlias)
-
-	if ctx.PackageEventAlias == "" {
-		panic("`--package_event_alias`设置的别名不能为空")
+	eventTabCmd := &cobra.Command{
+		Use:   "eventtab",
+		Short: "根据定义的事件，生成事件表代码。（支持定义选项：+event-tab-gen:recursion=[allow,disallow,discard,truncate,deepest]）",
+		PreRun: func(cmd *cobra.Command, args []string) {
+			viper.BindPFlags(cmd.Flags())
+			{
+				pkg := viper.GetString("package")
+				if pkg == "" {
+					panic("[--package]值不能为空")
+				}
+			}
+			{
+				dir := viper.GetString("dir")
+				if dir == "" {
+					panic("[--dir]值不能为空")
+				}
+			}
+			{
+				name := viper.GetString("name")
+				if name == "" {
+					panic("[--name]值不能为空")
+				}
+			}
+			loadDeclFile()
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			genEventTab()
+		},
 	}
+	eventTabCmd.Flags().String("package", os.Getenv("GOPACKAGE"), "生成事件表代码，使用的包名。")
+	eventTabCmd.Flags().String("dir", filepath.Dir(os.Getenv("GOFILE")), "生成事件表代码时，输出代码文件（.go）的目录。")
+	eventTabCmd.Flags().String("name", truncateDot(snake2Camel(filepath.Base(os.Getenv("GOFILE")))), "生成的事件表名称。")
 
-	if ctx.PackageIfaceAlias == "" {
-		panic("`--package_iface_alias`设置的别名不能为空")
-	}
+	rootCmd.AddCommand(eventCmd, eventTabCmd)
 
-	switch cmd {
-	case eventCmd.FullCommand():
-		loadDeclFile(ctx)
-
-		ctx.EventPackage = strings.TrimSpace(*eventPackage)
-		ctx.EventDir = strings.TrimSpace(*eventDir)
-		ctx.EventDefExport, _ = strconv.ParseBool(*eventDefExport)
-		ctx.EventDefAuto, _ = strconv.ParseBool(*eventDefAuto)
-
-		if ctx.EventPackage == "" {
-			panic("`event --package`设置的包名不能为空")
-		}
-
-		genEvent(ctx)
-		return
-	case eventTabCmd.FullCommand():
-		loadDeclFile(ctx)
-
-		ctx.EventTabPackage = strings.TrimSpace(*eventTabPackage)
-		ctx.EventTabDir = strings.TrimSpace(*eventTabDir)
-		ctx.EventTabName = strings.TrimSpace(*eventTabName)
-
-		if ctx.EventTabPackage == "" {
-			panic("`eventtab --package`设置的包名不能为空")
-		}
-
-		if ctx.EventTabName == "" {
-			panic("`eventtab --name`设置的事件表名不能为空")
-		}
-
-		genEventTab(ctx)
-		return
-	default:
-		kingpin.Usage()
-		return
+	if err := rootCmd.Execute(); err != nil {
+		panic(err)
 	}
 }
