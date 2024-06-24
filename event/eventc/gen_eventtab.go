@@ -17,6 +17,10 @@ func genEventTab() {
 	dir := viper.GetString("dir")
 	tabName := viper.GetString("name")
 
+	// 解析事件定义
+	eventDeclTab := EventDeclTab{}
+	eventDeclTab.Parse()
+
 	code := &bytes.Buffer{}
 
 	// 生成注释
@@ -43,10 +47,6 @@ package %s
 
 		fmt.Fprintf(code, importCode.String())
 	}
-
-	// 解析事件定义
-	eventDeclTab := EventDeclTab{}
-	eventDeclTab.Parse()
 
 	// event包前缀
 	eventPrefix := ""
