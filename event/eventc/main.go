@@ -113,7 +113,7 @@ func main() {
 	}
 	eventTabCmd.Flags().String("package", os.Getenv("GOPACKAGE"), "生成事件表代码，使用的包名。")
 	eventTabCmd.Flags().String("dir", filepath.Dir(os.Getenv("GOFILE")), "生成事件表代码时，输出代码文件（.go）的目录。")
-	eventTabCmd.Flags().String("name", truncateDot(snake2Camel(filepath.Base(os.Getenv("GOFILE")))), "生成的事件表名称。")
+	eventTabCmd.Flags().String("name", defaultEventTab(), "生成的事件表名称。")
 
 	rootCmd.AddCommand(eventCmd, eventTabCmd)
 

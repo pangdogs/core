@@ -7,6 +7,8 @@ import (
 	"go/token"
 	"io/ioutil"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
 	"unicode"
 )
@@ -85,4 +87,9 @@ func truncateDot(s string) string {
 		return s
 	}
 	return s[:idx]
+}
+
+func defaultEventTab() string {
+	s := strings.TrimSuffix(strings.TrimSuffix(truncateDot(snake2Camel(filepath.Base(os.Getenv("GOFILE")))), "Event"), "EventTab")
+	return s + "EventTab"
 }
