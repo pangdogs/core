@@ -90,19 +90,19 @@ func main() {
 			{
 				pkg := viper.GetString("package")
 				if pkg == "" {
-					panic("[--package]值不能为空")
+					panic("[eventtab --package]值不能为空")
 				}
 			}
 			{
 				dir := viper.GetString("dir")
 				if dir == "" {
-					panic("[--dir]值不能为空")
+					panic("[eventtab --dir]值不能为空")
 				}
 			}
 			{
 				name := viper.GetString("name")
 				if name == "" {
-					panic("[--name]值不能为空")
+					panic("[eventtab --name]值不能为空")
 				}
 			}
 			loadDeclFile()
