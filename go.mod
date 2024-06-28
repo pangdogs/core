@@ -1,8 +1,8 @@
 module git.golaxy.org/core
 
-go 1.21
+go 1.22
 
-toolchain go1.21.6
+toolchain go1.22.4
 
 require (
 	github.com/segmentio/ksuid v1.0.4
