@@ -25,6 +25,8 @@ type Component interface {
 	GetState() ComponentState
 	// GetReflected 获取反射值
 	GetReflected() reflect.Value
+	// GetFixed 是否固定
+	GetFixed() bool
 	// DestroySelf 销毁自身
 	DestroySelf()
 }
@@ -32,10 +34,9 @@ type Component interface {
 type iComponent interface {
 	init(name string, entity Entity, composite Component)
 	setId(id uid.Id)
-	setFixed(v bool)
-	getFixed() bool
 	setState(state ComponentState)
 	setReflected(v reflect.Value)
+	setFixed(b bool)
 	getComposite() Component
 	eventComponentDestroySelf() event.IEvent
 	cleanManagedHooks()
@@ -47,9 +48,9 @@ type ComponentBehavior struct {
 	name                       string
 	entity                     Entity
 	composite                  Component
-	fixed                      bool
 	state                      ComponentState
 	reflected                  reflect.Value
+	fixed                      bool
 	_eventComponentDestroySelf event.Event
 	managedHooks               []event.Hook
 }
@@ -81,6 +82,11 @@ func (comp *ComponentBehavior) GetReflected() reflect.Value {
 	}
 	comp.reflected = reflect.ValueOf(comp.composite)
 	return comp.reflected
+}
+
+// GetFixed 是否固定
+func (comp *ComponentBehavior) GetFixed() bool {
+	return comp.fixed
 }
 
 // DestroySelf 销毁自身
@@ -117,14 +123,6 @@ func (comp *ComponentBehavior) setId(id uid.Id) {
 	comp.id = id
 }
 
-func (comp *ComponentBehavior) setFixed(v bool) {
-	comp.fixed = v
-}
-
-func (comp *ComponentBehavior) getFixed() bool {
-	return comp.fixed
-}
-
 func (comp *ComponentBehavior) setState(state ComponentState) {
 	if state <= comp.state {
 		return
@@ -140,6 +138,10 @@ func (comp *ComponentBehavior) setState(state ComponentState) {
 
 func (comp *ComponentBehavior) setReflected(v reflect.Value) {
 	comp.reflected = v
+}
+
+func (comp *ComponentBehavior) setFixed(b bool) {
+	comp.fixed = b
 }
 
 func (comp *ComponentBehavior) getComposite() Component {

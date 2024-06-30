@@ -47,9 +47,19 @@ func (c EntityPTCreator) AwakeOnFirstAccess(b bool) EntityPTCreator {
 // AddComponent 添加组件
 func (c EntityPTCreator) AddComponent(comp any, alias ...string) EntityPTCreator {
 	if len(alias) > 0 {
-		c.comps = append(c.comps, pt.CompAlias(comp, alias[0]))
+		c.comps = append(c.comps, pt.CompAlias(comp, true, alias[0]))
 	} else {
 		c.comps = append(c.comps, comp)
+	}
+	return c
+}
+
+// AddMutableComponent 添加不固定的组件
+func (c EntityPTCreator) AddMutableComponent(comp any, alias ...string) EntityPTCreator {
+	if len(alias) > 0 {
+		c.comps = append(c.comps, pt.CompAlias(comp, false, alias[0]))
+	} else {
+		c.comps = append(c.comps, pt.CompAlias(comp, false, ""))
 	}
 	return c
 }

@@ -183,7 +183,7 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 			return false
 		}
 
-		if comp.getFixed() {
+		if comp.GetFixed() {
 			return true
 		}
 
@@ -208,7 +208,7 @@ func (entity *EntityBehavior) RemoveComponentById(id uid.Id) {
 
 	comp := iface.Cache2Iface[Component](n.V.Cache)
 
-	if comp.getFixed() {
+	if comp.GetFixed() {
 		return
 	}
 

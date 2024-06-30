@@ -11,34 +11,6 @@ import (
 	"sync"
 )
 
-type _CompAlias struct {
-	Comp  any
-	Alias string
-}
-
-// CompAlias 组件与别名，用于注册实体原型时自定义组件别名
-func CompAlias(comp any, alias string) _CompAlias {
-	return _CompAlias{
-		Comp:  comp,
-		Alias: alias,
-	}
-}
-
-// CompInterface 组件与接口，用于注册实体原型时使用接口名作为别名
-func CompInterface[FACE any](comp any) _CompAlias {
-	return _CompAlias{
-		Comp:  comp,
-		Alias: types.FullNameT[FACE](),
-	}
-}
-
-// Attribute 实体原型属性
-type Attribute struct {
-	Composite          any       // 实体类型
-	Scope              *ec.Scope // 可访问作用域
-	AwakeOnFirstAccess *bool     // 设置开启组件被首次访问时，检测并调用Awake()
-}
-
 // EntityLib 实体原型库
 type EntityLib interface {
 	EntityPTProvider
@@ -121,12 +93,13 @@ func (lib *_EntityLib) Declare(prototype string, atti Attribute, comps ...any) E
 	}
 
 	for _, comp := range comps {
-		var compInfo CompInfo
+		compInfo := CompInfo{Fixed: true}
 
 	retry:
 		switch pt := comp.(type) {
 		case _CompAlias:
 			compInfo.Alias = pt.Alias
+			compInfo.Fixed = pt.Fixed
 			comp = pt.Comp
 			goto retry
 		case string:

@@ -13,6 +13,7 @@ import (
 type CompInfo struct {
 	PT    ComponentPT // 原型
 	Alias string      // 别名
+	Fixed bool        // 固定
 }
 
 // EntityPT 实体原型
@@ -51,6 +52,8 @@ func (pt EntityPT) assemble(entity ec.Entity) ec.Entity {
 		compInfo := &pt.Components[i]
 
 		comp := compInfo.PT.Construct()
+
+		ec.UnsafeComponent(comp).SetFixed(compInfo.Fixed)
 
 		if err := entity.AddComponent(compInfo.Alias, comp); err != nil {
 			panic(fmt.Errorf("%w: %w", ErrPt, err))

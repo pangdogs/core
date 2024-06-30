@@ -27,14 +27,9 @@ func (uc _UnsafeComponent) SetId(id uid.Id) {
 	uc.setId(id)
 }
 
-// SetFixed 设置为固定的（不可删除）
-func (uc _UnsafeComponent) SetFixed(v bool) {
-	uc.setFixed(v)
-}
-
-// GetFixed 获取是否为固定的（不可删除）
-func (uc _UnsafeComponent) GetFixed() bool {
-	return uc.getFixed()
+// SetFixed 设置是否固定
+func (uc _UnsafeComponent) SetFixed(b bool) {
+	uc.setFixed(b)
 }
 
 // SetState 设置状态

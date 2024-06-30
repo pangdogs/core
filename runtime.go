@@ -268,16 +268,24 @@ func (rt *RuntimeBehavior) activateComponent(comp ec.Component) {
 	}
 
 	var hooks [3]event.Hook
+	bound := false
 
 	if compUpdate, ok := comp.(LifecycleComponentUpdate); ok {
 		hooks[0] = event.Bind[LifecycleComponentUpdate](&rt.eventUpdate, compUpdate)
+		bound = true
 	}
 	if compLateUpdate, ok := comp.(LifecycleComponentLateUpdate); ok {
 		hooks[1] = event.Bind[LifecycleComponentLateUpdate](&rt.eventLateUpdate, compLateUpdate)
+		bound = true
 	}
-	hooks[2] = ec.BindEventComponentDestroySelf(ec.UnsafeComponent(comp), rt)
+	if !comp.GetFixed() {
+		hooks[2] = ec.BindEventComponentDestroySelf(ec.UnsafeComponent(comp), rt)
+		bound = true
+	}
 
-	rt.hooksMap[comp.GetId()] = hooks
+	if bound {
+		rt.hooksMap[comp.GetId()] = hooks
+	}
 
 	ec.UnsafeComponent(comp).SetState(ec.ComponentState_Awake)
 }
