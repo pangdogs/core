@@ -76,8 +76,8 @@ func (mgr *_EntityMgrBehavior) RangeChildren(entityId uid.Id, fun generic.Func1[
 		return
 	}
 
-	node.children.Traversal(func(e *generic.Element[iface.FaceAny]) bool {
-		return fun.Exec(iface.Cache2Iface[ec.Entity](e.Value.Cache))
+	node.children.Traversal(func(n *generic.Node[iface.FaceAny]) bool {
+		return fun.Exec(iface.Cache2Iface[ec.Entity](n.V.Cache))
 	})
 }
 
@@ -88,8 +88,8 @@ func (mgr *_EntityMgrBehavior) ReversedRangeChildren(entityId uid.Id, fun generi
 		return
 	}
 
-	node.children.ReversedTraversal(func(e *generic.Element[iface.FaceAny]) bool {
-		return fun.Exec(iface.Cache2Iface[ec.Entity](e.Value.Cache))
+	node.children.ReversedTraversal(func(n *generic.Node[iface.FaceAny]) bool {
+		return fun.Exec(iface.Cache2Iface[ec.Entity](n.V.Cache))
 	})
 }
 
@@ -102,8 +102,8 @@ func (mgr *_EntityMgrBehavior) FilterChildren(entityId uid.Id, fun generic.Func1
 
 	var entities []ec.Entity
 
-	node.children.Traversal(func(e *generic.Element[iface.FaceAny]) bool {
-		entity := iface.Cache2Iface[ec.Entity](e.Value.Cache)
+	node.children.Traversal(func(n *generic.Node[iface.FaceAny]) bool {
+		entity := iface.Cache2Iface[ec.Entity](n.V.Cache)
 
 		if fun.Exec(entity) {
 			entities = append(entities, entity)
@@ -124,8 +124,8 @@ func (mgr *_EntityMgrBehavior) GetChildren(entityId uid.Id) []ec.Entity {
 
 	entities := make([]ec.Entity, 0, node.children.Len())
 
-	node.children.Traversal(func(e *generic.Element[iface.FaceAny]) bool {
-		entities = append(entities, iface.Cache2Iface[ec.Entity](e.Value.Cache))
+	node.children.Traversal(func(n *generic.Node[iface.FaceAny]) bool {
+		entities = append(entities, iface.Cache2Iface[ec.Entity](n.V.Cache))
 		return true
 	})
 

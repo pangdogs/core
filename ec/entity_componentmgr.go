@@ -44,36 +44,36 @@ type iComponentMgr interface {
 
 // GetComponent 使用名称查询组件，同个名称指向多个组件时，返回首个组件
 func (entity *EntityBehavior) GetComponent(name string) Component {
-	if e, ok := entity.getComponentElement(name); ok {
-		return entity.accessComponent(iface.Cache2Iface[Component](e.Value.Cache))
+	if n, ok := entity.getComponentNode(name); ok {
+		return entity.accessComponent(iface.Cache2Iface[Component](n.V.Cache))
 	}
 	return nil
 }
 
 // GetComponentById 使用组件Id查询组件
 func (entity *EntityBehavior) GetComponentById(id uid.Id) Component {
-	if e, ok := entity.getComponentElementById(id); ok {
-		return entity.accessComponent(iface.Cache2Iface[Component](e.Value.Cache))
+	if n, ok := entity.getComponentNodeById(id); ok {
+		return entity.accessComponent(iface.Cache2Iface[Component](n.V.Cache))
 	}
 	return nil
 }
 
 // ContainsComponent 组件是否存在
 func (entity *EntityBehavior) ContainsComponent(name string) bool {
-	_, ok := entity.getComponentElement(name)
+	_, ok := entity.getComponentNode(name)
 	return ok
 }
 
 // ContainsComponentById 使用组件Id检测组件是否存在
 func (entity *EntityBehavior) ContainsComponentById(id uid.Id) bool {
-	_, ok := entity.getComponentElementById(id)
+	_, ok := entity.getComponentNodeById(id)
 	return ok
 }
 
 // RangeComponents 遍历所有组件
 func (entity *EntityBehavior) RangeComponents(fun generic.Func1[Component, bool]) {
-	entity.componentList.Traversal(func(e *generic.Element[iface.FaceAny]) bool {
-		comp := entity.accessComponent(iface.Cache2Iface[Component](e.Value.Cache))
+	entity.componentList.Traversal(func(n *generic.Node[iface.FaceAny]) bool {
+		comp := entity.accessComponent(iface.Cache2Iface[Component](n.V.Cache))
 		if comp == nil {
 			return true
 		}
@@ -83,8 +83,8 @@ func (entity *EntityBehavior) RangeComponents(fun generic.Func1[Component, bool]
 
 // ReversedRangeComponents 反向遍历所有组件
 func (entity *EntityBehavior) ReversedRangeComponents(fun generic.Func1[Component, bool]) {
-	entity.componentList.ReversedTraversal(func(e *generic.Element[iface.FaceAny]) bool {
-		comp := entity.accessComponent(iface.Cache2Iface[Component](e.Value.Cache))
+	entity.componentList.ReversedTraversal(func(n *generic.Node[iface.FaceAny]) bool {
+		comp := entity.accessComponent(iface.Cache2Iface[Component](n.V.Cache))
 		if comp == nil {
 			return true
 		}
@@ -96,8 +96,8 @@ func (entity *EntityBehavior) ReversedRangeComponents(fun generic.Func1[Componen
 func (entity *EntityBehavior) FilterComponents(fun generic.Func1[Component, bool]) []Component {
 	var components []Component
 
-	entity.componentList.Traversal(func(e *generic.Element[iface.FaceAny]) bool {
-		comp := iface.Cache2Iface[Component](e.Value.Cache)
+	entity.componentList.Traversal(func(n *generic.Node[iface.FaceAny]) bool {
+		comp := iface.Cache2Iface[Component](n.V.Cache)
 		if fun.Exec(comp) {
 			components = append(components, comp)
 		}
@@ -121,8 +121,8 @@ func (entity *EntityBehavior) FilterComponents(fun generic.Func1[Component, bool
 func (entity *EntityBehavior) GetComponents() []Component {
 	components := make([]Component, 0, entity.componentList.Len())
 
-	entity.componentList.Traversal(func(e *generic.Element[iface.FaceAny]) bool {
-		components = append(components, iface.Cache2Iface[Component](e.Value.Cache))
+	entity.componentList.Traversal(func(n *generic.Node[iface.FaceAny]) bool {
+		components = append(components, iface.Cache2Iface[Component](n.V.Cache))
 		return true
 	})
 
@@ -163,9 +163,7 @@ func (entity *EntityBehavior) AddComponent(name string, components ...Component)
 	}
 
 	for i := range components {
-		if err := entity.addComponent(name, components[i]); err != nil {
-			return err
-		}
+		entity.addComponent(name, components[i])
 	}
 
 	_EmitEventComponentMgrAddComponents(entity, entity.opts.CompositeFace.Iface, components)
@@ -174,13 +172,13 @@ func (entity *EntityBehavior) AddComponent(name string, components ...Component)
 
 // RemoveComponent 使用名称删除组件，将会删除同个名称指向的多个组件
 func (entity *EntityBehavior) RemoveComponent(name string) {
-	e, ok := entity.getComponentElement(name)
+	n, ok := entity.getComponentNode(name)
 	if !ok {
 		return
 	}
 
-	entity.componentList.TraversalAt(func(other *generic.Element[iface.FaceAny]) bool {
-		comp := iface.Cache2Iface[Component](other.Value.Cache)
+	entity.componentList.TraversalAt(func(other *generic.Node[iface.FaceAny]) bool {
+		comp := iface.Cache2Iface[Component](other.V.Cache)
 		if comp.GetName() != name {
 			return false
 		}
@@ -198,17 +196,17 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 
 		other.Escape()
 		return true
-	}, e)
+	}, n)
 }
 
 // RemoveComponentById 使用组件Id删除组件
 func (entity *EntityBehavior) RemoveComponentById(id uid.Id) {
-	e, ok := entity.getComponentElementById(id)
+	n, ok := entity.getComponentNodeById(id)
 	if !ok {
 		return
 	}
 
-	comp := iface.Cache2Iface[Component](e.Value.Cache)
+	comp := iface.Cache2Iface[Component](n.V.Cache)
 
 	if comp.getFixed() {
 		return
@@ -221,7 +219,7 @@ func (entity *EntityBehavior) RemoveComponentById(id uid.Id) {
 
 	_EmitEventComponentMgrRemoveComponent(entity, entity.opts.CompositeFace.Iface, comp)
 
-	e.Escape()
+	n.Escape()
 }
 
 // EventComponentMgrAddComponents 事件：实体的组件管理器添加组件
@@ -239,57 +237,55 @@ func (entity *EntityBehavior) EventComponentMgrFirstAccessComponent() event.IEve
 	return &entity.eventComponentMgrFirstAccessComponent
 }
 
-func (entity *EntityBehavior) addComponent(name string, component Component) error {
+func (entity *EntityBehavior) addComponent(name string, component Component) {
 	component.init(name, entity.opts.CompositeFace.Iface, component)
 
 	face := iface.MakeFaceAny(component)
 
-	if e, ok := entity.getComponentElement(name); ok {
-		entity.componentList.TraversalAt(func(other *generic.Element[iface.FaceAny]) bool {
-			if iface.Cache2Iface[Component](other.Value.Cache).GetName() == name {
-				e = other
+	if n, ok := entity.getComponentNode(name); ok {
+		entity.componentList.TraversalAt(func(other *generic.Node[iface.FaceAny]) bool {
+			if iface.Cache2Iface[Component](other.V.Cache).GetName() == name {
+				n = other
 				return true
 			}
 			return false
-		}, e)
+		}, n)
 
-		e = entity.componentList.InsertAfter(face, e)
+		n = entity.componentList.InsertAfter(face, n)
 
 	} else {
-		e = entity.componentList.PushBack(face)
+		n = entity.componentList.PushBack(face)
 	}
 
 	component.setState(ComponentState_Attach)
-
-	return nil
 }
 
-func (entity *EntityBehavior) getComponentElement(name string) (*generic.Element[iface.FaceAny], bool) {
-	var e *generic.Element[iface.FaceAny]
+func (entity *EntityBehavior) getComponentNode(name string) (*generic.Node[iface.FaceAny], bool) {
+	var n *generic.Node[iface.FaceAny]
 
-	entity.componentList.Traversal(func(other *generic.Element[iface.FaceAny]) bool {
-		if iface.Cache2Iface[Component](other.Value.Cache).GetName() == name {
-			e = other
+	entity.componentList.Traversal(func(other *generic.Node[iface.FaceAny]) bool {
+		if iface.Cache2Iface[Component](other.V.Cache).GetName() == name {
+			n = other
 			return false
 		}
 		return true
 	})
 
-	return e, e != nil
+	return n, n != nil
 }
 
-func (entity *EntityBehavior) getComponentElementById(id uid.Id) (*generic.Element[iface.FaceAny], bool) {
-	var e *generic.Element[iface.FaceAny]
+func (entity *EntityBehavior) getComponentNodeById(id uid.Id) (*generic.Node[iface.FaceAny], bool) {
+	var n *generic.Node[iface.FaceAny]
 
-	entity.componentList.Traversal(func(other *generic.Element[iface.FaceAny]) bool {
-		if iface.Cache2Iface[Component](other.Value.Cache).GetId() == id {
-			e = other
+	entity.componentList.Traversal(func(other *generic.Node[iface.FaceAny]) bool {
+		if iface.Cache2Iface[Component](other.V.Cache).GetId() == id {
+			n = other
 			return false
 		}
 		return true
 	})
 
-	return e, e != nil
+	return n, n != nil
 }
 
 func (entity *EntityBehavior) accessComponent(comp Component) Component {

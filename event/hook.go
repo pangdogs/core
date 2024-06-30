@@ -9,7 +9,7 @@ import (
 type Hook struct {
 	subscriberFace iface.FaceAny
 	priority       int32
-	at             *generic.Element[Hook]
+	at             *generic.Node[Hook]
 	received       int32
 }
 

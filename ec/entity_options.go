@@ -28,7 +28,7 @@ func (_Option) Default() option.Setting[EntityOptions] {
 		With.Prototype("")(o)
 		With.Scope(Scope_Global)(o)
 		With.PersistId(uid.Nil)(o)
-		With.AwakeOnFirstAccess(true)(o)
+		With.AwakeOnFirstAccess(false)(o)
 		With.Meta(nil)(o)
 	}
 }

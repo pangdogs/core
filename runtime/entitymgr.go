@@ -43,12 +43,12 @@ type EntityMgr interface {
 }
 
 type _EntityEntry struct {
-	at    *generic.Element[iface.FaceAny]
+	at    *generic.Node[iface.FaceAny]
 	hooks [3]event.Hook
 }
 
 type _TreeNode struct {
-	parentAt *generic.Element[iface.FaceAny]
+	parentAt *generic.Node[iface.FaceAny]
 	children *generic.List[iface.FaceAny]
 }
 
@@ -138,7 +138,7 @@ func (mgr *_EntityMgrBehavior) GetEntity(id uid.Id) (ec.Entity, bool) {
 		return nil, false
 	}
 
-	return iface.Cache2Iface[ec.Entity](entry.at.Value.Cache), true
+	return iface.Cache2Iface[ec.Entity](entry.at.V.Cache), true
 }
 
 // ContainsEntity 实体是否存在
@@ -149,15 +149,15 @@ func (mgr *_EntityMgrBehavior) ContainsEntity(id uid.Id) bool {
 
 // RangeEntities 遍历所有实体
 func (mgr *_EntityMgrBehavior) RangeEntities(fun generic.Func1[ec.Entity, bool]) {
-	mgr.entityList.Traversal(func(e *generic.Element[iface.FaceAny]) bool {
-		return fun.Exec(iface.Cache2Iface[ec.Entity](e.Value.Cache))
+	mgr.entityList.Traversal(func(n *generic.Node[iface.FaceAny]) bool {
+		return fun.Exec(iface.Cache2Iface[ec.Entity](n.V.Cache))
 	})
 }
 
 // ReversedRangeEntities 反向遍历所有实体
 func (mgr *_EntityMgrBehavior) ReversedRangeEntities(fun generic.Func1[ec.Entity, bool]) {
-	mgr.entityList.ReversedTraversal(func(e *generic.Element[iface.FaceAny]) bool {
-		return fun.Exec(iface.Cache2Iface[ec.Entity](e.Value.Cache))
+	mgr.entityList.ReversedTraversal(func(n *generic.Node[iface.FaceAny]) bool {
+		return fun.Exec(iface.Cache2Iface[ec.Entity](n.V.Cache))
 	})
 }
 
@@ -165,8 +165,8 @@ func (mgr *_EntityMgrBehavior) ReversedRangeEntities(fun generic.Func1[ec.Entity
 func (mgr *_EntityMgrBehavior) FilterEntities(fun generic.Func1[ec.Entity, bool]) []ec.Entity {
 	var entities []ec.Entity
 
-	mgr.entityList.Traversal(func(e *generic.Element[iface.FaceAny]) bool {
-		entity := iface.Cache2Iface[ec.Entity](e.Value.Cache)
+	mgr.entityList.Traversal(func(n *generic.Node[iface.FaceAny]) bool {
+		entity := iface.Cache2Iface[ec.Entity](n.V.Cache)
 
 		if fun.Exec(entity) {
 			entities = append(entities, entity)
@@ -182,8 +182,8 @@ func (mgr *_EntityMgrBehavior) FilterEntities(fun generic.Func1[ec.Entity, bool]
 func (mgr *_EntityMgrBehavior) GetEntities() []ec.Entity {
 	entities := make([]ec.Entity, 0, mgr.entityList.Len())
 
-	mgr.entityList.Traversal(func(e *generic.Element[iface.FaceAny]) bool {
-		entities = append(entities, iface.Cache2Iface[ec.Entity](e.Value.Cache))
+	mgr.entityList.Traversal(func(n *generic.Node[iface.FaceAny]) bool {
+		entities = append(entities, iface.Cache2Iface[ec.Entity](n.V.Cache))
 		return true
 	})
 
@@ -333,7 +333,7 @@ func (mgr *_EntityMgrBehavior) removeEntity(id uid.Id) {
 		return
 	}
 
-	entity := iface.Cache2Iface[ec.Entity](entry.at.Value.Cache)
+	entity := iface.Cache2Iface[ec.Entity](entry.at.V.Cache)
 
 	if entity.GetState() > ec.EntityState_Alive {
 		return

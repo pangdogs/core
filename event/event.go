@@ -139,8 +139,8 @@ func (event *Event) Close() {
 
 // Clean 清除全部订阅者
 func (event *Event) Clean() {
-	event.subscribers.Traversal(func(e *generic.Element[Hook]) bool {
-		e.Value.Unbind()
+	event.subscribers.Traversal(func(n *generic.Node[Hook]) bool {
+		n.V.Unbind()
 		return true
 	})
 }
@@ -166,12 +166,12 @@ func (event *Event) emit(fun generic.Func1[iface.Cache, bool]) {
 	event.emitDepth = event.emitted
 	ver := event.subscribers.Version()
 
-	event.subscribers.Traversal(func(e *generic.Element[Hook]) bool {
+	event.subscribers.Traversal(func(n *generic.Node[Hook]) bool {
 		if !event.opened {
 			return false
 		}
 
-		if e.Value.subscriberFace.IsNil() || e.Version() > ver {
+		if n.V.subscriberFace.IsNil() || n.Version() > ver {
 			return true
 		}
 
@@ -179,26 +179,26 @@ func (event *Event) emit(fun generic.Func1[iface.Cache, bool]) {
 		case EventRecursion_Allow:
 			break
 		case EventRecursion_Disallow:
-			if e.Value.received > 0 {
+			if n.V.received > 0 {
 				panic(fmt.Errorf("%w: recursive event disallowed", ErrEvent))
 			}
 		case EventRecursion_Truncate:
-			if e.Value.received > 0 {
+			if n.V.received > 0 {
 				return true
 			}
 		case EventRecursion_Deepest:
 			if event.emitDepth != event.emitted {
 				return false
 			}
-			if e.Value.received > 0 {
+			if n.V.received > 0 {
 				return true
 			}
 		}
 
-		e.Value.received++
-		defer func() { e.Value.received-- }()
+		n.V.received++
+		defer func() { n.V.received-- }()
 
-		ret, panicErr := fun.Call(event.autoRecover, event.reportError, e.Value.subscriberFace.Cache)
+		ret, panicErr := fun.Call(event.autoRecover, event.reportError, n.V.subscriberFace.Cache)
 		if panicErr != nil {
 			return true
 		}
@@ -221,10 +221,10 @@ func (event *Event) newHook(subscriberFace iface.FaceAny, priority int32) Hook {
 		priority:       priority,
 	}
 
-	var at *generic.Element[Hook]
+	var at *generic.Node[Hook]
 
-	event.subscribers.ReversedTraversal(func(other *generic.Element[Hook]) bool {
-		if hook.priority >= other.Value.priority {
+	event.subscribers.ReversedTraversal(func(other *generic.Node[Hook]) bool {
+		if hook.priority >= other.V.priority {
 			at = other
 			return false
 		}
@@ -237,14 +237,14 @@ func (event *Event) newHook(subscriberFace iface.FaceAny, priority int32) Hook {
 		hook.at = event.subscribers.PushFront(Hook{})
 	}
 
-	hook.at.Value = hook
+	hook.at.V = hook
 
 	return hook
 }
 
 func (event *Event) removeSubscriber(subscriber any) {
-	event.subscribers.ReversedTraversal(func(other *generic.Element[Hook]) bool {
-		if other.Value.subscriberFace.Iface == subscriber {
+	event.subscribers.ReversedTraversal(func(other *generic.Node[Hook]) bool {
+		if other.V.subscriberFace.Iface == subscriber {
 			other.Escape()
 			return false
 		}
