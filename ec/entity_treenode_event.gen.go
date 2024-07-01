@@ -19,39 +19,39 @@ func BindEventTreeNodeAddChild(auto iAutoEventTreeNodeAddChild, subscriber Event
 	return event.Bind[EventTreeNodeAddChild](auto.EventTreeNodeAddChild(), subscriber, priority...)
 }
 
-func _EmitEventTreeNodeAddChild(auto iAutoEventTreeNodeAddChild, parent, child Entity) {
+func _EmitEventTreeNodeAddChild(auto iAutoEventTreeNodeAddChild, self, child Entity) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
 	event.UnsafeEvent(auto.EventTreeNodeAddChild()).Emit(func(subscriber iface.Cache) bool {
-		iface.Cache2Iface[EventTreeNodeAddChild](subscriber).OnTreeNodeAddChild(parent, child)
+		iface.Cache2Iface[EventTreeNodeAddChild](subscriber).OnTreeNodeAddChild(self, child)
 		return true
 	})
 }
 
-func _EmitEventTreeNodeAddChildWithInterrupt(auto iAutoEventTreeNodeAddChild, interrupt func(parent, child Entity) bool, parent, child Entity) {
+func _EmitEventTreeNodeAddChildWithInterrupt(auto iAutoEventTreeNodeAddChild, interrupt func(self, child Entity) bool, self, child Entity) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
 	event.UnsafeEvent(auto.EventTreeNodeAddChild()).Emit(func(subscriber iface.Cache) bool {
 		if interrupt != nil {
-			if interrupt(parent, child) {
+			if interrupt(self, child) {
 				return false
 			}
 		}
-		iface.Cache2Iface[EventTreeNodeAddChild](subscriber).OnTreeNodeAddChild(parent, child)
+		iface.Cache2Iface[EventTreeNodeAddChild](subscriber).OnTreeNodeAddChild(self, child)
 		return true
 	})
 }
 
-func HandleEventTreeNodeAddChild(fun func(parent, child Entity)) EventTreeNodeAddChildHandler {
+func HandleEventTreeNodeAddChild(fun func(self, child Entity)) EventTreeNodeAddChildHandler {
 	return EventTreeNodeAddChildHandler(fun)
 }
 
-type EventTreeNodeAddChildHandler func(parent, child Entity)
+type EventTreeNodeAddChildHandler func(self, child Entity)
 
-func (h EventTreeNodeAddChildHandler) OnTreeNodeAddChild(parent, child Entity) {
-	h(parent, child)
+func (h EventTreeNodeAddChildHandler) OnTreeNodeAddChild(self, child Entity) {
+	h(self, child)
 }
 
 type iAutoEventTreeNodeRemoveChild interface {
@@ -65,39 +65,39 @@ func BindEventTreeNodeRemoveChild(auto iAutoEventTreeNodeRemoveChild, subscriber
 	return event.Bind[EventTreeNodeRemoveChild](auto.EventTreeNodeRemoveChild(), subscriber, priority...)
 }
 
-func _EmitEventTreeNodeRemoveChild(auto iAutoEventTreeNodeRemoveChild, parent, child Entity) {
+func _EmitEventTreeNodeRemoveChild(auto iAutoEventTreeNodeRemoveChild, self, child Entity) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
 	event.UnsafeEvent(auto.EventTreeNodeRemoveChild()).Emit(func(subscriber iface.Cache) bool {
-		iface.Cache2Iface[EventTreeNodeRemoveChild](subscriber).OnTreeNodeRemoveChild(parent, child)
+		iface.Cache2Iface[EventTreeNodeRemoveChild](subscriber).OnTreeNodeRemoveChild(self, child)
 		return true
 	})
 }
 
-func _EmitEventTreeNodeRemoveChildWithInterrupt(auto iAutoEventTreeNodeRemoveChild, interrupt func(parent, child Entity) bool, parent, child Entity) {
+func _EmitEventTreeNodeRemoveChildWithInterrupt(auto iAutoEventTreeNodeRemoveChild, interrupt func(self, child Entity) bool, self, child Entity) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
 	event.UnsafeEvent(auto.EventTreeNodeRemoveChild()).Emit(func(subscriber iface.Cache) bool {
 		if interrupt != nil {
-			if interrupt(parent, child) {
+			if interrupt(self, child) {
 				return false
 			}
 		}
-		iface.Cache2Iface[EventTreeNodeRemoveChild](subscriber).OnTreeNodeRemoveChild(parent, child)
+		iface.Cache2Iface[EventTreeNodeRemoveChild](subscriber).OnTreeNodeRemoveChild(self, child)
 		return true
 	})
 }
 
-func HandleEventTreeNodeRemoveChild(fun func(parent, child Entity)) EventTreeNodeRemoveChildHandler {
+func HandleEventTreeNodeRemoveChild(fun func(self, child Entity)) EventTreeNodeRemoveChildHandler {
 	return EventTreeNodeRemoveChildHandler(fun)
 }
 
-type EventTreeNodeRemoveChildHandler func(parent, child Entity)
+type EventTreeNodeRemoveChildHandler func(self, child Entity)
 
-func (h EventTreeNodeRemoveChildHandler) OnTreeNodeRemoveChild(parent, child Entity) {
-	h(parent, child)
+func (h EventTreeNodeRemoveChildHandler) OnTreeNodeRemoveChild(self, child Entity) {
+	h(self, child)
 }
 
 type iAutoEventTreeNodeEnterParent interface {
@@ -111,39 +111,39 @@ func BindEventTreeNodeEnterParent(auto iAutoEventTreeNodeEnterParent, subscriber
 	return event.Bind[EventTreeNodeEnterParent](auto.EventTreeNodeEnterParent(), subscriber, priority...)
 }
 
-func _EmitEventTreeNodeEnterParent(auto iAutoEventTreeNodeEnterParent, child, parent Entity) {
+func _EmitEventTreeNodeEnterParent(auto iAutoEventTreeNodeEnterParent, self, parent Entity) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
 	event.UnsafeEvent(auto.EventTreeNodeEnterParent()).Emit(func(subscriber iface.Cache) bool {
-		iface.Cache2Iface[EventTreeNodeEnterParent](subscriber).OnTreeNodeEnterParent(child, parent)
+		iface.Cache2Iface[EventTreeNodeEnterParent](subscriber).OnTreeNodeEnterParent(self, parent)
 		return true
 	})
 }
 
-func _EmitEventTreeNodeEnterParentWithInterrupt(auto iAutoEventTreeNodeEnterParent, interrupt func(child, parent Entity) bool, child, parent Entity) {
+func _EmitEventTreeNodeEnterParentWithInterrupt(auto iAutoEventTreeNodeEnterParent, interrupt func(self, parent Entity) bool, self, parent Entity) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
 	event.UnsafeEvent(auto.EventTreeNodeEnterParent()).Emit(func(subscriber iface.Cache) bool {
 		if interrupt != nil {
-			if interrupt(child, parent) {
+			if interrupt(self, parent) {
 				return false
 			}
 		}
-		iface.Cache2Iface[EventTreeNodeEnterParent](subscriber).OnTreeNodeEnterParent(child, parent)
+		iface.Cache2Iface[EventTreeNodeEnterParent](subscriber).OnTreeNodeEnterParent(self, parent)
 		return true
 	})
 }
 
-func HandleEventTreeNodeEnterParent(fun func(child, parent Entity)) EventTreeNodeEnterParentHandler {
+func HandleEventTreeNodeEnterParent(fun func(self, parent Entity)) EventTreeNodeEnterParentHandler {
 	return EventTreeNodeEnterParentHandler(fun)
 }
 
-type EventTreeNodeEnterParentHandler func(child, parent Entity)
+type EventTreeNodeEnterParentHandler func(self, parent Entity)
 
-func (h EventTreeNodeEnterParentHandler) OnTreeNodeEnterParent(child, parent Entity) {
-	h(child, parent)
+func (h EventTreeNodeEnterParentHandler) OnTreeNodeEnterParent(self, parent Entity) {
+	h(self, parent)
 }
 
 type iAutoEventTreeNodeLeaveParent interface {
@@ -157,37 +157,37 @@ func BindEventTreeNodeLeaveParent(auto iAutoEventTreeNodeLeaveParent, subscriber
 	return event.Bind[EventTreeNodeLeaveParent](auto.EventTreeNodeLeaveParent(), subscriber, priority...)
 }
 
-func _EmitEventTreeNodeLeaveParent(auto iAutoEventTreeNodeLeaveParent, child, parent Entity) {
+func _EmitEventTreeNodeLeaveParent(auto iAutoEventTreeNodeLeaveParent, self, parent Entity) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
 	event.UnsafeEvent(auto.EventTreeNodeLeaveParent()).Emit(func(subscriber iface.Cache) bool {
-		iface.Cache2Iface[EventTreeNodeLeaveParent](subscriber).OnTreeNodeLeaveParent(child, parent)
+		iface.Cache2Iface[EventTreeNodeLeaveParent](subscriber).OnTreeNodeLeaveParent(self, parent)
 		return true
 	})
 }
 
-func _EmitEventTreeNodeLeaveParentWithInterrupt(auto iAutoEventTreeNodeLeaveParent, interrupt func(child, parent Entity) bool, child, parent Entity) {
+func _EmitEventTreeNodeLeaveParentWithInterrupt(auto iAutoEventTreeNodeLeaveParent, interrupt func(self, parent Entity) bool, self, parent Entity) {
 	if auto == nil {
 		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
 	}
 	event.UnsafeEvent(auto.EventTreeNodeLeaveParent()).Emit(func(subscriber iface.Cache) bool {
 		if interrupt != nil {
-			if interrupt(child, parent) {
+			if interrupt(self, parent) {
 				return false
 			}
 		}
-		iface.Cache2Iface[EventTreeNodeLeaveParent](subscriber).OnTreeNodeLeaveParent(child, parent)
+		iface.Cache2Iface[EventTreeNodeLeaveParent](subscriber).OnTreeNodeLeaveParent(self, parent)
 		return true
 	})
 }
 
-func HandleEventTreeNodeLeaveParent(fun func(child, parent Entity)) EventTreeNodeLeaveParentHandler {
+func HandleEventTreeNodeLeaveParent(fun func(self, parent Entity)) EventTreeNodeLeaveParentHandler {
 	return EventTreeNodeLeaveParentHandler(fun)
 }
 
-type EventTreeNodeLeaveParentHandler func(child, parent Entity)
+type EventTreeNodeLeaveParentHandler func(self, parent Entity)
 
-func (h EventTreeNodeLeaveParentHandler) OnTreeNodeLeaveParent(child, parent Entity) {
-	h(child, parent)
+func (h EventTreeNodeLeaveParentHandler) OnTreeNodeLeaveParent(self, parent Entity) {
+	h(self, parent)
 }
