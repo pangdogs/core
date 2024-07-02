@@ -57,7 +57,7 @@ func DeclareEventTabId(eventTab IEventTab) uint64 {
 // DeclareEventTabIdT 声明事件表Id
 func DeclareEventTabIdT[T any]() uint64 {
 	id := MakeEventTabIdT[T]()
-	if name, loaded := declareEventTabs.LoadOrStore(id, types.FullNameRT(reflect.TypeFor[T]())); loaded {
+	if name, loaded := declareEventTabs.LoadOrStore(id, types.FullNameT[T]()); loaded {
 		panic(fmt.Errorf("event_tab(%d) has already been declared by %q", id, name))
 	}
 	return id
@@ -75,7 +75,7 @@ func DeclareEventId(eventTab IEventTab, pos int32) uint64 {
 // DeclareEventIdT 声明事件Id
 func DeclareEventIdT[T any](pos int32) uint64 {
 	id := MakeEventTabIdT[T]() + uint64(pos)
-	if name, loaded := declareEvents.LoadOrStore(id, types.FullNameRT(reflect.TypeFor[T]())); loaded {
+	if name, loaded := declareEvents.LoadOrStore(id, types.FullNameT[T]()); loaded {
 		panic(fmt.Errorf("event(%d) has already been declared by %q", id, name))
 	}
 	return id
