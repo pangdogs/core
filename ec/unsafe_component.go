@@ -27,11 +27,6 @@ func (uc _UnsafeComponent) SetId(id uid.Id) {
 	uc.setId(id)
 }
 
-// SetFixed 设置是否固定
-func (uc _UnsafeComponent) SetFixed(b bool) {
-	uc.setFixed(b)
-}
-
 // SetState 设置状态
 func (uc _UnsafeComponent) SetState(state ComponentState) {
 	uc.setState(state)
@@ -40,6 +35,11 @@ func (uc _UnsafeComponent) SetState(state ComponentState) {
 // SetReflected 设置反射值
 func (uc _UnsafeComponent) SetReflected(v reflect.Value) {
 	uc.setReflected(v)
+}
+
+// SetFixed 设置是否固定
+func (uc _UnsafeComponent) SetFixed(b bool) {
+	uc.setFixed(b)
 }
 
 // GetComposite 获取扩展者

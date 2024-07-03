@@ -72,7 +72,7 @@ type iEntity interface {
 type EntityBehavior struct {
 	opts                                  EntityOptions
 	context                               iface.Cache
-	componentList                         generic.List[iface.FaceAny]
+	componentList                         generic.List[Component]
 	state                                 EntityState
 	reflected                             reflect.Value
 	treeNodeState                         TreeNodeState
