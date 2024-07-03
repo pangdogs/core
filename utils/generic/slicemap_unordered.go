@@ -122,6 +122,22 @@ func (m UnorderedSliceMap[K, V]) Each(fun Action2[K, V]) {
 	}
 }
 
+func (m UnorderedSliceMap[K, V]) ReversedRange(fun Func2[K, V, bool]) {
+	for i := len(m) - 1; i >= 0; i-- {
+		kv := m[i]
+		if !fun.Exec(kv.K, kv.V) {
+			return
+		}
+	}
+}
+
+func (m UnorderedSliceMap[K, V]) ReversedEach(fun Action2[K, V]) {
+	for i := len(m) - 1; i >= 0; i-- {
+		kv := m[i]
+		fun.Exec(kv.K, kv.V)
+	}
+}
+
 func (m UnorderedSliceMap[K, V]) Keys() []K {
 	keys := make([]K, 0, m.Len())
 	for _, kv := range m {
