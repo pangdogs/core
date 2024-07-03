@@ -77,7 +77,7 @@ var (
 		c.hook.Unbind()
 	}
 
-	4.如果不想写代码记录hook，可以使用ComponentBehavior的AutoHooks()来记录hook，在组件销毁时会自动解除绑定
+	4.如果不想写代码记录hook，可以使用ec.ComponentBehavior、ec.EntityBehavior或runtime.Context的ManagedHooks()来记录hook，在它们生命周期结束时，将会自动解除绑定
 */
 type IEvent interface {
 	emit(fun generic.Func1[iface.Cache, bool])
