@@ -29,8 +29,12 @@ func main() {
 				if declFile == "" {
 					panic("[--decl_file]值不能为空")
 				}
-				if _, err := os.Stat(declFile); err != nil {
+				stat, err := os.Stat(declFile)
+				if err != nil {
 					panic(fmt.Errorf("[--decl_file]文件错误，%s", err))
+				}
+				if stat.IsDir() {
+					panic(fmt.Errorf("[--decl_file]文件错误，不能为文件夹"))
 				}
 			}
 			{
