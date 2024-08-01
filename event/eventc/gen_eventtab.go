@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/spf13/viper"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -156,7 +157,7 @@ func (eventTab *%[1]s) %[2]s() %[4]sIEvent {
 `, tabName, event.Name, i, eventPrefix)
 	}
 
-	fmt.Printf("EventTab: %s\n", tabName)
+	log.Printf("EventTab: %s", tabName)
 
 	// 输出文件
 	outFile := filepath.Join(dir, filepath.Base(strings.TrimSuffix(declFile, ".go"))+".tab.gen.go")

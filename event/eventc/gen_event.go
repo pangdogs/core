@@ -8,6 +8,7 @@ import (
 	"go/printer"
 	"go/token"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -299,7 +300,7 @@ func (h %[5]s%[1]sHandler) %[2]s(%[3]s) {
 `, strings.Title(eventDecl.Name), eventDecl.FuncName, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "), eventDecl.FuncParams, visibility)
 		}
 
-		fmt.Printf("Event: %s\n", eventDecl.Name)
+		log.Printf("Event: %s", eventDecl.Name)
 	}
 
 	// 输出文件
