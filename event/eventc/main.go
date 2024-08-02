@@ -1,3 +1,22 @@
+/*
+ * This file is part of Golaxy Distributed Service Development Framework.
+ *
+ * Golaxy Distributed Service Development Framework is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * Golaxy Distributed Service Development Framework is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Golaxy Distributed Service Development Framework. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Copyright (c) 2024 pangdogs.
+ */
+
 // Package eventc 使用go:generate功能，在编译前自动化生成代码
 /*
 	- 可以生成事件（event）与事件表（event table）代码。
@@ -69,6 +88,7 @@ func main() {
 	rootCmd.PersistentFlags().String("event_regexp", "^[eE]vent.+", "匹配事件定义时，使用的正则表达式。")
 	rootCmd.PersistentFlags().String("package_event_alias", "event", fmt.Sprintf("导入Golaxy框架的（%s）包时使用的别名。", packageEventPath))
 	rootCmd.PersistentFlags().String("package_iface_alias", "iface", fmt.Sprintf("导入Golaxy框架的（%s）包时使用的别名。", packageIfacePath))
+	rootCmd.PersistentFlags().Bool("copyright", true, "Golaxy分布式服务开发框架版权信息。")
 
 	// 生成事件代码相关选项
 	eventCmd := &cobra.Command{
