@@ -1,4 +1,3 @@
-//go:generate stringer -type ComponentState
 /*
  * This file is part of Golaxy Distributed Service Development Framework.
  *
@@ -18,6 +17,7 @@
  * Copyright (c) 2024 pangdogs.
  */
 
+//go:generate stringer -type ComponentState
 package ec
 
 // ComponentState 组件状态

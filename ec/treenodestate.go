@@ -1,4 +1,3 @@
-//go:generate stringer -type TreeNodeState
 /*
  * This file is part of Golaxy Distributed Service Development Framework.
  *
@@ -18,6 +17,7 @@
  * Copyright (c) 2024 pangdogs.
  */
 
+//go:generate stringer -type TreeNodeState
 package ec
 
 // TreeNodeState 实体树节点状态

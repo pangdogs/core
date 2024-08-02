@@ -1,4 +1,3 @@
-//go:generate stringer -type EntityState
 /*
  * This file is part of Golaxy Distributed Service Development Framework.
  *
@@ -18,6 +17,7 @@
  * Copyright (c) 2024 pangdogs.
  */
 
+//go:generate stringer -type EntityState
 package ec
 
 // EntityState 实体状态
