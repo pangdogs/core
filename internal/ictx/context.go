@@ -17,7 +17,7 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package gctx
+package ictx
 
 import (
 	"context"
@@ -57,7 +57,7 @@ type ContextBehavior struct {
 	parentCtx      context.Context
 	autoRecover    bool
 	reportError    chan error
-	cancel         context.CancelFunc
+	terminate      context.CancelFunc
 	terminatedChan chan struct{}
 	wg             sync.WaitGroup
 	paired         atomic.Bool
@@ -85,7 +85,7 @@ func (ctx *ContextBehavior) GetWaitGroup() *sync.WaitGroup {
 
 // Terminate 停止
 func (ctx *ContextBehavior) Terminate() <-chan struct{} {
-	ctx.cancel()
+	ctx.terminate()
 	return ctx.terminatedChan
 }
 
@@ -102,7 +102,7 @@ func (ctx *ContextBehavior) init(parentCtx context.Context, autoRecover bool, re
 	}
 	ctx.autoRecover = autoRecover
 	ctx.reportError = reportError
-	ctx.Context, ctx.cancel = context.WithCancel(ctx.parentCtx)
+	ctx.Context, ctx.terminate = context.WithCancel(ctx.parentCtx)
 	ctx.terminatedChan = make(chan struct{})
 }
 

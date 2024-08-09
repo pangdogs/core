@@ -22,7 +22,7 @@ package ec
 import (
 	"fmt"
 	"git.golaxy.org/core/event"
-	"git.golaxy.org/core/internal/gctx"
+	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/uid"
 	"reflect"
@@ -31,7 +31,7 @@ import (
 // Component 组件接口
 type Component interface {
 	iComponent
-	gctx.CurrentContextProvider
+	ictx.CurrentContextProvider
 	fmt.Stringer
 
 	// GetId 获取组件Id

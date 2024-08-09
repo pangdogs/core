@@ -22,7 +22,7 @@ package core
 import (
 	"context"
 	"fmt"
-	"git.golaxy.org/core/internal/gctx"
+	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/generic"
@@ -31,10 +31,10 @@ import (
 )
 
 //go:linkname getCaller git.golaxy.org/core/runtime.getCaller
-func getCaller(provider gctx.ConcurrentContextProvider) async.Caller
+func getCaller(provider ictx.ConcurrentContextProvider) async.Caller
 
 // Async 异步执行代码，有返回值
-func Async(provider gctx.ConcurrentContextProvider, fun generic.FuncVar1[runtime.Context, any, async.Ret], va ...any) async.AsyncRet {
+func Async(provider ictx.ConcurrentContextProvider, fun generic.FuncVar1[runtime.Context, any, async.Ret], va ...any) async.AsyncRet {
 	ctx := getCaller(provider)
 	return ctx.Call(func(va ...any) async.Ret {
 		ctx := va[0].(runtime.Context)
@@ -45,7 +45,7 @@ func Async(provider gctx.ConcurrentContextProvider, fun generic.FuncVar1[runtime
 }
 
 // AsyncVoid 异步执行代码，无返回值
-func AsyncVoid(provider gctx.ConcurrentContextProvider, fun generic.ActionVar1[runtime.Context, any], va ...any) async.AsyncRet {
+func AsyncVoid(provider ictx.ConcurrentContextProvider, fun generic.ActionVar1[runtime.Context, any], va ...any) async.AsyncRet {
 	ctx := getCaller(provider)
 	return ctx.CallVoid(func(va ...any) {
 		ctx := va[0].(runtime.Context)

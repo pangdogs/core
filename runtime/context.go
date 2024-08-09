@@ -22,7 +22,7 @@ package runtime
 import (
 	"fmt"
 	"git.golaxy.org/core/event"
-	"git.golaxy.org/core/internal/gctx"
+	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/plugin"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/async"
@@ -55,11 +55,11 @@ func UnsafeNewContext(servCtx service.Context, options ContextOptions) Context {
 // Context 运行时上下文接口
 type Context interface {
 	iContext
-	gctx.CurrentContextProvider
-	gctx.Context
-	async.Caller
+	ictx.Context
+	ictx.CurrentContextProvider
 	reinterpret.CompositeProvider
 	plugin.PluginProvider
+	async.Caller
 	GCCollector
 	fmt.Stringer
 
@@ -93,7 +93,7 @@ type iContext interface {
 
 // ContextBehavior 运行时上下文行为，在需要扩展运行时上下文能力时，匿名嵌入至运行时上下文结构体中
 type ContextBehavior struct {
-	gctx.ContextBehavior
+	ictx.ContextBehavior
 	servCtx      service.Context
 	opts         ContextOptions
 	reflected    reflect.Value
@@ -190,7 +190,7 @@ func (ctx *ContextBehavior) init(servCtx service.Context, opts ContextOptions) {
 		ctx.opts.PersistId = uid.New()
 	}
 
-	gctx.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
+	ictx.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
 	ctx.servCtx = servCtx
 	ctx.reflected = reflect.ValueOf(ctx.opts.CompositeFace.Iface)
 	ctx.entityMgr.init(ctx.opts.CompositeFace.Iface)

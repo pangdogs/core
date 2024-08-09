@@ -38,8 +38,8 @@ type ComponentLib interface {
 	Undeclare(name string)
 	// Get 获取组件原型
 	Get(name string) (ComponentPT, bool)
-	// GetAlias 使用别名获取组件原型
-	GetAlias(alias string) []ComponentPT
+	// AliasGet 使用别名获取组件原型
+	AliasGet(alias string) []ComponentPT
 	// Range 遍历所有已注册的组件原型
 	Range(fun generic.Func1[ComponentPT, bool])
 	// ReversedRange 反向遍历所有已注册的组件原型
@@ -109,8 +109,8 @@ func (lib *_ComponentLib) Get(name string) (ComponentPT, bool) {
 	return *comp, ok
 }
 
-// GetAlias 使用别名获取组件原型
-func (lib *_ComponentLib) GetAlias(alias string) []ComponentPT {
+// AliasGet 使用别名获取组件原型
+func (lib *_ComponentLib) AliasGet(alias string) []ComponentPT {
 	lib.RLock()
 	defer lib.RUnlock()
 
@@ -175,8 +175,8 @@ func (lib *_ComponentLib) declare(tfComp reflect.Type, aliases []string) Compone
 	}
 
 	comp = &ComponentPT{
-		Name: compName,
-		RT:   tfComp,
+		Name:  compName,
+		RType: tfComp,
 	}
 
 	lib.compIdx[compName] = comp

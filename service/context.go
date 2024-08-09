@@ -22,7 +22,7 @@ package service
 import (
 	"context"
 	"fmt"
-	"git.golaxy.org/core/internal/gctx"
+	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/plugin"
 	"git.golaxy.org/core/pt"
 	"git.golaxy.org/core/utils/iface"
@@ -53,11 +53,11 @@ func UnsafeNewContext(options ContextOptions) Context {
 // Context 服务上下文
 type Context interface {
 	iContext
-	gctx.Context
+	ictx.Context
 	reinterpret.CompositeProvider
-	Caller
 	plugin.PluginProvider
 	pt.EntityPTProvider
+	Caller
 	fmt.Stringer
 
 	// GetName 获取名称
@@ -78,7 +78,7 @@ type iContext interface {
 
 // ContextBehavior 服务上下文行为，在需要扩展服务上下文能力时，匿名嵌入至服务上下文结构体中
 type ContextBehavior struct {
-	gctx.ContextBehavior
+	ictx.ContextBehavior
 	opts      ContextOptions
 	reflected reflect.Value
 	entityMgr _EntityMgrBehavior
@@ -129,7 +129,7 @@ func (ctx *ContextBehavior) init(opts ContextOptions) {
 		ctx.opts.PersistId = uid.New()
 	}
 
-	gctx.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
+	ictx.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
 	ctx.reflected = reflect.ValueOf(ctx.opts.CompositeFace.Iface)
 	ctx.entityMgr.init(ctx.opts.CompositeFace.Iface)
 }

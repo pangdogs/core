@@ -20,14 +20,16 @@
 package ec
 
 import (
+	"context"
 	"fmt"
-	"git.golaxy.org/core/internal/gctx"
+	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/utils/uid"
 )
 
 // ConcurrentEntity 多线程安全的实体接口
 type ConcurrentEntity interface {
-	gctx.ConcurrentContextProvider
+	ictx.ConcurrentContextProvider
+	context.Context
 	fmt.Stringer
 
 	// GetId 获取实体Id

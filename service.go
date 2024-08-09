@@ -21,7 +21,7 @@ package core
 
 import (
 	"fmt"
-	"git.golaxy.org/core/internal/gctx"
+	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/option"
@@ -49,8 +49,8 @@ func UnsafeNewService(ctx service.Context, options ServiceOptions) Service {
 // Service 服务
 type Service interface {
 	iService
+	iRunning
 	reinterpret.CompositeProvider
-	Running
 
 	// GetContext 获取服务上下文
 	GetContext() service.Context
@@ -81,7 +81,7 @@ func (serv *ServiceBehavior) init(ctx service.Context, opts ServiceOptions) {
 		panic(fmt.Errorf("%w: %w: ctx is nil", ErrService, ErrArgs))
 	}
 
-	if !gctx.UnsafeContext(ctx).SetPaired(true) {
+	if !ictx.UnsafeContext(ctx).SetPaired(true) {
 		panic(fmt.Errorf("%w: context already paired", ErrService))
 	}
 

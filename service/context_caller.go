@@ -22,7 +22,7 @@ package service
 import (
 	"fmt"
 	"git.golaxy.org/core/ec"
-	"git.golaxy.org/core/internal/gctx"
+	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/uid"
@@ -61,7 +61,7 @@ type Caller interface {
 }
 
 //go:linkname getCaller git.golaxy.org/core/runtime.getCaller
-func getCaller(provider gctx.ConcurrentContextProvider) async.Caller
+func getCaller(provider ictx.ConcurrentContextProvider) async.Caller
 
 func makeAsyncErr(err error) async.AsyncRet {
 	asyncRet := async.MakeAsyncRet()

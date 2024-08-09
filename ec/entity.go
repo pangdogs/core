@@ -20,9 +20,10 @@
 package ec
 
 import (
+	"context"
 	"fmt"
 	"git.golaxy.org/core/event"
-	"git.golaxy.org/core/internal/gctx"
+	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/meta"
@@ -55,8 +56,9 @@ type Entity interface {
 	iEntity
 	iComponentMgr
 	iTreeNode
-	gctx.CurrentContextProvider
+	ictx.CurrentContextProvider
 	reinterpret.CompositeProvider
+	context.Context
 	fmt.Stringer
 
 	// GetId 获取实体Id
@@ -89,6 +91,8 @@ type iEntity interface {
 
 // EntityBehavior 实体行为，在需要扩展实体能力时，匿名嵌入至实体结构体中
 type EntityBehavior struct {
+	context.Context
+	terminate                             context.CancelFunc
 	opts                                  EntityOptions
 	context                               iface.Cache
 	componentList                         generic.List[Component]
@@ -170,6 +174,7 @@ func (entity *EntityBehavior) String() string {
 }
 
 func (entity *EntityBehavior) init(opts EntityOptions) {
+	entity.Context, entity.terminate = context.WithCancel(context.Background())
 	entity.opts = opts
 
 	if entity.opts.CompositeFace.IsNil() {
@@ -211,6 +216,7 @@ func (entity *EntityBehavior) setState(state EntityState) {
 
 	switch entity.state {
 	case EntityState_Leave:
+		entity.terminate()
 		entity._eventEntityDestroySelf.Close()
 		entity.eventComponentMgrAddComponents.Close()
 		entity.eventComponentMgrRemoveComponent.Close()

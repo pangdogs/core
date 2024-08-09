@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/event"
-	"git.golaxy.org/core/internal/gctx"
+	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
@@ -33,7 +33,7 @@ import (
 
 // EntityMgr 实体管理器接口
 type EntityMgr interface {
-	gctx.CurrentContextProvider
+	ictx.CurrentContextProvider
 
 	// AddEntity 添加实体
 	AddEntity(entity ec.Entity) error

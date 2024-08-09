@@ -22,7 +22,7 @@ package core
 import (
 	"context"
 	"fmt"
-	"git.golaxy.org/core/internal/gctx"
+	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/generic"
@@ -36,10 +36,10 @@ var (
 )
 
 //go:linkname getRuntimeContext git.golaxy.org/core/runtime.getRuntimeContext
-func getRuntimeContext(provider gctx.CurrentContextProvider) runtime.Context
+func getRuntimeContext(provider ictx.CurrentContextProvider) runtime.Context
 
 // Await 异步等待结果返回
-func Await(provider gctx.CurrentContextProvider, asyncRet ...async.AsyncRet) AwaitDirector {
+func Await(provider ictx.CurrentContextProvider, asyncRet ...async.AsyncRet) AwaitDirector {
 	return AwaitDirector{
 		rtCtx:     getRuntimeContext(provider),
 		asyncRets: asyncRet,
