@@ -54,6 +54,7 @@ func UnsafeNewEntity(options EntityOptions) Entity {
 // Entity 实体接口
 type Entity interface {
 	iEntity
+	iConcurrentEntity
 	iComponentMgr
 	iTreeNode
 	ictx.CurrentContextProvider

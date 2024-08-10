@@ -37,7 +37,7 @@ type _Task struct {
 	delegateFun    generic.DelegateFuncVar0[any, async.Ret]
 	action         generic.ActionVar0[any]
 	delegateAction generic.DelegateActionVar0[any]
-	va             []any
+	args           []any
 	asyncRet       chan async.Ret
 }
 
@@ -46,13 +46,13 @@ func (task _Task) run(autoRecover bool, reportError chan error) {
 	var panicErr error
 
 	if task.fun != nil {
-		ret, panicErr = task.fun.Call(autoRecover, reportError, task.va...)
+		ret, panicErr = task.fun.Call(autoRecover, reportError, task.args...)
 	} else if task.delegateFun != nil {
-		ret, panicErr = task.delegateFun.Call(autoRecover, reportError, nil, task.va...)
+		ret, panicErr = task.delegateFun.Call(autoRecover, reportError, nil, task.args...)
 	} else if task.action != nil {
-		panicErr = task.action.Call(autoRecover, reportError, task.va...)
+		panicErr = task.action.Call(autoRecover, reportError, task.args...)
 	} else if task.delegateAction != nil {
-		panicErr = task.delegateAction.Call(autoRecover, reportError, nil, task.va...)
+		panicErr = task.delegateAction.Call(autoRecover, reportError, nil, task.args...)
 	}
 
 	if panicErr != nil {

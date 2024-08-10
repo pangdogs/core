@@ -55,6 +55,7 @@ func UnsafeNewContext(servCtx service.Context, options ContextOptions) Context {
 // Context 运行时上下文接口
 type Context interface {
 	iContext
+	iConcurrentContext
 	ictx.Context
 	ictx.CurrentContextProvider
 	reinterpret.CompositeProvider

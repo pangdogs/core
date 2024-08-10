@@ -19,30 +19,17 @@
 
 package ec
 
-import (
-	"context"
-	"fmt"
-	"git.golaxy.org/core/internal/ictx"
-	"git.golaxy.org/core/utils/uid"
-)
-
-// ConcurrentEntity 多线程安全的实体接口
-type ConcurrentEntity interface {
-	iConcurrentEntity
-	ictx.ConcurrentContextProvider
-	context.Context
-	fmt.Stringer
-
-	// GetId 获取实体Id
-	GetId() uid.Id
-	// GetPrototype 获取实体原型
-	GetPrototype() string
+// Deprecated: UnsafeConcurrentEntity 访问多线程安全的实体接口内部函数
+func UnsafeConcurrentEntity(entity ConcurrentEntity) _UnsafeConcurrentEntity {
+	return _UnsafeConcurrentEntity{
+		ConcurrentEntity: entity,
+	}
 }
 
-type iConcurrentEntity interface {
-	getEntity() Entity
+type _UnsafeConcurrentEntity struct {
+	ConcurrentEntity
 }
 
-func (entity *EntityBehavior) getEntity() Entity {
-	return entity.opts.CompositeFace.Iface
+func (ue _UnsafeConcurrentEntity) GetEntity() Entity {
+	return ue.getEntity()
 }

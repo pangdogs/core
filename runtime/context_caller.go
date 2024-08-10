@@ -29,8 +29,8 @@ import (
 //	注意：
 //	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
 //	- 调用过程中的panic信息，均会转换为error返回。
-func (ctx *ContextBehavior) Call(fun generic.FuncVar0[any, async.Ret], va ...any) async.AsyncRet {
-	return ctx.callee.PushCall(fun, va...)
+func (ctx *ContextBehavior) Call(fun generic.FuncVar0[any, async.Ret], args ...any) async.AsyncRet {
+	return ctx.callee.PushCall(fun, args...)
 }
 
 // CallDelegate 异步调用委托，有返回值。不会阻塞当前线程，会返回AsyncRet。
@@ -38,8 +38,8 @@ func (ctx *ContextBehavior) Call(fun generic.FuncVar0[any, async.Ret], va ...any
 //	注意：
 //	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
 //	- 调用过程中的panic信息，均会转换为error返回。
-func (ctx *ContextBehavior) CallDelegate(fun generic.DelegateFuncVar0[any, async.Ret], va ...any) async.AsyncRet {
-	return ctx.callee.PushCallDelegate(fun, va...)
+func (ctx *ContextBehavior) CallDelegate(fun generic.DelegateFuncVar0[any, async.Ret], args ...any) async.AsyncRet {
+	return ctx.callee.PushCallDelegate(fun, args...)
 }
 
 // CallVoid 异步调用函数，无返回值。在运行时中。不会阻塞当前线程，会返回AsyncRet。
@@ -47,8 +47,8 @@ func (ctx *ContextBehavior) CallDelegate(fun generic.DelegateFuncVar0[any, async
 //	注意：
 //	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
 //	- 调用过程中的panic信息，均会转换为error返回。
-func (ctx *ContextBehavior) CallVoid(fun generic.ActionVar0[any], va ...any) async.AsyncRet {
-	return ctx.callee.PushCallVoid(fun, va...)
+func (ctx *ContextBehavior) CallVoid(fun generic.ActionVar0[any], args ...any) async.AsyncRet {
+	return ctx.callee.PushCallVoid(fun, args...)
 }
 
 // CallVoidDelegate 异步调用委托，无返回值。在运行时中。不会阻塞当前线程，会返回AsyncRet。
@@ -56,6 +56,6 @@ func (ctx *ContextBehavior) CallVoid(fun generic.ActionVar0[any], va ...any) asy
 //	注意：
 //	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
 //	- 调用过程中的panic信息，均会转换为error返回。
-func (ctx *ContextBehavior) CallVoidDelegate(fun generic.DelegateActionVar0[any], va ...any) async.AsyncRet {
-	return ctx.callee.PushCallVoidDelegate(fun, va...)
+func (ctx *ContextBehavior) CallVoidDelegate(fun generic.DelegateActionVar0[any], args ...any) async.AsyncRet {
+	return ctx.callee.PushCallVoidDelegate(fun, args...)
 }

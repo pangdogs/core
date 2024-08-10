@@ -34,6 +34,7 @@ type ConcurrentContextProvider = ictx.ConcurrentContextProvider
 
 // ConcurrentContext 多线程安全的运行时上下文接口
 type ConcurrentContext interface {
+	iConcurrentContext
 	ictx.Context
 	ictx.ConcurrentContextProvider
 	async.Caller
@@ -43,6 +44,14 @@ type ConcurrentContext interface {
 	GetName() string
 	// GetId 获取运行时Id
 	GetId() uid.Id
+}
+
+type iConcurrentContext interface {
+	getContext() Context
+}
+
+func (ctx *ContextBehavior) getContext() Context {
+	return ctx.opts.CompositeFace.Iface
 }
 
 // Concurrent 获取多线程安全的运行时上下文

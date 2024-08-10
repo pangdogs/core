@@ -27,16 +27,16 @@ import (
 
 type FuncVar0[VA, R any] func(...VA) R
 
-func (f FuncVar0[VA, R]) Exec(va ...VA) (r R) {
-	r, _ = f.Call(false, nil, va...)
+func (f FuncVar0[VA, R]) Exec(args ...VA) (r R) {
+	r, _ = f.Call(false, nil, args...)
 	return
 }
 
-func (f FuncVar0[VA, R]) Invoke(va ...VA) (r R, panicErr error) {
-	return f.Call(true, nil, va...)
+func (f FuncVar0[VA, R]) Invoke(args ...VA) (r R, panicErr error) {
+	return f.Call(true, nil, args...)
 }
 
-func (f FuncVar0[VA, R]) Call(autoRecover bool, reportError chan error, va ...VA) (r R, panicErr error) {
+func (f FuncVar0[VA, R]) Call(autoRecover bool, reportError chan error, args ...VA) (r R, panicErr error) {
 	if f == nil {
 		return types.ZeroT[R](), nil
 	}
@@ -56,7 +56,7 @@ func (f FuncVar0[VA, R]) Call(autoRecover bool, reportError chan error, va ...VA
 		}()
 	}
 
-	return f(va...), nil
+	return f(args...), nil
 }
 
 func (f FuncVar0[VA, R]) CastDelegate() DelegateFuncVar0[VA, R] {
@@ -65,16 +65,16 @@ func (f FuncVar0[VA, R]) CastDelegate() DelegateFuncVar0[VA, R] {
 
 type FuncVar1[A1, VA, R any] func(A1, ...VA) R
 
-func (f FuncVar1[A1, VA, R]) Exec(a1 A1, va ...VA) (r R) {
-	r, _ = f.Call(false, nil, a1, va...)
+func (f FuncVar1[A1, VA, R]) Exec(a1 A1, args ...VA) (r R) {
+	r, _ = f.Call(false, nil, a1, args...)
 	return
 }
 
-func (f FuncVar1[A1, VA, R]) Invoke(a1 A1, va ...VA) (r R, panicErr error) {
-	return f.Call(true, nil, a1, va...)
+func (f FuncVar1[A1, VA, R]) Invoke(a1 A1, args ...VA) (r R, panicErr error) {
+	return f.Call(true, nil, a1, args...)
 }
 
-func (f FuncVar1[A1, VA, R]) Call(autoRecover bool, reportError chan error, a1 A1, va ...VA) (r R, panicErr error) {
+func (f FuncVar1[A1, VA, R]) Call(autoRecover bool, reportError chan error, a1 A1, args ...VA) (r R, panicErr error) {
 	if f == nil {
 		return types.ZeroT[R](), nil
 	}
@@ -94,7 +94,7 @@ func (f FuncVar1[A1, VA, R]) Call(autoRecover bool, reportError chan error, a1 A
 		}()
 	}
 
-	return f(a1, va...), nil
+	return f(a1, args...), nil
 }
 
 func (f FuncVar1[A1, VA, R]) CastDelegate() DelegateFuncVar1[A1, VA, R] {
@@ -103,16 +103,16 @@ func (f FuncVar1[A1, VA, R]) CastDelegate() DelegateFuncVar1[A1, VA, R] {
 
 type FuncVar2[A1, A2, VA, R any] func(A1, A2, ...VA) R
 
-func (f FuncVar2[A1, A2, VA, R]) Exec(a1 A1, a2 A2, va ...VA) (r R) {
-	r, _ = f.Call(false, nil, a1, a2, va...)
+func (f FuncVar2[A1, A2, VA, R]) Exec(a1 A1, a2 A2, args ...VA) (r R) {
+	r, _ = f.Call(false, nil, a1, a2, args...)
 	return
 }
 
-func (f FuncVar2[A1, A2, VA, R]) Invoke(a1 A1, a2 A2, va ...VA) (r R, panicErr error) {
-	return f.Call(true, nil, a1, a2, va...)
+func (f FuncVar2[A1, A2, VA, R]) Invoke(a1 A1, a2 A2, args ...VA) (r R, panicErr error) {
+	return f.Call(true, nil, a1, a2, args...)
 }
 
-func (f FuncVar2[A1, A2, VA, R]) Call(autoRecover bool, reportError chan error, a1 A1, a2 A2, va ...VA) (r R, panicErr error) {
+func (f FuncVar2[A1, A2, VA, R]) Call(autoRecover bool, reportError chan error, a1 A1, a2 A2, args ...VA) (r R, panicErr error) {
 	if f == nil {
 		return types.ZeroT[R](), nil
 	}
@@ -132,7 +132,7 @@ func (f FuncVar2[A1, A2, VA, R]) Call(autoRecover bool, reportError chan error, 
 		}()
 	}
 
-	return f(a1, a2, va...), nil
+	return f(a1, a2, args...), nil
 }
 
 func (f FuncVar2[A1, A2, VA, R]) CastDelegate() DelegateFuncVar2[A1, A2, VA, R] {
@@ -141,16 +141,16 @@ func (f FuncVar2[A1, A2, VA, R]) CastDelegate() DelegateFuncVar2[A1, A2, VA, R] 
 
 type FuncVar3[A1, A2, A3, VA, R any] func(A1, A2, A3, ...VA) R
 
-func (f FuncVar3[A1, A2, A3, VA, R]) Exec(a1 A1, a2 A2, a3 A3, va ...VA) (r R) {
-	r, _ = f.Call(false, nil, a1, a2, a3, va...)
+func (f FuncVar3[A1, A2, A3, VA, R]) Exec(a1 A1, a2 A2, a3 A3, args ...VA) (r R) {
+	r, _ = f.Call(false, nil, a1, a2, a3, args...)
 	return
 }
 
-func (f FuncVar3[A1, A2, A3, VA, R]) Invoke(a1 A1, a2 A2, a3 A3, va ...VA) (r R, panicErr error) {
-	return f.Call(true, nil, a1, a2, a3, va...)
+func (f FuncVar3[A1, A2, A3, VA, R]) Invoke(a1 A1, a2 A2, a3 A3, args ...VA) (r R, panicErr error) {
+	return f.Call(true, nil, a1, a2, a3, args...)
 }
 
-func (f FuncVar3[A1, A2, A3, VA, R]) Call(autoRecover bool, reportError chan error, a1 A1, a2 A2, a3 A3, va ...VA) (r R, panicErr error) {
+func (f FuncVar3[A1, A2, A3, VA, R]) Call(autoRecover bool, reportError chan error, a1 A1, a2 A2, a3 A3, args ...VA) (r R, panicErr error) {
 	if f == nil {
 		return types.ZeroT[R](), nil
 	}
@@ -170,7 +170,7 @@ func (f FuncVar3[A1, A2, A3, VA, R]) Call(autoRecover bool, reportError chan err
 		}()
 	}
 
-	return f(a1, a2, a3, va...), nil
+	return f(a1, a2, a3, args...), nil
 }
 
 func (f FuncVar3[A1, A2, A3, VA, R]) CastDelegate() DelegateFuncVar3[A1, A2, A3, VA, R] {
@@ -179,16 +179,16 @@ func (f FuncVar3[A1, A2, A3, VA, R]) CastDelegate() DelegateFuncVar3[A1, A2, A3,
 
 type FuncVar4[A1, A2, A3, A4, VA, R any] func(A1, A2, A3, A4, ...VA) R
 
-func (f FuncVar4[A1, A2, A3, A4, VA, R]) Exec(a1 A1, a2 A2, a3 A3, a4 A4, va ...VA) (r R) {
-	r, _ = f.Call(false, nil, a1, a2, a3, a4, va...)
+func (f FuncVar4[A1, A2, A3, A4, VA, R]) Exec(a1 A1, a2 A2, a3 A3, a4 A4, args ...VA) (r R) {
+	r, _ = f.Call(false, nil, a1, a2, a3, a4, args...)
 	return
 }
 
-func (f FuncVar4[A1, A2, A3, A4, VA, R]) Invoke(a1 A1, a2 A2, a3 A3, a4 A4, va ...VA) (r R, panicErr error) {
-	return f.Call(true, nil, a1, a2, a3, a4, va...)
+func (f FuncVar4[A1, A2, A3, A4, VA, R]) Invoke(a1 A1, a2 A2, a3 A3, a4 A4, args ...VA) (r R, panicErr error) {
+	return f.Call(true, nil, a1, a2, a3, a4, args...)
 }
 
-func (f FuncVar4[A1, A2, A3, A4, VA, R]) Call(autoRecover bool, reportError chan error, a1 A1, a2 A2, a3 A3, a4 A4, va ...VA) (r R, panicErr error) {
+func (f FuncVar4[A1, A2, A3, A4, VA, R]) Call(autoRecover bool, reportError chan error, a1 A1, a2 A2, a3 A3, a4 A4, args ...VA) (r R, panicErr error) {
 	if f == nil {
 		return types.ZeroT[R](), nil
 	}
@@ -208,7 +208,7 @@ func (f FuncVar4[A1, A2, A3, A4, VA, R]) Call(autoRecover bool, reportError chan
 		}()
 	}
 
-	return f(a1, a2, a3, a4, va...), nil
+	return f(a1, a2, a3, a4, args...), nil
 }
 
 func (f FuncVar4[A1, A2, A3, A4, VA, R]) CastDelegate() DelegateFuncVar4[A1, A2, A3, A4, VA, R] {
@@ -220,21 +220,21 @@ type FuncVar5[A1, A2, A3, A4, A5, VA, R any] func(
 ) R
 
 func (f FuncVar5[A1, A2, A3, A4, A5, VA, R]) Exec(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, args ...VA,
 ) (r R) {
-	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, va...)
+	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, args...)
 	return
 }
 
 func (f FuncVar5[A1, A2, A3, A4, A5, VA, R]) Invoke(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, args ...VA,
 ) (r R, panicErr error) {
-	return f.Call(true, nil, a1, a2, a3, a4, a5, va...)
+	return f.Call(true, nil, a1, a2, a3, a4, a5, args...)
 }
 
 func (f FuncVar5[A1, A2, A3, A4, A5, VA, R]) Call(
 	autoRecover bool, reportError chan error,
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, args ...VA,
 ) (r R, panicErr error) {
 	if f == nil {
 		return types.ZeroT[R](), nil
@@ -255,7 +255,7 @@ func (f FuncVar5[A1, A2, A3, A4, A5, VA, R]) Call(
 		}()
 	}
 
-	return f(a1, a2, a3, a4, a5, va...), nil
+	return f(a1, a2, a3, a4, a5, args...), nil
 }
 
 func (f FuncVar5[A1, A2, A3, A4, A5, VA, R]) CastDelegate() DelegateFuncVar5[A1, A2, A3, A4, A5, VA, R] {
@@ -267,21 +267,21 @@ type FuncVar6[A1, A2, A3, A4, A5, A6, VA, R any] func(
 ) R
 
 func (f FuncVar6[A1, A2, A3, A4, A5, A6, VA, R]) Exec(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, args ...VA,
 ) (r R) {
-	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, va...)
+	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, args...)
 	return
 }
 
 func (f FuncVar6[A1, A2, A3, A4, A5, A6, VA, R]) Invoke(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, args ...VA,
 ) (r R, panicErr error) {
-	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, va...)
+	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, args...)
 }
 
 func (f FuncVar6[A1, A2, A3, A4, A5, A6, VA, R]) Call(
 	autoRecover bool, reportError chan error,
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, args ...VA,
 ) (r R, panicErr error) {
 	if f == nil {
 		return types.ZeroT[R](), nil
@@ -302,7 +302,7 @@ func (f FuncVar6[A1, A2, A3, A4, A5, A6, VA, R]) Call(
 		}()
 	}
 
-	return f(a1, a2, a3, a4, a5, a6, va...), nil
+	return f(a1, a2, a3, a4, a5, a6, args...), nil
 }
 
 func (f FuncVar6[A1, A2, A3, A4, A5, A6, VA, R]) CastDelegate() DelegateFuncVar6[A1, A2, A3, A4, A5, A6, VA, R] {
@@ -314,21 +314,21 @@ type FuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R any] func(
 ) R
 
 func (f FuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R]) Exec(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, args ...VA,
 ) (r R) {
-	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, va...)
+	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, args...)
 	return
 }
 
 func (f FuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R]) Invoke(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, args ...VA,
 ) (r R, panicErr error) {
-	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, va...)
+	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, args...)
 }
 
 func (f FuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R]) Call(
 	autoRecover bool, reportError chan error,
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, args ...VA,
 ) (r R, panicErr error) {
 	if f == nil {
 		return types.ZeroT[R](), nil
@@ -349,7 +349,7 @@ func (f FuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R]) Call(
 		}()
 	}
 
-	return f(a1, a2, a3, a4, a5, a6, a7, va...), nil
+	return f(a1, a2, a3, a4, a5, a6, a7, args...), nil
 }
 
 func (f FuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R]) CastDelegate() DelegateFuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R] {
@@ -361,21 +361,21 @@ type FuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R any] func(
 ) R
 
 func (f FuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R]) Exec(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, args ...VA,
 ) (r R) {
-	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, va...)
+	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, args...)
 	return
 }
 
 func (f FuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R]) Invoke(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, args ...VA,
 ) (r R, panicErr error) {
-	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, va...)
+	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, args...)
 }
 
 func (f FuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R]) Call(
 	autoRecover bool, reportError chan error,
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, args ...VA,
 ) (r R, panicErr error) {
 	if f == nil {
 		return types.ZeroT[R](), nil
@@ -396,7 +396,7 @@ func (f FuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R]) Call(
 		}()
 	}
 
-	return f(a1, a2, a3, a4, a5, a6, a7, a8, va...), nil
+	return f(a1, a2, a3, a4, a5, a6, a7, a8, args...), nil
 }
 
 func (f FuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R]) CastDelegate() DelegateFuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R] {
@@ -408,21 +408,21 @@ type FuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R any] func(
 ) R
 
 func (f FuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R]) Exec(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, args ...VA,
 ) (r R) {
-	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, va...)
+	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, args...)
 	return
 }
 
 func (f FuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R]) Invoke(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, args ...VA,
 ) (r R, panicErr error) {
-	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, va...)
+	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, args...)
 }
 
 func (f FuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R]) Call(
 	autoRecover bool, reportError chan error,
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, args ...VA,
 ) (r R, panicErr error) {
 	if f == nil {
 		return types.ZeroT[R](), nil
@@ -443,7 +443,7 @@ func (f FuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R]) Call(
 		}()
 	}
 
-	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, va...), nil
+	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, args...), nil
 }
 
 func (f FuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R]) CastDelegate() DelegateFuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R] {
@@ -455,21 +455,21 @@ type FuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R any] func(
 ) R
 
 func (f FuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R]) Exec(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, args ...VA,
 ) (r R) {
-	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, va...)
+	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, args...)
 	return
 }
 
 func (f FuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R]) Invoke(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, args ...VA,
 ) (r R, panicErr error) {
-	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, va...)
+	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, args...)
 }
 
 func (f FuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R]) Call(
 	autoRecover bool, reportError chan error,
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, args ...VA,
 ) (r R, panicErr error) {
 	if f == nil {
 		return types.ZeroT[R](), nil
@@ -490,7 +490,7 @@ func (f FuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R]) Call(
 		}()
 	}
 
-	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, va...), nil
+	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, args...), nil
 }
 
 func (f FuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R]) CastDelegate() DelegateFuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R] {
@@ -502,21 +502,21 @@ type FuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R any] func(
 ) R
 
 func (f FuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R]) Exec(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, args ...VA,
 ) (r R) {
-	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, va...)
+	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, args...)
 	return
 }
 
 func (f FuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R]) Invoke(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, args ...VA,
 ) (r R, panicErr error) {
-	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, va...)
+	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, args...)
 }
 
 func (f FuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R]) Call(
 	autoRecover bool, reportError chan error,
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, args ...VA,
 ) (r R, panicErr error) {
 	if f == nil {
 		return types.ZeroT[R](), nil
@@ -537,7 +537,7 @@ func (f FuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R]) Call(
 		}()
 	}
 
-	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, va...), nil
+	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, args...), nil
 }
 
 func (f FuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R]) CastDelegate() DelegateFuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R] {
@@ -549,21 +549,21 @@ type FuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R any] fun
 ) R
 
 func (f FuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R]) Exec(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, args ...VA,
 ) (r R) {
-	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, va...)
+	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, args...)
 	return
 }
 
 func (f FuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R]) Invoke(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, args ...VA,
 ) (r R, panicErr error) {
-	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, va...)
+	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, args...)
 }
 
 func (f FuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R]) Call(
 	autoRecover bool, reportError chan error,
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, args ...VA,
 ) (r R, panicErr error) {
 	if f == nil {
 		return types.ZeroT[R](), nil
@@ -584,7 +584,7 @@ func (f FuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R]) Cal
 		}()
 	}
 
-	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, va...), nil
+	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, args...), nil
 }
 
 func (f FuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R]) CastDelegate() DelegateFuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R] {
@@ -596,21 +596,21 @@ type FuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R any
 ) R
 
 func (f FuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R]) Exec(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, args ...VA,
 ) (r R) {
-	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, va...)
+	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, args...)
 	return
 }
 
 func (f FuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R]) Invoke(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, args ...VA,
 ) (r R, panicErr error) {
-	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, va...)
+	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, args...)
 }
 
 func (f FuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R]) Call(
 	autoRecover bool, reportError chan error,
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, args ...VA,
 ) (r R, panicErr error) {
 	if f == nil {
 		return types.ZeroT[R](), nil
@@ -631,7 +631,7 @@ func (f FuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R]
 		}()
 	}
 
-	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, va...), nil
+	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, args...), nil
 }
 
 func (f FuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R]) CastDelegate() DelegateFuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R] {
@@ -643,21 +643,21 @@ type FuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, 
 ) R
 
 func (f FuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R]) Exec(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, args ...VA,
 ) (r R) {
-	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, va...)
+	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, args...)
 	return
 }
 
 func (f FuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R]) Invoke(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, args ...VA,
 ) (r R, panicErr error) {
-	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, va...)
+	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, args...)
 }
 
 func (f FuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R]) Call(
 	autoRecover bool, reportError chan error,
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, args ...VA,
 ) (r R, panicErr error) {
 	if f == nil {
 		return types.ZeroT[R](), nil
@@ -678,7 +678,7 @@ func (f FuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, V
 		}()
 	}
 
-	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, va...), nil
+	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, args...), nil
 }
 
 func (f FuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R]) CastDelegate() DelegateFuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R] {
@@ -690,21 +690,21 @@ type FuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15,
 ) R
 
 func (f FuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R]) Exec(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, args ...VA,
 ) (r R) {
-	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, va...)
+	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, args...)
 	return
 }
 
 func (f FuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R]) Invoke(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, args ...VA,
 ) (r R, panicErr error) {
-	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, va...)
+	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, args...)
 }
 
 func (f FuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R]) Call(
 	autoRecover bool, reportError chan error,
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, args ...VA,
 ) (r R, panicErr error) {
 	if f == nil {
 		return types.ZeroT[R](), nil
@@ -725,7 +725,7 @@ func (f FuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A
 		}()
 	}
 
-	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, va...), nil
+	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, args...), nil
 }
 
 func (f FuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R]) CastDelegate() DelegateFuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R] {
@@ -737,21 +737,21 @@ type FuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15,
 ) R
 
 func (f FuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R]) Exec(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, a16 A16, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, a16 A16, args ...VA,
 ) (r R) {
-	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, va...)
+	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, args...)
 	return
 }
 
 func (f FuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R]) Invoke(
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, a16 A16, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, a16 A16, args ...VA,
 ) (r R, panicErr error) {
-	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, va...)
+	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, args...)
 }
 
 func (f FuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R]) Call(
 	autoRecover bool, reportError chan error,
-	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, a16 A16, va ...VA,
+	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, a16 A16, args ...VA,
 ) (r R, panicErr error) {
 	if f == nil {
 		return types.ZeroT[R](), nil
@@ -772,7 +772,7 @@ func (f FuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A
 		}()
 	}
 
-	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, va...), nil
+	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, args...), nil
 }
 
 func (f FuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R]) CastDelegate() DelegateFuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R] {
