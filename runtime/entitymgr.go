@@ -246,6 +246,7 @@ func (mgr *_EntityMgrBehavior) OnComponentMgrAddComponents(entity ec.Entity, com
 		if comp.GetId().IsNil() {
 			ec.UnsafeComponent(comp).SetId(uid.New())
 		}
+		ec.UnsafeComponent(comp).WithContext(mgr.ctx)
 	}
 
 	_EmitEventEntityMgrEntityAddComponentsWithInterrupt(mgr, func(entityMgr EntityMgr, entity ec.Entity, components []ec.Component) bool {
@@ -289,11 +290,13 @@ func (mgr *_EntityMgrBehavior) addEntity(entity ec.Entity, parentId uid.Id) erro
 		ec.UnsafeEntity(entity).SetId(uid.New())
 	}
 	ec.UnsafeEntity(entity).SetContext(iface.Iface2Cache[Context](mgr.ctx))
+	ec.UnsafeEntity(entity).WithContext(mgr.ctx)
 
 	entity.RangeComponents(func(comp ec.Component) bool {
 		if comp.GetId().IsNil() {
 			ec.UnsafeComponent(comp).SetId(uid.New())
 		}
+		ec.UnsafeComponent(comp).WithContext(mgr.ctx)
 		return true
 	})
 

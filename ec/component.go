@@ -20,6 +20,7 @@
 package ec
 
 import (
+	"context"
 	"fmt"
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/internal/ictx"
@@ -32,6 +33,7 @@ import (
 type Component interface {
 	iComponent
 	ictx.CurrentContextProvider
+	context.Context
 	fmt.Stringer
 
 	// GetId 获取组件Id
@@ -55,6 +57,7 @@ type iComponent interface {
 	setId(id uid.Id)
 	setState(state ComponentState)
 	setReflected(v reflect.Value)
+	withContext(ctx context.Context)
 	setFixed(b bool)
 	getComposite() Component
 	eventComponentDestroySelf() event.IEvent
@@ -63,6 +66,8 @@ type iComponent interface {
 
 // ComponentBehavior 组件行为，需要在开发新组件时，匿名嵌入至组件结构体中
 type ComponentBehavior struct {
+	context.Context
+	terminate                  context.CancelFunc
 	id                         uid.Id
 	name                       string
 	entity                     Entity
@@ -151,12 +156,17 @@ func (comp *ComponentBehavior) setState(state ComponentState) {
 
 	switch comp.state {
 	case ComponentState_Detach:
+		comp.terminate()
 		comp._eventComponentDestroySelf.Close()
 	}
 }
 
 func (comp *ComponentBehavior) setReflected(v reflect.Value) {
 	comp.reflected = v
+}
+
+func (comp *ComponentBehavior) withContext(ctx context.Context) {
+	comp.Context, comp.terminate = context.WithCancel(ctx)
 }
 
 func (comp *ComponentBehavior) setFixed(b bool) {

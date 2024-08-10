@@ -20,6 +20,7 @@
 package ec
 
 import (
+	"context"
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/uid"
@@ -70,6 +71,11 @@ func (ue _UnsafeEntity) SetState(state EntityState) {
 // SetReflected 设置反射值
 func (ue _UnsafeEntity) SetReflected(v reflect.Value) {
 	ue.setReflected(v)
+}
+
+// WithContext 传递上下文
+func (ue _UnsafeEntity) WithContext(ctx context.Context) {
+	ue.withContext(ctx)
 }
 
 // SetTreeNodeState 设置实体树节点状态

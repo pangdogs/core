@@ -86,6 +86,7 @@ type iEntity interface {
 	getVersion() int64
 	setState(state EntityState)
 	setReflected(v reflect.Value)
+	withContext(ctx context.Context)
 	eventEntityDestroySelf() event.IEvent
 	cleanManagedHooks()
 }
@@ -175,7 +176,6 @@ func (entity *EntityBehavior) String() string {
 }
 
 func (entity *EntityBehavior) init(opts EntityOptions) {
-	entity.Context, entity.terminate = context.WithCancel(context.Background())
 	entity.opts = opts
 
 	if entity.opts.CompositeFace.IsNil() {
@@ -232,6 +232,10 @@ func (entity *EntityBehavior) setState(state EntityState) {
 
 func (entity *EntityBehavior) setReflected(v reflect.Value) {
 	entity.reflected = v
+}
+
+func (entity *EntityBehavior) withContext(ctx context.Context) {
+	entity.Context, entity.terminate = context.WithCancel(ctx)
 }
 
 func (entity *EntityBehavior) eventEntityDestroySelf() event.IEvent {

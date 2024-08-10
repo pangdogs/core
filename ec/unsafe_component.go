@@ -20,6 +20,7 @@
 package ec
 
 import (
+	"context"
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/utils/uid"
 	"reflect"
@@ -54,6 +55,11 @@ func (uc _UnsafeComponent) SetState(state ComponentState) {
 // SetReflected 设置反射值
 func (uc _UnsafeComponent) SetReflected(v reflect.Value) {
 	uc.setReflected(v)
+}
+
+// WithContext 传递上下文
+func (uc _UnsafeComponent) WithContext(ctx context.Context) {
+	uc.withContext(ctx)
 }
 
 // SetFixed 设置是否固定
