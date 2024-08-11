@@ -45,7 +45,7 @@ func (d DelegateFunc0[R]) Call(autoRecover bool, reportError chan error, interru
 	return
 }
 
-func (d DelegateFunc0[R]) CastFunc(interrupt Func2[R, error, bool]) Func0[R] {
+func (d DelegateFunc0[R]) ToFunc(interrupt Func2[R, error, bool]) Func0[R] {
 	return func() R { return d.Exec(interrupt) }
 }
 
@@ -75,7 +75,7 @@ func (d DelegateFunc1[A1, R]) Call(autoRecover bool, reportError chan error, int
 	return
 }
 
-func (d DelegateFunc1[A1, R]) CastFunc(interrupt Func2[R, error, bool]) Func1[A1, R] {
+func (d DelegateFunc1[A1, R]) ToFunc(interrupt Func2[R, error, bool]) Func1[A1, R] {
 	return func(a1 A1) R { return d.Exec(interrupt, a1) }
 }
 
@@ -105,7 +105,7 @@ func (d DelegateFunc2[A1, A2, R]) Call(autoRecover bool, reportError chan error,
 	return
 }
 
-func (d DelegateFunc2[A1, A2, R]) CastFunc(interrupt Func2[R, error, bool]) Func2[A1, A2, R] {
+func (d DelegateFunc2[A1, A2, R]) ToFunc(interrupt Func2[R, error, bool]) Func2[A1, A2, R] {
 	return func(a1 A1, a2 A2) R { return d.Exec(interrupt, a1, a2) }
 }
 
@@ -135,7 +135,7 @@ func (d DelegateFunc3[A1, A2, A3, R]) Call(autoRecover bool, reportError chan er
 	return
 }
 
-func (d DelegateFunc3[A1, A2, A3, R]) CastFunc(interrupt Func2[R, error, bool]) Func3[A1, A2, A3, R] {
+func (d DelegateFunc3[A1, A2, A3, R]) ToFunc(interrupt Func2[R, error, bool]) Func3[A1, A2, A3, R] {
 	return func(a1 A1, a2 A2, a3 A3) R { return d.Exec(interrupt, a1, a2, a3) }
 }
 
@@ -165,7 +165,7 @@ func (d DelegateFunc4[A1, A2, A3, A4, R]) Call(autoRecover bool, reportError cha
 	return
 }
 
-func (d DelegateFunc4[A1, A2, A3, A4, R]) CastFunc(interrupt Func2[R, error, bool]) Func4[A1, A2, A3, A4, R] {
+func (d DelegateFunc4[A1, A2, A3, A4, R]) ToFunc(interrupt Func2[R, error, bool]) Func4[A1, A2, A3, A4, R] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4) R { return d.Exec(interrupt, a1, a2, a3, a4) }
 }
 
@@ -204,7 +204,7 @@ func (d DelegateFunc5[A1, A2, A3, A4, A5, R]) Call(
 	return
 }
 
-func (d DelegateFunc5[A1, A2, A3, A4, A5, R]) CastFunc(interrupt Func2[R, error, bool]) Func5[A1, A2, A3, A4, A5, R] {
+func (d DelegateFunc5[A1, A2, A3, A4, A5, R]) ToFunc(interrupt Func2[R, error, bool]) Func5[A1, A2, A3, A4, A5, R] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5) R { return d.Exec(interrupt, a1, a2, a3, a4, a5) }
 }
 
@@ -243,7 +243,7 @@ func (d DelegateFunc6[A1, A2, A3, A4, A5, A6, R]) Call(
 	return
 }
 
-func (d DelegateFunc6[A1, A2, A3, A4, A5, A6, R]) CastFunc(interrupt Func2[R, error, bool]) Func6[A1, A2, A3, A4, A5, A6, R] {
+func (d DelegateFunc6[A1, A2, A3, A4, A5, A6, R]) ToFunc(interrupt Func2[R, error, bool]) Func6[A1, A2, A3, A4, A5, A6, R] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6) R { return d.Exec(interrupt, a1, a2, a3, a4, a5, a6) }
 }
 
@@ -282,7 +282,7 @@ func (d DelegateFunc7[A1, A2, A3, A4, A5, A6, A7, R]) Call(
 	return
 }
 
-func (d DelegateFunc7[A1, A2, A3, A4, A5, A6, A7, R]) CastFunc(interrupt Func2[R, error, bool]) Func7[A1, A2, A3, A4, A5, A6, A7, R] {
+func (d DelegateFunc7[A1, A2, A3, A4, A5, A6, A7, R]) ToFunc(interrupt Func2[R, error, bool]) Func7[A1, A2, A3, A4, A5, A6, A7, R] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7) R {
 		return d.Exec(interrupt, a1, a2, a3, a4, a5, a6, a7)
 	}
@@ -323,7 +323,7 @@ func (d DelegateFunc8[A1, A2, A3, A4, A5, A6, A7, A8, R]) Call(
 	return
 }
 
-func (d DelegateFunc8[A1, A2, A3, A4, A5, A6, A7, A8, R]) CastFunc(interrupt Func2[R, error, bool]) Func8[A1, A2, A3, A4, A5, A6, A7, A8, R] {
+func (d DelegateFunc8[A1, A2, A3, A4, A5, A6, A7, A8, R]) ToFunc(interrupt Func2[R, error, bool]) Func8[A1, A2, A3, A4, A5, A6, A7, A8, R] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8) R {
 		return d.Exec(interrupt, a1, a2, a3, a4, a5, a6, a7, a8)
 	}
@@ -364,7 +364,7 @@ func (d DelegateFunc9[A1, A2, A3, A4, A5, A6, A7, A8, A9, R]) Call(
 	return
 }
 
-func (d DelegateFunc9[A1, A2, A3, A4, A5, A6, A7, A8, A9, R]) CastFunc(interrupt Func2[R, error, bool]) Func9[A1, A2, A3, A4, A5, A6, A7, A8, A9, R] {
+func (d DelegateFunc9[A1, A2, A3, A4, A5, A6, A7, A8, A9, R]) ToFunc(interrupt Func2[R, error, bool]) Func9[A1, A2, A3, A4, A5, A6, A7, A8, A9, R] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9) R {
 		return d.Exec(interrupt, a1, a2, a3, a4, a5, a6, a7, a8, a9)
 	}
@@ -405,7 +405,7 @@ func (d DelegateFunc10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R]) Call(
 	return
 }
 
-func (d DelegateFunc10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R]) CastFunc(interrupt Func2[R, error, bool]) Func10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R] {
+func (d DelegateFunc10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R]) ToFunc(interrupt Func2[R, error, bool]) Func10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10) R {
 		return d.Exec(interrupt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 	}
@@ -446,7 +446,7 @@ func (d DelegateFunc11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R]) Call(
 	return
 }
 
-func (d DelegateFunc11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R]) CastFunc(interrupt Func2[R, error, bool]) Func11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R] {
+func (d DelegateFunc11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R]) ToFunc(interrupt Func2[R, error, bool]) Func11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11) R {
 		return d.Exec(interrupt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11)
 	}
@@ -487,7 +487,7 @@ func (d DelegateFunc12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R]) Ca
 	return
 }
 
-func (d DelegateFunc12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R]) CastFunc(interrupt Func2[R, error, bool]) Func12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R] {
+func (d DelegateFunc12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R]) ToFunc(interrupt Func2[R, error, bool]) Func12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12) R {
 		return d.Exec(interrupt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12)
 	}
@@ -528,7 +528,7 @@ func (d DelegateFunc13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R
 	return
 }
 
-func (d DelegateFunc13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R]) CastFunc(interrupt Func2[R, error, bool]) Func13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R] {
+func (d DelegateFunc13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R]) ToFunc(interrupt Func2[R, error, bool]) Func13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13) R {
 		return d.Exec(interrupt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13)
 	}
@@ -569,7 +569,7 @@ func (d DelegateFunc14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A
 	return
 }
 
-func (d DelegateFunc14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R]) CastFunc(interrupt Func2[R, error, bool]) Func14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R] {
+func (d DelegateFunc14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R]) ToFunc(interrupt Func2[R, error, bool]) Func14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14) R {
 		return d.Exec(interrupt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14)
 	}
@@ -610,7 +610,7 @@ func (d DelegateFunc15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A
 	return
 }
 
-func (d DelegateFunc15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R]) CastFunc(interrupt Func2[R, error, bool]) Func15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R] {
+func (d DelegateFunc15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R]) ToFunc(interrupt Func2[R, error, bool]) Func15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15) R {
 		return d.Exec(interrupt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15)
 	}
@@ -651,7 +651,7 @@ func (d DelegateFunc16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A
 	return
 }
 
-func (d DelegateFunc16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R]) CastFunc(interrupt Func2[R, error, bool]) Func16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R] {
+func (d DelegateFunc16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R]) ToFunc(interrupt Func2[R, error, bool]) Func16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, a16 A16) R {
 		return d.Exec(interrupt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16)
 	}

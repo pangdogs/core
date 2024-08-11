@@ -60,7 +60,7 @@ func (f PairFunc0[R1, R2]) Call(autoRecover bool, reportError chan error) (r1 R1
 	return
 }
 
-func (f PairFunc0[R1, R2]) CastDelegate() DelegatePairFunc0[R1, R2] {
+func (f PairFunc0[R1, R2]) ToDelegate() DelegatePairFunc0[R1, R2] {
 	return []PairFunc0[R1, R2]{f}
 }
 
@@ -99,7 +99,7 @@ func (f PairFunc1[A1, R1, R2]) Call(autoRecover bool, reportError chan error, a1
 	return
 }
 
-func (f PairFunc1[A1, R1, R2]) CastDelegate() DelegatePairFunc1[A1, R1, R2] {
+func (f PairFunc1[A1, R1, R2]) ToDelegate() DelegatePairFunc1[A1, R1, R2] {
 	return []PairFunc1[A1, R1, R2]{f}
 }
 
@@ -138,7 +138,7 @@ func (f PairFunc2[A1, A2, R1, R2]) Call(autoRecover bool, reportError chan error
 	return
 }
 
-func (f PairFunc2[A1, A2, R1, R2]) CastDelegate() DelegatePairFunc2[A1, A2, R1, R2] {
+func (f PairFunc2[A1, A2, R1, R2]) ToDelegate() DelegatePairFunc2[A1, A2, R1, R2] {
 	return []PairFunc2[A1, A2, R1, R2]{f}
 }
 
@@ -177,7 +177,7 @@ func (f PairFunc3[A1, A2, A3, R1, R2]) Call(autoRecover bool, reportError chan e
 	return
 }
 
-func (f PairFunc3[A1, A2, A3, R1, R2]) CastDelegate() DelegatePairFunc3[A1, A2, A3, R1, R2] {
+func (f PairFunc3[A1, A2, A3, R1, R2]) ToDelegate() DelegatePairFunc3[A1, A2, A3, R1, R2] {
 	return []PairFunc3[A1, A2, A3, R1, R2]{f}
 }
 
@@ -216,7 +216,7 @@ func (f PairFunc4[A1, A2, A3, A4, R1, R2]) Call(autoRecover bool, reportError ch
 	return
 }
 
-func (f PairFunc4[A1, A2, A3, A4, R1, R2]) CastDelegate() DelegatePairFunc4[A1, A2, A3, A4, R1, R2] {
+func (f PairFunc4[A1, A2, A3, A4, R1, R2]) ToDelegate() DelegatePairFunc4[A1, A2, A3, A4, R1, R2] {
 	return []PairFunc4[A1, A2, A3, A4, R1, R2]{f}
 }
 
@@ -264,7 +264,7 @@ func (f PairFunc5[A1, A2, A3, A4, A5, R1, R2]) Call(
 	return
 }
 
-func (f PairFunc5[A1, A2, A3, A4, A5, R1, R2]) CastDelegate() DelegatePairFunc5[A1, A2, A3, A4, A5, R1, R2] {
+func (f PairFunc5[A1, A2, A3, A4, A5, R1, R2]) ToDelegate() DelegatePairFunc5[A1, A2, A3, A4, A5, R1, R2] {
 	return []PairFunc5[A1, A2, A3, A4, A5, R1, R2]{f}
 }
 
@@ -312,7 +312,7 @@ func (f PairFunc6[A1, A2, A3, A4, A5, A6, R1, R2]) Call(
 	return
 }
 
-func (f PairFunc6[A1, A2, A3, A4, A5, A6, R1, R2]) CastDelegate() DelegatePairFunc6[A1, A2, A3, A4, A5, A6, R1, R2] {
+func (f PairFunc6[A1, A2, A3, A4, A5, A6, R1, R2]) ToDelegate() DelegatePairFunc6[A1, A2, A3, A4, A5, A6, R1, R2] {
 	return []PairFunc6[A1, A2, A3, A4, A5, A6, R1, R2]{f}
 }
 
@@ -360,7 +360,7 @@ func (f PairFunc7[A1, A2, A3, A4, A5, A6, A7, R1, R2]) Call(
 	return
 }
 
-func (f PairFunc7[A1, A2, A3, A4, A5, A6, A7, R1, R2]) CastDelegate() DelegatePairFunc7[A1, A2, A3, A4, A5, A6, A7, R1, R2] {
+func (f PairFunc7[A1, A2, A3, A4, A5, A6, A7, R1, R2]) ToDelegate() DelegatePairFunc7[A1, A2, A3, A4, A5, A6, A7, R1, R2] {
 	return []PairFunc7[A1, A2, A3, A4, A5, A6, A7, R1, R2]{f}
 }
 
@@ -408,7 +408,7 @@ func (f PairFunc8[A1, A2, A3, A4, A5, A6, A7, A8, R1, R2]) Call(
 	return
 }
 
-func (f PairFunc8[A1, A2, A3, A4, A5, A6, A7, A8, R1, R2]) CastDelegate() DelegatePairFunc8[A1, A2, A3, A4, A5, A6, A7, A8, R1, R2] {
+func (f PairFunc8[A1, A2, A3, A4, A5, A6, A7, A8, R1, R2]) ToDelegate() DelegatePairFunc8[A1, A2, A3, A4, A5, A6, A7, A8, R1, R2] {
 	return []PairFunc8[A1, A2, A3, A4, A5, A6, A7, A8, R1, R2]{f}
 }
 
@@ -456,7 +456,7 @@ func (f PairFunc9[A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2]) Call(
 	return
 }
 
-func (f PairFunc9[A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2]) CastDelegate() DelegatePairFunc9[A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2] {
+func (f PairFunc9[A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2]) ToDelegate() DelegatePairFunc9[A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2] {
 	return []PairFunc9[A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2]{f}
 }
 
@@ -504,7 +504,7 @@ func (f PairFunc10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R1, R2]) Call(
 	return
 }
 
-func (f PairFunc10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R1, R2]) CastDelegate() DelegatePairFunc10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R1, R2] {
+func (f PairFunc10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R1, R2]) ToDelegate() DelegatePairFunc10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R1, R2] {
 	return []PairFunc10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R1, R2]{f}
 }
 
@@ -552,7 +552,7 @@ func (f PairFunc11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R1, R2]) Call(
 	return
 }
 
-func (f PairFunc11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R1, R2]) CastDelegate() DelegatePairFunc11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R1, R2] {
+func (f PairFunc11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R1, R2]) ToDelegate() DelegatePairFunc11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R1, R2] {
 	return []PairFunc11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R1, R2]{f}
 }
 
@@ -600,7 +600,7 @@ func (f PairFunc12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2]) C
 	return
 }
 
-func (f PairFunc12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2]) CastDelegate() DelegatePairFunc12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2] {
+func (f PairFunc12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2]) ToDelegate() DelegatePairFunc12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2] {
 	return []PairFunc12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2]{f}
 }
 
@@ -648,7 +648,7 @@ func (f PairFunc13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R
 	return
 }
 
-func (f PairFunc13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2]) CastDelegate() DelegatePairFunc13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2] {
+func (f PairFunc13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2]) ToDelegate() DelegatePairFunc13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2] {
 	return []PairFunc13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2]{f}
 }
 
@@ -696,7 +696,7 @@ func (f PairFunc14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, 
 	return
 }
 
-func (f PairFunc14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2]) CastDelegate() DelegatePairFunc14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2] {
+func (f PairFunc14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2]) ToDelegate() DelegatePairFunc14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2] {
 	return []PairFunc14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2]{f}
 }
 
@@ -744,7 +744,7 @@ func (f PairFunc15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, 
 	return
 }
 
-func (f PairFunc15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R1, R2]) CastDelegate() DelegatePairFunc15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R1, R2] {
+func (f PairFunc15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R1, R2]) ToDelegate() DelegatePairFunc15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R1, R2] {
 	return []PairFunc15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R1, R2]{f}
 }
 
@@ -792,6 +792,6 @@ func (f PairFunc16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, 
 	return
 }
 
-func (f PairFunc16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2]) CastDelegate() DelegatePairFunc16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2] {
+func (f PairFunc16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2]) ToDelegate() DelegatePairFunc16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2] {
 	return []PairFunc16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2]{f}
 }

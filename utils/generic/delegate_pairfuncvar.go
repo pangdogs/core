@@ -45,7 +45,7 @@ func (d DelegatePairFuncVar0[VA, R1, R2]) Call(autoRecover bool, reportError cha
 	return
 }
 
-func (d DelegatePairFuncVar0[VA, R1, R2]) CastFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar0[VA, R1, R2] {
+func (d DelegatePairFuncVar0[VA, R1, R2]) ToFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar0[VA, R1, R2] {
 	return func(args ...VA) (R1, R2) { return d.Exec(interrupt, args...) }
 }
 
@@ -75,7 +75,7 @@ func (d DelegatePairFuncVar1[A1, VA, R1, R2]) Call(autoRecover bool, reportError
 	return
 }
 
-func (d DelegatePairFuncVar1[A1, VA, R1, R2]) CastFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar1[A1, VA, R1, R2] {
+func (d DelegatePairFuncVar1[A1, VA, R1, R2]) ToFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar1[A1, VA, R1, R2] {
 	return func(a1 A1, args ...VA) (R1, R2) { return d.Exec(interrupt, a1, args...) }
 }
 
@@ -105,7 +105,7 @@ func (d DelegatePairFuncVar2[A1, A2, VA, R1, R2]) Call(autoRecover bool, reportE
 	return
 }
 
-func (d DelegatePairFuncVar2[A1, A2, VA, R1, R2]) CastFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar2[A1, A2, VA, R1, R2] {
+func (d DelegatePairFuncVar2[A1, A2, VA, R1, R2]) ToFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar2[A1, A2, VA, R1, R2] {
 	return func(a1 A1, a2 A2, args ...VA) (R1, R2) { return d.Exec(interrupt, a1, a2, args...) }
 }
 
@@ -135,7 +135,7 @@ func (d DelegatePairFuncVar3[A1, A2, A3, VA, R1, R2]) Call(autoRecover bool, rep
 	return
 }
 
-func (d DelegatePairFuncVar3[A1, A2, A3, VA, R1, R2]) CastFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar3[A1, A2, A3, VA, R1, R2] {
+func (d DelegatePairFuncVar3[A1, A2, A3, VA, R1, R2]) ToFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar3[A1, A2, A3, VA, R1, R2] {
 	return func(a1 A1, a2 A2, a3 A3, args ...VA) (R1, R2) { return d.Exec(interrupt, a1, a2, a3, args...) }
 }
 
@@ -165,7 +165,7 @@ func (d DelegatePairFuncVar4[A1, A2, A3, A4, VA, R1, R2]) Call(autoRecover bool,
 	return
 }
 
-func (d DelegatePairFuncVar4[A1, A2, A3, A4, VA, R1, R2]) CastFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar4[A1, A2, A3, A4, VA, R1, R2] {
+func (d DelegatePairFuncVar4[A1, A2, A3, A4, VA, R1, R2]) ToFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar4[A1, A2, A3, A4, VA, R1, R2] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, args ...VA) (R1, R2) {
 		return d.Exec(interrupt, a1, a2, a3, a4, args...)
 	}
@@ -206,7 +206,7 @@ func (d DelegatePairFuncVar5[A1, A2, A3, A4, A5, VA, R1, R2]) Call(
 	return
 }
 
-func (d DelegatePairFuncVar5[A1, A2, A3, A4, A5, VA, R1, R2]) CastFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar5[A1, A2, A3, A4, A5, VA, R1, R2] {
+func (d DelegatePairFuncVar5[A1, A2, A3, A4, A5, VA, R1, R2]) ToFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar5[A1, A2, A3, A4, A5, VA, R1, R2] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, args ...VA) (R1, R2) {
 		return d.Exec(interrupt, a1, a2, a3, a4, a5, args...)
 	}
@@ -247,7 +247,7 @@ func (d DelegatePairFuncVar6[A1, A2, A3, A4, A5, A6, VA, R1, R2]) Call(
 	return
 }
 
-func (d DelegatePairFuncVar6[A1, A2, A3, A4, A5, A6, VA, R1, R2]) CastFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar6[A1, A2, A3, A4, A5, A6, VA, R1, R2] {
+func (d DelegatePairFuncVar6[A1, A2, A3, A4, A5, A6, VA, R1, R2]) ToFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar6[A1, A2, A3, A4, A5, A6, VA, R1, R2] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, args ...VA) (R1, R2) {
 		return d.Exec(interrupt, a1, a2, a3, a4, a5, a6, args...)
 	}
@@ -288,7 +288,7 @@ func (d DelegatePairFuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R1, R2]) Call(
 	return
 }
 
-func (d DelegatePairFuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R1, R2]) CastFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R1, R2] {
+func (d DelegatePairFuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R1, R2]) ToFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R1, R2] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, args ...VA) (R1, R2) {
 		return d.Exec(interrupt, a1, a2, a3, a4, a5, a6, a7, args...)
 	}
@@ -329,7 +329,7 @@ func (d DelegatePairFuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R1, R2]) Call(
 	return
 }
 
-func (d DelegatePairFuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R1, R2]) CastFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R1, R2] {
+func (d DelegatePairFuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R1, R2]) ToFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R1, R2] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, args ...VA) (R1, R2) {
 		return d.Exec(interrupt, a1, a2, a3, a4, a5, a6, a7, a8, args...)
 	}
@@ -370,7 +370,7 @@ func (d DelegatePairFuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R1, R2]) Ca
 	return
 }
 
-func (d DelegatePairFuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R1, R2]) CastFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R1, R2] {
+func (d DelegatePairFuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R1, R2]) ToFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R1, R2] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, args ...VA) (R1, R2) {
 		return d.Exec(interrupt, a1, a2, a3, a4, a5, a6, a7, a8, a9, args...)
 	}
@@ -411,7 +411,7 @@ func (d DelegatePairFuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R1, R
 	return
 }
 
-func (d DelegatePairFuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R1, R2]) CastFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R1, R2] {
+func (d DelegatePairFuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R1, R2]) ToFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R1, R2] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, args ...VA) (R1, R2) {
 		return d.Exec(interrupt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, args...)
 	}
@@ -452,7 +452,7 @@ func (d DelegatePairFuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, 
 	return
 }
 
-func (d DelegatePairFuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R1, R2]) CastFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R1, R2] {
+func (d DelegatePairFuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R1, R2]) ToFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R1, R2] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, args ...VA) (R1, R2) {
 		return d.Exec(interrupt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, args...)
 	}
@@ -493,7 +493,7 @@ func (d DelegatePairFuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12,
 	return
 }
 
-func (d DelegatePairFuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R1, R2]) CastFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R1, R2] {
+func (d DelegatePairFuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R1, R2]) ToFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R1, R2] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, args ...VA) (R1, R2) {
 		return d.Exec(interrupt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, args...)
 	}
@@ -534,7 +534,7 @@ func (d DelegatePairFuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12,
 	return
 }
 
-func (d DelegatePairFuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R1, R2]) CastFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R1, R2] {
+func (d DelegatePairFuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R1, R2]) ToFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R1, R2] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, args ...VA) (R1, R2) {
 		return d.Exec(interrupt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, args...)
 	}
@@ -575,7 +575,7 @@ func (d DelegatePairFuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12,
 	return
 }
 
-func (d DelegatePairFuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R1, R2]) CastFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R1, R2] {
+func (d DelegatePairFuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R1, R2]) ToFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R1, R2] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, args ...VA) (R1, R2) {
 		return d.Exec(interrupt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, args...)
 	}
@@ -616,7 +616,7 @@ func (d DelegatePairFuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12,
 	return
 }
 
-func (d DelegatePairFuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R1, R2]) CastFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R1, R2] {
+func (d DelegatePairFuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R1, R2]) ToFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R1, R2] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, args ...VA) (R1, R2) {
 		return d.Exec(interrupt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, args...)
 	}
@@ -657,7 +657,7 @@ func (d DelegatePairFuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12,
 	return
 }
 
-func (d DelegatePairFuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R1, R2]) CastFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R1, R2] {
+func (d DelegatePairFuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R1, R2]) ToFunc(interrupt Func3[R1, R2, error, bool]) PairFuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R1, R2] {
 	return func(a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, a16 A16, args ...VA) (R1, R2) {
 		return d.Exec(interrupt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, args...)
 	}

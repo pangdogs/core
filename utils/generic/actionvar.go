@@ -60,7 +60,7 @@ func (f ActionVar0[VA]) Call(autoRecover bool, reportError chan error, args ...V
 	return nil
 }
 
-func (f ActionVar0[VA]) CastDelegate() DelegateActionVar0[VA] {
+func (f ActionVar0[VA]) ToDelegate() DelegateActionVar0[VA] {
 	return []ActionVar0[VA]{f}
 }
 
@@ -99,7 +99,7 @@ func (f ActionVar1[A1, VA]) Call(autoRecover bool, reportError chan error, a1 A1
 	return nil
 }
 
-func (f ActionVar1[A1, VA]) CastDelegate() DelegateActionVar1[A1, VA] {
+func (f ActionVar1[A1, VA]) ToDelegate() DelegateActionVar1[A1, VA] {
 	return []ActionVar1[A1, VA]{f}
 }
 
@@ -138,7 +138,7 @@ func (f ActionVar2[A1, A2, VA]) Call(autoRecover bool, reportError chan error, a
 	return nil
 }
 
-func (f ActionVar2[A1, A2, VA]) CastDelegate() DelegateActionVar2[A1, A2, VA] {
+func (f ActionVar2[A1, A2, VA]) ToDelegate() DelegateActionVar2[A1, A2, VA] {
 	return []ActionVar2[A1, A2, VA]{f}
 }
 
@@ -177,7 +177,7 @@ func (f ActionVar3[A1, A2, A3, VA]) Call(autoRecover bool, reportError chan erro
 	return nil
 }
 
-func (f ActionVar3[A1, A2, A3, VA]) CastDelegate() DelegateActionVar3[A1, A2, A3, VA] {
+func (f ActionVar3[A1, A2, A3, VA]) ToDelegate() DelegateActionVar3[A1, A2, A3, VA] {
 	return []ActionVar3[A1, A2, A3, VA]{f}
 }
 
@@ -216,7 +216,7 @@ func (f ActionVar4[A1, A2, A3, A4, VA]) Call(autoRecover bool, reportError chan 
 	return nil
 }
 
-func (f ActionVar4[A1, A2, A3, A4, VA]) CastDelegate() DelegateActionVar4[A1, A2, A3, A4, VA] {
+func (f ActionVar4[A1, A2, A3, A4, VA]) ToDelegate() DelegateActionVar4[A1, A2, A3, A4, VA] {
 	return []ActionVar4[A1, A2, A3, A4, VA]{f}
 }
 
@@ -264,7 +264,7 @@ func (f ActionVar5[A1, A2, A3, A4, A5, VA]) Call(
 	return nil
 }
 
-func (f ActionVar5[A1, A2, A3, A4, A5, VA]) CastDelegate() DelegateActionVar5[A1, A2, A3, A4, A5, VA] {
+func (f ActionVar5[A1, A2, A3, A4, A5, VA]) ToDelegate() DelegateActionVar5[A1, A2, A3, A4, A5, VA] {
 	return []ActionVar5[A1, A2, A3, A4, A5, VA]{f}
 }
 
@@ -312,7 +312,7 @@ func (f ActionVar6[A1, A2, A3, A4, A5, A6, VA]) Call(
 	return nil
 }
 
-func (f ActionVar6[A1, A2, A3, A4, A5, A6, VA]) CastDelegate() DelegateActionVar6[A1, A2, A3, A4, A5, A6, VA] {
+func (f ActionVar6[A1, A2, A3, A4, A5, A6, VA]) ToDelegate() DelegateActionVar6[A1, A2, A3, A4, A5, A6, VA] {
 	return []ActionVar6[A1, A2, A3, A4, A5, A6, VA]{f}
 }
 
@@ -360,7 +360,7 @@ func (f ActionVar7[A1, A2, A3, A4, A5, A6, A7, VA]) Call(
 	return nil
 }
 
-func (f ActionVar7[A1, A2, A3, A4, A5, A6, A7, VA]) CastDelegate() DelegateActionVar7[A1, A2, A3, A4, A5, A6, A7, VA] {
+func (f ActionVar7[A1, A2, A3, A4, A5, A6, A7, VA]) ToDelegate() DelegateActionVar7[A1, A2, A3, A4, A5, A6, A7, VA] {
 	return []ActionVar7[A1, A2, A3, A4, A5, A6, A7, VA]{f}
 }
 
@@ -408,7 +408,7 @@ func (f ActionVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA]) Call(
 	return nil
 }
 
-func (f ActionVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA]) CastDelegate() DelegateActionVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA] {
+func (f ActionVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA]) ToDelegate() DelegateActionVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA] {
 	return []ActionVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA]{f}
 }
 
@@ -456,7 +456,7 @@ func (f ActionVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA]) Call(
 	return nil
 }
 
-func (f ActionVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA]) CastDelegate() DelegateActionVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA] {
+func (f ActionVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA]) ToDelegate() DelegateActionVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA] {
 	return []ActionVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA]{f}
 }
 
@@ -504,7 +504,7 @@ func (f ActionVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA]) Call(
 	return nil
 }
 
-func (f ActionVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA]) CastDelegate() DelegateActionVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA] {
+func (f ActionVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA]) ToDelegate() DelegateActionVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA] {
 	return []ActionVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA]{f}
 }
 
@@ -552,7 +552,7 @@ func (f ActionVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA]) Call(
 	return nil
 }
 
-func (f ActionVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA]) CastDelegate() DelegateActionVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA] {
+func (f ActionVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA]) ToDelegate() DelegateActionVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA] {
 	return []ActionVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA]{f}
 }
 
@@ -600,7 +600,7 @@ func (f ActionVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA]) Call
 	return nil
 }
 
-func (f ActionVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA]) CastDelegate() DelegateActionVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA] {
+func (f ActionVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA]) ToDelegate() DelegateActionVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA] {
 	return []ActionVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA]{f}
 }
 
@@ -648,7 +648,7 @@ func (f ActionVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA])
 	return nil
 }
 
-func (f ActionVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA]) CastDelegate() DelegateActionVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA] {
+func (f ActionVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA]) ToDelegate() DelegateActionVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA] {
 	return []ActionVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA]{f}
 }
 
@@ -696,7 +696,7 @@ func (f ActionVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14,
 	return nil
 }
 
-func (f ActionVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA]) CastDelegate() DelegateActionVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA] {
+func (f ActionVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA]) ToDelegate() DelegateActionVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA] {
 	return []ActionVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA]{f}
 }
 
@@ -744,7 +744,7 @@ func (f ActionVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14,
 	return nil
 }
 
-func (f ActionVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA]) CastDelegate() DelegateActionVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA] {
+func (f ActionVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA]) ToDelegate() DelegateActionVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA] {
 	return []ActionVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA]{f}
 }
 
@@ -792,6 +792,6 @@ func (f ActionVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14,
 	return nil
 }
 
-func (f ActionVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA]) CastDelegate() DelegateActionVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA] {
+func (f ActionVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA]) ToDelegate() DelegateActionVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA] {
 	return []ActionVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA]{f}
 }
