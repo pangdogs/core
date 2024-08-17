@@ -29,8 +29,8 @@ import (
 // ConcurrentEntity 多线程安全的实体接口
 type ConcurrentEntity interface {
 	iConcurrentEntity
+	iContext
 	ictx.ConcurrentContextProvider
-	context.Context
 	fmt.Stringer
 
 	// GetId 获取实体Id
@@ -39,8 +39,20 @@ type ConcurrentEntity interface {
 	GetPrototype() string
 }
 
+type iContext interface {
+	context.Context
+
+	// Terminated 已停止
+	Terminated() <-chan struct{}
+}
+
 type iConcurrentEntity interface {
 	getEntity() Entity
+}
+
+// Terminated 已停止
+func (entity *EntityBehavior) Terminated() <-chan struct{} {
+	return entity.terminated
 }
 
 func (entity *EntityBehavior) getEntity() Entity {

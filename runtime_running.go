@@ -36,7 +36,7 @@ func (rt *RuntimeBehavior) Run() <-chan struct{} {
 	select {
 	case <-ctx.Done():
 		panic(fmt.Errorf("%w: %w", ErrRuntime, context.Canceled))
-	case <-ctx.TerminatedChan():
+	case <-ctx.Terminated():
 		panic(fmt.Errorf("%w: terminated", ErrRuntime))
 	default:
 	}
@@ -55,9 +55,9 @@ func (rt *RuntimeBehavior) Terminate() <-chan struct{} {
 	return rt.ctx.Terminate()
 }
 
-// TerminatedChan 已停止chan
-func (rt *RuntimeBehavior) TerminatedChan() <-chan struct{} {
-	return rt.ctx.TerminatedChan()
+// Terminated 已停止
+func (rt *RuntimeBehavior) Terminated() <-chan struct{} {
+	return rt.ctx.Terminated()
 }
 
 func (rt *RuntimeBehavior) running() {

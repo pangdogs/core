@@ -32,8 +32,8 @@ import (
 // Component 组件接口
 type Component interface {
 	iComponent
+	iContext
 	ictx.CurrentContextProvider
-	context.Context
 	fmt.Stringer
 
 	// GetId 获取组件Id
@@ -68,6 +68,7 @@ type iComponent interface {
 type ComponentBehavior struct {
 	context.Context
 	terminate                  context.CancelFunc
+	terminated                 chan struct{}
 	id                         uid.Id
 	name                       string
 	entity                     Entity
@@ -121,6 +122,11 @@ func (comp *ComponentBehavior) DestroySelf() {
 	}
 }
 
+// Terminated 已停止
+func (comp *ComponentBehavior) Terminated() <-chan struct{} {
+	return comp.terminated
+}
+
 // GetCurrentContext 获取当前上下文
 func (comp *ComponentBehavior) GetCurrentContext() iface.Cache {
 	return comp.entity.GetCurrentContext()
@@ -158,6 +164,8 @@ func (comp *ComponentBehavior) setState(state ComponentState) {
 	case ComponentState_Detach:
 		comp.terminate()
 		comp._eventComponentDestroySelf.Close()
+	case ComponentState_Death:
+		close(comp.terminated)
 	}
 }
 
@@ -167,6 +175,7 @@ func (comp *ComponentBehavior) setReflected(v reflect.Value) {
 
 func (comp *ComponentBehavior) withContext(ctx context.Context) {
 	comp.Context, comp.terminate = context.WithCancel(ctx)
+	comp.terminated = make(chan struct{})
 }
 
 func (comp *ComponentBehavior) setFixed(b bool) {

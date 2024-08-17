@@ -36,7 +36,7 @@ func (serv *ServiceBehavior) Run() <-chan struct{} {
 	select {
 	case <-ctx.Done():
 		panic(fmt.Errorf("%w: %w", ErrService, context.Canceled))
-	case <-ctx.TerminatedChan():
+	case <-ctx.Terminated():
 		panic(fmt.Errorf("%w: terminated", ErrRuntime))
 	default:
 	}
@@ -55,9 +55,9 @@ func (serv *ServiceBehavior) Terminate() <-chan struct{} {
 	return serv.ctx.Terminate()
 }
 
-// TerminatedChan 已停止chan
-func (serv *ServiceBehavior) TerminatedChan() <-chan struct{} {
-	return serv.ctx.TerminatedChan()
+// Terminated 已停止
+func (serv *ServiceBehavior) Terminated() <-chan struct{} {
+	return serv.ctx.Terminated()
 }
 
 func (serv *ServiceBehavior) running() {

@@ -55,11 +55,11 @@ func UnsafeNewEntity(options EntityOptions) Entity {
 type Entity interface {
 	iEntity
 	iConcurrentEntity
+	iContext
 	iComponentMgr
 	iTreeNode
 	ictx.CurrentContextProvider
 	reinterpret.CompositeProvider
-	context.Context
 	fmt.Stringer
 
 	// GetId 获取实体Id
@@ -95,6 +95,7 @@ type iEntity interface {
 type EntityBehavior struct {
 	context.Context
 	terminate                             context.CancelFunc
+	terminated                            chan struct{}
 	opts                                  EntityOptions
 	context                               iface.Cache
 	componentList                         generic.List[Component]
@@ -227,6 +228,8 @@ func (entity *EntityBehavior) setState(state EntityState) {
 		entity.eventTreeNodeRemoveChild.Close()
 		entity.eventTreeNodeEnterParent.Close()
 		entity.eventTreeNodeLeaveParent.Close()
+	case EntityState_Death:
+		close(entity.terminated)
 	}
 }
 
@@ -236,6 +239,7 @@ func (entity *EntityBehavior) setReflected(v reflect.Value) {
 
 func (entity *EntityBehavior) withContext(ctx context.Context) {
 	entity.Context, entity.terminate = context.WithCancel(ctx)
+	entity.terminated = make(chan struct{})
 }
 
 func (entity *EntityBehavior) eventEntityDestroySelf() event.IEvent {

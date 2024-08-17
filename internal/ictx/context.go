@@ -40,8 +40,8 @@ type Context interface {
 	GetWaitGroup() *sync.WaitGroup
 	// Terminate 停止
 	Terminate() <-chan struct{}
-	// TerminatedChan 已停止chan
-	TerminatedChan() <-chan struct{}
+	// Terminated 已停止
+	Terminated() <-chan struct{}
 }
 
 type iContext interface {
@@ -89,8 +89,8 @@ func (ctx *ContextBehavior) Terminate() <-chan struct{} {
 	return ctx.terminatedChan
 }
 
-// TerminatedChan 已停止chan
-func (ctx *ContextBehavior) TerminatedChan() <-chan struct{} {
+// Terminated 已停止
+func (ctx *ContextBehavior) Terminated() <-chan struct{} {
 	return ctx.terminatedChan
 }
 
