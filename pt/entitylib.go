@@ -112,13 +112,13 @@ func (lib *_EntityLib) Declare(prototype string, atti Atti, comps ...any) Entity
 	}
 
 	for _, comp := range comps {
-		compInfo := ComponentDesc{Fixed: true}
+		compDesc := ComponentDesc{Fixed: true}
 
 	retry:
 		switch pt := comp.(type) {
 		case _CompAlias:
-			compInfo.Alias = pt.Alias
-			compInfo.Fixed = pt.Fixed
+			compDesc.Alias = pt.Alias
+			compDesc.Fixed = pt.Fixed
 			comp = pt.Comp
 			goto retry
 		case string:
@@ -126,16 +126,16 @@ func (lib *_EntityLib) Declare(prototype string, atti Atti, comps ...any) Entity
 			if !ok {
 				panic(fmt.Errorf("%w: entity %q component %q was not declared", ErrPt, prototype, pt))
 			}
-			compInfo.PT = compPT
+			compDesc.PT = compPT
 		default:
-			compInfo.PT = lib.compLib.Declare(pt)
+			compDesc.PT = lib.compLib.Declare(pt)
 		}
 
-		if compInfo.Alias == "" {
-			compInfo.Alias = compInfo.PT.Name
+		if compDesc.Alias == "" {
+			compDesc.Alias = compDesc.PT.Name
 		}
 
-		entity.Components = append(entity.Components, compInfo)
+		entity.Components = append(entity.Components, compDesc)
 	}
 
 	lib.entityIdx[prototype] = entity

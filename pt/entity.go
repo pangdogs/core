@@ -68,13 +68,13 @@ func (pt EntityPT) assemble(entity ec.Entity) ec.Entity {
 	}
 
 	for i := range pt.Components {
-		compInfo := &pt.Components[i]
+		compDesc := &pt.Components[i]
 
-		comp := compInfo.PT.Construct()
+		comp := compDesc.PT.Construct()
 
-		ec.UnsafeComponent(comp).SetFixed(compInfo.Fixed)
+		ec.UnsafeComponent(comp).SetFixed(compDesc.Fixed)
 
-		if err := entity.AddComponent(compInfo.Alias, comp); err != nil {
+		if err := entity.AddComponent(compDesc.Alias, comp); err != nil {
 			panic(fmt.Errorf("%w: %w", ErrPt, err))
 		}
 	}
