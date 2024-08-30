@@ -1,14 +1,12 @@
 module git.golaxy.org/core
 
-go 1.22
-
-toolchain go1.22.4
+go 1.23
 
 require (
 	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
-	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f
+	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948
 )
 
 require (
