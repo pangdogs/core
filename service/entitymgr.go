@@ -45,8 +45,8 @@ type EntityMgr interface {
 }
 
 type _EntityMgrBehavior struct {
-	ctx       Context
-	entityIdx sync.Map
+	ctx      Context
+	entities sync.Map
 }
 
 func (mgr *_EntityMgrBehavior) init(ctx Context) {
@@ -64,7 +64,7 @@ func (mgr *_EntityMgrBehavior) GetContext() Context {
 
 // GetEntity 查询实体
 func (mgr *_EntityMgrBehavior) GetEntity(id uid.Id) (ec.ConcurrentEntity, bool) {
-	v, ok := mgr.entityIdx.Load(id)
+	v, ok := mgr.entities.Load(id)
 	if !ok {
 		return nil, false
 	}
@@ -86,13 +86,13 @@ func (mgr *_EntityMgrBehavior) GetOrAddEntity(entity ec.ConcurrentEntity) (ec.Co
 		return nil, false, fmt.Errorf("%w: entity context is nil", ErrEntityMgr)
 	}
 
-	actual, loaded := mgr.entityIdx.LoadOrStore(entity.GetId(), entity)
+	actual, loaded := mgr.entities.LoadOrStore(entity.GetId(), entity)
 	return actual.(ec.ConcurrentEntity), loaded, nil
 }
 
 // GetAndRemoveEntity 查询并删除实体
 func (mgr *_EntityMgrBehavior) GetAndRemoveEntity(id uid.Id) (ec.ConcurrentEntity, bool) {
-	v, loaded := mgr.entityIdx.LoadAndDelete(id)
+	v, loaded := mgr.entities.LoadAndDelete(id)
 	if !loaded {
 		return nil, false
 	}
@@ -113,12 +113,12 @@ func (mgr *_EntityMgrBehavior) AddEntity(entity ec.ConcurrentEntity) error {
 		return fmt.Errorf("%w: entity context is nil", ErrEntityMgr)
 	}
 
-	mgr.entityIdx.Store(entity.GetId(), entity)
+	mgr.entities.Store(entity.GetId(), entity)
 
 	return nil
 }
 
 // RemoveEntity 删除实体
 func (mgr *_EntityMgrBehavior) RemoveEntity(id uid.Id) {
-	mgr.entityIdx.Delete(id)
+	mgr.entities.Delete(id)
 }
