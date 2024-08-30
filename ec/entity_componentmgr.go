@@ -90,7 +90,7 @@ func (entity *EntityBehavior) ContainsComponentById(id uid.Id) bool {
 
 // RangeComponents 遍历所有组件
 func (entity *EntityBehavior) RangeComponents(fun generic.Func1[Component, bool]) {
-	entity.componentList.Traversal(func(node *generic.Node[Component]) bool {
+	entity.components.Traversal(func(node *generic.Node[Component]) bool {
 		comp := entity.accessComponent(node.V)
 		if comp == nil {
 			return true
@@ -101,7 +101,7 @@ func (entity *EntityBehavior) RangeComponents(fun generic.Func1[Component, bool]
 
 // ReversedRangeComponents 反向遍历所有组件
 func (entity *EntityBehavior) ReversedRangeComponents(fun generic.Func1[Component, bool]) {
-	entity.componentList.ReversedTraversal(func(node *generic.Node[Component]) bool {
+	entity.components.ReversedTraversal(func(node *generic.Node[Component]) bool {
 		comp := entity.accessComponent(node.V)
 		if comp == nil {
 			return true
@@ -114,7 +114,7 @@ func (entity *EntityBehavior) ReversedRangeComponents(fun generic.Func1[Componen
 func (entity *EntityBehavior) FilterComponents(fun generic.Func1[Component, bool]) []Component {
 	var components []Component
 
-	entity.componentList.Traversal(func(node *generic.Node[Component]) bool {
+	entity.components.Traversal(func(node *generic.Node[Component]) bool {
 		comp := node.V
 		if fun.Exec(comp) {
 			components = append(components, comp)
@@ -137,9 +137,9 @@ func (entity *EntityBehavior) FilterComponents(fun generic.Func1[Component, bool
 
 // GetComponents 获取所有组件
 func (entity *EntityBehavior) GetComponents() []Component {
-	components := make([]Component, 0, entity.componentList.Len())
+	components := make([]Component, 0, entity.components.Len())
 
-	entity.componentList.Traversal(func(node *generic.Node[Component]) bool {
+	entity.components.Traversal(func(node *generic.Node[Component]) bool {
 		components = append(components, node.V)
 		return true
 	})
@@ -159,7 +159,7 @@ func (entity *EntityBehavior) GetComponents() []Component {
 
 // CountComponents 统计所有组件数量
 func (entity *EntityBehavior) CountComponents() int {
-	return entity.componentList.Len()
+	return entity.components.Len()
 }
 
 // AddComponent 添加组件，允许组件同名
@@ -195,7 +195,7 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 		return
 	}
 
-	entity.componentList.TraversalAt(func(node *generic.Node[Component]) bool {
+	entity.components.TraversalAt(func(node *generic.Node[Component]) bool {
 		comp := node.V
 
 		if comp.GetName() != name {
@@ -260,7 +260,7 @@ func (entity *EntityBehavior) addComponent(name string, component Component) {
 	component.init(name, entity.opts.InstanceFace.Iface, component)
 
 	if at, ok := entity.getComponentNode(name); ok {
-		entity.componentList.TraversalAt(func(node *generic.Node[Component]) bool {
+		entity.components.TraversalAt(func(node *generic.Node[Component]) bool {
 			if node.V.GetName() == name {
 				at = node
 				return true
@@ -268,10 +268,10 @@ func (entity *EntityBehavior) addComponent(name string, component Component) {
 			return false
 		}, at)
 
-		entity.componentList.InsertAfter(component, at)
+		entity.components.InsertAfter(component, at)
 
 	} else {
-		entity.componentList.PushBack(component)
+		entity.components.PushBack(component)
 	}
 
 	component.setState(ComponentState_Attach)
@@ -280,7 +280,7 @@ func (entity *EntityBehavior) addComponent(name string, component Component) {
 func (entity *EntityBehavior) getComponentNode(name string) (*generic.Node[Component], bool) {
 	var compNode *generic.Node[Component]
 
-	entity.componentList.Traversal(func(node *generic.Node[Component]) bool {
+	entity.components.Traversal(func(node *generic.Node[Component]) bool {
 		if node.V.GetName() == name {
 			compNode = node
 			return false
@@ -294,7 +294,7 @@ func (entity *EntityBehavior) getComponentNode(name string) (*generic.Node[Compo
 func (entity *EntityBehavior) getComponentNodeById(id uid.Id) (*generic.Node[Component], bool) {
 	var compNode *generic.Node[Component]
 
-	entity.componentList.Traversal(func(node *generic.Node[Component]) bool {
+	entity.components.Traversal(func(node *generic.Node[Component]) bool {
 		if node.V.GetId() == id {
 			compNode = node
 			return false

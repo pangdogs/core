@@ -99,7 +99,7 @@ type EntityBehavior struct {
 	terminated                            chan struct{}
 	opts                                  EntityOptions
 	context                               iface.Cache
-	componentList                         generic.List[Component]
+	components                            generic.List[Component]
 	state                                 EntityState
 	reflected                             reflect.Value
 	treeNodeState                         TreeNodeState
@@ -212,7 +212,7 @@ func (entity *EntityBehavior) setContext(ctx iface.Cache) {
 }
 
 func (entity *EntityBehavior) getVersion() int64 {
-	return entity.componentList.Version()
+	return entity.components.Version()
 }
 
 func (entity *EntityBehavior) setState(state EntityState) {
