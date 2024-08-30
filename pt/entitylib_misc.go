@@ -50,7 +50,7 @@ func CompInterface[FACE any](comp any, fixed bool) _CompAlias {
 
 // Atti 实体原型属性
 type Atti struct {
-	Instance           any       // 实体类型
+	Instance           any       // 实体实例
 	Scope              *ec.Scope // 可访问作用域
 	AwakeOnFirstAccess *bool     // 设置开启组件被首次访问时，检测并调用Awake()
 }
