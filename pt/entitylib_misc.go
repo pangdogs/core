@@ -48,9 +48,9 @@ func CompInterface[FACE any](comp any, fixed bool) _CompAlias {
 	}
 }
 
-// Attribute 实体原型属性
-type Attribute struct {
-	Composite          any       // 实体类型
+// Atti 实体原型属性
+type Atti struct {
+	Instance           any       // 实体类型
 	Scope              *ec.Scope // 可访问作用域
 	AwakeOnFirstAccess *bool     // 设置开启组件被首次访问时，检测并调用Awake()
 }

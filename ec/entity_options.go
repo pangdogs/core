@@ -28,7 +28,7 @@ import (
 
 // EntityOptions 创建实体的所有选项
 type EntityOptions struct {
-	CompositeFace      iface.Face[Entity] // 扩展者，在扩展实体自身能力时使用
+	InstanceFace       iface.Face[Entity] // 实例，用于扩展实体能力
 	Prototype          string             // 实体原型名称
 	Scope              Scope              // 可访问作用域
 	PersistId          uid.Id             // 实体持久化Id
@@ -43,7 +43,7 @@ type _Option struct{}
 // Default 默认值
 func (_Option) Default() option.Setting[EntityOptions] {
 	return func(o *EntityOptions) {
-		With.CompositeFace(iface.Face[Entity]{})(o)
+		With.InstanceFace(iface.Face[Entity]{})(o)
 		With.Prototype("")(o)
 		With.Scope(Scope_Global)(o)
 		With.PersistId(uid.Nil)(o)
@@ -52,10 +52,10 @@ func (_Option) Default() option.Setting[EntityOptions] {
 	}
 }
 
-// CompositeFace 扩展者，在扩展实体自身能力时使用
-func (_Option) CompositeFace(face iface.Face[Entity]) option.Setting[EntityOptions] {
+// InstanceFace 实例，用于扩展实体能力
+func (_Option) InstanceFace(face iface.Face[Entity]) option.Setting[EntityOptions] {
 	return func(o *EntityOptions) {
-		o.CompositeFace = face
+		o.InstanceFace = face
 	}
 }
 

@@ -40,15 +40,15 @@ func NewEntity(settings ...option.Setting[EntityOptions]) Entity {
 
 // Deprecated: UnsafeNewEntity 内部创建实体
 func UnsafeNewEntity(options EntityOptions) Entity {
-	if !options.CompositeFace.IsNil() {
-		options.CompositeFace.Iface.init(options)
-		return options.CompositeFace.Iface
+	if !options.InstanceFace.IsNil() {
+		options.InstanceFace.Iface.init(options)
+		return options.InstanceFace.Iface
 	}
 
 	e := &EntityBehavior{}
 	e.init(options)
 
-	return e.opts.CompositeFace.Iface
+	return e.opts.InstanceFace.Iface
 }
 
 // Entity 实体接口
@@ -59,7 +59,7 @@ type Entity interface {
 	iComponentMgr
 	iTreeNode
 	ictx.CurrentContextProvider
-	reinterpret.CompositeProvider
+	reinterpret.InstanceProvider
 	fmt.Stringer
 
 	// GetId 获取实体Id
@@ -76,6 +76,8 @@ type Entity interface {
 	GetMeta() meta.Meta
 	// DestroySelf 销毁自身
 	DestroySelf()
+
+	iAutoEventEntityDestroySelf // 事件：实体销毁自身
 }
 
 type iEntity interface {
@@ -87,11 +89,10 @@ type iEntity interface {
 	setState(state EntityState)
 	setReflected(v reflect.Value)
 	withContext(ctx context.Context)
-	eventEntityDestroySelf() event.IEvent
 	cleanManagedHooks()
 }
 
-// EntityBehavior 实体行为，在需要扩展实体能力时，匿名嵌入至实体结构体中
+// EntityBehavior 实体行为，在扩展实体能力时，匿名嵌入至实体结构体中
 type EntityBehavior struct {
 	context.Context
 	terminate                             context.CancelFunc
@@ -103,7 +104,7 @@ type EntityBehavior struct {
 	reflected                             reflect.Value
 	treeNodeState                         TreeNodeState
 	treeNodeParent                        Entity
-	_eventEntityDestroySelf               event.Event
+	eventEntityDestroySelf                event.Event
 	eventComponentMgrAddComponents        event.Event
 	eventComponentMgrRemoveComponent      event.Event
 	eventComponentMgrFirstAccessComponent event.Event
@@ -139,7 +140,7 @@ func (entity *EntityBehavior) GetReflected() reflect.Value {
 	if entity.reflected.IsValid() {
 		return entity.reflected
 	}
-	entity.reflected = reflect.ValueOf(entity.opts.CompositeFace.Iface)
+	entity.reflected = reflect.ValueOf(entity.opts.InstanceFace.Iface)
 	return entity.reflected
 }
 
@@ -152,8 +153,13 @@ func (entity *EntityBehavior) GetMeta() meta.Meta {
 func (entity *EntityBehavior) DestroySelf() {
 	switch entity.GetState() {
 	case EntityState_Awake, EntityState_Start, EntityState_Alive:
-		_EmitEventEntityDestroySelf(UnsafeEntity(entity), entity.opts.CompositeFace.Iface)
+		_EmitEventEntityDestroySelf(entity, entity.opts.InstanceFace.Iface)
 	}
+}
+
+// EventEntityDestroySelf 事件：实体销毁自身
+func (entity *EntityBehavior) EventEntityDestroySelf() event.IEvent {
+	return &entity.eventEntityDestroySelf
 }
 
 // GetCurrentContext 获取当前上下文
@@ -166,9 +172,9 @@ func (entity *EntityBehavior) GetConcurrentContext() iface.Cache {
 	return entity.context
 }
 
-// GetCompositeFaceCache 支持重新解释类型
-func (entity *EntityBehavior) GetCompositeFaceCache() iface.Cache {
-	return entity.opts.CompositeFace.Cache
+// GetInstanceFaceCache 支持重新解释类型
+func (entity *EntityBehavior) GetInstanceFaceCache() iface.Cache {
+	return entity.opts.InstanceFace.Cache
 }
 
 // String implements fmt.Stringer
@@ -179,11 +185,11 @@ func (entity *EntityBehavior) String() string {
 func (entity *EntityBehavior) init(opts EntityOptions) {
 	entity.opts = opts
 
-	if entity.opts.CompositeFace.IsNil() {
-		entity.opts.CompositeFace = iface.MakeFaceT[Entity](entity)
+	if entity.opts.InstanceFace.IsNil() {
+		entity.opts.InstanceFace = iface.MakeFaceT[Entity](entity)
 	}
 
-	entity._eventEntityDestroySelf.Init(false, nil, event.EventRecursion_Discard)
+	entity.eventEntityDestroySelf.Init(false, nil, event.EventRecursion_Discard)
 	entity.eventComponentMgrAddComponents.Init(false, nil, event.EventRecursion_Allow)
 	entity.eventComponentMgrRemoveComponent.Init(false, nil, event.EventRecursion_Allow)
 	entity.eventComponentMgrFirstAccessComponent.Init(false, nil, event.EventRecursion_Allow)
@@ -219,7 +225,7 @@ func (entity *EntityBehavior) setState(state EntityState) {
 	switch entity.state {
 	case EntityState_Leave:
 		entity.terminate()
-		entity._eventEntityDestroySelf.Close()
+		entity.eventEntityDestroySelf.Close()
 		entity.eventComponentMgrAddComponents.Close()
 		entity.eventComponentMgrRemoveComponent.Close()
 		entity.eventComponentMgrFirstAccessComponent.Close()
@@ -240,8 +246,4 @@ func (entity *EntityBehavior) setReflected(v reflect.Value) {
 func (entity *EntityBehavior) withContext(ctx context.Context) {
 	entity.Context, entity.terminate = context.WithCancel(ctx)
 	entity.terminated = make(chan struct{})
-}
-
-func (entity *EntityBehavior) eventEntityDestroySelf() event.IEvent {
-	return &entity._eventEntityDestroySelf
 }

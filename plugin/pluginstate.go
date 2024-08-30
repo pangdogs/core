@@ -17,32 +17,14 @@
  * Copyright (c) 2024 pangdogs.
  */
 
+//go:generate stringer -type PluginState
 package plugin
 
-import "git.golaxy.org/core/utils/generic"
+// PluginState 插件状态
+type PluginState int8
 
-// Deprecated: UnsafePluginBundle 访问插件包的内部方法
-func UnsafePluginBundle(pluginBundle PluginBundle) _UnsafePluginBundle {
-	return _UnsafePluginBundle{
-		PluginBundle: pluginBundle,
-	}
-}
-
-type _UnsafePluginBundle struct {
-	PluginBundle
-}
-
-// SetPluginState 设置插件状态
-func (up _UnsafePluginBundle) SetPluginState(name string, state PluginState) {
-	up.setPluginState(name, state)
-}
-
-// SetInstallCB 设置安装插件回调
-func (up _UnsafePluginBundle) SetInstallCB(cb generic.Action1[PluginStatus]) {
-	up.setInstallCB(cb)
-}
-
-// SetUninstallCB 设置卸载插件回调
-func (up _UnsafePluginBundle) SetUninstallCB(cb generic.Action1[PluginStatus]) {
-	up.setUninstallCB(cb)
-}
+const (
+	PluginState_Loaded   PluginState = iota // 已加载
+	PluginState_Active                      // 已激活
+	PluginState_Inactive                    // 未激活
+)

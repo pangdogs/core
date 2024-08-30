@@ -184,7 +184,7 @@ func (entity *EntityBehavior) AddComponent(name string, components ...Component)
 		entity.addComponent(name, components[i])
 	}
 
-	_EmitEventComponentMgrAddComponents(entity, entity.opts.CompositeFace.Iface, components)
+	_EmitEventComponentMgrAddComponents(entity, entity.opts.InstanceFace.Iface, components)
 	return nil
 }
 
@@ -211,7 +211,7 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 		}
 		comp.setState(ComponentState_Detach)
 
-		_EmitEventComponentMgrRemoveComponent(entity, entity.opts.CompositeFace.Iface, comp)
+		_EmitEventComponentMgrRemoveComponent(entity, entity.opts.InstanceFace.Iface, comp)
 
 		node.Escape()
 		return true
@@ -236,7 +236,7 @@ func (entity *EntityBehavior) RemoveComponentById(id uid.Id) {
 	}
 	comp.setState(ComponentState_Detach)
 
-	_EmitEventComponentMgrRemoveComponent(entity, entity.opts.CompositeFace.Iface, comp)
+	_EmitEventComponentMgrRemoveComponent(entity, entity.opts.InstanceFace.Iface, comp)
 
 	compNode.Escape()
 }
@@ -257,7 +257,7 @@ func (entity *EntityBehavior) EventComponentMgrFirstAccessComponent() event.IEve
 }
 
 func (entity *EntityBehavior) addComponent(name string, component Component) {
-	component.init(name, entity.opts.CompositeFace.Iface, component)
+	component.init(name, entity.opts.InstanceFace.Iface, component)
 
 	if at, ok := entity.getComponentNode(name); ok {
 		entity.componentList.TraversalAt(func(node *generic.Node[Component]) bool {
@@ -309,7 +309,7 @@ func (entity *EntityBehavior) accessComponent(comp Component) Component {
 	if entity.opts.AwakeOnFirstAccess && comp.GetState() == ComponentState_Attach {
 		switch entity.GetState() {
 		case EntityState_Awake, EntityState_Start, EntityState_Alive:
-			_EmitEventComponentMgrFirstAccessComponent(entity, entity.opts.CompositeFace.Iface, comp)
+			_EmitEventComponentMgrFirstAccessComponent(entity, entity.opts.InstanceFace.Iface, comp)
 		}
 	}
 

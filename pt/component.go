@@ -26,13 +26,13 @@ import (
 
 // ComponentPT 组件原型
 type ComponentPT struct {
-	Name  string       // 组件名称
-	RType reflect.Type // 反射类型
+	Name       string       // 组件名称
+	InstanceRT reflect.Type // 实例反射类型
 }
 
 // Construct 创建组件
 func (pt ComponentPT) Construct() ec.Component {
-	vfComp := reflect.New(pt.RType)
+	vfComp := reflect.New(pt.InstanceRT)
 
 	comp := vfComp.Interface().(ec.Component)
 	ec.UnsafeComponent(comp).SetReflected(vfComp)

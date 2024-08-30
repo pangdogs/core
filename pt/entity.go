@@ -28,8 +28,8 @@ import (
 	"reflect"
 )
 
-// CompInfo 组件信息
-type CompInfo struct {
+// ComponentDesc 组件描述
+type ComponentDesc struct {
 	PT    ComponentPT // 原型
 	Alias string      // 别名
 	Fixed bool        // 固定
@@ -37,18 +37,18 @@ type CompInfo struct {
 
 // EntityPT 实体原型
 type EntityPT struct {
-	Prototype          string       // 实体原型名称
-	CompositeRT        reflect.Type // 扩展者反射类型
-	Scope              *ec.Scope    // 可访问作用域
-	AwakeOnFirstAccess *bool        // 设置开启组件被首次访问时，检测并调用Awake()
-	Components         []CompInfo   // 组件信息
+	Prototype          string          // 实体原型名称
+	InstanceRT         reflect.Type    // 实例反射类型
+	Scope              *ec.Scope       // 可访问作用域
+	AwakeOnFirstAccess *bool           // 设置开启组件被首次访问时，检测并调用Awake()
+	Components         []ComponentDesc // 组件信息
 }
 
 // Construct 创建实体
 func (pt EntityPT) Construct(settings ...option.Setting[ec.EntityOptions]) ec.Entity {
 	options := option.Make(ec.With.Default())
-	if pt.CompositeRT != nil {
-		options.CompositeFace = iface.MakeFaceT(reflect.New(pt.CompositeRT).Interface().(ec.Entity))
+	if pt.InstanceRT != nil {
+		options.InstanceFace = iface.MakeFaceT(reflect.New(pt.InstanceRT).Interface().(ec.Entity))
 	}
 	if pt.Scope != nil {
 		options.Scope = *pt.Scope

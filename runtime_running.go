@@ -113,8 +113,8 @@ func (rt *RuntimeBehavior) initPlugin() {
 	plugin.UnsafePluginBundle(pluginBundle).SetInstallCB(rt.activatePlugin)
 	plugin.UnsafePluginBundle(pluginBundle).SetUninstallCB(rt.deactivatePlugin)
 
-	pluginBundle.Range(func(pluginInfo plugin.PluginInfo) bool {
-		rt.activatePlugin(pluginInfo)
+	pluginBundle.Range(func(pluginStatus plugin.PluginStatus) bool {
+		rt.activatePlugin(pluginStatus)
 		return true
 	})
 }
@@ -128,22 +128,22 @@ func (rt *RuntimeBehavior) shutPlugin() {
 	plugin.UnsafePluginBundle(pluginBundle).SetInstallCB(nil)
 	plugin.UnsafePluginBundle(pluginBundle).SetUninstallCB(nil)
 
-	pluginBundle.ReversedRange(func(pluginInfo plugin.PluginInfo) bool {
-		rt.deactivatePlugin(pluginInfo)
+	pluginBundle.ReversedRange(func(pluginStatus plugin.PluginStatus) bool {
+		rt.deactivatePlugin(pluginStatus)
 		return true
 	})
 }
 
-func (rt *RuntimeBehavior) activatePlugin(pluginInfo plugin.PluginInfo) {
-	if pluginInit, ok := pluginInfo.Face.Iface.(LifecycleRuntimePluginInit); ok {
+func (rt *RuntimeBehavior) activatePlugin(pluginStatus plugin.PluginStatus) {
+	if pluginInit, ok := pluginStatus.InstanceFace.Iface.(LifecycleRuntimePluginInit); ok {
 		generic.MakeAction1(pluginInit.InitRP).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
 	}
-	plugin.UnsafePluginBundle(rt.ctx.GetPluginBundle()).SetActive(pluginInfo.Name, true)
+	plugin.UnsafePluginBundle(rt.ctx.GetPluginBundle()).SetPluginState(pluginStatus.Name, plugin.PluginState_Active)
 }
 
-func (rt *RuntimeBehavior) deactivatePlugin(pluginInfo plugin.PluginInfo) {
-	plugin.UnsafePluginBundle(rt.ctx.GetPluginBundle()).SetActive(pluginInfo.Name, false)
-	if pluginShut, ok := pluginInfo.Face.Iface.(LifecycleRuntimePluginShut); ok {
+func (rt *RuntimeBehavior) deactivatePlugin(pluginStatus plugin.PluginStatus) {
+	plugin.UnsafePluginBundle(rt.ctx.GetPluginBundle()).SetPluginState(pluginStatus.Name, plugin.PluginState_Inactive)
+	if pluginShut, ok := pluginStatus.InstanceFace.Iface.(LifecycleRuntimePluginShut); ok {
 		generic.MakeAction1(pluginShut.ShutRP).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
 	}
 }

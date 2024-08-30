@@ -35,22 +35,22 @@ func NewService(ctx service.Context, settings ...option.Setting[ServiceOptions])
 
 // Deprecated: UnsafeNewService 内部创建服务
 func UnsafeNewService(ctx service.Context, options ServiceOptions) Service {
-	if !options.CompositeFace.IsNil() {
-		options.CompositeFace.Iface.init(ctx, options)
-		return options.CompositeFace.Iface
+	if !options.InstanceFace.IsNil() {
+		options.InstanceFace.Iface.init(ctx, options)
+		return options.InstanceFace.Iface
 	}
 
 	service := &ServiceBehavior{}
 	service.init(ctx, options)
 
-	return service.opts.CompositeFace.Iface
+	return service.opts.InstanceFace.Iface
 }
 
 // Service 服务
 type Service interface {
 	iService
 	iRunning
-	reinterpret.CompositeProvider
+	reinterpret.InstanceProvider
 
 	// GetContext 获取服务上下文
 	GetContext() service.Context
@@ -71,9 +71,9 @@ func (serv *ServiceBehavior) GetContext() service.Context {
 	return serv.ctx
 }
 
-// GetCompositeFaceCache 支持重新解释类型
-func (serv *ServiceBehavior) GetCompositeFaceCache() iface.Cache {
-	return serv.opts.CompositeFace.Cache
+// GetInstanceFaceCache 支持重新解释类型
+func (serv *ServiceBehavior) GetInstanceFaceCache() iface.Cache {
+	return serv.opts.InstanceFace.Cache
 }
 
 func (serv *ServiceBehavior) init(ctx service.Context, opts ServiceOptions) {
@@ -88,8 +88,8 @@ func (serv *ServiceBehavior) init(ctx service.Context, opts ServiceOptions) {
 	serv.ctx = ctx
 	serv.opts = opts
 
-	if serv.opts.CompositeFace.IsNil() {
-		serv.opts.CompositeFace = iface.MakeFaceT[Service](serv)
+	if serv.opts.InstanceFace.IsNil() {
+		serv.opts.InstanceFace = iface.MakeFaceT[Service](serv)
 	}
 
 	serv.changeRunningState(service.RunningState_Birth)

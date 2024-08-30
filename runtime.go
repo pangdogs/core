@@ -40,15 +40,15 @@ func NewRuntime(ctx runtime.Context, settings ...option.Setting[RuntimeOptions])
 
 // Deprecated: UnsafeNewRuntime 内部创建运行时
 func UnsafeNewRuntime(ctx runtime.Context, options RuntimeOptions) Runtime {
-	if !options.CompositeFace.IsNil() {
-		options.CompositeFace.Iface.init(ctx, options)
-		return options.CompositeFace.Iface
+	if !options.InstanceFace.IsNil() {
+		options.InstanceFace.Iface.init(ctx, options)
+		return options.InstanceFace.Iface
 	}
 
 	runtime := &RuntimeBehavior{}
 	runtime.init(ctx, options)
 
-	return runtime.opts.CompositeFace.Iface
+	return runtime.opts.InstanceFace.Iface
 }
 
 // Runtime 运行时接口
@@ -57,7 +57,7 @@ type Runtime interface {
 	iRunning
 	ictx.CurrentContextProvider
 	ictx.ConcurrentContextProvider
-	reinterpret.CompositeProvider
+	reinterpret.InstanceProvider
 	async.Callee
 }
 
@@ -66,7 +66,7 @@ type iRuntime interface {
 	getOptions() *RuntimeOptions
 }
 
-// RuntimeBehavior 运行时行为，在需要扩展运行时能力时，匿名嵌入至运行时结构体中
+// RuntimeBehavior 运行时行为，在扩展运行时能力时，匿名嵌入至运行时结构体中
 type RuntimeBehavior struct {
 	ctx             runtime.Context
 	opts            RuntimeOptions
@@ -86,9 +86,9 @@ func (rt *RuntimeBehavior) GetConcurrentContext() iface.Cache {
 	return rt.ctx.GetConcurrentContext()
 }
 
-// GetCompositeFaceCache 支持重新解释类型
-func (rt *RuntimeBehavior) GetCompositeFaceCache() iface.Cache {
-	return rt.opts.CompositeFace.Cache
+// GetInstanceFaceCache 支持重新解释类型
+func (rt *RuntimeBehavior) GetInstanceFaceCache() iface.Cache {
+	return rt.opts.InstanceFace.Cache
 }
 
 func (rt *RuntimeBehavior) init(ctx runtime.Context, opts RuntimeOptions) {
@@ -103,15 +103,15 @@ func (rt *RuntimeBehavior) init(ctx runtime.Context, opts RuntimeOptions) {
 	rt.ctx = ctx
 	rt.opts = opts
 
-	if rt.opts.CompositeFace.IsNil() {
-		rt.opts.CompositeFace = iface.MakeFaceT[Runtime](rt)
+	if rt.opts.InstanceFace.IsNil() {
+		rt.opts.InstanceFace = iface.MakeFaceT[Runtime](rt)
 	}
 
 	rt.hooksMap = make(map[uid.Id][3]event.Hook)
 	rt.processQueue = make(chan _Task, rt.opts.ProcessQueueCapacity)
 
 	runtime.UnsafeContext(ctx).SetFrame(rt.opts.Frame)
-	runtime.UnsafeContext(ctx).SetCallee(rt.opts.CompositeFace.Iface)
+	runtime.UnsafeContext(ctx).SetCallee(rt.opts.InstanceFace.Iface)
 
 	ctx.ActivateEvent(&rt.eventUpdate, event.EventRecursion_Disallow)
 	ctx.ActivateEvent(&rt.eventLateUpdate, event.EventRecursion_Disallow)
@@ -119,7 +119,7 @@ func (rt *RuntimeBehavior) init(ctx runtime.Context, opts RuntimeOptions) {
 	rt.changeRunningState(runtime.RunningState_Birth)
 
 	if rt.opts.AutoRun {
-		rt.opts.CompositeFace.Iface.Run()
+		rt.opts.InstanceFace.Iface.Run()
 	}
 }
 
@@ -252,7 +252,7 @@ func (rt *RuntimeBehavior) activateEntity(entity ec.Entity) {
 	if entityLateUpdate, ok := entity.(LifecycleEntityLateUpdate); ok {
 		hooks[1] = event.Bind[LifecycleEntityLateUpdate](&rt.eventLateUpdate, entityLateUpdate)
 	}
-	hooks[2] = ec.BindEventEntityDestroySelf(ec.UnsafeEntity(entity), rt)
+	hooks[2] = ec.BindEventEntityDestroySelf(entity, rt)
 
 	rt.hooksMap[entity.GetId()] = hooks
 
@@ -298,7 +298,7 @@ func (rt *RuntimeBehavior) activateComponent(comp ec.Component) {
 		bound = true
 	}
 	if !comp.GetFixed() {
-		hooks[2] = ec.BindEventComponentDestroySelf(ec.UnsafeComponent(comp), rt)
+		hooks[2] = ec.BindEventComponentDestroySelf(comp, rt)
 		bound = true
 	}
 

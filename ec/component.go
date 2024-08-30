@@ -50,34 +50,34 @@ type Component interface {
 	GetFixed() bool
 	// DestroySelf 销毁自身
 	DestroySelf()
+
+	iAutoEventComponentDestroySelf // 事件：组件销毁自身
 }
 
 type iComponent interface {
-	init(name string, entity Entity, composite Component)
+	init(name string, entity Entity, instance Component)
 	setId(id uid.Id)
 	setState(state ComponentState)
 	setReflected(v reflect.Value)
 	withContext(ctx context.Context)
 	setFixed(b bool)
-	getComposite() Component
-	eventComponentDestroySelf() event.IEvent
 	cleanManagedHooks()
 }
 
 // ComponentBehavior 组件行为，需要在开发新组件时，匿名嵌入至组件结构体中
 type ComponentBehavior struct {
 	context.Context
-	terminate                  context.CancelFunc
-	terminated                 chan struct{}
-	id                         uid.Id
-	name                       string
-	entity                     Entity
-	composite                  Component
-	state                      ComponentState
-	reflected                  reflect.Value
-	fixed                      bool
-	_eventComponentDestroySelf event.Event
-	managedHooks               []event.Hook
+	terminate                 context.CancelFunc
+	terminated                chan struct{}
+	id                        uid.Id
+	name                      string
+	entity                    Entity
+	instance                  Component
+	state                     ComponentState
+	reflected                 reflect.Value
+	fixed                     bool
+	eventComponentDestroySelf event.Event
+	managedHooks              []event.Hook
 }
 
 // GetId 获取组件Id
@@ -105,7 +105,7 @@ func (comp *ComponentBehavior) GetReflected() reflect.Value {
 	if comp.reflected.IsValid() {
 		return comp.reflected
 	}
-	comp.reflected = reflect.ValueOf(comp.composite)
+	comp.reflected = reflect.ValueOf(comp.instance)
 	return comp.reflected
 }
 
@@ -118,8 +118,13 @@ func (comp *ComponentBehavior) GetFixed() bool {
 func (comp *ComponentBehavior) DestroySelf() {
 	switch comp.GetState() {
 	case ComponentState_Awake, ComponentState_Start, ComponentState_Alive:
-		_EmitEventComponentDestroySelf(UnsafeComponent(comp), comp.composite)
+		_EmitEventComponentDestroySelf(comp, comp.instance)
 	}
+}
+
+// EventComponentDestroySelf 事件：组件销毁自身
+func (comp *ComponentBehavior) EventComponentDestroySelf() event.IEvent {
+	return &comp.eventComponentDestroySelf
 }
 
 // Terminated 已停止
@@ -142,11 +147,11 @@ func (comp *ComponentBehavior) String() string {
 	return fmt.Sprintf(`{"id":%q, "name":%q, "entity_id":%q}`, comp.GetId(), comp.GetName(), comp.GetEntity().GetId())
 }
 
-func (comp *ComponentBehavior) init(name string, entity Entity, composite Component) {
+func (comp *ComponentBehavior) init(name string, entity Entity, instance Component) {
 	comp.name = name
 	comp.entity = entity
-	comp.composite = composite
-	comp._eventComponentDestroySelf.Init(false, nil, event.EventRecursion_Discard)
+	comp.instance = instance
+	comp.eventComponentDestroySelf.Init(false, nil, event.EventRecursion_Discard)
 }
 
 func (comp *ComponentBehavior) setId(id uid.Id) {
@@ -163,7 +168,7 @@ func (comp *ComponentBehavior) setState(state ComponentState) {
 	switch comp.state {
 	case ComponentState_Detach:
 		comp.terminate()
-		comp._eventComponentDestroySelf.Close()
+		comp.eventComponentDestroySelf.Close()
 	case ComponentState_Death:
 		close(comp.terminated)
 	}
@@ -180,12 +185,4 @@ func (comp *ComponentBehavior) withContext(ctx context.Context) {
 
 func (comp *ComponentBehavior) setFixed(b bool) {
 	comp.fixed = b
-}
-
-func (comp *ComponentBehavior) getComposite() Component {
-	return comp.composite
-}
-
-func (comp *ComponentBehavior) eventComponentDestroySelf() event.IEvent {
-	return &comp._eventComponentDestroySelf
 }

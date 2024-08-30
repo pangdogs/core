@@ -41,13 +41,13 @@ func CreateEntityPT(ctx service.Context, prototype string) EntityPTCreator {
 type EntityPTCreator struct {
 	servCtx   service.Context
 	prototype string
-	atti      pt.Attribute
+	atti      pt.Atti
 	comps     []any
 }
 
-// Composite 设置扩展者，在扩展实体自身能力时使用
-func (c EntityPTCreator) Composite(composite any) EntityPTCreator {
-	c.atti.Composite = composite
+// Instance 设置实例，用于扩展实体能力
+func (c EntityPTCreator) Instance(instance any) EntityPTCreator {
+	c.atti.Instance = instance
 	return c
 }
 

@@ -56,5 +56,5 @@ func (entity *EntityBehavior) Terminated() <-chan struct{} {
 }
 
 func (entity *EntityBehavior) getEntity() Entity {
-	return entity.opts.CompositeFace.Iface
+	return entity.opts.InstanceFace.Iface
 }

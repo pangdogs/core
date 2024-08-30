@@ -41,15 +41,15 @@ func NewContext(servCtx service.Context, settings ...option.Setting[ContextOptio
 
 // Deprecated: UnsafeNewContext 内部创建运行时上下文
 func UnsafeNewContext(servCtx service.Context, options ContextOptions) Context {
-	if !options.CompositeFace.IsNil() {
-		options.CompositeFace.Iface.init(servCtx, options)
-		return options.CompositeFace.Iface
+	if !options.InstanceFace.IsNil() {
+		options.InstanceFace.Iface.init(servCtx, options)
+		return options.InstanceFace.Iface
 	}
 
 	ctx := &ContextBehavior{}
 	ctx.init(servCtx, options)
 
-	return ctx.opts.CompositeFace.Iface
+	return ctx.opts.InstanceFace.Iface
 }
 
 // Context 运行时上下文接口
@@ -58,7 +58,7 @@ type Context interface {
 	iConcurrentContext
 	ictx.Context
 	ictx.CurrentContextProvider
-	reinterpret.CompositeProvider
+	reinterpret.InstanceProvider
 	plugin.PluginProvider
 	async.Caller
 	GCCollector
@@ -92,7 +92,7 @@ type iContext interface {
 	gc()
 }
 
-// ContextBehavior 运行时上下文行为，在需要扩展运行时上下文能力时，匿名嵌入至运行时上下文结构体中
+// ContextBehavior 运行时上下文行为，在扩展运行时上下文能力时，匿名嵌入至运行时上下文结构体中
 type ContextBehavior struct {
 	ictx.ContextBehavior
 	servCtx      service.Context
@@ -145,17 +145,17 @@ func (ctx *ContextBehavior) ActivateEvent(event event.IEventCtrl, recursion even
 
 // GetCurrentContext 获取当前上下文
 func (ctx *ContextBehavior) GetCurrentContext() iface.Cache {
-	return iface.Iface2Cache[Context](ctx.opts.CompositeFace.Iface)
+	return iface.Iface2Cache[Context](ctx.opts.InstanceFace.Iface)
 }
 
 // GetConcurrentContext 获取多线程安全的上下文
 func (ctx *ContextBehavior) GetConcurrentContext() iface.Cache {
-	return iface.Iface2Cache[Context](ctx.opts.CompositeFace.Iface)
+	return iface.Iface2Cache[Context](ctx.opts.InstanceFace.Iface)
 }
 
-// GetCompositeFaceCache 支持重新解释类型
-func (ctx *ContextBehavior) GetCompositeFaceCache() iface.Cache {
-	return ctx.opts.CompositeFace.Cache
+// GetInstanceFaceCache 支持重新解释类型
+func (ctx *ContextBehavior) GetInstanceFaceCache() iface.Cache {
+	return ctx.opts.InstanceFace.Cache
 }
 
 // CollectGC 收集GC
@@ -179,8 +179,8 @@ func (ctx *ContextBehavior) init(servCtx service.Context, opts ContextOptions) {
 
 	ctx.opts = opts
 
-	if ctx.opts.CompositeFace.IsNil() {
-		ctx.opts.CompositeFace = iface.MakeFaceT[Context](ctx)
+	if ctx.opts.InstanceFace.IsNil() {
+		ctx.opts.InstanceFace = iface.MakeFaceT[Context](ctx)
 	}
 
 	if ctx.opts.Context == nil {
@@ -193,8 +193,8 @@ func (ctx *ContextBehavior) init(servCtx service.Context, opts ContextOptions) {
 
 	ictx.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
 	ctx.servCtx = servCtx
-	ctx.reflected = reflect.ValueOf(ctx.opts.CompositeFace.Iface)
-	ctx.entityMgr.init(ctx.opts.CompositeFace.Iface)
+	ctx.reflected = reflect.ValueOf(ctx.opts.InstanceFace.Iface)
+	ctx.entityMgr.init(ctx.opts.InstanceFace.Iface)
 }
 
 func (ctx *ContextBehavior) getOptions() *ContextOptions {
@@ -215,7 +215,7 @@ func (ctx *ContextBehavior) getServiceCtx() service.Context {
 
 func (ctx *ContextBehavior) changeRunningState(state RunningState) {
 	ctx.entityMgr.changeRunningState(state)
-	ctx.opts.RunningHandler.Call(ctx.GetAutoRecover(), ctx.GetReportError(), nil, ctx.opts.CompositeFace.Iface, state)
+	ctx.opts.RunningHandler.Call(ctx.GetAutoRecover(), ctx.GetReportError(), nil, ctx.opts.InstanceFace.Iface, state)
 
 	switch state {
 	case RunningState_Terminated:

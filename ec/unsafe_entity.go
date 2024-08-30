@@ -21,7 +21,6 @@ package ec
 
 import (
 	"context"
-	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/uid"
 	"reflect"
@@ -96,11 +95,6 @@ func (ue _UnsafeEntity) EnterParentNode() {
 // LeaveParentNode 离开父节点
 func (ue _UnsafeEntity) LeaveParentNode() {
 	ue.leaveParentNode()
-}
-
-// EventEntityDestroySelf 事件：实体销毁自身
-func (ue _UnsafeEntity) EventEntityDestroySelf() event.IEvent {
-	return ue.eventEntityDestroySelf()
 }
 
 // CleanManagedHooks 清理所有的托管hook

@@ -175,8 +175,8 @@ func (lib *_ComponentLib) declare(tfComp reflect.Type, aliases []string) Compone
 	}
 
 	comp = &ComponentPT{
-		Name:  compName,
-		RType: tfComp,
+		Name:       compName,
+		InstanceRT: tfComp,
 	}
 
 	lib.compIdx[compName] = comp

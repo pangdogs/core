@@ -40,39 +40,39 @@ type PluginBundle interface {
 	// Uninstall 卸载插件
 	Uninstall(name string)
 	// Get 获取插件
-	Get(name string) (PluginInfo, bool)
+	Get(name string) (PluginStatus, bool)
 	// Range 遍历所有已注册的插件
-	Range(fun generic.Func1[PluginInfo, bool])
+	Range(fun generic.Func1[PluginStatus, bool])
 	// ReversedRange 反向遍历所有已注册的插件
-	ReversedRange(fun generic.Func1[PluginInfo, bool])
+	ReversedRange(fun generic.Func1[PluginStatus, bool])
 }
 
 type iPluginBundle interface {
-	setActive(name string, b bool)
-	setInstallCB(cb generic.Action1[PluginInfo])
-	setUninstallCB(cb generic.Action1[PluginInfo])
+	setPluginState(name string, state PluginState)
+	setInstallCB(cb generic.Action1[PluginStatus])
+	setUninstallCB(cb generic.Action1[PluginStatus])
 }
 
 // NewPluginBundle 创建插件包
 func NewPluginBundle() PluginBundle {
 	return &_PluginBundle{
-		pluginIdx: map[string]*PluginInfo{},
+		pluginIdx: map[string]*PluginStatus{},
 	}
 }
 
-// PluginInfo 插件信息
-type PluginInfo struct {
-	Name      string        // 插件名
-	Face      iface.FaceAny // 插件Face
-	Reflected reflect.Value // 插件反射值
-	Active    bool          // 是否激活
+// PluginStatus 插件状态信息
+type PluginStatus struct {
+	Name         string        // 插件名
+	InstanceFace iface.FaceAny // 插件实例
+	Reflected    reflect.Value // 插件反射值
+	State        PluginState   // 状态
 }
 
 type _PluginBundle struct {
 	sync.RWMutex
-	pluginIdx              map[string]*PluginInfo
-	pluginList             []*PluginInfo
-	installCB, uninstallCB generic.Action1[PluginInfo]
+	pluginIdx              map[string]*PluginStatus
+	pluginList             []*PluginStatus
+	installCB, uninstallCB generic.Action1[PluginStatus]
 }
 
 // GetPluginBundle 获取插件包
@@ -87,28 +87,28 @@ func (bundle *_PluginBundle) Install(pluginFace iface.FaceAny, name ...string) {
 
 // Uninstall 卸载插件
 func (bundle *_PluginBundle) Uninstall(name string) {
-	pluginInfo, ok := bundle.uninstall(name)
+	pluginStatus, ok := bundle.uninstall(name)
 	if !ok {
 		return
 	}
-	bundle.uninstallCB.Exec(pluginInfo)
+	bundle.uninstallCB.Exec(pluginStatus)
 }
 
 // Get 获取插件
-func (bundle *_PluginBundle) Get(name string) (PluginInfo, bool) {
+func (bundle *_PluginBundle) Get(name string) (PluginStatus, bool) {
 	bundle.RLock()
 	defer bundle.RUnlock()
 
-	pluginInfo, ok := bundle.pluginIdx[name]
+	pluginStatus, ok := bundle.pluginIdx[name]
 	if !ok {
-		return PluginInfo{}, false
+		return PluginStatus{}, false
 	}
 
-	return *pluginInfo, ok
+	return *pluginStatus, ok
 }
 
 // Range 遍历所有已注册的插件
-func (bundle *_PluginBundle) Range(fun generic.Func1[PluginInfo, bool]) {
+func (bundle *_PluginBundle) Range(fun generic.Func1[PluginStatus, bool]) {
 	bundle.RLock()
 	copied := slices.Clone(bundle.pluginList)
 	bundle.RUnlock()
@@ -121,7 +121,7 @@ func (bundle *_PluginBundle) Range(fun generic.Func1[PluginInfo, bool]) {
 }
 
 // ReversedRange 反向遍历所有已注册的插件
-func (bundle *_PluginBundle) ReversedRange(fun generic.Func1[PluginInfo, bool]) {
+func (bundle *_PluginBundle) ReversedRange(fun generic.Func1[PluginStatus, bool]) {
 	bundle.RLock()
 	copied := slices.Clone(bundle.pluginList)
 	bundle.RUnlock()
@@ -133,27 +133,27 @@ func (bundle *_PluginBundle) ReversedRange(fun generic.Func1[PluginInfo, bool]) 
 	}
 }
 
-func (bundle *_PluginBundle) setActive(name string, b bool) {
+func (bundle *_PluginBundle) setPluginState(name string, state PluginState) {
 	bundle.Lock()
 	defer bundle.Unlock()
 
-	pluginInfo, ok := bundle.pluginIdx[name]
+	pluginStatus, ok := bundle.pluginIdx[name]
 	if !ok {
 		return
 	}
 
-	pluginInfo.Active = b
+	pluginStatus.State = state
 }
 
-func (bundle *_PluginBundle) setInstallCB(cb generic.Action1[PluginInfo]) {
+func (bundle *_PluginBundle) setInstallCB(cb generic.Action1[PluginStatus]) {
 	bundle.installCB = cb
 }
 
-func (bundle *_PluginBundle) setUninstallCB(cb generic.Action1[PluginInfo]) {
+func (bundle *_PluginBundle) setUninstallCB(cb generic.Action1[PluginStatus]) {
 	bundle.uninstallCB = cb
 }
 
-func (bundle *_PluginBundle) install(pluginFace iface.FaceAny, name ...string) PluginInfo {
+func (bundle *_PluginBundle) install(pluginFace iface.FaceAny, name ...string) PluginStatus {
 	if pluginFace.IsNil() {
 		panic(fmt.Errorf("%w: %w: pluginFace is nil", ErrPlugin, exception.ErrArgs))
 	}
@@ -173,33 +173,33 @@ func (bundle *_PluginBundle) install(pluginFace iface.FaceAny, name ...string) P
 		panic(fmt.Errorf("%w: plugin %q is already installed", ErrPlugin, name))
 	}
 
-	pluginInfo := &PluginInfo{
-		Name:      _name,
-		Face:      pluginFace,
-		Reflected: reflect.ValueOf(pluginFace.Iface),
-		Active:    false,
+	pluginStatus := &PluginStatus{
+		Name:         _name,
+		InstanceFace: pluginFace,
+		Reflected:    reflect.ValueOf(pluginFace.Iface),
+		State:        PluginState_Loaded,
 	}
 
-	bundle.pluginList = append(bundle.pluginList, pluginInfo)
-	bundle.pluginIdx[_name] = pluginInfo
+	bundle.pluginList = append(bundle.pluginList, pluginStatus)
+	bundle.pluginIdx[_name] = pluginStatus
 
-	return *pluginInfo
+	return *pluginStatus
 }
 
-func (bundle *_PluginBundle) uninstall(name string) (PluginInfo, bool) {
+func (bundle *_PluginBundle) uninstall(name string) (PluginStatus, bool) {
 	bundle.Lock()
 	defer bundle.Unlock()
 
-	pluginInfo, ok := bundle.pluginIdx[name]
+	pluginStatus, ok := bundle.pluginIdx[name]
 	if !ok {
-		return PluginInfo{}, false
+		return PluginStatus{}, false
 	}
 
 	delete(bundle.pluginIdx, name)
 
-	bundle.pluginList = slices.DeleteFunc(bundle.pluginList, func(pluginInfo *PluginInfo) bool {
-		return pluginInfo.Name == name
+	bundle.pluginList = slices.DeleteFunc(bundle.pluginList, func(pluginStatus *PluginStatus) bool {
+		return pluginStatus.Name == name
 	})
 
-	return *pluginInfo, true
+	return *pluginStatus, true
 }

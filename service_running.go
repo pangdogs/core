@@ -109,8 +109,8 @@ func (serv *ServiceBehavior) initPlugin() {
 	plugin.UnsafePluginBundle(pluginBundle).SetInstallCB(serv.activatePlugin)
 	plugin.UnsafePluginBundle(pluginBundle).SetUninstallCB(serv.deactivatePlugin)
 
-	pluginBundle.Range(func(pluginInfo plugin.PluginInfo) bool {
-		serv.activatePlugin(pluginInfo)
+	pluginBundle.Range(func(pluginStatus plugin.PluginStatus) bool {
+		serv.activatePlugin(pluginStatus)
 		return true
 	})
 }
@@ -124,22 +124,22 @@ func (serv *ServiceBehavior) shutPlugin() {
 	plugin.UnsafePluginBundle(pluginBundle).SetInstallCB(nil)
 	plugin.UnsafePluginBundle(pluginBundle).SetUninstallCB(nil)
 
-	pluginBundle.ReversedRange(func(pluginInfo plugin.PluginInfo) bool {
-		serv.deactivatePlugin(pluginInfo)
+	pluginBundle.ReversedRange(func(pluginStatus plugin.PluginStatus) bool {
+		serv.deactivatePlugin(pluginStatus)
 		return true
 	})
 }
 
-func (serv *ServiceBehavior) activatePlugin(pluginInfo plugin.PluginInfo) {
-	if pluginInit, ok := pluginInfo.Face.Iface.(LifecycleServicePluginInit); ok {
+func (serv *ServiceBehavior) activatePlugin(pluginStatus plugin.PluginStatus) {
+	if pluginInit, ok := pluginStatus.InstanceFace.Iface.(LifecycleServicePluginInit); ok {
 		generic.MakeAction1(pluginInit.InitSP).Call(serv.ctx.GetAutoRecover(), serv.ctx.GetReportError(), serv.ctx)
 	}
-	plugin.UnsafePluginBundle(serv.ctx.GetPluginBundle()).SetActive(pluginInfo.Name, true)
+	plugin.UnsafePluginBundle(serv.ctx.GetPluginBundle()).SetPluginState(pluginStatus.Name, plugin.PluginState_Active)
 }
 
-func (serv *ServiceBehavior) deactivatePlugin(pluginInfo plugin.PluginInfo) {
-	plugin.UnsafePluginBundle(serv.ctx.GetPluginBundle()).SetActive(pluginInfo.Name, false)
-	if pluginShut, ok := pluginInfo.Face.Iface.(LifecycleServicePluginShut); ok {
+func (serv *ServiceBehavior) deactivatePlugin(pluginStatus plugin.PluginStatus) {
+	plugin.UnsafePluginBundle(serv.ctx.GetPluginBundle()).SetPluginState(pluginStatus.Name, plugin.PluginState_Inactive)
+	if pluginShut, ok := pluginStatus.InstanceFace.Iface.(LifecycleServicePluginShut); ok {
 		generic.MakeAction1(pluginShut.ShutSP).Call(serv.ctx.GetAutoRecover(), serv.ctx.GetReportError(), serv.ctx)
 	}
 }

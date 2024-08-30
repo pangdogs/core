@@ -35,7 +35,7 @@ type EntityLib interface {
 	EntityPTProvider
 
 	// Declare 声明实体原型
-	Declare(prototype string, atti Attribute, comps ...any) EntityPT
+	Declare(prototype string, atti Atti, comps ...any) EntityPT
 	// Undeclare 取消声明实体原型
 	Undeclare(prototype string)
 	// Get 获取实体原型
@@ -78,7 +78,7 @@ func (lib *_EntityLib) GetEntityLib() EntityLib {
 }
 
 // Declare 声明体原型
-func (lib *_EntityLib) Declare(prototype string, atti Attribute, comps ...any) EntityPT {
+func (lib *_EntityLib) Declare(prototype string, atti Atti, comps ...any) EntityPT {
 	lib.Lock()
 	defer lib.Unlock()
 
@@ -93,26 +93,26 @@ func (lib *_EntityLib) Declare(prototype string, atti Attribute, comps ...any) E
 		AwakeOnFirstAccess: atti.AwakeOnFirstAccess,
 	}
 
-	if atti.Composite != nil {
-		tfComposite := reflect.TypeOf(atti.Composite)
+	if atti.Instance != nil {
+		tfInstance := reflect.TypeOf(atti.Instance)
 
-		for tfComposite.Kind() == reflect.Pointer || tfComposite.Kind() == reflect.Interface {
-			tfComposite = tfComposite.Elem()
+		for tfInstance.Kind() == reflect.Pointer || tfInstance.Kind() == reflect.Interface {
+			tfInstance = tfInstance.Elem()
 		}
 
-		if tfComposite.Name() == "" {
-			panic(fmt.Errorf("%w: anonymous entity composite not allowed", ErrPt))
+		if tfInstance.Name() == "" {
+			panic(fmt.Errorf("%w: anonymous entity instance not allowed", ErrPt))
 		}
 
-		if !reflect.PointerTo(tfComposite).Implements(reflect.TypeFor[ec.Entity]()) {
-			panic(fmt.Errorf("%w: entity composite %q not implement ec.Entity", ErrPt, types.FullNameRT(tfComposite)))
+		if !reflect.PointerTo(tfInstance).Implements(reflect.TypeFor[ec.Entity]()) {
+			panic(fmt.Errorf("%w: entity instance %q not implement ec.Entity", ErrPt, types.FullNameRT(tfInstance)))
 		}
 
-		entity.CompositeRT = tfComposite
+		entity.InstanceRT = tfInstance
 	}
 
 	for _, comp := range comps {
-		compInfo := CompInfo{Fixed: true}
+		compInfo := ComponentDesc{Fixed: true}
 
 	retry:
 		switch pt := comp.(type) {
