@@ -30,8 +30,8 @@ import (
 )
 
 // Run 运行
-func (serv *ServiceBehavior) Run() <-chan struct{} {
-	ctx := serv.ctx
+func (svc *ServiceBehavior) Run() <-chan struct{} {
+	ctx := svc.ctx
 
 	select {
 	case <-ctx.Done():
@@ -41,30 +41,30 @@ func (serv *ServiceBehavior) Run() <-chan struct{} {
 	default:
 	}
 
-	if parentCtx, ok := serv.ctx.GetParentContext().(ictx.Context); ok {
+	if parentCtx, ok := svc.ctx.GetParentContext().(ictx.Context); ok {
 		parentCtx.GetWaitGroup().Add(1)
 	}
 
-	go serv.running()
+	go svc.running()
 
 	return ictx.UnsafeContext(ctx).GetTerminatedChan()
 }
 
 // Terminate 停止
-func (serv *ServiceBehavior) Terminate() <-chan struct{} {
-	return serv.ctx.Terminate()
+func (svc *ServiceBehavior) Terminate() <-chan struct{} {
+	return svc.ctx.Terminate()
 }
 
 // Terminated 已停止
-func (serv *ServiceBehavior) Terminated() <-chan struct{} {
-	return serv.ctx.Terminated()
+func (svc *ServiceBehavior) Terminated() <-chan struct{} {
+	return svc.ctx.Terminated()
 }
 
-func (serv *ServiceBehavior) running() {
-	ctx := serv.ctx
+func (svc *ServiceBehavior) running() {
+	ctx := svc.ctx
 
-	serv.changeRunningState(service.RunningState_Starting)
-	serv.changeRunningState(service.RunningState_Started)
+	svc.changeRunningState(service.RunningState_Starting)
+	svc.changeRunningState(service.RunningState_Started)
 
 loop:
 	for {
@@ -76,11 +76,11 @@ loop:
 		}
 	}
 
-	serv.changeRunningState(service.RunningState_Terminating)
+	svc.changeRunningState(service.RunningState_Terminating)
 
 	ctx.GetWaitGroup().Wait()
 
-	serv.changeRunningState(service.RunningState_Terminated)
+	svc.changeRunningState(service.RunningState_Terminated)
 
 	if parentCtx, ok := ctx.GetParentContext().(ictx.Context); ok {
 		parentCtx.GetWaitGroup().Done()
@@ -89,34 +89,34 @@ loop:
 	close(ictx.UnsafeContext(ctx).GetTerminatedChan())
 }
 
-func (serv *ServiceBehavior) changeRunningState(state service.RunningState) {
+func (svc *ServiceBehavior) changeRunningState(state service.RunningState) {
 	switch state {
 	case service.RunningState_Starting:
-		serv.initPlugin()
+		svc.initPlugin()
 	case service.RunningState_Terminated:
-		serv.shutPlugin()
+		svc.shutPlugin()
 	}
 
-	service.UnsafeContext(serv.ctx).ChangeRunningState(state)
+	service.UnsafeContext(svc.ctx).ChangeRunningState(state)
 }
 
-func (serv *ServiceBehavior) initPlugin() {
-	pluginBundle := serv.ctx.GetPluginBundle()
+func (svc *ServiceBehavior) initPlugin() {
+	pluginBundle := svc.ctx.GetPluginBundle()
 	if pluginBundle == nil {
 		return
 	}
 
-	plugin.UnsafePluginBundle(pluginBundle).SetInstallCB(serv.activatePlugin)
-	plugin.UnsafePluginBundle(pluginBundle).SetUninstallCB(serv.deactivatePlugin)
+	plugin.UnsafePluginBundle(pluginBundle).SetInstallCB(svc.activatePlugin)
+	plugin.UnsafePluginBundle(pluginBundle).SetUninstallCB(svc.deactivatePlugin)
 
 	pluginBundle.Range(func(pluginStatus plugin.PluginStatus) bool {
-		serv.activatePlugin(pluginStatus)
+		svc.activatePlugin(pluginStatus)
 		return true
 	})
 }
 
-func (serv *ServiceBehavior) shutPlugin() {
-	pluginBundle := serv.ctx.GetPluginBundle()
+func (svc *ServiceBehavior) shutPlugin() {
+	pluginBundle := svc.ctx.GetPluginBundle()
 	if pluginBundle == nil {
 		return
 	}
@@ -125,21 +125,21 @@ func (serv *ServiceBehavior) shutPlugin() {
 	plugin.UnsafePluginBundle(pluginBundle).SetUninstallCB(nil)
 
 	pluginBundle.ReversedRange(func(pluginStatus plugin.PluginStatus) bool {
-		serv.deactivatePlugin(pluginStatus)
+		svc.deactivatePlugin(pluginStatus)
 		return true
 	})
 }
 
-func (serv *ServiceBehavior) activatePlugin(pluginStatus plugin.PluginStatus) {
+func (svc *ServiceBehavior) activatePlugin(pluginStatus plugin.PluginStatus) {
 	if pluginInit, ok := pluginStatus.InstanceFace.Iface.(LifecycleServicePluginInit); ok {
-		generic.MakeAction1(pluginInit.InitSP).Call(serv.ctx.GetAutoRecover(), serv.ctx.GetReportError(), serv.ctx)
+		generic.MakeAction1(pluginInit.InitSP).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx)
 	}
-	plugin.UnsafePluginBundle(serv.ctx.GetPluginBundle()).SetPluginState(pluginStatus.Name, plugin.PluginState_Active)
+	plugin.UnsafePluginBundle(svc.ctx.GetPluginBundle()).SetPluginState(pluginStatus.Name, plugin.PluginState_Active)
 }
 
-func (serv *ServiceBehavior) deactivatePlugin(pluginStatus plugin.PluginStatus) {
-	plugin.UnsafePluginBundle(serv.ctx.GetPluginBundle()).SetPluginState(pluginStatus.Name, plugin.PluginState_Inactive)
+func (svc *ServiceBehavior) deactivatePlugin(pluginStatus plugin.PluginStatus) {
+	plugin.UnsafePluginBundle(svc.ctx.GetPluginBundle()).SetPluginState(pluginStatus.Name, plugin.PluginState_Inactive)
 	if pluginShut, ok := pluginStatus.InstanceFace.Iface.(LifecycleServicePluginShut); ok {
-		generic.MakeAction1(pluginShut.ShutSP).Call(serv.ctx.GetAutoRecover(), serv.ctx.GetReportError(), serv.ctx)
+		generic.MakeAction1(pluginShut.ShutSP).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx)
 	}
 }

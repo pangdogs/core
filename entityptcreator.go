@@ -27,19 +27,19 @@ import (
 )
 
 // CreateEntityPT 创建实体原型
-func CreateEntityPT(ctx service.Context, prototype string) EntityPTCreator {
-	if ctx == nil {
-		panic(fmt.Errorf("%w: %w: ctx is nil", ErrCore, ErrArgs))
+func CreateEntityPT(svcCtx service.Context, prototype string) EntityPTCreator {
+	if svcCtx == nil {
+		panic(fmt.Errorf("%w: %w: svcCtx is nil", ErrCore, ErrArgs))
 	}
 	return EntityPTCreator{
-		servCtx:   ctx,
+		svcCtx:    svcCtx,
 		prototype: prototype,
 	}
 }
 
 // EntityPTCreator 实体原型构建器
 type EntityPTCreator struct {
-	servCtx   service.Context
+	svcCtx    service.Context
 	prototype string
 	atti      pt.Atti
 	comps     []any
@@ -85,8 +85,8 @@ func (c EntityPTCreator) AddMutableComponent(comp any, alias ...string) EntityPT
 
 // Declare 声明实体原型
 func (c EntityPTCreator) Declare() {
-	if c.servCtx == nil {
-		panic(fmt.Errorf("%w: setting servCtx is nil", ErrCore))
+	if c.svcCtx == nil {
+		panic(fmt.Errorf("%w: setting svcCtx is nil", ErrCore))
 	}
-	c.servCtx.GetEntityLib().Declare(c.prototype, c.atti, c.comps...)
+	c.svcCtx.GetEntityLib().Declare(c.prototype, c.atti, c.comps...)
 }

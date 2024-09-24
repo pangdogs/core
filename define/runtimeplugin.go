@@ -33,7 +33,7 @@ func RuntimePlugin[PLUGIN_IFACE, OPTION any](creator generic.FuncVar0[OPTION, PL
 		Name:      plug.Name,
 		Install:   plug.Install,
 		Uninstall: plug.Uninstall,
-		Using:     func(ctx runtime.Context) PLUGIN_IFACE { return plug.Using(ctx) },
+		Using:     func(rtCtx runtime.Context) PLUGIN_IFACE { return plug.Using(rtCtx) },
 	}
 }
 

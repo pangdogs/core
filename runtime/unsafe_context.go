@@ -36,8 +36,8 @@ type _UnsafeContext struct {
 }
 
 // Init 初始化
-func (uc _UnsafeContext) Init(servCtx service.Context, opts ContextOptions) {
-	uc.Context.init(servCtx, opts)
+func (uc _UnsafeContext) Init(svcCtx service.Context, opts ContextOptions) {
+	uc.Context.init(svcCtx, opts)
 }
 
 // GetOptions 获取运行时上下文所有选项

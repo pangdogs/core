@@ -33,7 +33,7 @@ func ServicePlugin[PLUGIN_IFACE, OPTION any](creator generic.FuncVar0[OPTION, PL
 		Name:      plug.Name,
 		Install:   plug.Install,
 		Uninstall: plug.Uninstall,
-		Using:     func(ctx service.Context) PLUGIN_IFACE { return plug.Using(ctx) },
+		Using:     func(svcCtx service.Context) PLUGIN_IFACE { return plug.Using(svcCtx) },
 	}
 }
 

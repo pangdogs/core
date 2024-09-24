@@ -30,7 +30,7 @@ func ServicePluginInterface[PLUGIN_IFACE any]() ServicePluginInterfaceDefinition
 
 	return ServicePluginInterfaceDefinition[PLUGIN_IFACE]{
 		Name:  plug.Name,
-		Using: func(ctx service.Context) PLUGIN_IFACE { return plug.Using(ctx) },
+		Using: func(svcCtx service.Context) PLUGIN_IFACE { return plug.Using(svcCtx) },
 	}
 }
 

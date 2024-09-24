@@ -34,19 +34,19 @@ import (
 )
 
 // NewRuntime 创建运行时
-func NewRuntime(ctx runtime.Context, settings ...option.Setting[RuntimeOptions]) Runtime {
-	return UnsafeNewRuntime(ctx, option.Make(With.Runtime.Default(), settings...))
+func NewRuntime(rtCtx runtime.Context, settings ...option.Setting[RuntimeOptions]) Runtime {
+	return UnsafeNewRuntime(rtCtx, option.Make(With.Runtime.Default(), settings...))
 }
 
 // Deprecated: UnsafeNewRuntime 内部创建运行时
-func UnsafeNewRuntime(ctx runtime.Context, options RuntimeOptions) Runtime {
+func UnsafeNewRuntime(rtCtx runtime.Context, options RuntimeOptions) Runtime {
 	if !options.InstanceFace.IsNil() {
-		options.InstanceFace.Iface.init(ctx, options)
+		options.InstanceFace.Iface.init(rtCtx, options)
 		return options.InstanceFace.Iface
 	}
 
 	runtime := &RuntimeBehavior{}
-	runtime.init(ctx, options)
+	runtime.init(rtCtx, options)
 
 	return runtime.opts.InstanceFace.Iface
 }
@@ -62,7 +62,7 @@ type Runtime interface {
 }
 
 type iRuntime interface {
-	init(ctx runtime.Context, opts RuntimeOptions)
+	init(rtCtx runtime.Context, opts RuntimeOptions)
 	getOptions() *RuntimeOptions
 }
 
@@ -91,16 +91,16 @@ func (rt *RuntimeBehavior) GetInstanceFaceCache() iface.Cache {
 	return rt.opts.InstanceFace.Cache
 }
 
-func (rt *RuntimeBehavior) init(ctx runtime.Context, opts RuntimeOptions) {
-	if ctx == nil {
-		panic(fmt.Errorf("%w: %w: ctx is nil", ErrRuntime, ErrArgs))
+func (rt *RuntimeBehavior) init(rtCtx runtime.Context, opts RuntimeOptions) {
+	if rtCtx == nil {
+		panic(fmt.Errorf("%w: %w: rtCtx is nil", ErrRuntime, ErrArgs))
 	}
 
-	if !ictx.UnsafeContext(ctx).SetPaired(true) {
+	if !ictx.UnsafeContext(rtCtx).SetPaired(true) {
 		panic(fmt.Errorf("%w: context already paired", ErrRuntime))
 	}
 
-	rt.ctx = ctx
+	rt.ctx = rtCtx
 	rt.opts = opts
 
 	if rt.opts.InstanceFace.IsNil() {
@@ -110,11 +110,11 @@ func (rt *RuntimeBehavior) init(ctx runtime.Context, opts RuntimeOptions) {
 	rt.hooksMap = make(map[uid.Id][3]event.Hook)
 	rt.processQueue = make(chan _Task, rt.opts.ProcessQueueCapacity)
 
-	runtime.UnsafeContext(ctx).SetFrame(rt.opts.Frame)
-	runtime.UnsafeContext(ctx).SetCallee(rt.opts.InstanceFace.Iface)
+	runtime.UnsafeContext(rtCtx).SetFrame(rt.opts.Frame)
+	runtime.UnsafeContext(rtCtx).SetCallee(rt.opts.InstanceFace.Iface)
 
-	ctx.ActivateEvent(&rt.eventUpdate, event.EventRecursion_Disallow)
-	ctx.ActivateEvent(&rt.eventLateUpdate, event.EventRecursion_Disallow)
+	rtCtx.ActivateEvent(&rt.eventUpdate, event.EventRecursion_Disallow)
+	rtCtx.ActivateEvent(&rt.eventLateUpdate, event.EventRecursion_Disallow)
 
 	rt.changeRunningState(runtime.RunningState_Birth)
 

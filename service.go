@@ -29,19 +29,19 @@ import (
 )
 
 // NewService 创建服务
-func NewService(ctx service.Context, settings ...option.Setting[ServiceOptions]) Service {
-	return UnsafeNewService(ctx, option.Make(With.Service.Default(), settings...))
+func NewService(svcCtx service.Context, settings ...option.Setting[ServiceOptions]) Service {
+	return UnsafeNewService(svcCtx, option.Make(With.Service.Default(), settings...))
 }
 
 // Deprecated: UnsafeNewService 内部创建服务
-func UnsafeNewService(ctx service.Context, options ServiceOptions) Service {
+func UnsafeNewService(svcCtx service.Context, options ServiceOptions) Service {
 	if !options.InstanceFace.IsNil() {
-		options.InstanceFace.Iface.init(ctx, options)
+		options.InstanceFace.Iface.init(svcCtx, options)
 		return options.InstanceFace.Iface
 	}
 
 	service := &ServiceBehavior{}
-	service.init(ctx, options)
+	service.init(svcCtx, options)
 
 	return service.opts.InstanceFace.Iface
 }
@@ -57,7 +57,7 @@ type Service interface {
 }
 
 type iService interface {
-	init(ctx service.Context, opts ServiceOptions)
+	init(svcCtx service.Context, opts ServiceOptions)
 	getOptions() *ServiceOptions
 }
 
@@ -67,34 +67,34 @@ type ServiceBehavior struct {
 }
 
 // GetContext 获取服务上下文
-func (serv *ServiceBehavior) GetContext() service.Context {
-	return serv.ctx
+func (svc *ServiceBehavior) GetContext() service.Context {
+	return svc.ctx
 }
 
 // GetInstanceFaceCache 支持重新解释类型
-func (serv *ServiceBehavior) GetInstanceFaceCache() iface.Cache {
-	return serv.opts.InstanceFace.Cache
+func (svc *ServiceBehavior) GetInstanceFaceCache() iface.Cache {
+	return svc.opts.InstanceFace.Cache
 }
 
-func (serv *ServiceBehavior) init(ctx service.Context, opts ServiceOptions) {
-	if ctx == nil {
-		panic(fmt.Errorf("%w: %w: ctx is nil", ErrService, ErrArgs))
+func (svc *ServiceBehavior) init(svcCtx service.Context, opts ServiceOptions) {
+	if svcCtx == nil {
+		panic(fmt.Errorf("%w: %w: svcCtx is nil", ErrService, ErrArgs))
 	}
 
-	if !ictx.UnsafeContext(ctx).SetPaired(true) {
+	if !ictx.UnsafeContext(svcCtx).SetPaired(true) {
 		panic(fmt.Errorf("%w: context already paired", ErrService))
 	}
 
-	serv.ctx = ctx
-	serv.opts = opts
+	svc.ctx = svcCtx
+	svc.opts = opts
 
-	if serv.opts.InstanceFace.IsNil() {
-		serv.opts.InstanceFace = iface.MakeFaceT[Service](serv)
+	if svc.opts.InstanceFace.IsNil() {
+		svc.opts.InstanceFace = iface.MakeFaceT[Service](svc)
 	}
 
-	serv.changeRunningState(service.RunningState_Birth)
+	svc.changeRunningState(service.RunningState_Birth)
 }
 
-func (serv *ServiceBehavior) getOptions() *ServiceOptions {
-	return &serv.opts
+func (svc *ServiceBehavior) getOptions() *ServiceOptions {
+	return &svc.opts
 }

@@ -30,7 +30,7 @@ func RuntimePluginInterface[PLUGIN_IFACE any]() RuntimePluginInterfaceDefinition
 
 	return RuntimePluginInterfaceDefinition[PLUGIN_IFACE]{
 		Name:  plug.Name,
-		Using: func(ctx runtime.Context) PLUGIN_IFACE { return plug.Using(ctx) },
+		Using: func(rtCtx runtime.Context) PLUGIN_IFACE { return plug.Using(rtCtx) },
 	}
 }
 

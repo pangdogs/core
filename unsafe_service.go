@@ -33,8 +33,8 @@ type _UnsafeService struct {
 }
 
 // Init 初始化
-func (us _UnsafeService) Init(ctx service.Context, opts ServiceOptions) {
-	us.init(ctx, opts)
+func (us _UnsafeService) Init(svcCtx service.Context, opts ServiceOptions) {
+	us.init(svcCtx, opts)
 }
 
 // GetOptions 获取服务所有选项

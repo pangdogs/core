@@ -35,19 +35,19 @@ import (
 )
 
 // NewContext 创建运行时上下文
-func NewContext(servCtx service.Context, settings ...option.Setting[ContextOptions]) Context {
-	return UnsafeNewContext(servCtx, option.Make(With.Context.Default(), settings...))
+func NewContext(svcCtx service.Context, settings ...option.Setting[ContextOptions]) Context {
+	return UnsafeNewContext(svcCtx, option.Make(With.Context.Default(), settings...))
 }
 
 // Deprecated: UnsafeNewContext 内部创建运行时上下文
-func UnsafeNewContext(servCtx service.Context, options ContextOptions) Context {
+func UnsafeNewContext(svcCtx service.Context, options ContextOptions) Context {
 	if !options.InstanceFace.IsNil() {
-		options.InstanceFace.Iface.init(servCtx, options)
+		options.InstanceFace.Iface.init(svcCtx, options)
 		return options.InstanceFace.Iface
 	}
 
 	ctx := &ContextBehavior{}
-	ctx.init(servCtx, options)
+	ctx.init(svcCtx, options)
 
 	return ctx.opts.InstanceFace.Iface
 }
@@ -83,7 +83,7 @@ type Context interface {
 }
 
 type iContext interface {
-	init(servCtx service.Context, opts ContextOptions)
+	init(svcCtx service.Context, opts ContextOptions)
 	getOptions() *ContextOptions
 	setFrame(frame Frame)
 	setCallee(callee async.Callee)
@@ -95,7 +95,7 @@ type iContext interface {
 // ContextBehavior 运行时上下文行为，在扩展运行时上下文能力时，匿名嵌入至运行时上下文结构体中
 type ContextBehavior struct {
 	ictx.ContextBehavior
-	servCtx      service.Context
+	svcCtx       service.Context
 	opts         ContextOptions
 	reflected    reflect.Value
 	frame        Frame
@@ -172,9 +172,9 @@ func (ctx *ContextBehavior) String() string {
 	return fmt.Sprintf(`{"id":%q, "name":%q}`, ctx.GetId(), ctx.GetName())
 }
 
-func (ctx *ContextBehavior) init(servCtx service.Context, opts ContextOptions) {
-	if servCtx == nil {
-		panic(fmt.Errorf("%w: %w: servCtx is nil", ErrContext, exception.ErrArgs))
+func (ctx *ContextBehavior) init(svcCtx service.Context, opts ContextOptions) {
+	if svcCtx == nil {
+		panic(fmt.Errorf("%w: %w: svcCtx is nil", ErrContext, exception.ErrArgs))
 	}
 
 	ctx.opts = opts
@@ -184,7 +184,7 @@ func (ctx *ContextBehavior) init(servCtx service.Context, opts ContextOptions) {
 	}
 
 	if ctx.opts.Context == nil {
-		ctx.opts.Context = servCtx
+		ctx.opts.Context = svcCtx
 	}
 
 	if ctx.opts.PersistId.IsNil() {
@@ -192,7 +192,7 @@ func (ctx *ContextBehavior) init(servCtx service.Context, opts ContextOptions) {
 	}
 
 	ictx.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
-	ctx.servCtx = servCtx
+	ctx.svcCtx = svcCtx
 	ctx.reflected = reflect.ValueOf(ctx.opts.InstanceFace.Iface)
 	ctx.entityMgr.init(ctx.opts.InstanceFace.Iface)
 }
@@ -210,7 +210,7 @@ func (ctx *ContextBehavior) setCallee(callee async.Callee) {
 }
 
 func (ctx *ContextBehavior) getServiceCtx() service.Context {
-	return ctx.servCtx
+	return ctx.svcCtx
 }
 
 func (ctx *ContextBehavior) changeRunningState(state RunningState) {
