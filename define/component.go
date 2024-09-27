@@ -24,6 +24,7 @@ import (
 	"git.golaxy.org/core/pt"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/types"
+	"github.com/elliotchance/pie/v2"
 )
 
 // Component 定义组件
@@ -33,8 +34,7 @@ func Component[COMP any](compLib ...pt.ComponentLib) ComponentDefinition {
 
 // ComponentWithInterface 定义有接口的组件，接口名称将作为组件名
 func ComponentWithInterface[COMP, COMP_IFACE any](compLib ...pt.ComponentLib) ComponentDefinition {
-	_compLib := getCompLib(compLib...)
-	return defineComponent[COMP](_compLib, ComponentInterface[COMP_IFACE](_compLib).Name)
+	return defineComponent[COMP](getCompLib(compLib...), ComponentInterface[COMP_IFACE](getCompLib(compLib...)).Name)
 }
 
 // ComponentDefinition 组件定义
@@ -55,8 +55,8 @@ func defineComponent[COMP any](compLib pt.ComponentLib, ifaceName string) Compon
 }
 
 func getCompLib(compLib ...pt.ComponentLib) pt.ComponentLib {
-	if len(compLib) > 0 && compLib[0] != nil {
-		return compLib[0]
+	if l := pie.First(compLib); l != nil {
+		return l
 	}
 	return pt.DefaultComponentLib()
 }

@@ -24,6 +24,7 @@ import (
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/pt"
 	"git.golaxy.org/core/service"
+	"github.com/elliotchance/pie/v2"
 )
 
 // CreateEntityPT 创建实体原型
@@ -65,21 +66,13 @@ func (c EntityPTCreator) AwakeOnFirstAccess(b bool) EntityPTCreator {
 
 // AddComponent 添加组件
 func (c EntityPTCreator) AddComponent(comp any, alias ...string) EntityPTCreator {
-	if len(alias) > 0 {
-		c.comps = append(c.comps, pt.CompAlias(comp, true, alias[0]))
-	} else {
-		c.comps = append(c.comps, comp)
-	}
+	c.comps = append(c.comps, pt.CompAlias(comp, true, pie.First(alias)))
 	return c
 }
 
 // AddMutableComponent 添加不固定的组件
 func (c EntityPTCreator) AddMutableComponent(comp any, alias ...string) EntityPTCreator {
-	if len(alias) > 0 {
-		c.comps = append(c.comps, pt.CompAlias(comp, false, alias[0]))
-	} else {
-		c.comps = append(c.comps, pt.CompAlias(comp, false, ""))
-	}
+	c.comps = append(c.comps, pt.CompAlias(comp, false, pie.First(alias)))
 	return c
 }
 

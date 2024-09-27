@@ -25,6 +25,7 @@ import (
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/types"
+	"github.com/elliotchance/pie/v2"
 	"reflect"
 	"slices"
 	"sync"
@@ -161,27 +162,24 @@ func (bundle *_PluginBundle) install(pluginFace iface.FaceAny, name ...string) P
 	bundle.Lock()
 	defer bundle.Unlock()
 
-	var _name string
-	if len(name) > 0 {
-		_name = name[0]
-	} else {
-		_name = types.FullName(pluginFace.Iface)
+	pluginName := pie.First(name)
+	if pluginName == "" {
+		pluginName = types.FullName(pluginFace.Iface)
 	}
 
-	_, ok := bundle.pluginIdx[_name]
-	if ok {
-		panic(fmt.Errorf("%w: plugin %q is already installed", ErrPlugin, name))
+	if _, ok := bundle.pluginIdx[pluginName]; ok {
+		panic(fmt.Errorf("%w: plugin %q is already installed", ErrPlugin, pluginName))
 	}
 
 	pluginStatus := &PluginStatus{
-		Name:         _name,
+		Name:         pluginName,
 		InstanceFace: pluginFace,
 		Reflected:    reflect.ValueOf(pluginFace.Iface),
 		State:        PluginState_Loaded,
 	}
 
 	bundle.pluginList = append(bundle.pluginList, pluginStatus)
-	bundle.pluginIdx[_name] = pluginStatus
+	bundle.pluginIdx[pluginName] = pluginStatus
 
 	return *pluginStatus
 }
