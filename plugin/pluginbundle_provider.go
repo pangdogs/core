@@ -37,16 +37,16 @@ func Using[T any](provider PluginProvider, name string) T {
 		panic(fmt.Errorf("%w: %w: provider is nil", ErrPlugin, exception.ErrArgs))
 	}
 
-	pluginStatus, ok := provider.GetPluginBundle().Get(name)
+	status, ok := provider.GetPluginBundle().Get(name)
 	if !ok {
 		panic(fmt.Errorf("%w: plugin %q not installed", ErrPlugin, name))
 	}
 
-	if pluginStatus.State != PluginState_Active {
+	if status.State() != PluginState_Active {
 		panic(fmt.Errorf("%w: plugin %q not actived", ErrPlugin, name))
 	}
 
-	return iface.Cache2Iface[T](pluginStatus.InstanceFace().Cache)
+	return iface.Cache2Iface[T](status.InstanceFace().Cache)
 }
 
 // Install 安装插件
