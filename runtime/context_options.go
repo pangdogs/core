@@ -42,6 +42,7 @@ type ContextOptions struct {
 	PersistId      uid.Id              // 运行时持久化Id
 	PluginBundle   plugin.PluginBundle // 插件包
 	RunningHandler RunningHandler      // 运行状态变化处理器
+	Plugin         generic.Action1[*plugin.PluginStatus]
 }
 
 type _ContextOption struct{}

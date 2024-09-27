@@ -57,9 +57,9 @@ import (
 */
 func As[T comparable](entity ec.Entity) (T, bool) {
 	iface := types.ZeroT[T]()
-	vfIface := reflect.ValueOf(&iface).Elem()
+	ifaceRV := reflect.ValueOf(&iface).Elem()
 
-	if !as(entity, vfIface) {
+	if !as(entity, ifaceRV) {
 		return types.ZeroT[T](), false
 	}
 
@@ -199,7 +199,7 @@ func (c *Composite[T]) Cast() T {
 	return iface
 }
 
-func as(entity ec.Entity, vfIface reflect.Value) bool {
+func as(entity ec.Entity, ifaceRV reflect.Value) bool {
 	if entity == nil {
 		return false
 	}
@@ -207,15 +207,15 @@ func as(entity ec.Entity, vfIface reflect.Value) bool {
 	sb := strings.Builder{}
 	sb.Grow(128)
 
-	switch vfIface.Kind() {
+	switch ifaceRV.Kind() {
 	case reflect.Struct:
-		for i := 0; i < vfIface.NumField(); i++ {
-			vfField := vfIface.Field(i)
-			tfField := vfField.Type()
+		for i := 0; i < ifaceRV.NumField(); i++ {
+			fieldRV := ifaceRV.Field(i)
+			fieldRT := fieldRV.Type()
 
-			switch vfField.Kind() {
+			switch fieldRV.Kind() {
 			case reflect.Pointer:
-				tfField = tfField.Elem()
+				fieldRT = fieldRT.Elem()
 				break
 			case reflect.Interface:
 				break
@@ -224,30 +224,30 @@ func as(entity ec.Entity, vfIface reflect.Value) bool {
 			}
 
 			sb.Reset()
-			types.WriteFullNameRT(&sb, tfField)
+			types.WriteFullNameRT(&sb, fieldRT)
 
 			comp := entity.GetComponent(sb.String())
 			if comp == nil {
 				return false
 			}
 
-			vfField.Set(comp.GetReflected())
+			fieldRV.Set(comp.GetReflected())
 		}
 
 		return true
 
 	case reflect.Interface:
-		tfIface := vfIface.Type()
+		ifaceRT := ifaceRV.Type()
 
 		sb.Reset()
-		types.WriteFullNameRT(&sb, tfIface)
+		types.WriteFullNameRT(&sb, ifaceRT)
 
 		comp := entity.GetComponent(sb.String())
 		if comp == nil {
 			return false
 		}
 
-		vfIface.Set(comp.GetReflected())
+		ifaceRV.Set(comp.GetReflected())
 
 		return true
 

@@ -32,11 +32,6 @@ type _UnsafePluginBundle struct {
 	PluginBundle
 }
 
-// SetPluginState 设置插件状态
-func (up _UnsafePluginBundle) SetPluginState(name string, state PluginState) {
-	up.setPluginState(name, state)
-}
-
 // SetInstallCB 设置安装插件回调
 func (up _UnsafePluginBundle) SetInstallCB(cb generic.Action1[PluginStatus]) {
 	up.setInstallCB(cb)

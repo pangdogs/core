@@ -56,16 +56,16 @@ func DefaultComponentLib() ComponentLib {
 // NewComponentLib 创建组件原型库
 func NewComponentLib() ComponentLib {
 	return &_ComponentLib{
-		compIdx:  map[string]*ComponentPT{},
-		aliasTab: map[string][]*ComponentPT{},
+		compIdx:  map[string]*_ComponentPT{},
+		aliasTab: map[string][]*_ComponentPT{},
 	}
 }
 
 type _ComponentLib struct {
 	sync.RWMutex
-	compIdx  map[string]*ComponentPT
-	compList []*ComponentPT
-	aliasTab map[string][]*ComponentPT
+	compIdx  map[string]*_ComponentPT
+	compList []*_ComponentPT
+	aliasTab map[string][]*_ComponentPT
 }
 
 // Declare 声明组件原型
@@ -74,12 +74,12 @@ func (lib *_ComponentLib) Declare(comp any, aliases ...string) ComponentPT {
 		panic(fmt.Errorf("%w: %w: comp is nil", ErrPt, exception.ErrArgs))
 	}
 
-	tfComp, ok := comp.(reflect.Type)
+	compRT, ok := comp.(reflect.Type)
 	if !ok {
-		tfComp = reflect.TypeOf(comp)
+		compRT = reflect.TypeOf(comp)
 	}
 
-	return lib.declare(tfComp, aliases)
+	return lib.declare(compRT, aliases)
 }
 
 // Undeclare 取消声明组件原型
@@ -89,8 +89,8 @@ func (lib *_ComponentLib) Undeclare(name string) {
 
 	delete(lib.compIdx, name)
 
-	lib.compList = slices.DeleteFunc(lib.compList, func(pt *ComponentPT) bool {
-		return pt.Name == name
+	lib.compList = slices.DeleteFunc(lib.compList, func(pt *_ComponentPT) bool {
+		return pt.Name() == name
 	})
 
 	lib.cleanAliases(name)
@@ -103,10 +103,10 @@ func (lib *_ComponentLib) Get(name string) (ComponentPT, bool) {
 
 	comp, ok := lib.compIdx[name]
 	if !ok {
-		return ComponentPT{}, false
+		return nil, false
 	}
 
-	return *comp, ok
+	return comp, ok
 }
 
 // AliasGet 使用别名获取组件原型
@@ -118,7 +118,7 @@ func (lib *_ComponentLib) AliasGet(alias string) []ComponentPT {
 	ret := make([]ComponentPT, 0, len(comps))
 
 	for _, comp := range comps {
-		ret = append(ret, *comp)
+		ret = append(ret, comp)
 	}
 
 	return ret
@@ -131,7 +131,7 @@ func (lib *_ComponentLib) Range(fun generic.Func1[ComponentPT, bool]) {
 	lib.RUnlock()
 
 	for i := range copied {
-		if !fun.Exec(*copied[i]) {
+		if !fun.Exec(copied[i]) {
 			return
 		}
 	}
@@ -144,52 +144,52 @@ func (lib *_ComponentLib) ReversedRange(fun generic.Func1[ComponentPT, bool]) {
 	lib.RUnlock()
 
 	for i := len(copied) - 1; i >= 0; i-- {
-		if !fun.Exec(*copied[i]) {
+		if !fun.Exec(copied[i]) {
 			return
 		}
 	}
 }
 
-func (lib *_ComponentLib) declare(tfComp reflect.Type, aliases []string) ComponentPT {
+func (lib *_ComponentLib) declare(compRT reflect.Type, aliases []string) ComponentPT {
 	lib.Lock()
 	defer lib.Unlock()
 
-	for tfComp.Kind() == reflect.Pointer || tfComp.Kind() == reflect.Interface {
-		tfComp = tfComp.Elem()
+	for compRT.Kind() == reflect.Pointer || compRT.Kind() == reflect.Interface {
+		compRT = compRT.Elem()
 	}
 
-	if tfComp.Name() == "" {
+	if compRT.Name() == "" {
 		panic(fmt.Errorf("%w: anonymous component not allowed", ErrPt))
 	}
 
-	compName := types.FullName(tfComp)
+	compName := types.FullName(compRT)
 
-	if !reflect.PointerTo(tfComp).Implements(reflect.TypeFor[ec.Component]()) {
+	if !reflect.PointerTo(compRT).Implements(reflect.TypeFor[ec.Component]()) {
 		panic(fmt.Errorf("%w: component %q not implement ec.Component", ErrPt, compName))
 	}
 
 	comp, ok := lib.compIdx[compName]
 	if ok {
 		lib.addAliases(comp, aliases)
-		return *comp
+		return comp
 	}
 
-	comp = &ComponentPT{
-		Name:       compName,
-		InstanceRT: tfComp,
+	comp = &_ComponentPT{
+		name:       compName,
+		instanceRT: compRT,
 	}
 
 	lib.compIdx[compName] = comp
 	lib.compList = append(lib.compList, comp)
 	lib.addAliases(comp, aliases)
 
-	return *comp
+	return comp
 }
 
-func (lib *_ComponentLib) addAliases(comp *ComponentPT, aliases []string) {
+func (lib *_ComponentLib) addAliases(comp *_ComponentPT, aliases []string) {
 	for _, alias := range aliases {
-		if !slices.ContainsFunc(lib.aliasTab[alias], func(pt *ComponentPT) bool {
-			return pt.Name == comp.Name
+		if !slices.ContainsFunc(lib.aliasTab[alias], func(pt *_ComponentPT) bool {
+			return pt.name == comp.name
 		}) {
 			lib.aliasTab[alias] = append(lib.aliasTab[alias], comp)
 		}
@@ -198,8 +198,8 @@ func (lib *_ComponentLib) addAliases(comp *ComponentPT, aliases []string) {
 
 func (lib *_ComponentLib) cleanAliases(compName string) {
 	for alias, comps := range lib.aliasTab {
-		lib.aliasTab[alias] = slices.DeleteFunc(comps, func(pt *ComponentPT) bool {
-			return pt.Name == compName
+		lib.aliasTab[alias] = slices.DeleteFunc(comps, func(pt *_ComponentPT) bool {
+			return pt.name == compName
 		})
 	}
 }

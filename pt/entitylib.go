@@ -61,15 +61,15 @@ func NewEntityLib(compLib ComponentLib) EntityLib {
 
 	return &_EntityLib{
 		compLib:   compLib,
-		entityIdx: map[string]*EntityPT{},
+		entityIdx: map[string]*_EntityPT{},
 	}
 }
 
 type _EntityLib struct {
 	sync.RWMutex
 	compLib    ComponentLib
-	entityIdx  map[string]*EntityPT
-	entityList []*EntityPT
+	entityIdx  map[string]*_EntityPT
+	entityList []*_EntityPT
 }
 
 // GetEntityLib 获取实体原型库
@@ -82,33 +82,32 @@ func (lib *_EntityLib) Declare(prototype string, atti Atti, comps ...any) Entity
 	lib.Lock()
 	defer lib.Unlock()
 
-	_, ok := lib.entityIdx[prototype]
-	if ok {
+	if _, ok := lib.entityIdx[prototype]; ok {
 		panic(fmt.Errorf("%w: entity %q is already declared", ErrPt, prototype))
 	}
 
-	entity := &EntityPT{
-		Prototype:          prototype,
-		Scope:              atti.Scope,
-		AwakeOnFirstAccess: atti.AwakeOnFirstAccess,
+	entity := &_EntityPT{
+		prototype:          prototype,
+		scope:              atti.Scope,
+		awakeOnFirstAccess: atti.AwakeOnFirstAccess,
 	}
 
 	if atti.Instance != nil {
-		tfInstance := reflect.TypeOf(atti.Instance)
+		instanceRT := reflect.TypeOf(atti.Instance)
 
-		for tfInstance.Kind() == reflect.Pointer || tfInstance.Kind() == reflect.Interface {
-			tfInstance = tfInstance.Elem()
+		for instanceRT.Kind() == reflect.Pointer || instanceRT.Kind() == reflect.Interface {
+			instanceRT = instanceRT.Elem()
 		}
 
-		if tfInstance.Name() == "" {
+		if instanceRT.Name() == "" {
 			panic(fmt.Errorf("%w: anonymous entity instance not allowed", ErrPt))
 		}
 
-		if !reflect.PointerTo(tfInstance).Implements(reflect.TypeFor[ec.Entity]()) {
-			panic(fmt.Errorf("%w: entity instance %q not implement ec.Entity", ErrPt, types.FullNameRT(tfInstance)))
+		if !reflect.PointerTo(instanceRT).Implements(reflect.TypeFor[ec.Entity]()) {
+			panic(fmt.Errorf("%w: entity instance %q not implement ec.Entity", ErrPt, types.FullNameRT(instanceRT)))
 		}
 
-		entity.InstanceRT = tfInstance
+		entity.instanceRT = instanceRT
 	}
 
 	for _, comp := range comps {
@@ -132,16 +131,16 @@ func (lib *_EntityLib) Declare(prototype string, atti Atti, comps ...any) Entity
 		}
 
 		if compDesc.Alias == "" {
-			compDesc.Alias = compDesc.PT.Name
+			compDesc.Alias = compDesc.PT.Name()
 		}
 
-		entity.Components = append(entity.Components, compDesc)
+		entity.components = append(entity.components, compDesc)
 	}
 
 	lib.entityIdx[prototype] = entity
 	lib.entityList = append(lib.entityList, entity)
 
-	return *entity
+	return entity
 }
 
 // Undeclare 取消声明实体原型
@@ -151,8 +150,8 @@ func (lib *_EntityLib) Undeclare(prototype string) {
 
 	delete(lib.entityIdx, prototype)
 
-	lib.entityList = slices.DeleteFunc(lib.entityList, func(pt *EntityPT) bool {
-		return pt.Prototype == prototype
+	lib.entityList = slices.DeleteFunc(lib.entityList, func(pt *_EntityPT) bool {
+		return pt.prototype == prototype
 	})
 }
 
@@ -163,10 +162,10 @@ func (lib *_EntityLib) Get(prototype string) (EntityPT, bool) {
 
 	entity, ok := lib.entityIdx[prototype]
 	if !ok {
-		return EntityPT{}, false
+		return nil, false
 	}
 
-	return *entity, ok
+	return entity, ok
 }
 
 // Range 遍历所有已注册的实体原型
@@ -176,7 +175,7 @@ func (lib *_EntityLib) Range(fun generic.Func1[EntityPT, bool]) {
 	lib.RUnlock()
 
 	for i := range copied {
-		if !fun.Exec(*copied[i]) {
+		if !fun.Exec(copied[i]) {
 			return
 		}
 	}
@@ -189,7 +188,7 @@ func (lib *_EntityLib) ReversedRange(fun generic.Func1[EntityPT, bool]) {
 	lib.RUnlock()
 
 	for i := len(copied) - 1; i >= 0; i-- {
-		if !fun.Exec(*copied[i]) {
+		if !fun.Exec(copied[i]) {
 			return
 		}
 	}

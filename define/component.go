@@ -49,7 +49,7 @@ func defineComponent[COMP any](compLib pt.ComponentLib, ifaceName string) Compon
 	}
 
 	return ComponentDefinition{
-		Name:          compLib.Declare(types.ZeroT[COMP]()).Name,
+		Name:          compLib.Declare(types.ZeroT[COMP]()).Name(),
 		InterfaceName: ifaceName,
 	}
 }

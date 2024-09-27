@@ -49,7 +49,6 @@ type PluginBundle interface {
 }
 
 type iPluginBundle interface {
-	setPluginState(name string, state PluginState)
 	setInstallCB(cb generic.Action1[PluginStatus])
 	setUninstallCB(cb generic.Action1[PluginStatus])
 }
@@ -57,22 +56,14 @@ type iPluginBundle interface {
 // NewPluginBundle 创建插件包
 func NewPluginBundle() PluginBundle {
 	return &_PluginBundle{
-		pluginIdx: map[string]*PluginStatus{},
+		pluginIdx: map[string]*_PluginStatus{},
 	}
-}
-
-// PluginStatus 插件状态信息
-type PluginStatus struct {
-	Name         string        // 插件名
-	InstanceFace iface.FaceAny // 插件实例
-	Reflected    reflect.Value // 插件反射值
-	State        PluginState   // 状态
 }
 
 type _PluginBundle struct {
 	sync.RWMutex
-	pluginIdx              map[string]*PluginStatus
-	pluginList             []*PluginStatus
+	pluginIdx              map[string]*_PluginStatus
+	pluginList             []*_PluginStatus
 	installCB, uninstallCB generic.Action1[PluginStatus]
 }
 
@@ -88,11 +79,11 @@ func (bundle *_PluginBundle) Install(pluginFace iface.FaceAny, name ...string) {
 
 // Uninstall 卸载插件
 func (bundle *_PluginBundle) Uninstall(name string) {
-	pluginStatus, ok := bundle.uninstall(name)
+	status, ok := bundle.uninstall(name)
 	if !ok {
 		return
 	}
-	bundle.uninstallCB.Exec(pluginStatus)
+	bundle.uninstallCB.Exec(status)
 }
 
 // Get 获取插件
@@ -100,12 +91,12 @@ func (bundle *_PluginBundle) Get(name string) (PluginStatus, bool) {
 	bundle.RLock()
 	defer bundle.RUnlock()
 
-	pluginStatus, ok := bundle.pluginIdx[name]
+	status, ok := bundle.pluginIdx[name]
 	if !ok {
-		return PluginStatus{}, false
+		return nil, false
 	}
 
-	return *pluginStatus, ok
+	return status, ok
 }
 
 // Range 遍历所有已注册的插件
@@ -115,7 +106,7 @@ func (bundle *_PluginBundle) Range(fun generic.Func1[PluginStatus, bool]) {
 	bundle.RUnlock()
 
 	for i := range copied {
-		if !fun.Exec(*copied[i]) {
+		if !fun.Exec(copied[i]) {
 			return
 		}
 	}
@@ -128,22 +119,10 @@ func (bundle *_PluginBundle) ReversedRange(fun generic.Func1[PluginStatus, bool]
 	bundle.RUnlock()
 
 	for i := len(copied) - 1; i >= 0; i-- {
-		if !fun.Exec(*copied[i]) {
+		if !fun.Exec(copied[i]) {
 			return
 		}
 	}
-}
-
-func (bundle *_PluginBundle) setPluginState(name string, state PluginState) {
-	bundle.Lock()
-	defer bundle.Unlock()
-
-	pluginStatus, ok := bundle.pluginIdx[name]
-	if !ok {
-		return
-	}
-
-	pluginStatus.State = state
 }
 
 func (bundle *_PluginBundle) setInstallCB(cb generic.Action1[PluginStatus]) {
@@ -154,7 +133,7 @@ func (bundle *_PluginBundle) setUninstallCB(cb generic.Action1[PluginStatus]) {
 	bundle.uninstallCB = cb
 }
 
-func (bundle *_PluginBundle) install(pluginFace iface.FaceAny, name ...string) PluginStatus {
+func (bundle *_PluginBundle) install(pluginFace iface.FaceAny, name ...string) *_PluginStatus {
 	if pluginFace.IsNil() {
 		panic(fmt.Errorf("%w: %w: pluginFace is nil", ErrPlugin, exception.ErrArgs))
 	}
@@ -171,33 +150,33 @@ func (bundle *_PluginBundle) install(pluginFace iface.FaceAny, name ...string) P
 		panic(fmt.Errorf("%w: plugin %q is already installed", ErrPlugin, pluginName))
 	}
 
-	pluginStatus := &PluginStatus{
-		Name:         pluginName,
-		InstanceFace: pluginFace,
-		Reflected:    reflect.ValueOf(pluginFace.Iface),
-		State:        PluginState_Loaded,
+	status := &_PluginStatus{
+		name:         pluginName,
+		instanceFace: pluginFace,
+		reflected:    reflect.ValueOf(pluginFace.Iface),
 	}
+	status.state.Store(int32(PluginState_Loaded))
 
-	bundle.pluginList = append(bundle.pluginList, pluginStatus)
-	bundle.pluginIdx[pluginName] = pluginStatus
+	bundle.pluginList = append(bundle.pluginList, status)
+	bundle.pluginIdx[pluginName] = status
 
-	return *pluginStatus
+	return status
 }
 
-func (bundle *_PluginBundle) uninstall(name string) (PluginStatus, bool) {
+func (bundle *_PluginBundle) uninstall(name string) (*_PluginStatus, bool) {
 	bundle.Lock()
 	defer bundle.Unlock()
 
-	pluginStatus, ok := bundle.pluginIdx[name]
+	status, ok := bundle.pluginIdx[name]
 	if !ok {
-		return PluginStatus{}, false
+		return nil, false
 	}
 
 	delete(bundle.pluginIdx, name)
 
-	bundle.pluginList = slices.DeleteFunc(bundle.pluginList, func(pluginStatus *PluginStatus) bool {
-		return pluginStatus.Name == name
+	bundle.pluginList = slices.DeleteFunc(bundle.pluginList, func(status *_PluginStatus) bool {
+		return status.name == name
 	})
 
-	return *pluginStatus, true
+	return status, true
 }

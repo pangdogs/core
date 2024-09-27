@@ -135,15 +135,23 @@ func (rt *RuntimeBehavior) shutPlugin() {
 }
 
 func (rt *RuntimeBehavior) activatePlugin(pluginStatus plugin.PluginStatus) {
-	if pluginInit, ok := pluginStatus.InstanceFace.Iface.(LifecycleRuntimePluginInit); ok {
+	if pluginStatus.State() != plugin.PluginState_Loaded {
+		return
+	}
+
+	if pluginInit, ok := pluginStatus.InstanceFace().Iface.(LifecycleRuntimePluginInit); ok {
 		generic.MakeAction1(pluginInit.InitRP).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
 	}
-	plugin.UnsafePluginBundle(rt.ctx.GetPluginBundle()).SetPluginState(pluginStatus.Name, plugin.PluginState_Active)
+
+	plugin.UnsafePluginStatus(pluginStatus).SetState(plugin.PluginState_Active, plugin.PluginState_Loaded)
 }
 
 func (rt *RuntimeBehavior) deactivatePlugin(pluginStatus plugin.PluginStatus) {
-	plugin.UnsafePluginBundle(rt.ctx.GetPluginBundle()).SetPluginState(pluginStatus.Name, plugin.PluginState_Inactive)
-	if pluginShut, ok := pluginStatus.InstanceFace.Iface.(LifecycleRuntimePluginShut); ok {
+	if !plugin.UnsafePluginStatus(pluginStatus).SetState(plugin.PluginState_Inactive, plugin.PluginState_Active) {
+		return
+	}
+
+	if pluginShut, ok := pluginStatus.InstanceFace().Iface.(LifecycleRuntimePluginShut); ok {
 		generic.MakeAction1(pluginShut.ShutRP).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
 	}
 }

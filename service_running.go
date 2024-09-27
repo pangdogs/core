@@ -131,15 +131,23 @@ func (svc *ServiceBehavior) shutPlugin() {
 }
 
 func (svc *ServiceBehavior) activatePlugin(pluginStatus plugin.PluginStatus) {
-	if pluginInit, ok := pluginStatus.InstanceFace.Iface.(LifecycleServicePluginInit); ok {
+	if pluginStatus.State() != plugin.PluginState_Loaded {
+		return
+	}
+
+	if pluginInit, ok := pluginStatus.InstanceFace().Iface.(LifecycleServicePluginInit); ok {
 		generic.MakeAction1(pluginInit.InitSP).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx)
 	}
-	plugin.UnsafePluginBundle(svc.ctx.GetPluginBundle()).SetPluginState(pluginStatus.Name, plugin.PluginState_Active)
+
+	plugin.UnsafePluginStatus(pluginStatus).SetState(plugin.PluginState_Active, plugin.PluginState_Loaded)
 }
 
 func (svc *ServiceBehavior) deactivatePlugin(pluginStatus plugin.PluginStatus) {
-	plugin.UnsafePluginBundle(svc.ctx.GetPluginBundle()).SetPluginState(pluginStatus.Name, plugin.PluginState_Inactive)
-	if pluginShut, ok := pluginStatus.InstanceFace.Iface.(LifecycleServicePluginShut); ok {
+	if !plugin.UnsafePluginStatus(pluginStatus).SetState(plugin.PluginState_Inactive, plugin.PluginState_Active) {
+		return
+	}
+
+	if pluginShut, ok := pluginStatus.InstanceFace().Iface.(LifecycleServicePluginShut); ok {
 		generic.MakeAction1(pluginShut.ShutSP).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx)
 	}
 }

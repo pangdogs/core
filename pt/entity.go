@@ -26,6 +26,7 @@ import (
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/option"
 	"reflect"
+	"slices"
 )
 
 // ComponentDesc 组件描述
@@ -35,43 +36,99 @@ type ComponentDesc struct {
 	Fixed bool        // 固定
 }
 
-// EntityPT 实体原型
-type EntityPT struct {
-	Prototype          string          // 实体原型名称
-	InstanceRT         reflect.Type    // 实例反射类型
-	Scope              *ec.Scope       // 可访问作用域
-	AwakeOnFirstAccess *bool           // 设置开启组件被首次访问时，检测并调用Awake()
-	Components         []ComponentDesc // 组件信息
+// EntityPT 实体原型接口
+type EntityPT interface {
+	// Prototype 实体原型名称
+	Prototype() string
+	// InstanceRT 实体实例反射类型
+	InstanceRT() reflect.Type
+	// Scope 可访问作用域
+	Scope() *ec.Scope
+	// AwakeOnFirstAccess 设置开启组件被首次访问时，检测并调用Awake()
+	AwakeOnFirstAccess() *bool
+	// CountComponents // 组件数量
+	CountComponents() int
+	// Component 获取组件
+	Component(idx int) ComponentDesc
+	// Components 获取所有组件
+	Components() []ComponentDesc
+	// Construct 创建实体
+	Construct(settings ...option.Setting[ec.EntityOptions]) ec.Entity
+}
+
+type _EntityPT struct {
+	prototype          string
+	instanceRT         reflect.Type
+	scope              *ec.Scope
+	awakeOnFirstAccess *bool
+	components         []ComponentDesc
+}
+
+// Prototype 实体原型名称
+func (pt *_EntityPT) Prototype() string {
+	return pt.prototype
+}
+
+// InstanceRT 实体实例反射类型
+func (pt *_EntityPT) InstanceRT() reflect.Type {
+	return pt.instanceRT
+}
+
+// Scope 可访问作用域
+func (pt *_EntityPT) Scope() *ec.Scope {
+	return pt.scope
+}
+
+// AwakeOnFirstAccess 设置开启组件被首次访问时，检测并调用Awake()
+func (pt *_EntityPT) AwakeOnFirstAccess() *bool {
+	return pt.awakeOnFirstAccess
+}
+
+// CountComponents // 组件数量
+func (pt *_EntityPT) CountComponents() int {
+	return len(pt.components)
+}
+
+// Component 获取组件
+func (pt *_EntityPT) Component(idx int) ComponentDesc {
+	if idx < 0 || idx >= len(pt.components) {
+		panic(fmt.Errorf("%w: %w: idx out of range", ErrPt, exception.ErrArgs))
+	}
+	return pt.components[idx]
+}
+
+// Components 获取所有组件
+func (pt *_EntityPT) Components() []ComponentDesc {
+	return slices.Clone(pt.components)
 }
 
 // Construct 创建实体
-func (pt EntityPT) Construct(settings ...option.Setting[ec.EntityOptions]) ec.Entity {
+func (pt *_EntityPT) Construct(settings ...option.Setting[ec.EntityOptions]) ec.Entity {
 	options := option.Make(ec.With.Default())
-	if pt.InstanceRT != nil {
-		options.InstanceFace = iface.MakeFaceT(reflect.New(pt.InstanceRT).Interface().(ec.Entity))
+	if pt.instanceRT != nil {
+		options.InstanceFace = iface.MakeFaceT(reflect.New(pt.instanceRT).Interface().(ec.Entity))
 	}
-	if pt.Scope != nil {
-		options.Scope = *pt.Scope
+	if pt.scope != nil {
+		options.Scope = *pt.scope
 	}
-	if pt.AwakeOnFirstAccess != nil {
-		options.AwakeOnFirstAccess = *pt.AwakeOnFirstAccess
+	if pt.awakeOnFirstAccess != nil {
+		options.AwakeOnFirstAccess = *pt.awakeOnFirstAccess
 	}
 	options = option.Append(options, settings...)
-	options.Prototype = pt.Prototype
+	options.Prototype = pt.prototype
 
 	return pt.assemble(ec.UnsafeNewEntity(options))
 }
 
-func (pt EntityPT) assemble(entity ec.Entity) ec.Entity {
+func (pt *_EntityPT) assemble(entity ec.Entity) ec.Entity {
 	if entity == nil {
 		panic(fmt.Errorf("%w: %w: entity is nil", ErrPt, exception.ErrArgs))
 	}
 
-	for i := range pt.Components {
-		compDesc := &pt.Components[i]
+	for i := range pt.components {
+		compDesc := &pt.components[i]
 
 		comp := compDesc.PT.Construct()
-
 		ec.UnsafeComponent(comp).SetFixed(compDesc.Fixed)
 
 		if err := entity.AddComponent(compDesc.Alias, comp); err != nil {
