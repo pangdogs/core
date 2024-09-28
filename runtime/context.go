@@ -88,7 +88,7 @@ type iContext interface {
 	setFrame(frame Frame)
 	setCallee(callee async.Callee)
 	getServiceCtx() service.Context
-	changeRunningState(state RunningState)
+	changeRunningState(state RunningState, args ...any)
 	gc()
 }
 
@@ -213,9 +213,9 @@ func (ctx *ContextBehavior) getServiceCtx() service.Context {
 	return ctx.svcCtx
 }
 
-func (ctx *ContextBehavior) changeRunningState(state RunningState) {
+func (ctx *ContextBehavior) changeRunningState(state RunningState, args ...any) {
 	ctx.entityMgr.changeRunningState(state)
-	ctx.opts.RunningHandler.Call(ctx.GetAutoRecover(), ctx.GetReportError(), nil, ctx.opts.InstanceFace.Iface, state)
+	ctx.opts.RunningHandler.Call(ctx.GetAutoRecover(), ctx.GetReportError(), nil, ctx.opts.InstanceFace.Iface, state, args...)
 
 	switch state {
 	case RunningState_Terminated:

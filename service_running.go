@@ -89,7 +89,7 @@ loop:
 	close(ictx.UnsafeContext(ctx).GetTerminatedChan())
 }
 
-func (svc *ServiceBehavior) changeRunningState(state service.RunningState) {
+func (svc *ServiceBehavior) changeRunningState(state service.RunningState, args ...any) {
 	switch state {
 	case service.RunningState_Starting:
 		svc.initPlugin()
@@ -97,7 +97,7 @@ func (svc *ServiceBehavior) changeRunningState(state service.RunningState) {
 		svc.shutPlugin()
 	}
 
-	service.UnsafeContext(svc.ctx).ChangeRunningState(state)
+	service.UnsafeContext(svc.ctx).ChangeRunningState(state, args...)
 }
 
 func (svc *ServiceBehavior) initPlugin() {
@@ -135,6 +135,9 @@ func (svc *ServiceBehavior) activatePlugin(pluginStatus plugin.PluginStatus) {
 		return
 	}
 
+	svc.changeRunningState(service.RunningState_PluginActivating, pluginStatus)
+	defer svc.changeRunningState(service.RunningState_PluginActivated, pluginStatus)
+
 	if pluginInit, ok := pluginStatus.InstanceFace().Iface.(LifecycleServicePluginInit); ok {
 		generic.MakeAction1(pluginInit.InitSP).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx)
 	}
@@ -143,6 +146,9 @@ func (svc *ServiceBehavior) activatePlugin(pluginStatus plugin.PluginStatus) {
 }
 
 func (svc *ServiceBehavior) deactivatePlugin(pluginStatus plugin.PluginStatus) {
+	svc.changeRunningState(service.RunningState_PluginDeactivating, pluginStatus)
+	defer svc.changeRunningState(service.RunningState_PluginDeactivated, pluginStatus)
+
 	if !plugin.UnsafePluginStatus(pluginStatus).SetState(plugin.PluginState_Inactive, plugin.PluginState_Active) {
 		return
 	}

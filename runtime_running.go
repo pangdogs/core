@@ -85,7 +85,7 @@ func (rt *RuntimeBehavior) running() {
 	close(ictx.UnsafeContext(ctx).GetTerminatedChan())
 }
 
-func (rt *RuntimeBehavior) changeRunningState(state runtime.RunningState) {
+func (rt *RuntimeBehavior) changeRunningState(state runtime.RunningState, args ...any) {
 	switch state {
 	case runtime.RunningState_Starting:
 		rt.initPlugin()
@@ -101,7 +101,7 @@ func (rt *RuntimeBehavior) changeRunningState(state runtime.RunningState) {
 		rt.shutPlugin()
 	}
 
-	runtime.UnsafeContext(rt.ctx).ChangeRunningState(state)
+	runtime.UnsafeContext(rt.ctx).ChangeRunningState(state, args...)
 }
 
 func (rt *RuntimeBehavior) initPlugin() {
@@ -139,6 +139,9 @@ func (rt *RuntimeBehavior) activatePlugin(pluginStatus plugin.PluginStatus) {
 		return
 	}
 
+	rt.changeRunningState(runtime.RunningState_PluginActivating, pluginStatus)
+	defer rt.changeRunningState(runtime.RunningState_PluginActivated, pluginStatus)
+
 	if pluginInit, ok := pluginStatus.InstanceFace().Iface.(LifecycleRuntimePluginInit); ok {
 		generic.MakeAction1(pluginInit.InitRP).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
 	}
@@ -147,6 +150,9 @@ func (rt *RuntimeBehavior) activatePlugin(pluginStatus plugin.PluginStatus) {
 }
 
 func (rt *RuntimeBehavior) deactivatePlugin(pluginStatus plugin.PluginStatus) {
+	rt.changeRunningState(runtime.RunningState_PluginDeactivating, pluginStatus)
+	defer rt.changeRunningState(runtime.RunningState_PluginDeactivated, pluginStatus)
+
 	if !plugin.UnsafePluginStatus(pluginStatus).SetState(plugin.PluginState_Inactive, plugin.PluginState_Active) {
 		return
 	}

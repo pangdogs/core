@@ -61,8 +61,8 @@ func (uc _UnsafeContext) GetServiceCtx() service.Context {
 }
 
 // ChangeRunningState 修改运行状态
-func (uc _UnsafeContext) ChangeRunningState(state RunningState) {
-	uc.changeRunningState(state)
+func (uc _UnsafeContext) ChangeRunningState(state RunningState, args ...any) {
+	uc.changeRunningState(state, args...)
 }
 
 // GC GC

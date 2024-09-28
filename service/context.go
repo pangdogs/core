@@ -73,7 +73,7 @@ type Context interface {
 type iContext interface {
 	init(opts ContextOptions)
 	getOptions() *ContextOptions
-	changeRunningState(state RunningState)
+	changeRunningState(state RunningState, args ...any)
 }
 
 // ContextBehavior 服务上下文行为，在扩展服务上下文能力时，匿名嵌入至服务上下文结构体中
@@ -138,6 +138,6 @@ func (ctx *ContextBehavior) getOptions() *ContextOptions {
 	return &ctx.opts
 }
 
-func (ctx *ContextBehavior) changeRunningState(state RunningState) {
-	ctx.opts.RunningHandler.Call(ctx.GetAutoRecover(), ctx.GetReportError(), nil, ctx.opts.InstanceFace.Iface, state)
+func (ctx *ContextBehavior) changeRunningState(state RunningState, args ...any) {
+	ctx.opts.RunningHandler.Call(ctx.GetAutoRecover(), ctx.GetReportError(), nil, ctx.opts.InstanceFace.Iface, state, args...)
 }

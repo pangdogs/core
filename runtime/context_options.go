@@ -29,7 +29,7 @@ import (
 )
 
 type (
-	RunningHandler = generic.DelegateAction2[Context, RunningState] // 运行状态变化处理器
+	RunningHandler = generic.DelegateActionVar2[Context, RunningState, any] // 运行状态变化处理器
 )
 
 // ContextOptions 创建运行时上下文的所有选项
@@ -42,7 +42,6 @@ type ContextOptions struct {
 	PersistId      uid.Id              // 运行时持久化Id
 	PluginBundle   plugin.PluginBundle // 插件包
 	RunningHandler RunningHandler      // 运行状态变化处理器
-	Plugin         generic.Action1[*plugin.PluginStatus]
 }
 
 type _ContextOption struct{}

@@ -30,7 +30,7 @@ import (
 )
 
 type (
-	RunningHandler = generic.DelegateAction2[Context, RunningState] // 运行状态变化处理器
+	RunningHandler = generic.DelegateActionVar2[Context, RunningState, any] // 运行状态变化处理器
 )
 
 // ContextOptions 创建服务上下文的所有选项

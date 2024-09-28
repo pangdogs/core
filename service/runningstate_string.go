@@ -13,11 +13,15 @@ func _() {
 	_ = x[RunningState_Started-2]
 	_ = x[RunningState_Terminating-3]
 	_ = x[RunningState_Terminated-4]
+	_ = x[RunningState_PluginActivating-5]
+	_ = x[RunningState_PluginActivated-6]
+	_ = x[RunningState_PluginDeactivating-7]
+	_ = x[RunningState_PluginDeactivated-8]
 }
 
-const _RunningState_name = "RunningState_BirthRunningState_StartingRunningState_StartedRunningState_TerminatingRunningState_Terminated"
+const _RunningState_name = "RunningState_BirthRunningState_StartingRunningState_StartedRunningState_TerminatingRunningState_TerminatedRunningState_PluginActivatingRunningState_PluginActivatedRunningState_PluginDeactivatingRunningState_PluginDeactivated"
 
-var _RunningState_index = [...]uint8{0, 18, 39, 59, 83, 106}
+var _RunningState_index = [...]uint8{0, 18, 39, 59, 83, 106, 135, 163, 194, 224}
 
 func (i RunningState) String() string {
 	if i < 0 || i >= RunningState(len(_RunningState_index)-1) {
