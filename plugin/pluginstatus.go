@@ -21,7 +21,7 @@ type PluginStatus interface {
 }
 
 type iPluginStatus interface {
-	setState(state, old PluginState) bool
+	setState(state, must PluginState) bool
 }
 
 type _PluginStatus struct {
@@ -51,6 +51,6 @@ func (s *_PluginStatus) State() PluginState {
 	return PluginState(s.state.Load())
 }
 
-func (s *_PluginStatus) setState(state, old PluginState) bool {
-	return s.state.CompareAndSwap(int32(old), int32(state))
+func (s *_PluginStatus) setState(state, must PluginState) bool {
+	return s.state.CompareAndSwap(int32(must), int32(state))
 }
