@@ -22,7 +22,7 @@
 | [/define](https://github.com/pangdogs/core/tree/main/define) | 利用泛型特性，支持定义插件或组件，简化代码编写。 |
 | [/ec](https://github.com/pangdogs/core/tree/main/ec) | 实体组件框架。 |
 | [/event](https://github.com/pangdogs/core/tree/main/event) | 本地事件系统。 |
-| [/event/eventcode](https://github.com/pangdogs/core/tree/main/event/eventcode) | 本地事件代码生成器。 |
+| [/event/eventc](https://github.com/pangdogs/core/tree/main/event/eventc) | 本地事件代码生成器。 |
 | [/plugin](https://github.com/pangdogs/core/tree/main/plugin) | 插件系统。 |
 | [/pt](https://github.com/pangdogs/core/tree/main/pt) | 实体原型系统。 |
 | [/runtime](https://github.com/pangdogs/core/tree/main/runtime) | 运行时上下文。 |
