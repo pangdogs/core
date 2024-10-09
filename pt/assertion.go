@@ -31,18 +31,21 @@ import (
 // As 从实体提取一些需要的组件接口，复合在一起直接使用。
 /*
 示例：
-	type A interface {
+	type IA interface {
 		MethodA()
 	}
 	...
-	type B interface {
+	type IB interface {
 		MethodB()
 	}
 	...
 	type CompositeAB struct {
-		A
-		B
+		IA `ec:"A"`
+		IB
 	}
+	...
+	entity.AddComponent("A", compA)
+	entity.AddComponent(types.FullNameT[IB](), compB)
 	...
 	v, ok := As[CompositeAB](entity)
 	if ok {
@@ -53,7 +56,7 @@ import (
 注意：
 	1.内部逻辑有使用反射，为了提高性能，可以使用一次后存储转换结果重复使用。
 	2.实体更新组件后，需要重新提取。
-	3.如果组件使用自定义别名加入实体，那么无法使用此功能提取组件接口。
+	3.需要使用tag标记组件名称，若没有标记，将会尝试使用字段类型去查找。
 */
 func As[T comparable](entity ec.Entity) (T, bool) {
 	iface := types.ZeroT[T]()
@@ -69,18 +72,21 @@ func As[T comparable](entity ec.Entity) (T, bool) {
 // Cast 从实体提取一些需要的组件接口，复合在一起直接使用，提取失败会panic。
 /*
 示例：
-	type A interface {
+	type IA interface {
 		MethodA()
 	}
 	...
-	type B interface {
+	type IB interface {
 		MethodB()
 	}
 	...
 	type CompositeAB struct {
-		A
-		B
+		IA `ec:"A"`
+		IB
 	}
+	...
+	entity.AddComponent("A", compA)
+	entity.AddComponent(types.FullNameT[IB](), compB)
 	...
 	Cast[CompositeAB](entity).MethodA()
 	Cast[CompositeAB](entity).MethodB()
@@ -88,7 +94,7 @@ func As[T comparable](entity ec.Entity) (T, bool) {
 注意：
 	1.内部逻辑有使用反射，为了提高性能，可以使用一次后存储转换结果重复使用。
 	2.实体更新组件后，需要重新提取。
-	3.如果组件使用自定义别名加入实体，那么无法使用此功能提取组件接口。
+	3.需要使用tag标记组件名称，若没有标记，将会尝试使用字段类型去查找。
 */
 func Cast[T comparable](entity ec.Entity) T {
 	iface, ok := As[T](entity)
@@ -111,43 +117,29 @@ func Compose[T comparable](entity ec.Entity) *Composite[T] {
 // Composite 组件复合器，直接使用As()或Cast()时，无法检测提取后实体是否又更新组件，使用复合器可以解决此问题。
 /*
 示例：
-	type A interface {
+	type IA interface {
 		MethodA()
 	}
 	...
-	type B interface {
+	type IB interface {
 		MethodB()
 	}
 	...
 	type CompositeAB struct {
-		A
-		B
+		IA `ec:"A"`
+		IB
 	}
 	...
-	cx := Compose[CompositeAB](entity)
+	entity.AddComponent("A", compA)
+	entity.AddComponent(types.FullNameT[IB](), compB)
 	...
+	cx := Compose[CompositeAB](entity)
 	if v, ok := cx.As(); ok {
 		v.MethodA()
 		v.MethodB()
-		...
-		entity.AddComponent(comp)
-		...
-		if v, ok := cx.As(); ok {
-			v.MethodA()
-			v.MethodB()
-		}
 	}
-	...
 	cx.Cast().MethodA()
 	cx.Cast().MethodB()
-	...
-	entity.AddComponent(comp)
-	...
-	cx.Cast().MethodA()
-	cx.Cast().MethodB()
-
-注意：
-	1.如果组件使用自定义别名加入实体，那么无法使用此功能提取组件接口。
 */
 type Composite[T comparable] struct {
 	entity  ec.Entity
@@ -204,29 +196,38 @@ func as(entity ec.Entity, ifaceRV reflect.Value) bool {
 		return false
 	}
 
+	ifaceRT := ifaceRV.Type()
 	sb := strings.Builder{}
-	sb.Grow(128)
 
 	switch ifaceRV.Kind() {
 	case reflect.Struct:
 		for i := 0; i < ifaceRV.NumField(); i++ {
+			field := ifaceRT.Field(i)
 			fieldRV := ifaceRV.Field(i)
-			fieldRT := fieldRV.Type()
 
-			switch fieldRV.Kind() {
-			case reflect.Pointer:
-				fieldRT = fieldRT.Elem()
-				break
-			case reflect.Interface:
-				break
-			default:
-				return false
+			name, _, _ := strings.Cut(field.Tag.Get("ec"), ",")
+			name = strings.TrimSpace(name)
+
+			if name == "" || name == "-" {
+				fieldRT := fieldRV.Type()
+
+				switch fieldRV.Kind() {
+				case reflect.Pointer:
+					fieldRT = fieldRT.Elem()
+					break
+				case reflect.Interface:
+					break
+				default:
+					return false
+				}
+
+				sb.Reset()
+				types.WriteFullNameRT(&sb, fieldRT)
+
+				name = sb.String()
 			}
 
-			sb.Reset()
-			types.WriteFullNameRT(&sb, fieldRT)
-
-			comp := entity.GetComponent(sb.String())
+			comp := entity.GetComponent(name)
 			if comp == nil {
 				return false
 			}
@@ -237,8 +238,6 @@ func as(entity ec.Entity, ifaceRV reflect.Value) bool {
 		return true
 
 	case reflect.Interface:
-		ifaceRT := ifaceRV.Type()
-
 		sb.Reset()
 		types.WriteFullNameRT(&sb, ifaceRT)
 

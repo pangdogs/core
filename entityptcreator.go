@@ -65,12 +65,12 @@ func (c EntityPTCreator) AwakeOnFirstAccess(b bool) EntityPTCreator {
 }
 
 // AddComponent 添加组件
-func (c EntityPTCreator) AddComponent(comp any, alias ...string) EntityPTCreator {
+func (c EntityPTCreator) AddComponent(comp any, name ...string) EntityPTCreator {
 	switch v := comp.(type) {
 	case pt.CompAtti, *pt.CompAtti:
 		c.comps = append(c.comps, v)
 	default:
-		c.comps = append(c.comps, pt.CompWith(comp, true, pie.First(alias)))
+		c.comps = append(c.comps, pt.CompWith(comp, pie.First(name), true))
 	}
 	return c
 }

@@ -26,8 +26,8 @@ import (
 
 // ComponentPT 组件原型接口
 type ComponentPT interface {
-	// Name 组件名称
-	Name() string
+	// Prototype 组件原型名称
+	Prototype() string
 	// InstanceRT 组件实例反射类型
 	InstanceRT() reflect.Type
 	// Construct 创建组件
@@ -35,13 +35,13 @@ type ComponentPT interface {
 }
 
 type _ComponentPT struct {
-	name       string       // 组件名称
+	prototype  string       // 组件原型名称
 	instanceRT reflect.Type // 实例反射类型
 }
 
-// Name 组件名称
-func (pt *_ComponentPT) Name() string {
-	return pt.name
+// Prototype 组件原型名称
+func (pt *_ComponentPT) Prototype() string {
+	return pt.prototype
 }
 
 // InstanceRT 组件实例反射类型

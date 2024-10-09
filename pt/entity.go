@@ -31,8 +31,8 @@ import (
 
 // ComponentDesc 组件描述
 type ComponentDesc struct {
-	PT           ComponentPT // 原型
-	Alias        string      // 别名
+	PT           ComponentPT // 组件原型
+	Name         string      // 组件名称
 	NonRemovable bool        // 不可删除
 }
 
@@ -131,7 +131,7 @@ func (pt *_EntityPT) assemble(entity ec.Entity) ec.Entity {
 		comp := compDesc.PT.Construct()
 		ec.UnsafeComponent(comp).SetNonRemovable(compDesc.NonRemovable)
 
-		if err := entity.AddComponent(compDesc.Alias, comp); err != nil {
+		if err := entity.AddComponent(compDesc.Name, comp); err != nil {
 			panic(fmt.Errorf("%w: %w", ErrPt, err))
 		}
 	}

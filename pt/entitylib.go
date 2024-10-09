@@ -25,6 +25,7 @@ import (
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/types"
+	"github.com/elliotchance/pie/v2"
 	"reflect"
 	"slices"
 	"sync"
@@ -77,8 +78,16 @@ func (lib *_EntityLib) GetEntityLib() EntityLib {
 	return lib
 }
 
-// Declare 声明体原型
+// Declare 声明实体原型
 func (lib *_EntityLib) Declare(prototype any, comps ...any) EntityPT {
+	if prototype == nil {
+		panic(fmt.Errorf("%w: %w: prototype is nil", ErrPt, exception.ErrArgs))
+	}
+
+	if pie.Contains(comps, nil) {
+		panic(fmt.Errorf("%w: %w: comps contains nil", ErrPt, exception.ErrArgs))
+	}
+
 	lib.Lock()
 	defer lib.Unlock()
 
@@ -88,9 +97,6 @@ func (lib *_EntityLib) Declare(prototype any, comps ...any) EntityPT {
 	case EntityAtti:
 		entityAtti = v
 	case *EntityAtti:
-		if v == nil {
-			panic(fmt.Errorf("%w: prototype is nil", ErrPt))
-		}
 		entityAtti = *v
 	case string:
 		entityAtti = EntityAtti{Prototype: v}
@@ -136,15 +142,12 @@ func (lib *_EntityLib) Declare(prototype any, comps ...any) EntityPT {
 	retry:
 		switch v := comp.(type) {
 		case CompAtti:
-			compDesc.Alias = v.Alias
+			compDesc.Name = v.Name
 			compDesc.NonRemovable = v.NonRemovable
 			comp = v.Instance
 			goto retry
 		case *CompAtti:
-			if v == nil {
-				panic(fmt.Errorf("%w: comps contains nil", ErrPt))
-			}
-			compDesc.Alias = v.Alias
+			compDesc.Name = v.Name
 			compDesc.NonRemovable = v.NonRemovable
 			comp = v.Instance
 			goto retry
@@ -158,8 +161,8 @@ func (lib *_EntityLib) Declare(prototype any, comps ...any) EntityPT {
 			compDesc.PT = lib.compLib.Declare(v)
 		}
 
-		if compDesc.Alias == "" {
-			compDesc.Alias = compDesc.PT.Name()
+		if compDesc.Name == "" {
+			compDesc.Name = compDesc.PT.Prototype()
 		}
 
 		entity.components = append(entity.components, compDesc)

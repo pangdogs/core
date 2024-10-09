@@ -26,7 +26,7 @@ import (
 
 // EntityAtti 实体原型属性
 type EntityAtti struct {
-	Prototype          string    // 原型名称（必填）
+	Prototype          string    // 实体原型名称（必填）
 	Instance           any       // 实体实例
 	Scope              *ec.Scope // 可访问作用域
 	AwakeOnFirstAccess *bool     // 设置开启组件被首次访问时，检测并调用Awake()
@@ -45,24 +45,24 @@ func EntityWith(prototype string, inst any, scope *ec.Scope, awakeOnFirstAccess 
 // CompAtti 组件原型属性
 type CompAtti struct {
 	Instance     any    // 组件实例（必填）
-	Alias        string // 别名
+	Name         string // 组件名称
 	NonRemovable bool   // 是否不可删除
 }
 
 // CompWith 创建组件原型属性，用于注册实体原型时自定义相关属性
-func CompWith(inst any, nonRemovable bool, alias string) CompAtti {
+func CompWith(inst any, name string, nonRemovable bool) CompAtti {
 	return CompAtti{
 		Instance:     inst,
-		Alias:        alias,
+		Name:         name,
 		NonRemovable: nonRemovable,
 	}
 }
 
-// CompInterfaceWith 创建组件原型属性，用于注册实体原型时使用接口名作为别名，并自定义相关属性
+// CompInterfaceWith 创建组件原型属性，用于注册实体原型时使用接口名作为组件名称，并自定义相关属性
 func CompInterfaceWith[FACE any](inst any, nonRemovable bool) CompAtti {
 	return CompAtti{
 		Instance:     inst,
-		Alias:        types.FullNameT[FACE](),
+		Name:         types.FullNameT[FACE](),
 		NonRemovable: nonRemovable,
 	}
 }
