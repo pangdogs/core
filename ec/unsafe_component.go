@@ -61,9 +61,9 @@ func (uc _UnsafeComponent) WithContext(ctx context.Context) {
 	uc.withContext(ctx)
 }
 
-// SetFixed 设置是否固定
-func (uc _UnsafeComponent) SetFixed(b bool) {
-	uc.setFixed(b)
+// SetNonRemovable 设置是否不可删除
+func (uc _UnsafeComponent) SetNonRemovable(b bool) {
+	uc.setNonRemovable(b)
 }
 
 // CleanManagedHooks 清理所有的托管hook

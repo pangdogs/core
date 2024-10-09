@@ -46,8 +46,8 @@ type Component interface {
 	GetState() ComponentState
 	// GetReflected 获取反射值
 	GetReflected() reflect.Value
-	// GetFixed 是否固定
-	GetFixed() bool
+	// GetNonRemovable 是否不可删除
+	GetNonRemovable() bool
 	// DestroySelf 销毁自身
 	DestroySelf()
 
@@ -60,7 +60,7 @@ type iComponent interface {
 	setState(state ComponentState)
 	setReflected(v reflect.Value)
 	withContext(ctx context.Context)
-	setFixed(b bool)
+	setNonRemovable(b bool)
 	cleanManagedHooks()
 }
 
@@ -75,7 +75,7 @@ type ComponentBehavior struct {
 	instance                  Component
 	state                     ComponentState
 	reflected                 reflect.Value
-	fixed                     bool
+	nonRemovable              bool
 	eventComponentDestroySelf event.Event
 	managedHooks              []event.Hook
 }
@@ -109,9 +109,9 @@ func (comp *ComponentBehavior) GetReflected() reflect.Value {
 	return comp.reflected
 }
 
-// GetFixed 是否固定
-func (comp *ComponentBehavior) GetFixed() bool {
-	return comp.fixed
+// GetNonRemovable 是否不可删除
+func (comp *ComponentBehavior) GetNonRemovable() bool {
+	return comp.nonRemovable
 }
 
 // DestroySelf 销毁自身
@@ -183,6 +183,6 @@ func (comp *ComponentBehavior) withContext(ctx context.Context) {
 	comp.terminated = make(chan struct{})
 }
 
-func (comp *ComponentBehavior) setFixed(b bool) {
-	comp.fixed = b
+func (comp *ComponentBehavior) setNonRemovable(b bool) {
+	comp.nonRemovable = b
 }

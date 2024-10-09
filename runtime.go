@@ -297,7 +297,7 @@ func (rt *RuntimeBehavior) activateComponent(comp ec.Component) {
 		hooks[1] = event.Bind[LifecycleComponentLateUpdate](&rt.eventLateUpdate, compLateUpdate)
 		bound = true
 	}
-	if !comp.GetFixed() {
+	if !comp.GetNonRemovable() {
 		hooks[2] = ec.BindEventComponentDestroySelf(comp, rt)
 		bound = true
 	}

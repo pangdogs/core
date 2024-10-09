@@ -32,18 +32,18 @@ func CreateEntityPT(svcCtx service.Context, prototype string) EntityPTCreator {
 	if svcCtx == nil {
 		panic(fmt.Errorf("%w: %w: svcCtx is nil", ErrCore, ErrArgs))
 	}
-	return EntityPTCreator{
-		svcCtx:    svcCtx,
-		prototype: prototype,
+	c := EntityPTCreator{
+		svcCtx: svcCtx,
 	}
+	c.atti.Prototype = prototype
+	return c
 }
 
 // EntityPTCreator 实体原型构建器
 type EntityPTCreator struct {
-	svcCtx    service.Context
-	prototype string
-	atti      pt.Atti
-	comps     []any
+	svcCtx service.Context
+	atti   pt.EntityAtti
+	comps  []any
 }
 
 // Instance 设置实例，用于扩展实体能力
@@ -66,13 +66,12 @@ func (c EntityPTCreator) AwakeOnFirstAccess(b bool) EntityPTCreator {
 
 // AddComponent 添加组件
 func (c EntityPTCreator) AddComponent(comp any, alias ...string) EntityPTCreator {
-	c.comps = append(c.comps, pt.CompAlias(comp, true, pie.First(alias)))
-	return c
-}
-
-// AddMutableComponent 添加不固定的组件
-func (c EntityPTCreator) AddMutableComponent(comp any, alias ...string) EntityPTCreator {
-	c.comps = append(c.comps, pt.CompAlias(comp, false, pie.First(alias)))
+	switch v := comp.(type) {
+	case pt.CompAtti, *pt.CompAtti:
+		c.comps = append(c.comps, v)
+	default:
+		c.comps = append(c.comps, pt.CompWith(comp, true, pie.First(alias)))
+	}
 	return c
 }
 
@@ -81,5 +80,5 @@ func (c EntityPTCreator) Declare() {
 	if c.svcCtx == nil {
 		panic(fmt.Errorf("%w: setting svcCtx is nil", ErrCore))
 	}
-	c.svcCtx.GetEntityLib().Declare(c.prototype, c.atti, c.comps...)
+	c.svcCtx.GetEntityLib().Declare(c.atti, c.comps...)
 }

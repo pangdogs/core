@@ -35,7 +35,7 @@ type EntityLib interface {
 	EntityPTProvider
 
 	// Declare 声明实体原型
-	Declare(prototype string, atti Atti, comps ...any) EntityPT
+	Declare(prototype any, comps ...any) EntityPT
 	// Undeclare 取消声明实体原型
 	Undeclare(prototype string)
 	// Get 获取实体原型
@@ -78,22 +78,42 @@ func (lib *_EntityLib) GetEntityLib() EntityLib {
 }
 
 // Declare 声明体原型
-func (lib *_EntityLib) Declare(prototype string, atti Atti, comps ...any) EntityPT {
+func (lib *_EntityLib) Declare(prototype any, comps ...any) EntityPT {
 	lib.Lock()
 	defer lib.Unlock()
 
-	if _, ok := lib.entityIdx[prototype]; ok {
+	var entityAtti EntityAtti
+
+	switch v := prototype.(type) {
+	case EntityAtti:
+		entityAtti = v
+	case *EntityAtti:
+		if v == nil {
+			panic(fmt.Errorf("%w: prototype is nil", ErrPt))
+		}
+		entityAtti = *v
+	case string:
+		entityAtti = EntityAtti{Prototype: v}
+	default:
+		panic(fmt.Errorf("%w: invalid prototype type: %T", ErrPt, prototype))
+	}
+
+	if entityAtti.Prototype == "" {
+		panic(fmt.Errorf("%w: prototype can't empty", ErrPt))
+	}
+
+	if _, ok := lib.entityIdx[entityAtti.Prototype]; ok {
 		panic(fmt.Errorf("%w: entity %q is already declared", ErrPt, prototype))
 	}
 
 	entity := &_EntityPT{
-		prototype:          prototype,
-		scope:              atti.Scope,
-		awakeOnFirstAccess: atti.AwakeOnFirstAccess,
+		prototype:          entityAtti.Prototype,
+		scope:              entityAtti.Scope,
+		awakeOnFirstAccess: entityAtti.AwakeOnFirstAccess,
 	}
 
-	if atti.Instance != nil {
-		instanceRT := reflect.TypeOf(atti.Instance)
+	if entityAtti.Instance != nil {
+		instanceRT := reflect.TypeOf(entityAtti.Instance)
 
 		for instanceRT.Kind() == reflect.Pointer || instanceRT.Kind() == reflect.Interface {
 			instanceRT = instanceRT.Elem()
@@ -111,23 +131,31 @@ func (lib *_EntityLib) Declare(prototype string, atti Atti, comps ...any) Entity
 	}
 
 	for _, comp := range comps {
-		compDesc := ComponentDesc{Fixed: true}
+		compDesc := ComponentDesc{NonRemovable: true}
 
 	retry:
-		switch pt := comp.(type) {
-		case _CompAlias:
-			compDesc.Alias = pt.Alias
-			compDesc.Fixed = pt.Fixed
-			comp = pt.Comp
+		switch v := comp.(type) {
+		case CompAtti:
+			compDesc.Alias = v.Alias
+			compDesc.NonRemovable = v.NonRemovable
+			comp = v.Instance
+			goto retry
+		case *CompAtti:
+			if v == nil {
+				panic(fmt.Errorf("%w: comps contains nil", ErrPt))
+			}
+			compDesc.Alias = v.Alias
+			compDesc.NonRemovable = v.NonRemovable
+			comp = v.Instance
 			goto retry
 		case string:
-			compPT, ok := lib.compLib.Get(pt)
+			compPT, ok := lib.compLib.Get(v)
 			if !ok {
-				panic(fmt.Errorf("%w: entity %q component %q was not declared", ErrPt, prototype, pt))
+				panic(fmt.Errorf("%w: entity %q component %q was not declared", ErrPt, prototype, v))
 			}
 			compDesc.PT = compPT
 		default:
-			compDesc.PT = lib.compLib.Declare(pt)
+			compDesc.PT = lib.compLib.Declare(v)
 		}
 
 		if compDesc.Alias == "" {
@@ -137,7 +165,7 @@ func (lib *_EntityLib) Declare(prototype string, atti Atti, comps ...any) Entity
 		entity.components = append(entity.components, compDesc)
 	}
 
-	lib.entityIdx[prototype] = entity
+	lib.entityIdx[entityAtti.Prototype] = entity
 	lib.entityList = append(lib.entityList, entity)
 
 	return entity

@@ -24,33 +24,45 @@ import (
 	"git.golaxy.org/core/utils/types"
 )
 
-type _CompAlias struct {
-	Comp  any
-	Alias string
-	Fixed bool
-}
-
-// CompAlias 组件与别名，用于注册实体原型时自定义组件别名
-func CompAlias(comp any, fixed bool, alias string) _CompAlias {
-	return _CompAlias{
-		Comp:  comp,
-		Alias: alias,
-		Fixed: fixed,
-	}
-}
-
-// CompInterface 组件与接口，用于注册实体原型时使用接口名作为别名
-func CompInterface[FACE any](comp any, fixed bool) _CompAlias {
-	return _CompAlias{
-		Comp:  comp,
-		Alias: types.FullNameT[FACE](),
-		Fixed: fixed,
-	}
-}
-
-// Atti 实体原型属性
-type Atti struct {
+// EntityAtti 实体原型属性
+type EntityAtti struct {
+	Prototype          string    // 原型名称（必填）
 	Instance           any       // 实体实例
 	Scope              *ec.Scope // 可访问作用域
 	AwakeOnFirstAccess *bool     // 设置开启组件被首次访问时，检测并调用Awake()
+}
+
+// EntityWith 创建实体原型属性，用于注册实体原型时自定义相关属性
+func EntityWith(prototype string, inst any, scope *ec.Scope, awakeOnFirstAccess *bool) EntityAtti {
+	return EntityAtti{
+		Prototype:          prototype,
+		Instance:           inst,
+		Scope:              scope,
+		AwakeOnFirstAccess: awakeOnFirstAccess,
+	}
+}
+
+// CompAtti 组件原型属性
+type CompAtti struct {
+	Instance     any    // 组件实例（必填）
+	Alias        string // 别名
+	NonRemovable bool   // 是否不可删除
+}
+
+// CompWith 创建组件原型属性，用于注册实体原型时自定义相关属性
+func CompWith(inst any, nonRemovable bool, alias string) CompAtti {
+	return CompAtti{
+		Instance:     inst,
+		Alias:        alias,
+		NonRemovable: nonRemovable,
+	}
+}
+
+// CompInterfaceWith 创建组件原型属性，用于注册实体原型时使用接口名作为别名，并自定义相关属性
+func CompInterfaceWith[FACE any](inst any, nonRemovable bool) CompAtti {
+	return CompAtti{
+		Instance:     inst,
+		Alias:        types.FullNameT[FACE](),
+		NonRemovable: nonRemovable,
+	}
 }

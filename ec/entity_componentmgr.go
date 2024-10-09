@@ -202,7 +202,7 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 			return false
 		}
 
-		if comp.GetFixed() {
+		if comp.GetNonRemovable() {
 			return true
 		}
 
@@ -227,7 +227,7 @@ func (entity *EntityBehavior) RemoveComponentById(id uid.Id) {
 
 	comp := compNode.V
 
-	if comp.GetFixed() {
+	if comp.GetNonRemovable() {
 		return
 	}
 
