@@ -119,7 +119,10 @@ func (lib *_EntityLib) Declare(prototype any, comps ...any) EntityPT {
 	}
 
 	if entityAtti.Instance != nil {
-		instanceRT := reflect.TypeOf(entityAtti.Instance)
+		instanceRT, ok := entityAtti.Instance.(reflect.Type)
+		if !ok {
+			instanceRT = reflect.TypeOf(entityAtti.Instance)
+		}
 
 		for instanceRT.Kind() == reflect.Pointer || instanceRT.Kind() == reflect.Interface {
 			instanceRT = instanceRT.Elem()
