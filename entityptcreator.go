@@ -82,3 +82,11 @@ func (c EntityPTCreator) Declare() {
 	}
 	c.svcCtx.GetEntityLib().Declare(c.atti, c.comps...)
 }
+
+// Redeclare 重新声明实体原型
+func (c EntityPTCreator) Redeclare() {
+	if c.svcCtx == nil {
+		panic(fmt.Errorf("%w: setting svcCtx is nil", ErrCore))
+	}
+	c.svcCtx.GetEntityLib().Redeclare(c.atti, c.comps...)
+}
