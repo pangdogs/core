@@ -66,16 +66,7 @@ type _ComponentLib struct {
 
 // Declare 声明组件原型
 func (lib *_ComponentLib) Declare(comp any) ComponentPT {
-	if comp == nil {
-		panic(fmt.Errorf("%w: %w: comp is nil", ErrPt, exception.ErrArgs))
-	}
-
-	compRT, ok := comp.(reflect.Type)
-	if !ok {
-		compRT = reflect.TypeOf(comp)
-	}
-
-	return lib.declare(compRT)
+	return lib.declare(comp)
 }
 
 // Undeclare 取消声明组件原型
@@ -129,9 +120,18 @@ func (lib *_ComponentLib) ReversedRange(fun generic.Func1[ComponentPT, bool]) {
 	}
 }
 
-func (lib *_ComponentLib) declare(compRT reflect.Type) ComponentPT {
+func (lib *_ComponentLib) declare(comp any) ComponentPT {
+	if comp == nil {
+		panic(fmt.Errorf("%w: %w: comp is nil", ErrPt, exception.ErrArgs))
+	}
+
 	lib.Lock()
 	defer lib.Unlock()
+
+	compRT, ok := comp.(reflect.Type)
+	if !ok {
+		compRT = reflect.TypeOf(comp)
+	}
 
 	for compRT.Kind() == reflect.Pointer || compRT.Kind() == reflect.Interface {
 		compRT = compRT.Elem()
@@ -147,18 +147,18 @@ func (lib *_ComponentLib) declare(compRT reflect.Type) ComponentPT {
 		panic(fmt.Errorf("%w: component %q not implement ec.Component", ErrPt, prototype))
 	}
 
-	comp, ok := lib.compIdx[prototype]
+	compPT, ok := lib.compIdx[prototype]
 	if ok {
-		return comp
+		return compPT
 	}
 
-	comp = &_ComponentPT{
+	compPT = &_ComponentPT{
 		prototype:  prototype,
 		instanceRT: compRT,
 	}
 
-	lib.compIdx[prototype] = comp
-	lib.compList = append(lib.compList, comp)
+	lib.compIdx[prototype] = compPT
+	lib.compList = append(lib.compList, compPT)
 
-	return comp
+	return compPT
 }

@@ -37,6 +37,8 @@ type EntityLib interface {
 
 	// Declare 声明实体原型
 	Declare(prototype any, comps ...any) EntityPT
+	// Redeclare 重新声明实体原型
+	Redeclare(prototype any, comps ...any) EntityPT
 	// Undeclare 取消声明实体原型
 	Undeclare(prototype string)
 	// Get 获取实体原型
@@ -80,6 +82,66 @@ func (lib *_EntityLib) GetEntityLib() EntityLib {
 
 // Declare 声明实体原型
 func (lib *_EntityLib) Declare(prototype any, comps ...any) EntityPT {
+	return lib.declare(false, prototype, comps...)
+}
+
+// Redeclare 重新声明实体原型
+func (lib *_EntityLib) Redeclare(prototype any, comps ...any) EntityPT {
+	return lib.declare(true, prototype, comps...)
+}
+
+// Undeclare 取消声明实体原型
+func (lib *_EntityLib) Undeclare(prototype string) {
+	lib.Lock()
+	defer lib.Unlock()
+
+	delete(lib.entityIdx, prototype)
+
+	lib.entityList = slices.DeleteFunc(lib.entityList, func(pt *_EntityPT) bool {
+		return pt.prototype == prototype
+	})
+}
+
+// Get 获取实体原型
+func (lib *_EntityLib) Get(prototype string) (EntityPT, bool) {
+	lib.RLock()
+	defer lib.RUnlock()
+
+	entity, ok := lib.entityIdx[prototype]
+	if !ok {
+		return nil, false
+	}
+
+	return entity, ok
+}
+
+// Range 遍历所有已注册的实体原型
+func (lib *_EntityLib) Range(fun generic.Func1[EntityPT, bool]) {
+	lib.RLock()
+	copied := slices.Clone(lib.entityList)
+	lib.RUnlock()
+
+	for i := range copied {
+		if !fun.Exec(copied[i]) {
+			return
+		}
+	}
+}
+
+// ReversedRange 反向遍历所有已注册的实体原型
+func (lib *_EntityLib) ReversedRange(fun generic.Func1[EntityPT, bool]) {
+	lib.RLock()
+	copied := slices.Clone(lib.entityList)
+	lib.RUnlock()
+
+	for i := len(copied) - 1; i >= 0; i-- {
+		if !fun.Exec(copied[i]) {
+			return
+		}
+	}
+}
+
+func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) EntityPT {
 	if prototype == nil {
 		panic(fmt.Errorf("%w: %w: prototype is nil", ErrPt, exception.ErrArgs))
 	}
@@ -106,10 +168,6 @@ func (lib *_EntityLib) Declare(prototype any, comps ...any) EntityPT {
 
 	if entityAtti.Prototype == "" {
 		panic(fmt.Errorf("%w: prototype can't empty", ErrPt))
-	}
-
-	if _, ok := lib.entityIdx[entityAtti.Prototype]; ok {
-		panic(fmt.Errorf("%w: entity %q is already declared", ErrPt, prototype))
 	}
 
 	entity := &_EntityPT{
@@ -171,59 +229,18 @@ func (lib *_EntityLib) Declare(prototype any, comps ...any) EntityPT {
 		entity.components = append(entity.components, compDesc)
 	}
 
+	if _, ok := lib.entityIdx[entityAtti.Prototype]; ok {
+		if re {
+			lib.entityList = slices.DeleteFunc(lib.entityList, func(pt *_EntityPT) bool {
+				return pt.prototype == prototype
+			})
+		} else {
+			panic(fmt.Errorf("%w: entity %q is already declared", ErrPt, prototype))
+		}
+	}
+
 	lib.entityIdx[entityAtti.Prototype] = entity
 	lib.entityList = append(lib.entityList, entity)
 
 	return entity
-}
-
-// Undeclare 取消声明实体原型
-func (lib *_EntityLib) Undeclare(prototype string) {
-	lib.Lock()
-	defer lib.Unlock()
-
-	delete(lib.entityIdx, prototype)
-
-	lib.entityList = slices.DeleteFunc(lib.entityList, func(pt *_EntityPT) bool {
-		return pt.prototype == prototype
-	})
-}
-
-// Get 获取实体原型
-func (lib *_EntityLib) Get(prototype string) (EntityPT, bool) {
-	lib.RLock()
-	defer lib.RUnlock()
-
-	entity, ok := lib.entityIdx[prototype]
-	if !ok {
-		return nil, false
-	}
-
-	return entity, ok
-}
-
-// Range 遍历所有已注册的实体原型
-func (lib *_EntityLib) Range(fun generic.Func1[EntityPT, bool]) {
-	lib.RLock()
-	copied := slices.Clone(lib.entityList)
-	lib.RUnlock()
-
-	for i := range copied {
-		if !fun.Exec(copied[i]) {
-			return
-		}
-	}
-}
-
-// ReversedRange 反向遍历所有已注册的实体原型
-func (lib *_EntityLib) ReversedRange(fun generic.Func1[EntityPT, bool]) {
-	lib.RLock()
-	copied := slices.Clone(lib.entityList)
-	lib.RUnlock()
-
-	for i := len(copied) - 1; i >= 0; i-- {
-		if !fun.Exec(copied[i]) {
-			return
-		}
-	}
 }
