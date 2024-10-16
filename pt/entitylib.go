@@ -170,7 +170,7 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) EntityPT {
 		panic(fmt.Errorf("%w: prototype can't empty", ErrPt))
 	}
 
-	entity := &_EntityPT{
+	entityPT := &_EntityPT{
 		prototype:          entityAtti.Prototype,
 		scope:              entityAtti.Scope,
 		awakeOnFirstAccess: entityAtti.AwakeOnFirstAccess,
@@ -194,7 +194,7 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) EntityPT {
 			panic(fmt.Errorf("%w: entity instance %q not implement ec.Entity", ErrPt, types.FullNameRT(instanceRT)))
 		}
 
-		entity.instanceRT = instanceRT
+		entityPT.instanceRT = instanceRT
 	}
 
 	for _, comp := range comps {
@@ -226,7 +226,7 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) EntityPT {
 			compDesc.Name = compDesc.PT.Prototype()
 		}
 
-		entity.components = append(entity.components, compDesc)
+		entityPT.components = append(entityPT.components, compDesc)
 	}
 
 	if _, ok := lib.entityIdx[entityAtti.Prototype]; ok {
@@ -239,8 +239,8 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) EntityPT {
 		}
 	}
 
-	lib.entityIdx[entityAtti.Prototype] = entity
-	lib.entityList = append(lib.entityList, entity)
+	lib.entityIdx[entityAtti.Prototype] = entityPT
+	lib.entityList = append(lib.entityList, entityPT)
 
-	return entity
+	return entityPT
 }
