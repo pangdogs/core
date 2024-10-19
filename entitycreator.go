@@ -34,6 +34,9 @@ import (
 
 // CreateEntity 创建实体
 func CreateEntity(provider ictx.CurrentContextProvider, prototype string) EntityCreator {
+	if provider == nil {
+		panic(fmt.Errorf("%w: %w: provider is nil", ErrCore, ErrArgs))
+	}
 	return EntityCreator{
 		rtCtx:     runtime.Current(provider),
 		prototype: prototype,
