@@ -78,7 +78,7 @@ func (c EntityPTCreator) AddComponent(comp any, name ...string) EntityPTCreator 
 // Declare 声明实体原型
 func (c EntityPTCreator) Declare() {
 	if c.svcCtx == nil {
-		panic(fmt.Errorf("%w: setting svcCtx is nil", ErrCore))
+		panic(fmt.Errorf("%w: svcCtx is nil", ErrCore))
 	}
 	c.svcCtx.GetEntityLib().Declare(c.atti, c.comps...)
 }
@@ -86,7 +86,7 @@ func (c EntityPTCreator) Declare() {
 // Redeclare 重新声明实体原型
 func (c EntityPTCreator) Redeclare() {
 	if c.svcCtx == nil {
-		panic(fmt.Errorf("%w: setting svcCtx is nil", ErrCore))
+		panic(fmt.Errorf("%w: svcCtx is nil", ErrCore))
 	}
 	c.svcCtx.GetEntityLib().Redeclare(c.atti, c.comps...)
 }

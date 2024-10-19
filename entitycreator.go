@@ -93,7 +93,7 @@ func (c EntityCreator) ParentId(id uid.Id) EntityCreator {
 // Spawn 创建实体
 func (c EntityCreator) Spawn() (ec.Entity, error) {
 	if c.rtCtx == nil {
-		panic(fmt.Errorf("%w: setting rtCtx is nil", ErrCore))
+		panic(fmt.Errorf("%w: rtCtx is nil", ErrCore))
 	}
 
 	entity := pt.For(service.Current(c.rtCtx), c.prototype).Construct(c.settings...)

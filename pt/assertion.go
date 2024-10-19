@@ -150,7 +150,7 @@ type Composite[T comparable] struct {
 // Entity 实体
 func (c *Composite[T]) Entity() ec.Entity {
 	if c.entity == nil {
-		panic(fmt.Errorf("%w: setting entity is nil", ErrPt))
+		panic(fmt.Errorf("%w: entity is nil", ErrPt))
 	}
 	return c.entity
 }
@@ -158,7 +158,7 @@ func (c *Composite[T]) Entity() ec.Entity {
 // Changed 实体是否已更新组件
 func (c *Composite[T]) Changed() bool {
 	if c.entity == nil {
-		panic(fmt.Errorf("%w: setting entity is nil", ErrPt))
+		panic(fmt.Errorf("%w: entity is nil", ErrPt))
 	}
 	return c.version != ec.UnsafeEntity(c.entity).GetVersion()
 }
@@ -166,7 +166,7 @@ func (c *Composite[T]) Changed() bool {
 // As 从实体提取一些需要的组件接口，复合在一起直接使用（实体更新组件后，会自动重新提取）
 func (c *Composite[T]) As() (T, bool) {
 	if c.entity == nil {
-		panic(fmt.Errorf("%w: setting entity is nil", ErrPt))
+		panic(fmt.Errorf("%w: entity is nil", ErrPt))
 	}
 
 	if c.iface != types.ZeroT[T]() && !c.Changed() {

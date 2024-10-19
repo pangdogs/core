@@ -51,7 +51,7 @@ type AwaitDirector struct {
 // Any 异步等待任意一个结果返回
 func (ad AwaitDirector) Any(fun generic.ActionVar2[runtime.Context, async.Ret, any], args ...any) {
 	if ad.rtCtx == nil {
-		panic(fmt.Errorf("%w: setting rtCtx is nil", ErrCore))
+		panic(fmt.Errorf("%w: rtCtx is nil", ErrCore))
 	}
 
 	if len(ad.asyncRets) <= 0 {
@@ -86,7 +86,7 @@ func (ad AwaitDirector) Any(fun generic.ActionVar2[runtime.Context, async.Ret, a
 // AnyOK 异步等待任意一个结果成功返回
 func (ad AwaitDirector) AnyOK(fun generic.ActionVar2[runtime.Context, async.Ret, any], args ...any) {
 	if ad.rtCtx == nil {
-		panic(fmt.Errorf("%w: setting rtCtx is nil", ErrCore))
+		panic(fmt.Errorf("%w: rtCtx is nil", ErrCore))
 	}
 
 	if len(ad.asyncRets) <= 0 {
@@ -140,7 +140,7 @@ func (ad AwaitDirector) AnyOK(fun generic.ActionVar2[runtime.Context, async.Ret,
 // All 异步等待所有结果返回
 func (ad AwaitDirector) All(fun generic.ActionVar2[runtime.Context, []async.Ret, any], args ...any) {
 	if ad.rtCtx == nil {
-		panic(fmt.Errorf("%w: setting rtCtx is nil", ErrCore))
+		panic(fmt.Errorf("%w: rtCtx is nil", ErrCore))
 	}
 
 	if len(ad.asyncRets) <= 0 {
@@ -178,7 +178,7 @@ func (ad AwaitDirector) Pipe(ctx context.Context, fun generic.ActionVar2[runtime
 	}
 
 	if ad.rtCtx == nil {
-		panic(fmt.Errorf("%w: setting rtCtx is nil", ErrCore))
+		panic(fmt.Errorf("%w: rtCtx is nil", ErrCore))
 	}
 
 	if len(ad.asyncRets) <= 0 {
