@@ -21,6 +21,7 @@ package main
 
 import (
 	"bytes"
+	"git.golaxy.org/core/utils/exception"
 	"github.com/spf13/viper"
 	"go/parser"
 	"go/token"
@@ -64,14 +65,14 @@ func loadDeclFile() {
 
 	fileData, err := ioutil.ReadFile(declFile)
 	if err != nil {
-		panic(err)
+		exception.Panic(err)
 	}
 
 	fset := token.NewFileSet()
 
 	fast, err := parser.ParseFile(fset, declFile, fileData, parser.ParseComments)
 	if err != nil {
-		panic(err)
+		exception.Panic(err)
 	}
 
 	viper.Set("file_data", fileData)

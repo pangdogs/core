@@ -32,7 +32,7 @@ func MakeEventTabId(eventTab IEventTab) uint64 {
 	hash := fnv.New32a()
 	rt := reflect.ValueOf(eventTab).Type()
 	if rt.PkgPath() == "" || rt.Name() == "" {
-		panic("unsupported type")
+		exception.Panicf("unsupported type")
 	}
 	hash.Write([]byte(types.FullNameRT(rt)))
 	return uint64(hash.Sum32()) << 32
@@ -43,7 +43,7 @@ func MakeEventTabIdT[T any]() uint64 {
 	hash := fnv.New32a()
 	rt := reflect.TypeFor[T]()
 	if rt.PkgPath() == "" || rt.Name() == "" || !reflect.PointerTo(rt).Implements(reflect.TypeFor[IEventTab]()) {
-		panic("unsupported type")
+		exception.Panicf("unsupported type")
 	}
 	hash.Write([]byte(types.FullNameRT(rt)))
 	return uint64(hash.Sum32()) << 32

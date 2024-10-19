@@ -47,7 +47,7 @@ func main() {
 			{
 				declFile := viper.GetString("decl_file")
 				if declFile == "" {
-					panic("[--decl_file]值不能为空")
+					exception.Panic("[--decl_file]值不能为空")
 				}
 				stat, err := os.Stat(declFile)
 				if err != nil {
@@ -60,13 +60,13 @@ func main() {
 			{
 				eventRegexp := viper.GetString("event_regexp")
 				if eventRegexp == "" {
-					panic("[--event_regexp]值不能为空")
+					exception.Panic("[--event_regexp]值不能为空")
 				}
 			}
 			{
 				packageEventAlias := viper.GetString("package_event_alias")
 				if packageEventAlias == "" {
-					panic("[--package_event_alias]值不能为空")
+					exception.Panic("[--package_event_alias]值不能为空")
 				}
 			}
 		},
@@ -108,19 +108,19 @@ func main() {
 			{
 				pkg := viper.GetString("package")
 				if pkg == "" {
-					panic("[eventtab --package]值不能为空")
+					exception.Panic("[eventtab --package]值不能为空")
 				}
 			}
 			{
 				dir := viper.GetString("dir")
 				if dir == "" {
-					panic("[eventtab --dir]值不能为空")
+					exception.Panic("[eventtab --dir]值不能为空")
 				}
 			}
 			{
 				name := viper.GetString("name")
 				if name == "" {
-					panic("[eventtab --name]值不能为空")
+					exception.Panic("[eventtab --name]值不能为空")
 				}
 			}
 			loadDeclFile()
@@ -136,6 +136,6 @@ func main() {
 	rootCmd.AddCommand(eventCmd, eventTabCmd)
 
 	if err := rootCmd.Execute(); err != nil {
-		panic(err)
+		exception.Panic(err)
 	}
 }

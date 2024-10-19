@@ -22,6 +22,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"git.golaxy.org/core/utils/exception"
 	"github.com/spf13/viper"
 	"go/ast"
 	"go/printer"
@@ -310,6 +311,6 @@ func (h %[5]s%[1]sHandler) %[2]s(%[3]s) {
 	os.MkdirAll(filepath.Dir(outFile), os.ModePerm)
 
 	if err := ioutil.WriteFile(outFile, code.Bytes(), os.ModePerm); err != nil {
-		panic(err)
+		exception.Panic(err)
 	}
 }
