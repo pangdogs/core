@@ -48,9 +48,11 @@ func Errorf(format string, args ...any) error {
 }
 
 func Panic(v any) {
-	panic(Error(v))
+	_, file, line, _ := runtime.Caller(1)
+	panic(fmt.Errorf("%v (%s:%d)", v, file, line))
 }
 
 func Panicf(format string, args ...any) {
-	panic(Errorf(format, args...))
+	_, file, line, _ := runtime.Caller(1)
+	panic(fmt.Errorf(format+" (%s:%d)", append(args, file, line)...))
 }
