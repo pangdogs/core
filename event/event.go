@@ -20,7 +20,6 @@
 package event
 
 import (
-	"fmt"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
@@ -131,7 +130,7 @@ type Event struct {
 // Init 初始化事件
 func (event *Event) Init(autoRecover bool, reportError chan error, eventRecursion EventRecursion) {
 	if event.inited {
-		panic(fmt.Errorf("%w: event is already initialized", ErrEvent))
+		exception.Panicf("%w: event is already initialized", ErrEvent)
 	}
 
 	event.autoRecover = autoRecover
@@ -145,7 +144,7 @@ func (event *Event) Init(autoRecover bool, reportError chan error, eventRecursio
 // Open 打开事件
 func (event *Event) Open() {
 	if !event.inited {
-		panic(fmt.Errorf("%w: event not initialized", ErrEvent))
+		exception.Panicf("%w: event not initialized", ErrEvent)
 	}
 	event.opened = true
 }
@@ -170,7 +169,7 @@ func (event *Event) emit(fun generic.Func1[iface.Cache, bool]) {
 	}
 
 	if event.emitted >= EventRecursionLimit {
-		panic(fmt.Errorf("%w: recursive event calls(%d) cause stack overflow", ErrEvent, event.emitted))
+		exception.Panicf("%w: recursive event calls(%d) cause stack overflow", ErrEvent, event.emitted)
 	}
 
 	switch event.eventRecursion {
@@ -199,7 +198,7 @@ func (event *Event) emit(fun generic.Func1[iface.Cache, bool]) {
 			break
 		case EventRecursion_Disallow:
 			if n.V.received > 0 {
-				panic(fmt.Errorf("%w: recursive event disallowed", ErrEvent))
+				exception.Panicf("%w: recursive event disallowed", ErrEvent)
 			}
 		case EventRecursion_Truncate:
 			if n.V.received > 0 {
@@ -228,11 +227,11 @@ func (event *Event) emit(fun generic.Func1[iface.Cache, bool]) {
 
 func (event *Event) newHook(subscriberFace iface.FaceAny, priority int32) Hook {
 	if !event.opened {
-		panic(fmt.Errorf("%w: event closed", ErrEvent))
+		exception.Panicf("%w: event closed", ErrEvent)
 	}
 
 	if subscriberFace.IsNil() {
-		panic(fmt.Errorf("%w: %w: subscriberFace is nil", ErrEvent, exception.ErrArgs))
+		exception.Panicf("%w: %w: subscriberFace is nil", ErrEvent, exception.ErrArgs)
 	}
 
 	hook := Hook{

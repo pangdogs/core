@@ -57,14 +57,14 @@ func (ctx *ContextBehavior) getContext() Context {
 // Concurrent 获取多线程安全的运行时上下文
 func Concurrent(provider ictx.ConcurrentContextProvider) ConcurrentContext {
 	if provider == nil {
-		panic(fmt.Errorf("%w: %w: provider is nil", ErrContext, exception.ErrArgs))
+		exception.Panicf("%w: %w: provider is nil", ErrContext, exception.ErrArgs)
 	}
 	return iface.Cache2Iface[Context](provider.GetConcurrentContext())
 }
 
 func getServiceContext(provider ictx.ConcurrentContextProvider) service.Context {
 	if provider == nil {
-		panic(fmt.Errorf("%w: %w: provider is nil", ErrContext, exception.ErrArgs))
+		exception.Panicf("%w: %w: provider is nil", ErrContext, exception.ErrArgs)
 	}
 	ctx := iface.Cache2Iface[Context](provider.GetConcurrentContext())
 	if ctx == nil {
@@ -75,7 +75,7 @@ func getServiceContext(provider ictx.ConcurrentContextProvider) service.Context 
 
 func getCaller(provider ictx.ConcurrentContextProvider) async.Caller {
 	if provider == nil {
-		panic(fmt.Errorf("%w: %w: provider is nil", ErrContext, exception.ErrArgs))
+		exception.Panicf("%w: %w: provider is nil", ErrContext, exception.ErrArgs)
 	}
 	return iface.Cache2Iface[Context](provider.GetConcurrentContext())
 }

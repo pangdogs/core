@@ -138,7 +138,7 @@ func (ctx *ContextBehavior) GetEntityTree() EntityTree {
 // ActivateEvent 启用事件
 func (ctx *ContextBehavior) ActivateEvent(event event.IEventCtrl, recursion event.EventRecursion) {
 	if event == nil {
-		panic(fmt.Errorf("%w: %w: event is nil", ErrContext, exception.ErrArgs))
+		exception.Panicf("%w: %w: event is nil", ErrContext, exception.ErrArgs)
 	}
 	event.Init(ctx.GetAutoRecover(), ctx.GetReportError(), recursion)
 }
@@ -174,7 +174,7 @@ func (ctx *ContextBehavior) String() string {
 
 func (ctx *ContextBehavior) init(svcCtx service.Context, opts ContextOptions) {
 	if svcCtx == nil {
-		panic(fmt.Errorf("%w: %w: svcCtx is nil", ErrContext, exception.ErrArgs))
+		exception.Panicf("%w: %w: svcCtx is nil", ErrContext, exception.ErrArgs)
 	}
 
 	ctx.opts = opts

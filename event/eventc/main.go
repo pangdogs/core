@@ -31,6 +31,7 @@ package main
 
 import (
 	"fmt"
+	"git.golaxy.org/core/utils/exception"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
@@ -50,10 +51,10 @@ func main() {
 				}
 				stat, err := os.Stat(declFile)
 				if err != nil {
-					panic(fmt.Errorf("[--decl_file]文件错误，%s", err))
+					exception.Panicf("[--decl_file]文件错误，%s", err)
 				}
 				if stat.IsDir() {
-					panic(fmt.Errorf("[--decl_file]文件错误，不能为文件夹"))
+					exception.Panicf("[--decl_file]文件错误，不能为文件夹")
 				}
 			}
 			{
@@ -66,12 +67,6 @@ func main() {
 				packageEventAlias := viper.GetString("package_event_alias")
 				if packageEventAlias == "" {
 					panic("[--package_event_alias]值不能为空")
-				}
-			}
-			{
-				packageIfaceAlias := viper.GetString("package_iface_alias")
-				if packageIfaceAlias == "" {
-					panic("[--package_iface_alias]值不能为空")
 				}
 			}
 		},
@@ -87,7 +82,6 @@ func main() {
 	rootCmd.PersistentFlags().String("decl_file", os.Getenv("GOFILE"), "事件定义文件（.go）。")
 	rootCmd.PersistentFlags().String("event_regexp", "^[eE]vent.+", "匹配事件定义时，使用的正则表达式。")
 	rootCmd.PersistentFlags().String("package_event_alias", "event", fmt.Sprintf("导入Golaxy框架的（%s）包时使用的别名。", packageEventPath))
-	rootCmd.PersistentFlags().String("package_iface_alias", "iface", fmt.Sprintf("导入Golaxy框架的（%s）包时使用的别名。", packageIfacePath))
 	rootCmd.PersistentFlags().Bool("copyright", true, "Golaxy分布式服务开发框架版权信息。")
 
 	// 生成事件代码相关选项

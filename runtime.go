@@ -20,12 +20,12 @@
 package core
 
 import (
-	"fmt"
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/utils/async"
+	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/option"
@@ -93,11 +93,11 @@ func (rt *RuntimeBehavior) GetInstanceFaceCache() iface.Cache {
 
 func (rt *RuntimeBehavior) init(rtCtx runtime.Context, opts RuntimeOptions) {
 	if rtCtx == nil {
-		panic(fmt.Errorf("%w: %w: rtCtx is nil", ErrRuntime, ErrArgs))
+		exception.Panicf("%w: %w: rtCtx is nil", ErrRuntime, ErrArgs)
 	}
 
 	if !ictx.UnsafeContext(rtCtx).SetPaired(true) {
-		panic(fmt.Errorf("%w: context already paired", ErrRuntime))
+		exception.Panicf("%w: context already paired", ErrRuntime)
 	}
 
 	rt.ctx = rtCtx

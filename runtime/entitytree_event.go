@@ -20,7 +20,9 @@
 //go:generate go run git.golaxy.org/core/event/eventc event
 package runtime
 
-import "git.golaxy.org/core/ec"
+import (
+	"git.golaxy.org/core/ec"
+)
 
 // EventEntityTreeAddNode 事件：新增实体树节点
 // +event-gen:export=0

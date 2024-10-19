@@ -34,7 +34,6 @@ import (
 
 const (
 	packageEventPath = "git.golaxy.org/core/event"
-	packageIfacePath = "git.golaxy.org/core/utils/iface"
 )
 
 const (

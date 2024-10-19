@@ -22,32 +22,30 @@
 package core
 
 import (
-	"fmt"
 	event "git.golaxy.org/core/event"
-	iface "git.golaxy.org/core/utils/iface"
 )
 
 func _EmitEventUpdate(evt event.IEvent) {
 	if evt == nil {
-		panic(fmt.Errorf("%w: %w: evt is nil", event.ErrEvent, event.ErrArgs))
+		event.Panicf("%w: %w: evt is nil", event.ErrEvent, event.ErrArgs)
 	}
-	event.UnsafeEvent(evt).Emit(func(subscriber iface.Cache) bool {
-		iface.Cache2Iface[eventUpdate](subscriber).Update()
+	event.UnsafeEvent(evt).Emit(func(subscriber event.Cache) bool {
+		event.Cache2Iface[eventUpdate](subscriber).Update()
 		return true
 	})
 }
 
 func _EmitEventUpdateWithInterrupt(evt event.IEvent, interrupt func() bool) {
 	if evt == nil {
-		panic(fmt.Errorf("%w: %w: evt is nil", event.ErrEvent, event.ErrArgs))
+		event.Panicf("%w: %w: evt is nil", event.ErrEvent, event.ErrArgs)
 	}
-	event.UnsafeEvent(evt).Emit(func(subscriber iface.Cache) bool {
+	event.UnsafeEvent(evt).Emit(func(subscriber event.Cache) bool {
 		if interrupt != nil {
 			if interrupt() {
 				return false
 			}
 		}
-		iface.Cache2Iface[eventUpdate](subscriber).Update()
+		event.Cache2Iface[eventUpdate](subscriber).Update()
 		return true
 	})
 }
@@ -64,25 +62,25 @@ func (h _EventUpdateHandler) Update() {
 
 func _EmitEventLateUpdate(evt event.IEvent) {
 	if evt == nil {
-		panic(fmt.Errorf("%w: %w: evt is nil", event.ErrEvent, event.ErrArgs))
+		event.Panicf("%w: %w: evt is nil", event.ErrEvent, event.ErrArgs)
 	}
-	event.UnsafeEvent(evt).Emit(func(subscriber iface.Cache) bool {
-		iface.Cache2Iface[eventLateUpdate](subscriber).LateUpdate()
+	event.UnsafeEvent(evt).Emit(func(subscriber event.Cache) bool {
+		event.Cache2Iface[eventLateUpdate](subscriber).LateUpdate()
 		return true
 	})
 }
 
 func _EmitEventLateUpdateWithInterrupt(evt event.IEvent, interrupt func() bool) {
 	if evt == nil {
-		panic(fmt.Errorf("%w: %w: evt is nil", event.ErrEvent, event.ErrArgs))
+		event.Panicf("%w: %w: evt is nil", event.ErrEvent, event.ErrArgs)
 	}
-	event.UnsafeEvent(evt).Emit(func(subscriber iface.Cache) bool {
+	event.UnsafeEvent(evt).Emit(func(subscriber event.Cache) bool {
 		if interrupt != nil {
 			if interrupt() {
 				return false
 			}
 		}
-		iface.Cache2Iface[eventLateUpdate](subscriber).LateUpdate()
+		event.Cache2Iface[eventLateUpdate](subscriber).LateUpdate()
 		return true
 	})
 }

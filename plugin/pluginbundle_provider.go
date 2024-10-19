@@ -20,7 +20,6 @@
 package plugin
 
 import (
-	"fmt"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/iface"
 )
@@ -34,16 +33,16 @@ type PluginProvider interface {
 // Using 使用插件
 func Using[T any](provider PluginProvider, name string) T {
 	if provider == nil {
-		panic(fmt.Errorf("%w: %w: provider is nil", ErrPlugin, exception.ErrArgs))
+		exception.Panicf("%w: %w: provider is nil", ErrPlugin, exception.ErrArgs)
 	}
 
 	status, ok := provider.GetPluginBundle().Get(name)
 	if !ok {
-		panic(fmt.Errorf("%w: plugin %q not installed", ErrPlugin, name))
+		exception.Panicf("%w: plugin %q not installed", ErrPlugin, name)
 	}
 
 	if status.State() != PluginState_Active {
-		panic(fmt.Errorf("%w: plugin %q not actived", ErrPlugin, name))
+		exception.Panicf("%w: plugin %q not actived", ErrPlugin, name)
 	}
 
 	return iface.Cache2Iface[T](status.InstanceFace().Cache)
@@ -52,7 +51,7 @@ func Using[T any](provider PluginProvider, name string) T {
 // Install 安装插件
 func Install[T any](provider PluginProvider, plugin T, name ...string) {
 	if provider == nil {
-		panic(fmt.Errorf("%w: %w: provider is nil", ErrPlugin, exception.ErrArgs))
+		exception.Panicf("%w: %w: provider is nil", ErrPlugin, exception.ErrArgs)
 	}
 	provider.GetPluginBundle().Install(iface.MakeFaceAny(plugin), name...)
 }
@@ -60,7 +59,7 @@ func Install[T any](provider PluginProvider, plugin T, name ...string) {
 // Uninstall 卸载插件
 func Uninstall(provider PluginProvider, name string) {
 	if provider == nil {
-		panic(fmt.Errorf("%w: %w: provider is nil", ErrPlugin, exception.ErrArgs))
+		exception.Panicf("%w: %w: provider is nil", ErrPlugin, exception.ErrArgs)
 	}
 	provider.GetPluginBundle().Uninstall(name)
 }

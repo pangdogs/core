@@ -20,7 +20,6 @@
 package define
 
 import (
-	"fmt"
 	"git.golaxy.org/core/plugin"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
@@ -42,7 +41,7 @@ type PluginDefinition[PLUGIN_IFACE, OPTION any] struct {
 
 func definePlugin[PLUGIN_IFACE, OPTION any](creator generic.FuncVar0[OPTION, PLUGIN_IFACE]) PluginDefinition[PLUGIN_IFACE, OPTION] {
 	if creator == nil {
-		panic(fmt.Errorf("%w: %w: creator is nil", exception.ErrCore, exception.ErrArgs))
+		exception.Panicf("%w: %w: creator is nil", exception.ErrCore, exception.ErrArgs)
 	}
 
 	name := types.FullNameT[PLUGIN_IFACE]()

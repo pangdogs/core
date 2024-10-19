@@ -20,12 +20,12 @@
 package core
 
 import (
-	"fmt"
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/pt"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
+	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/meta"
 	"git.golaxy.org/core/utils/option"
@@ -35,7 +35,7 @@ import (
 // CreateEntity 创建实体
 func CreateEntity(provider ictx.CurrentContextProvider, prototype string) EntityCreator {
 	if provider == nil {
-		panic(fmt.Errorf("%w: %w: provider is nil", ErrCore, ErrArgs))
+		exception.Panicf("%w: %w: provider is nil", ErrCore, ErrArgs)
 	}
 	return EntityCreator{
 		rtCtx:     runtime.Current(provider),
@@ -96,7 +96,7 @@ func (c EntityCreator) ParentId(id uid.Id) EntityCreator {
 // Spawn 创建实体
 func (c EntityCreator) Spawn() (ec.Entity, error) {
 	if c.rtCtx == nil {
-		panic(fmt.Errorf("%w: rtCtx is nil", ErrCore))
+		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
 	entity := pt.For(service.Current(c.rtCtx), c.prototype).Construct(c.settings...)

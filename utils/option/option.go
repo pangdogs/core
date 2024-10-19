@@ -20,7 +20,6 @@
 package option
 
 import (
-	"fmt"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 )
@@ -62,7 +61,7 @@ func Append[T any](opts T, settings ...Setting[T]) T {
 
 func Change[T any](opts *T, settings ...Setting[T]) *T {
 	if opts == nil {
-		panic(fmt.Errorf("%w: %w: opts is nil", exception.ErrCore, exception.ErrArgs))
+		exception.Panicf("%w: %w: opts is nil", exception.ErrCore, exception.ErrArgs)
 	}
 	for i := range settings {
 		settings[i].Apply(opts)

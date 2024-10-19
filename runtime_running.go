@@ -21,11 +21,11 @@ package core
 
 import (
 	"context"
-	"fmt"
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/plugin"
 	"git.golaxy.org/core/runtime"
+	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 )
 
@@ -35,9 +35,9 @@ func (rt *RuntimeBehavior) Run() <-chan struct{} {
 
 	select {
 	case <-ctx.Done():
-		panic(fmt.Errorf("%w: %w", ErrRuntime, context.Canceled))
+		exception.Panicf("%w: %w", ErrRuntime, context.Canceled)
 	case <-ctx.Terminated():
-		panic(fmt.Errorf("%w: terminated", ErrRuntime))
+		exception.Panicf("%w: terminated", ErrRuntime)
 	default:
 	}
 

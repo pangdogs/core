@@ -22,9 +22,7 @@
 package ec
 
 import (
-	"fmt"
 	event "git.golaxy.org/core/event"
-	iface "git.golaxy.org/core/utils/iface"
 )
 
 type iAutoEventEntityDestroySelf interface {
@@ -33,32 +31,32 @@ type iAutoEventEntityDestroySelf interface {
 
 func BindEventEntityDestroySelf(auto iAutoEventEntityDestroySelf, subscriber EventEntityDestroySelf, priority ...int32) event.Hook {
 	if auto == nil {
-		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
+		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
 	return event.Bind[EventEntityDestroySelf](auto.EventEntityDestroySelf(), subscriber, priority...)
 }
 
 func _EmitEventEntityDestroySelf(auto iAutoEventEntityDestroySelf, entity Entity) {
 	if auto == nil {
-		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
+		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
-	event.UnsafeEvent(auto.EventEntityDestroySelf()).Emit(func(subscriber iface.Cache) bool {
-		iface.Cache2Iface[EventEntityDestroySelf](subscriber).OnEntityDestroySelf(entity)
+	event.UnsafeEvent(auto.EventEntityDestroySelf()).Emit(func(subscriber event.Cache) bool {
+		event.Cache2Iface[EventEntityDestroySelf](subscriber).OnEntityDestroySelf(entity)
 		return true
 	})
 }
 
 func _EmitEventEntityDestroySelfWithInterrupt(auto iAutoEventEntityDestroySelf, interrupt func(entity Entity) bool, entity Entity) {
 	if auto == nil {
-		panic(fmt.Errorf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs))
+		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
-	event.UnsafeEvent(auto.EventEntityDestroySelf()).Emit(func(subscriber iface.Cache) bool {
+	event.UnsafeEvent(auto.EventEntityDestroySelf()).Emit(func(subscriber event.Cache) bool {
 		if interrupt != nil {
 			if interrupt(entity) {
 				return false
 			}
 		}
-		iface.Cache2Iface[EventEntityDestroySelf](subscriber).OnEntityDestroySelf(entity)
+		event.Cache2Iface[EventEntityDestroySelf](subscriber).OnEntityDestroySelf(entity)
 		return true
 	})
 }

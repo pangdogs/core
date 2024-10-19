@@ -87,7 +87,7 @@ type _EntityMgrBehavior struct {
 
 func (mgr *_EntityMgrBehavior) init(ctx Context) {
 	if ctx == nil {
-		panic(fmt.Errorf("%w: %w: ctx is nil", ErrEntityMgr, exception.ErrArgs))
+		exception.Panicf("%w: %w: ctx is nil", ErrEntityMgr, exception.ErrArgs)
 	}
 
 	mgr.ctx = ctx
@@ -268,7 +268,7 @@ func (mgr *_EntityMgrBehavior) OnComponentMgrFirstAccessComponent(entity ec.Enti
 
 func (mgr *_EntityMgrBehavior) addEntity(entity ec.Entity, parentId uid.Id) error {
 	if entity == nil {
-		panic(fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs))
+		exception.Panicf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs)
 	}
 
 	parent, err := mgr.fetchParent(entity, parentId)

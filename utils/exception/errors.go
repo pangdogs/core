@@ -31,8 +31,26 @@ var (
 	ErrArgs     = errors.New("args")     // 参数错误
 )
 
-func PrintStackTrace(err error) error {
+func TraceStack(err error) error {
 	stackBuf := make([]byte, 4096)
 	n := runtime.Stack(stackBuf, false)
-	return fmt.Errorf("error => %w\nstack => %s\n", err, stackBuf[:n])
+	return fmt.Errorf("error:\n%w\nstack:\n%s\n", err, stackBuf[:n])
+}
+
+func Error(v any) error {
+	_, file, line, _ := runtime.Caller(1)
+	return fmt.Errorf("%v (%s:%d)", v, file, line)
+}
+
+func Errorf(format string, args ...any) error {
+	_, file, line, _ := runtime.Caller(1)
+	return fmt.Errorf(format+" (%s:%d)", append(args, file, line)...)
+}
+
+func Panic(v any) {
+	panic(Error(v))
+}
+
+func Panicf(format string, args ...any) {
+	panic(Errorf(format, args...))
 }

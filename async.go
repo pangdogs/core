@@ -21,10 +21,10 @@ package core
 
 import (
 	"context"
-	"fmt"
 	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/utils/async"
+	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 	"time"
 )
@@ -166,7 +166,7 @@ func ReadChan[T any](ctx context.Context, ch <-chan T) async.AsyncRet {
 	}
 
 	if ch == nil {
-		panic(fmt.Errorf("%w: %w: ch is nil", ErrCore, ErrArgs))
+		exception.Panicf("%w: %w: ch is nil", ErrCore, ErrArgs)
 	}
 
 	asyncRet := async.MakeAsyncRet()

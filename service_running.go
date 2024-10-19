@@ -21,10 +21,10 @@ package core
 
 import (
 	"context"
-	"fmt"
 	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/plugin"
 	"git.golaxy.org/core/service"
+	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 	"time"
 )
@@ -35,9 +35,9 @@ func (svc *ServiceBehavior) Run() <-chan struct{} {
 
 	select {
 	case <-ctx.Done():
-		panic(fmt.Errorf("%w: %w", ErrService, context.Canceled))
+		exception.Panicf("%w: %w", ErrService, context.Canceled)
 	case <-ctx.Terminated():
-		panic(fmt.Errorf("%w: terminated", ErrRuntime))
+		exception.Panicf("%w: terminated", ErrRuntime)
 	default:
 	}
 

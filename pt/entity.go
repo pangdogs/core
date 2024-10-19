@@ -20,7 +20,6 @@
 package pt
 
 import (
-	"fmt"
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/iface"
@@ -92,7 +91,7 @@ func (pt *_EntityPT) CountComponents() int {
 // Component 获取组件
 func (pt *_EntityPT) Component(idx int) ComponentDesc {
 	if idx < 0 || idx >= len(pt.components) {
-		panic(fmt.Errorf("%w: %w: idx out of range", ErrPt, exception.ErrArgs))
+		exception.Panicf("%w: %w: idx out of range", ErrPt, exception.ErrArgs)
 	}
 	return pt.components[idx]
 }
@@ -122,7 +121,7 @@ func (pt *_EntityPT) Construct(settings ...option.Setting[ec.EntityOptions]) ec.
 
 func (pt *_EntityPT) assemble(entity ec.Entity) ec.Entity {
 	if entity == nil {
-		panic(fmt.Errorf("%w: %w: entity is nil", ErrPt, exception.ErrArgs))
+		exception.Panicf("%w: %w: entity is nil", ErrPt, exception.ErrArgs)
 	}
 
 	for i := range pt.components {
@@ -132,7 +131,7 @@ func (pt *_EntityPT) assemble(entity ec.Entity) ec.Entity {
 		ec.UnsafeComponent(comp).SetNonRemovable(compDesc.NonRemovable)
 
 		if err := entity.AddComponent(compDesc.Name, comp); err != nil {
-			panic(fmt.Errorf("%w: %w", ErrPt, err))
+			exception.Panicf("%w: %w", ErrPt, err)
 		}
 	}
 

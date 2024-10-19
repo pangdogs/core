@@ -20,7 +20,6 @@
 package pt
 
 import (
-	"fmt"
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
@@ -59,7 +58,7 @@ func DefaultEntityLib() EntityLib {
 // NewEntityLib 创建实体原型库
 func NewEntityLib(compLib ComponentLib) EntityLib {
 	if compLib == nil {
-		panic(fmt.Errorf("%w: %w: compLib is nil", ErrPt, exception.ErrArgs))
+		exception.Panicf("%w: %w: compLib is nil", ErrPt, exception.ErrArgs)
 	}
 
 	return &_EntityLib{
@@ -143,11 +142,11 @@ func (lib *_EntityLib) ReversedRange(fun generic.Func1[EntityPT, bool]) {
 
 func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) EntityPT {
 	if prototype == nil {
-		panic(fmt.Errorf("%w: %w: prototype is nil", ErrPt, exception.ErrArgs))
+		exception.Panicf("%w: %w: prototype is nil", ErrPt, exception.ErrArgs)
 	}
 
 	if pie.Contains(comps, nil) {
-		panic(fmt.Errorf("%w: %w: comps contains nil", ErrPt, exception.ErrArgs))
+		exception.Panicf("%w: %w: comps contains nil", ErrPt, exception.ErrArgs)
 	}
 
 	lib.Lock()
@@ -163,11 +162,11 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) EntityPT {
 	case string:
 		entityAtti = EntityAtti{Prototype: v}
 	default:
-		panic(fmt.Errorf("%w: invalid prototype type: %T", ErrPt, prototype))
+		exception.Panicf("%w: invalid prototype type: %T", ErrPt, prototype)
 	}
 
 	if entityAtti.Prototype == "" {
-		panic(fmt.Errorf("%w: prototype can't empty", ErrPt))
+		exception.Panicf("%w: prototype can't empty", ErrPt)
 	}
 
 	entityPT := &_EntityPT{
@@ -187,11 +186,11 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) EntityPT {
 		}
 
 		if instanceRT.Name() == "" {
-			panic(fmt.Errorf("%w: anonymous entity instance not allowed", ErrPt))
+			exception.Panicf("%w: anonymous entity instance not allowed", ErrPt)
 		}
 
 		if !reflect.PointerTo(instanceRT).Implements(reflect.TypeFor[ec.Entity]()) {
-			panic(fmt.Errorf("%w: entity instance %q not implement ec.Entity", ErrPt, types.FullNameRT(instanceRT)))
+			exception.Panicf("%w: entity instance %q not implement ec.Entity", ErrPt, types.FullNameRT(instanceRT))
 		}
 
 		entityPT.instanceRT = instanceRT
@@ -215,7 +214,7 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) EntityPT {
 		case string:
 			compPT, ok := lib.compLib.Get(v)
 			if !ok {
-				panic(fmt.Errorf("%w: entity %q component %q was not declared", ErrPt, prototype, v))
+				exception.Panicf("%w: entity %q component %q was not declared", ErrPt, prototype, v)
 			}
 			compDesc.PT = compPT
 		default:
@@ -235,7 +234,7 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) EntityPT {
 				return pt.prototype == prototype
 			})
 		} else {
-			panic(fmt.Errorf("%w: entity %q is already declared", ErrPt, prototype))
+			exception.Panicf("%w: entity %q is already declared", ErrPt, prototype)
 		}
 	}
 

@@ -20,7 +20,7 @@
 package event
 
 import (
-	"fmt"
+	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/types"
 	"hash/fnv"
 	"reflect"
@@ -68,7 +68,7 @@ var (
 func DeclareEventTabId(eventTab IEventTab) uint64 {
 	id := MakeEventTabId(eventTab)
 	if name, loaded := declareEventTabs.LoadOrStore(id, types.FullNameRT(reflect.TypeOf(eventTab).Elem())); loaded {
-		panic(fmt.Errorf("event_tab(%d) has already been declared by %q", id, name))
+		exception.Panicf("event_tab(%d) has already been declared by %q", id, name)
 	}
 	return id
 }
@@ -77,7 +77,7 @@ func DeclareEventTabId(eventTab IEventTab) uint64 {
 func DeclareEventTabIdT[T any]() uint64 {
 	id := MakeEventTabIdT[T]()
 	if name, loaded := declareEventTabs.LoadOrStore(id, types.FullNameT[T]()); loaded {
-		panic(fmt.Errorf("event_tab(%d) has already been declared by %q", id, name))
+		exception.Panicf("event_tab(%d) has already been declared by %q", id, name)
 	}
 	return id
 }
@@ -86,7 +86,7 @@ func DeclareEventTabIdT[T any]() uint64 {
 func DeclareEventId(eventTab IEventTab, pos int32) uint64 {
 	id := MakeEventTabId(eventTab) + uint64(pos)
 	if name, loaded := declareEvents.LoadOrStore(id, types.FullNameRT(reflect.TypeOf(eventTab).Elem())); loaded {
-		panic(fmt.Errorf("event(%d) has already been declared by %q", id, name))
+		exception.Panicf("event(%d) has already been declared by %q", id, name)
 	}
 	return id
 }
@@ -95,7 +95,7 @@ func DeclareEventId(eventTab IEventTab, pos int32) uint64 {
 func DeclareEventIdT[T any](pos int32) uint64 {
 	id := MakeEventTabIdT[T]() + uint64(pos)
 	if name, loaded := declareEvents.LoadOrStore(id, types.FullNameT[T]()); loaded {
-		panic(fmt.Errorf("event(%d) has already been declared by %q", id, name))
+		exception.Panicf("event(%d) has already been declared by %q", id, name)
 	}
 	return id
 }

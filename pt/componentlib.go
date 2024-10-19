@@ -20,7 +20,6 @@
 package pt
 
 import (
-	"fmt"
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
@@ -122,7 +121,7 @@ func (lib *_ComponentLib) ReversedRange(fun generic.Func1[ComponentPT, bool]) {
 
 func (lib *_ComponentLib) declare(comp any) ComponentPT {
 	if comp == nil {
-		panic(fmt.Errorf("%w: %w: comp is nil", ErrPt, exception.ErrArgs))
+		exception.Panicf("%w: %w: comp is nil", ErrPt, exception.ErrArgs)
 	}
 
 	lib.Lock()
@@ -138,13 +137,13 @@ func (lib *_ComponentLib) declare(comp any) ComponentPT {
 	}
 
 	if compRT.Name() == "" {
-		panic(fmt.Errorf("%w: anonymous component not allowed", ErrPt))
+		exception.Panicf("%w: anonymous component not allowed", ErrPt)
 	}
 
 	prototype := types.FullNameRT(compRT)
 
 	if !reflect.PointerTo(compRT).Implements(reflect.TypeFor[ec.Component]()) {
-		panic(fmt.Errorf("%w: component %q not implement ec.Component", ErrPt, prototype))
+		exception.Panicf("%w: component %q not implement ec.Component", ErrPt, prototype)
 	}
 
 	compPT, ok := lib.compIdx[prototype]

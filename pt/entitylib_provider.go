@@ -20,7 +20,6 @@
 package pt
 
 import (
-	"fmt"
 	"git.golaxy.org/core/utils/exception"
 )
 
@@ -33,12 +32,12 @@ type EntityPTProvider interface {
 // For 查询实体原型
 func For(provider EntityPTProvider, prototype string) EntityPT {
 	if provider == nil {
-		panic(fmt.Errorf("%w: %w: provider is nil", ErrPt, exception.ErrArgs))
+		exception.Panicf("%w: %w: provider is nil", ErrPt, exception.ErrArgs)
 	}
 
 	entity, ok := provider.GetEntityLib().Get(prototype)
 	if !ok {
-		panic(fmt.Errorf("%w: entity %q was not declared", ErrPt, prototype))
+		exception.Panicf("%w: entity %q was not declared", ErrPt, prototype)
 	}
 
 	return entity

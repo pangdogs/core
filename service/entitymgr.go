@@ -51,7 +51,7 @@ type _EntityMgrBehavior struct {
 
 func (mgr *_EntityMgrBehavior) init(ctx Context) {
 	if ctx == nil {
-		panic(fmt.Errorf("%w: %w: ctx is nil", ErrEntityMgr, exception.ErrArgs))
+		exception.Panicf("%w: %w: ctx is nil", ErrEntityMgr, exception.ErrArgs)
 	}
 
 	mgr.ctx = ctx

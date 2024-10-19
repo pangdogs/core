@@ -39,7 +39,6 @@ import (
 func genEvent() {
 	declFile := viper.GetString("decl_file")
 	packageEventAlias := viper.GetString("package_event_alias")
-	packageIfaceAlias := viper.GetString("package_iface_alias")
 	defExport := viper.GetBool("default_export")
 	defAuto := viper.GetBool("default_auto")
 	fast := viper.Get("file_ast").(*ast.File)
@@ -69,42 +68,26 @@ package %s
 
 	// 生成import
 	{
-		sameEventAlias := path.Base(packageEventPath) == packageEventAlias
-		sameIfaceAlias := path.Base(packageIfacePath) == packageIfaceAlias
-
 		importCode := &bytes.Buffer{}
 
 		fmt.Fprintf(importCode, "\nimport (")
 
 		fmt.Fprintf(importCode, `
-	"fmt"
-	%s "%s"
-	%s "%s"`, packageEventAlias, packageEventPath, packageIfaceAlias, packageIfacePath)
+	%s "%s"`, packageEventAlias, packageEventPath)
 
 		for _, is := range fast.Imports {
+			if is.Name != nil {
+				if is.Name.Name == packageEventAlias {
+					continue
+				}
+			} else if is.Path != nil {
+				if path.Base(is.Path.Value) == packageEventAlias {
+					continue
+				}
+			}
+
 			var buf bytes.Buffer
 			printer.Fprint(&buf, fset, is)
-
-			switch buf.String() {
-			case fmt.Sprintf(`%s "%s"`, packageEventAlias, packageEventPath):
-				continue
-			case fmt.Sprintf(`%s "%s"`, packageIfaceAlias, packageIfacePath):
-				continue
-			}
-
-			if sameEventAlias {
-				switch buf.String() {
-				case fmt.Sprintf(`"%s"`, packageEventPath):
-					continue
-				}
-			}
-
-			if sameIfaceAlias {
-				switch buf.String() {
-				case fmt.Sprintf(`"%s"`, packageIfacePath):
-					continue
-				}
-			}
 
 			fmt.Fprintf(importCode, "\n\t%s", buf.String())
 		}
@@ -118,12 +101,6 @@ package %s
 	eventPrefix := ""
 	if packageEventAlias != "." {
 		eventPrefix = packageEventAlias + "."
-	}
-
-	// iface包前缀
-	ifacePrefix := ""
-	if packageIfaceAlias != "." {
-		ifacePrefix = packageIfaceAlias + "."
 	}
 
 	// 生成事件发送代码
@@ -173,34 +150,34 @@ type iAuto%[1]s interface {
 
 func Bind%[1]s(auto iAuto%[1]s, subscriber %[2]s%[8]s, priority ...int32) %[6]sHook {
 	if auto == nil {
-		panic(fmt.Errorf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs))
+		%[6]sPanicf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
 	return %[6]sBind[%[2]s%[8]s](auto.%[1]s(), subscriber, priority...)
 }
 
 func %[9]s%[1]s%[7]s(auto iAuto%[1]s%[4]s) {
 	if auto == nil {
-		panic(fmt.Errorf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs))
+		%[6]sPanicf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
-	%[6]sUnsafeEvent(auto.%[1]s()).Emit(func(subscriber %[10]sCache) bool {
-		return %[10]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
+	%[6]sUnsafeEvent(auto.%[1]s()).Emit(func(subscriber %[6]sCache) bool {
+		return %[6]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
 	})
 }
 
-func %[9]s%[1]s%[7]sWithInterrupt(auto iAuto%[1]s, interrupt func(%[11]s) bool%[4]s) {
+func %[9]s%[1]s%[7]sWithInterrupt(auto iAuto%[1]s, interrupt func(%[10]s) bool%[4]s) {
 	if auto == nil {
-		panic(fmt.Errorf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs))
+		%[6]sPanicf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
-	%[6]sUnsafeEvent(auto.%[1]s()).Emit(func(subscriber %[10]sCache) bool {
+	%[6]sUnsafeEvent(auto.%[1]s()).Emit(func(subscriber %[6]sCache) bool {
 		if interrupt != nil {
 			if interrupt(%[5]s) {
 				return false
 			}
 		}
-		return %[10]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
+		return %[6]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
 	})
 }
-`, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, eventPrefix, eventDecl.FuncTypeParamsDecl, eventDecl.FuncTypeParams, exportEmitStr, ifacePrefix, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "))
+`, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, eventPrefix, eventDecl.FuncTypeParamsDecl, eventDecl.FuncTypeParams, exportEmitStr, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "))
 
 			} else {
 				fmt.Fprintf(code, `
@@ -210,91 +187,91 @@ type iAuto%[1]s interface {
 
 func Bind%[1]s(auto iAuto%[1]s, subscriber %[2]s%[8]s, priority ...int32) %[6]sHook {
 	if auto == nil {
-		panic(fmt.Errorf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs))
+		%[6]sPanicf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
 	return %[6]sBind[%[2]s%[8]s](auto.%[1]s(), subscriber, priority...)
 }
 
 func %[9]s%[1]s%[7]s(auto iAuto%[1]s%[4]s) {
 	if auto == nil {
-		panic(fmt.Errorf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs))
+		%[6]sPanicf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
-	%[6]sUnsafeEvent(auto.%[1]s()).Emit(func(subscriber %[10]sCache) bool {
-		%[10]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
+	%[6]sUnsafeEvent(auto.%[1]s()).Emit(func(subscriber %[6]sCache) bool {
+		%[6]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
 		return true
 	})
 }
 
-func %[9]s%[1]s%[7]sWithInterrupt(auto iAuto%[1]s, interrupt func(%[11]s) bool%[4]s) {
+func %[9]s%[1]s%[7]sWithInterrupt(auto iAuto%[1]s, interrupt func(%[10]s) bool%[4]s) {
 	if auto == nil {
-		panic(fmt.Errorf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs))
+		%[6]sPanicf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
-	%[6]sUnsafeEvent(auto.%[1]s()).Emit(func(subscriber %[10]sCache) bool {
+	%[6]sUnsafeEvent(auto.%[1]s()).Emit(func(subscriber %[6]sCache) bool {
 		if interrupt != nil {
 			if interrupt(%[5]s) {
 				return false
 			}
 		}
-		%[10]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
+		%[6]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
 		return true
 	})
 }
-`, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, eventPrefix, eventDecl.FuncTypeParamsDecl, eventDecl.FuncTypeParams, exportEmitStr, ifacePrefix, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "))
+`, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, eventPrefix, eventDecl.FuncTypeParamsDecl, eventDecl.FuncTypeParams, exportEmitStr, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "))
 			}
 		} else {
 			if eventDecl.FuncHasRet {
 				fmt.Fprintf(code, `
 func %[9]s%[1]s%[7]s(evt %[6]sIEvent%[4]s) {
 	if evt == nil {
-		panic(fmt.Errorf("%%w: %%w: evt is nil", %[6]sErrEvent, %[6]sErrArgs))
+		%[6]sPanicf("%%w: %%w: evt is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
-	%[6]sUnsafeEvent(evt).Emit(func(subscriber %[10]sCache) bool {
-		return %[10]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
+	%[6]sUnsafeEvent(evt).Emit(func(subscriber %[6]sCache) bool {
+		return %[6]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
 	})
 }
 
-func %[9]s%[1]s%[7]sWithInterrupt(evt %[6]sIEvent%[4]s, interrupt func(%[11]s) bool) {
+func %[9]s%[1]s%[7]sWithInterrupt(evt %[6]sIEvent%[4]s, interrupt func(%[10]s) bool) {
 	if evt == nil {
-		panic(fmt.Errorf("%%w: %%w: evt is nil", %[6]sErrEvent, %[6]sErrArgs))
+		%[6]sPanicf("%%w: %%w: evt is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
-	%[6]sUnsafeEvent(evt).Emit(func(subscriber %[10]sCache) bool {
+	%[6]sUnsafeEvent(evt).Emit(func(subscriber %[6]sCache) bool {
 		if interrupt != nil {
 			if interrupt(%[5]s) {
 				return false
 			}
 		}
-		return %[10]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
+		return %[6]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
 	})
 }
-`, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, eventPrefix, eventDecl.FuncTypeParamsDecl, eventDecl.FuncTypeParams, exportEmitStr, ifacePrefix, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "))
+`, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, eventPrefix, eventDecl.FuncTypeParamsDecl, eventDecl.FuncTypeParams, exportEmitStr, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "))
 
 			} else {
 				fmt.Fprintf(code, `
 func %[9]s%[1]s%[7]s(evt %[6]sIEvent%[4]s) {
 	if evt == nil {
-		panic(fmt.Errorf("%%w: %%w: evt is nil", %[6]sErrEvent, %[6]sErrArgs))
+		%[6]sPanicf("%%w: %%w: evt is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
-	%[6]sUnsafeEvent(evt).Emit(func(subscriber %[10]sCache) bool {
-		%[10]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
+	%[6]sUnsafeEvent(evt).Emit(func(subscriber %[6]sCache) bool {
+		%[6]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
 		return true
 	})
 }
 
-func %[9]s%[1]s%[7]sWithInterrupt(evt %[6]sIEvent%[4]s, interrupt func(%[11]s) bool) {
+func %[9]s%[1]s%[7]sWithInterrupt(evt %[6]sIEvent%[4]s, interrupt func(%[10]s) bool) {
 	if evt == nil {
-		panic(fmt.Errorf("%%w: %%w: evt is nil", %[6]sErrEvent, %[6]sErrArgs))
+		%[6]sPanicf("%%w: %%w: evt is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
-	%[6]sUnsafeEvent(evt).Emit(func(subscriber %[10]sCache) bool {
+	%[6]sUnsafeEvent(evt).Emit(func(subscriber %[6]sCache) bool {
 		if interrupt != nil {
 			if interrupt(%[5]s) {
 				return false
 			}
 		}
-		%[10]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
+		%[6]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
 		return true
 	})
 }
-`, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, eventPrefix, eventDecl.FuncTypeParamsDecl, eventDecl.FuncTypeParams, exportEmitStr, ifacePrefix, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "))
+`, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, eventPrefix, eventDecl.FuncTypeParamsDecl, eventDecl.FuncTypeParams, exportEmitStr, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "))
 			}
 		}
 

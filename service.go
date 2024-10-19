@@ -20,9 +20,9 @@
 package core
 
 import (
-	"fmt"
 	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/service"
+	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/option"
 	"git.golaxy.org/core/utils/reinterpret"
@@ -78,11 +78,11 @@ func (svc *ServiceBehavior) GetInstanceFaceCache() iface.Cache {
 
 func (svc *ServiceBehavior) init(svcCtx service.Context, opts ServiceOptions) {
 	if svcCtx == nil {
-		panic(fmt.Errorf("%w: %w: svcCtx is nil", ErrService, ErrArgs))
+		exception.Panicf("%w: %w: svcCtx is nil", ErrService, ErrArgs)
 	}
 
 	if !ictx.UnsafeContext(svcCtx).SetPaired(true) {
-		panic(fmt.Errorf("%w: context already paired", ErrService))
+		exception.Panicf("%w: context already paired", ErrService)
 	}
 
 	svc.ctx = svcCtx

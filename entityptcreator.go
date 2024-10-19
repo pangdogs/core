@@ -20,17 +20,17 @@
 package core
 
 import (
-	"fmt"
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/pt"
 	"git.golaxy.org/core/service"
+	"git.golaxy.org/core/utils/exception"
 	"github.com/elliotchance/pie/v2"
 )
 
 // CreateEntityPT 创建实体原型
 func CreateEntityPT(svcCtx service.Context, prototype string) EntityPTCreator {
 	if svcCtx == nil {
-		panic(fmt.Errorf("%w: %w: svcCtx is nil", ErrCore, ErrArgs))
+		exception.Panicf("%w: %w: svcCtx is nil", ErrCore, ErrArgs)
 	}
 	c := EntityPTCreator{
 		svcCtx: svcCtx,
@@ -78,7 +78,7 @@ func (c EntityPTCreator) AddComponent(comp any, name ...string) EntityPTCreator 
 // Declare 声明实体原型
 func (c EntityPTCreator) Declare() {
 	if c.svcCtx == nil {
-		panic(fmt.Errorf("%w: svcCtx is nil", ErrCore))
+		exception.Panicf("%w: svcCtx is nil", ErrCore)
 	}
 	c.svcCtx.GetEntityLib().Declare(c.atti, c.comps...)
 }
@@ -86,7 +86,7 @@ func (c EntityPTCreator) Declare() {
 // Redeclare 重新声明实体原型
 func (c EntityPTCreator) Redeclare() {
 	if c.svcCtx == nil {
-		panic(fmt.Errorf("%w: svcCtx is nil", ErrCore))
+		exception.Panicf("%w: svcCtx is nil", ErrCore)
 	}
 	c.svcCtx.GetEntityLib().Redeclare(c.atti, c.comps...)
 }

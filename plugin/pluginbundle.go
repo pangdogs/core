@@ -20,7 +20,6 @@
 package plugin
 
 import (
-	"fmt"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
@@ -135,7 +134,7 @@ func (bundle *_PluginBundle) setUninstallCB(cb generic.Action1[PluginStatus]) {
 
 func (bundle *_PluginBundle) install(pluginFace iface.FaceAny, name ...string) *_PluginStatus {
 	if pluginFace.IsNil() {
-		panic(fmt.Errorf("%w: %w: pluginFace is nil", ErrPlugin, exception.ErrArgs))
+		exception.Panicf("%w: %w: pluginFace is nil", ErrPlugin, exception.ErrArgs)
 	}
 
 	bundle.Lock()
@@ -147,7 +146,7 @@ func (bundle *_PluginBundle) install(pluginFace iface.FaceAny, name ...string) *
 	}
 
 	if _, ok := bundle.pluginIdx[pluginName]; ok {
-		panic(fmt.Errorf("%w: plugin %q is already installed", ErrPlugin, pluginName))
+		exception.Panicf("%w: plugin %q is already installed", ErrPlugin, pluginName)
 	}
 
 	status := &_PluginStatus{

@@ -48,7 +48,7 @@ func (f PairFuncVar0[VA, R1, R2]) Call(autoRecover bool, reportError chan error,
 
 				if reportError != nil {
 					select {
-					case reportError <- exception.PrintStackTrace(panicErr):
+					case reportError <- exception.TraceStack(panicErr):
 					default:
 					}
 				}
@@ -87,7 +87,7 @@ func (f PairFuncVar1[A1, VA, R1, R2]) Call(autoRecover bool, reportError chan er
 
 				if reportError != nil {
 					select {
-					case reportError <- exception.PrintStackTrace(panicErr):
+					case reportError <- exception.TraceStack(panicErr):
 					default:
 					}
 				}
@@ -126,7 +126,7 @@ func (f PairFuncVar2[A1, A2, VA, R1, R2]) Call(autoRecover bool, reportError cha
 
 				if reportError != nil {
 					select {
-					case reportError <- exception.PrintStackTrace(panicErr):
+					case reportError <- exception.TraceStack(panicErr):
 					default:
 					}
 				}
@@ -165,7 +165,7 @@ func (f PairFuncVar3[A1, A2, A3, VA, R1, R2]) Call(autoRecover bool, reportError
 
 				if reportError != nil {
 					select {
-					case reportError <- exception.PrintStackTrace(panicErr):
+					case reportError <- exception.TraceStack(panicErr):
 					default:
 					}
 				}
@@ -204,7 +204,7 @@ func (f PairFuncVar4[A1, A2, A3, A4, VA, R1, R2]) Call(autoRecover bool, reportE
 
 				if reportError != nil {
 					select {
-					case reportError <- exception.PrintStackTrace(panicErr):
+					case reportError <- exception.TraceStack(panicErr):
 					default:
 					}
 				}
@@ -252,7 +252,7 @@ func (f PairFuncVar5[A1, A2, A3, A4, A5, VA, R1, R2]) Call(
 
 				if reportError != nil {
 					select {
-					case reportError <- exception.PrintStackTrace(panicErr):
+					case reportError <- exception.TraceStack(panicErr):
 					default:
 					}
 				}
@@ -300,7 +300,7 @@ func (f PairFuncVar6[A1, A2, A3, A4, A5, A6, VA, R1, R2]) Call(
 
 				if reportError != nil {
 					select {
-					case reportError <- exception.PrintStackTrace(panicErr):
+					case reportError <- exception.TraceStack(panicErr):
 					default:
 					}
 				}
@@ -348,7 +348,7 @@ func (f PairFuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R1, R2]) Call(
 
 				if reportError != nil {
 					select {
-					case reportError <- exception.PrintStackTrace(panicErr):
+					case reportError <- exception.TraceStack(panicErr):
 					default:
 					}
 				}
@@ -396,7 +396,7 @@ func (f PairFuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R1, R2]) Call(
 
 				if reportError != nil {
 					select {
-					case reportError <- exception.PrintStackTrace(panicErr):
+					case reportError <- exception.TraceStack(panicErr):
 					default:
 					}
 				}
@@ -444,7 +444,7 @@ func (f PairFuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R1, R2]) Call(
 
 				if reportError != nil {
 					select {
-					case reportError <- exception.PrintStackTrace(panicErr):
+					case reportError <- exception.TraceStack(panicErr):
 					default:
 					}
 				}
@@ -492,7 +492,7 @@ func (f PairFuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R1, R2]) Call
 
 				if reportError != nil {
 					select {
-					case reportError <- exception.PrintStackTrace(panicErr):
+					case reportError <- exception.TraceStack(panicErr):
 					default:
 					}
 				}
@@ -540,7 +540,7 @@ func (f PairFuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R1, R2])
 
 				if reportError != nil {
 					select {
-					case reportError <- exception.PrintStackTrace(panicErr):
+					case reportError <- exception.TraceStack(panicErr):
 					default:
 					}
 				}
@@ -588,7 +588,7 @@ func (f PairFuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R1,
 
 				if reportError != nil {
 					select {
-					case reportError <- exception.PrintStackTrace(panicErr):
+					case reportError <- exception.TraceStack(panicErr):
 					default:
 					}
 				}
@@ -636,7 +636,7 @@ func (f PairFuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA
 
 				if reportError != nil {
 					select {
-					case reportError <- exception.PrintStackTrace(panicErr):
+					case reportError <- exception.TraceStack(panicErr):
 					default:
 					}
 				}
@@ -684,7 +684,7 @@ func (f PairFuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A1
 
 				if reportError != nil {
 					select {
-					case reportError <- exception.PrintStackTrace(panicErr):
+					case reportError <- exception.TraceStack(panicErr):
 					default:
 					}
 				}
@@ -732,7 +732,7 @@ func (f PairFuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A1
 
 				if reportError != nil {
 					select {
-					case reportError <- exception.PrintStackTrace(panicErr):
+					case reportError <- exception.TraceStack(panicErr):
 					default:
 					}
 				}
@@ -780,7 +780,7 @@ func (f PairFuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A1
 
 				if reportError != nil {
 					select {
-					case reportError <- exception.PrintStackTrace(panicErr):
+					case reportError <- exception.TraceStack(panicErr):
 					default:
 					}
 				}

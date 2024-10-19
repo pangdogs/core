@@ -244,11 +244,11 @@ func (mgr *_EntityMgrBehavior) EventEntityTreeRemoveNode() event.IEvent {
 
 func (mgr *_EntityMgrBehavior) addToParentNode(entity, parent ec.Entity) {
 	if entity == nil {
-		panic(fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs))
+		exception.Panicf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs)
 	}
 
 	if parent == nil {
-		panic(fmt.Errorf("%w: %w: parent is nil", ErrEntityMgr, exception.ErrArgs))
+		exception.Panicf("%w: %w: parent is nil", ErrEntityMgr, exception.ErrArgs)
 	}
 
 	if entity.GetState() > ec.EntityState_Alive || parent.GetState() > ec.EntityState_Alive {
@@ -264,11 +264,11 @@ func (mgr *_EntityMgrBehavior) addToParentNode(entity, parent ec.Entity) {
 
 func (mgr *_EntityMgrBehavior) attachParentNode(entity, parent ec.Entity) {
 	if entity == nil {
-		panic(fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs))
+		exception.Panicf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs)
 	}
 
 	if parent == nil {
-		panic(fmt.Errorf("%w: %w: parent is nil", ErrEntityMgr, exception.ErrArgs))
+		exception.Panicf("%w: %w: parent is nil", ErrEntityMgr, exception.ErrArgs)
 	}
 
 	if entity.GetState() > ec.EntityState_Alive || parent.GetState() > ec.EntityState_Alive {
@@ -294,7 +294,7 @@ func (mgr *_EntityMgrBehavior) attachParentNode(entity, parent ec.Entity) {
 
 func (mgr *_EntityMgrBehavior) detachParentNode(entity ec.Entity) {
 	if entity == nil {
-		panic(fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs))
+		exception.Panicf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs)
 	}
 
 	if entity.GetTreeNodeState() != ec.TreeNodeState_Detaching {
@@ -315,7 +315,7 @@ func (mgr *_EntityMgrBehavior) detachParentNode(entity ec.Entity) {
 
 func (mgr *_EntityMgrBehavior) removeFromParentNode(entity ec.Entity) {
 	if entity == nil {
-		panic(fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs))
+		exception.Panicf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs)
 	}
 
 	mgr.leaveParent(entity)
@@ -323,11 +323,11 @@ func (mgr *_EntityMgrBehavior) removeFromParentNode(entity ec.Entity) {
 
 func (mgr *_EntityMgrBehavior) changeParentNode(entity, parent ec.Entity) {
 	if entity == nil {
-		panic(fmt.Errorf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs))
+		exception.Panicf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs)
 	}
 
 	if parent == nil {
-		panic(fmt.Errorf("%w: %w: parent is nil", ErrEntityMgr, exception.ErrArgs))
+		exception.Panicf("%w: %w: parent is nil", ErrEntityMgr, exception.ErrArgs)
 	}
 
 	if entity.GetState() > ec.EntityState_Alive || parent.GetState() > ec.EntityState_Alive {

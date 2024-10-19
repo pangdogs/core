@@ -20,7 +20,6 @@
 package pt
 
 import (
-	"fmt"
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/types"
@@ -99,7 +98,7 @@ func As[T comparable](entity ec.Entity) (T, bool) {
 func Cast[T comparable](entity ec.Entity) T {
 	iface, ok := As[T](entity)
 	if !ok {
-		panic(fmt.Errorf("%w: incorrect cast", ErrPt))
+		exception.Panicf("%w: incorrect cast", ErrPt)
 	}
 	return iface
 }
@@ -107,7 +106,7 @@ func Cast[T comparable](entity ec.Entity) T {
 // Compose 创建组件复合器
 func Compose[T comparable](entity ec.Entity) *Composite[T] {
 	if entity == nil {
-		panic(fmt.Errorf("%w: %w: entity is nil", ErrPt, exception.ErrArgs))
+		exception.Panicf("%w: %w: entity is nil", ErrPt, exception.ErrArgs)
 	}
 	return &Composite[T]{
 		entity: entity,
@@ -150,7 +149,7 @@ type Composite[T comparable] struct {
 // Entity 实体
 func (c *Composite[T]) Entity() ec.Entity {
 	if c.entity == nil {
-		panic(fmt.Errorf("%w: entity is nil", ErrPt))
+		exception.Panicf("%w: entity is nil", ErrPt)
 	}
 	return c.entity
 }
@@ -158,7 +157,7 @@ func (c *Composite[T]) Entity() ec.Entity {
 // Changed 实体是否已更新组件
 func (c *Composite[T]) Changed() bool {
 	if c.entity == nil {
-		panic(fmt.Errorf("%w: entity is nil", ErrPt))
+		exception.Panicf("%w: entity is nil", ErrPt)
 	}
 	return c.version != ec.UnsafeEntity(c.entity).GetVersion()
 }
@@ -166,7 +165,7 @@ func (c *Composite[T]) Changed() bool {
 // As 从实体提取一些需要的组件接口，复合在一起直接使用（实体更新组件后，会自动重新提取）
 func (c *Composite[T]) As() (T, bool) {
 	if c.entity == nil {
-		panic(fmt.Errorf("%w: entity is nil", ErrPt))
+		exception.Panicf("%w: entity is nil", ErrPt)
 	}
 
 	if c.iface != types.ZeroT[T]() && !c.Changed() {
@@ -186,7 +185,7 @@ func (c *Composite[T]) As() (T, bool) {
 func (c *Composite[T]) Cast() T {
 	iface, ok := c.As()
 	if !ok {
-		panic(fmt.Errorf("%w: incorrect cast", ErrPt))
+		exception.Panicf("%w: incorrect cast", ErrPt)
 	}
 	return iface
 }
