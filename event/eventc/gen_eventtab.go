@@ -22,7 +22,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"git.golaxy.org/core/utils/exception"
 	"github.com/spf13/viper"
 	"io/ioutil"
 	"log"
@@ -190,6 +189,6 @@ func (eventTab *%[1]s) %[2]s() %[4]sIEvent {
 	os.MkdirAll(filepath.Dir(outFile), os.ModePerm)
 
 	if err := ioutil.WriteFile(outFile, code.Bytes(), os.ModePerm); err != nil {
-		exception.Panic(err)
+		panic(err)
 	}
 }

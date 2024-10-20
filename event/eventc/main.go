@@ -31,7 +31,6 @@ package main
 
 import (
 	"fmt"
-	"git.golaxy.org/core/utils/exception"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
@@ -47,26 +46,26 @@ func main() {
 			{
 				declFile := viper.GetString("decl_file")
 				if declFile == "" {
-					exception.Panic("[--decl_file]值不能为空")
+					panic("[--decl_file]值不能为空")
 				}
 				stat, err := os.Stat(declFile)
 				if err != nil {
-					exception.Panicf("[--decl_file]文件错误，%s", err)
+					panic(fmt.Errorf("[--decl_file]文件错误，%s", err))
 				}
 				if stat.IsDir() {
-					exception.Panicf("[--decl_file]文件错误，不能为文件夹")
+					panic("[--decl_file]文件错误，不能为文件夹")
 				}
 			}
 			{
 				eventRegexp := viper.GetString("event_regexp")
 				if eventRegexp == "" {
-					exception.Panic("[--event_regexp]值不能为空")
+					panic("[--event_regexp]值不能为空")
 				}
 			}
 			{
 				packageEventAlias := viper.GetString("package_event_alias")
 				if packageEventAlias == "" {
-					exception.Panic("[--package_event_alias]值不能为空")
+					panic("[--package_event_alias]值不能为空")
 				}
 			}
 		},
@@ -108,19 +107,19 @@ func main() {
 			{
 				pkg := viper.GetString("package")
 				if pkg == "" {
-					exception.Panic("[eventtab --package]值不能为空")
+					panic("[eventtab --package]值不能为空")
 				}
 			}
 			{
 				dir := viper.GetString("dir")
 				if dir == "" {
-					exception.Panic("[eventtab --dir]值不能为空")
+					panic("[eventtab --dir]值不能为空")
 				}
 			}
 			{
 				name := viper.GetString("name")
 				if name == "" {
-					exception.Panic("[eventtab --name]值不能为空")
+					panic("[eventtab --name]值不能为空")
 				}
 			}
 			loadDeclFile()
@@ -136,6 +135,6 @@ func main() {
 	rootCmd.AddCommand(eventCmd, eventTabCmd)
 
 	if err := rootCmd.Execute(); err != nil {
-		exception.Panic(err)
+		panic(err)
 	}
 }

@@ -21,7 +21,6 @@ package main
 
 import (
 	"fmt"
-	"git.golaxy.org/core/utils/exception"
 	"github.com/spf13/viper"
 	"go/ast"
 	"go/token"
@@ -47,7 +46,7 @@ type EventDeclTab struct {
 func (tab *EventDeclTab) Parse() {
 	eventRegexp, err := regexp.Compile(viper.GetString("event_regexp"))
 	if err != nil {
-		exception.Panic(err)
+		panic(err)
 	}
 
 	fast := viper.Get("file_ast").(*ast.File)
