@@ -47,6 +47,16 @@ func Errorf(format string, args ...any) error {
 	return fmt.Errorf(format+" (at %s:%d)", append(args, file, line)...)
 }
 
+func ErrorSkip(skip int, v any) error {
+	_, file, line, _ := runtime.Caller(skip)
+	return fmt.Errorf("%v (at %s:%d)", v, file, line)
+}
+
+func ErrorfSkip(skip int, format string, args ...any) error {
+	_, file, line, _ := runtime.Caller(skip)
+	return fmt.Errorf(format+" (at %s:%d)", append(args, file, line)...)
+}
+
 func Panic(v any) {
 	_, file, line, _ := runtime.Caller(1)
 	panic(fmt.Errorf("%v (at %s:%d)", v, file, line))
@@ -54,5 +64,15 @@ func Panic(v any) {
 
 func Panicf(format string, args ...any) {
 	_, file, line, _ := runtime.Caller(1)
+	panic(fmt.Errorf(format+" (at %s:%d)", append(args, file, line)...))
+}
+
+func PanicSkip(skip int, v any) {
+	_, file, line, _ := runtime.Caller(skip)
+	panic(fmt.Errorf("%v (at %s:%d)", v, file, line))
+}
+
+func PanicfSkip(skip int, format string, args ...any) {
+	_, file, line, _ := runtime.Caller(skip)
 	panic(fmt.Errorf(format+" (at %s:%d)", append(args, file, line)...))
 }
