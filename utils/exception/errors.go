@@ -39,20 +39,20 @@ func TraceStack(err error) error {
 
 func Error(v any) error {
 	_, file, line, _ := runtime.Caller(1)
-	return fmt.Errorf("%v (%s:%d)", v, file, line)
+	return fmt.Errorf("%v (at %s:%d)", v, file, line)
 }
 
 func Errorf(format string, args ...any) error {
 	_, file, line, _ := runtime.Caller(1)
-	return fmt.Errorf(format+" (%s:%d)", append(args, file, line)...)
+	return fmt.Errorf(format+" (at %s:%d)", append(args, file, line)...)
 }
 
 func Panic(v any) {
 	_, file, line, _ := runtime.Caller(1)
-	panic(fmt.Errorf("%v (%s:%d)", v, file, line))
+	panic(fmt.Errorf("%v (at %s:%d)", v, file, line))
 }
 
 func Panicf(format string, args ...any) {
 	_, file, line, _ := runtime.Caller(1)
-	panic(fmt.Errorf(format+" (%s:%d)", append(args, file, line)...))
+	panic(fmt.Errorf(format+" (at %s:%d)", append(args, file, line)...))
 }
