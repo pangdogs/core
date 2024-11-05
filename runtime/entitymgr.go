@@ -54,11 +54,11 @@ type EntityMgr interface {
 	// CountEntities 获取实体数量
 	CountEntities() int
 
-	iAutoEventEntityMgrAddEntity                  // 事件：实体管理器添加实体
-	iAutoEventEntityMgrRemoveEntity               // 事件：实体管理器删除实体
-	iAutoEventEntityMgrEntityAddComponents        // 事件：实体管理器中的实体添加组件
-	iAutoEventEntityMgrEntityRemoveComponent      // 事件：实体管理器中的实体删除组件
-	iAutoEventEntityMgrEntityFirstAccessComponent // 事件：实体管理器中的实体首次访问组件
+	iAutoEventEntityMgrAddEntity                 // 事件：实体管理器添加实体
+	iAutoEventEntityMgrRemoveEntity              // 事件：实体管理器删除实体
+	iAutoEventEntityMgrEntityAddComponents       // 事件：实体管理器中的实体添加组件
+	iAutoEventEntityMgrEntityRemoveComponent     // 事件：实体管理器中的实体删除组件
+	iAutoEventEntityMgrEntityFirstTouchComponent // 事件：实体管理器中的实体首次访问组件
 }
 
 type _EntityEntry struct {
@@ -72,17 +72,17 @@ type _TreeNode struct {
 }
 
 type _EntityMgrBehavior struct {
-	ctx                                      Context
-	entityIdx                                map[uid.Id]*_EntityEntry
-	entityList                               generic.List[iface.FaceAny]
-	treeNodes                                map[uid.Id]*_TreeNode
-	eventEntityMgrAddEntity                  event.Event
-	eventEntityMgrRemoveEntity               event.Event
-	eventEntityMgrEntityAddComponents        event.Event
-	eventEntityMgrEntityRemoveComponent      event.Event
-	eventEntityMgrEntityFirstAccessComponent event.Event
-	eventEntityTreeAddChild                  event.Event
-	eventEntityTreeRemoveChild               event.Event
+	ctx                                     Context
+	entityIdx                               map[uid.Id]*_EntityEntry
+	entityList                              generic.List[iface.FaceAny]
+	treeNodes                               map[uid.Id]*_TreeNode
+	eventEntityMgrAddEntity                 event.Event
+	eventEntityMgrRemoveEntity              event.Event
+	eventEntityMgrEntityAddComponents       event.Event
+	eventEntityMgrEntityRemoveComponent     event.Event
+	eventEntityMgrEntityFirstTouchComponent event.Event
+	eventEntityTreeAddChild                 event.Event
+	eventEntityTreeRemoveChild              event.Event
 }
 
 func (mgr *_EntityMgrBehavior) init(ctx Context) {
@@ -98,7 +98,7 @@ func (mgr *_EntityMgrBehavior) init(ctx Context) {
 	ctx.ActivateEvent(&mgr.eventEntityMgrRemoveEntity, event.EventRecursion_Allow)
 	ctx.ActivateEvent(&mgr.eventEntityMgrEntityAddComponents, event.EventRecursion_Allow)
 	ctx.ActivateEvent(&mgr.eventEntityMgrEntityRemoveComponent, event.EventRecursion_Allow)
-	ctx.ActivateEvent(&mgr.eventEntityMgrEntityFirstAccessComponent, event.EventRecursion_Allow)
+	ctx.ActivateEvent(&mgr.eventEntityMgrEntityFirstTouchComponent, event.EventRecursion_Allow)
 	ctx.ActivateEvent(&mgr.eventEntityTreeAddChild, event.EventRecursion_Allow)
 	ctx.ActivateEvent(&mgr.eventEntityTreeRemoveChild, event.EventRecursion_Allow)
 }
@@ -120,7 +120,7 @@ func (mgr *_EntityMgrBehavior) changeRunningState(state RunningState) {
 		mgr.eventEntityMgrRemoveEntity.Close()
 		mgr.eventEntityMgrEntityAddComponents.Close()
 		mgr.eventEntityMgrEntityRemoveComponent.Close()
-		mgr.eventEntityMgrEntityFirstAccessComponent.Close()
+		mgr.eventEntityMgrEntityFirstTouchComponent.Close()
 		mgr.eventEntityTreeAddChild.Close()
 		mgr.eventEntityTreeRemoveChild.Close()
 	}
@@ -234,18 +234,23 @@ func (mgr *_EntityMgrBehavior) EventEntityMgrEntityRemoveComponent() event.IEven
 	return &mgr.eventEntityMgrEntityRemoveComponent
 }
 
-// EventEntityMgrEntityFirstAccessComponent 事件：实体管理器中的实体首次访问组件
-func (mgr *_EntityMgrBehavior) EventEntityMgrEntityFirstAccessComponent() event.IEvent {
-	return &mgr.eventEntityMgrEntityFirstAccessComponent
+// EventEntityMgrEntityFirstTouchComponent 事件：实体管理器中的实体首次访问组件
+func (mgr *_EntityMgrBehavior) EventEntityMgrEntityFirstTouchComponent() event.IEvent {
+	return &mgr.eventEntityMgrEntityFirstTouchComponent
 }
 
 func (mgr *_EntityMgrBehavior) OnComponentMgrAddComponents(entity ec.Entity, components []ec.Component) {
 	for i := range components {
 		comp := components[i]
 
-		if comp.GetId().IsNil() {
-			ec.UnsafeComponent(comp).SetId(uid.New())
+		if ec.UnsafeEntity(entity).GetOptions().ComponentUniqueID {
+			if comp.GetId().IsNil() {
+				ec.UnsafeComponent(comp).SetId(uid.New())
+			}
+		} else {
+			ec.UnsafeComponent(comp).SetId(entity.GetId())
 		}
+
 		ec.UnsafeComponent(comp).WithContext(mgr.ctx)
 	}
 
@@ -260,8 +265,8 @@ func (mgr *_EntityMgrBehavior) OnComponentMgrRemoveComponent(entity ec.Entity, c
 	}, mgr, entity, component)
 }
 
-func (mgr *_EntityMgrBehavior) OnComponentMgrFirstAccessComponent(entity ec.Entity, component ec.Component) {
-	_EmitEventEntityMgrEntityFirstAccessComponentWithInterrupt(mgr, func(entityMgr EntityMgr, entity ec.Entity, component ec.Component) bool {
+func (mgr *_EntityMgrBehavior) OnComponentMgrFirstTouchComponent(entity ec.Entity, component ec.Component) {
+	_EmitEventEntityMgrEntityFirstTouchComponentWithInterrupt(mgr, func(entityMgr EntityMgr, entity ec.Entity, component ec.Component) bool {
 		return entity.GetState() > ec.EntityState_Alive
 	}, mgr, entity, component)
 }
@@ -293,8 +298,12 @@ func (mgr *_EntityMgrBehavior) addEntity(entity ec.Entity, parentId uid.Id) erro
 	ec.UnsafeEntity(entity).WithContext(mgr.ctx)
 
 	entity.RangeComponents(func(comp ec.Component) bool {
-		if comp.GetId().IsNil() {
-			ec.UnsafeComponent(comp).SetId(uid.New())
+		if ec.UnsafeEntity(entity).GetOptions().ComponentUniqueID {
+			if comp.GetId().IsNil() {
+				ec.UnsafeComponent(comp).SetId(uid.New())
+			}
+		} else {
+			ec.UnsafeComponent(comp).SetId(entity.GetId())
 		}
 		ec.UnsafeComponent(comp).WithContext(mgr.ctx)
 		return true
@@ -327,8 +336,8 @@ func (mgr *_EntityMgrBehavior) addEntity(entity ec.Entity, parentId uid.Id) erro
 			ec.BindEventComponentMgrRemoveComponent(entity, mgr),
 		},
 	}
-	if ec.UnsafeEntity(entity).GetOptions().AwakeOnFirstAccess {
-		entry.hooks[2] = ec.BindEventComponentMgrFirstAccessComponent(entity, mgr)
+	if ec.UnsafeEntity(entity).GetOptions().ComponentAwakeOnFirstTouch {
+		entry.hooks[2] = ec.BindEventComponentMgrFirstTouchComponent(entity, mgr)
 	}
 	mgr.entityIdx[entity.GetId()] = entry
 

@@ -139,8 +139,8 @@ func (rt *RuntimeBehavior) OnEntityMgrRemoveEntity(entityMgr runtime.EntityMgr, 
 	rt.shutEntity(entity)
 }
 
-// OnEntityMgrEntityFirstAccessComponent 事件处理器：实体管理器中的实体首次访问组件
-func (rt *RuntimeBehavior) OnEntityMgrEntityFirstAccessComponent(entityMgr runtime.EntityMgr, entity ec.Entity, component ec.Component) {
+// OnEntityMgrEntityFirstTouchComponent 事件处理器：实体管理器中的实体首次访问组件
+func (rt *RuntimeBehavior) OnEntityMgrEntityFirstTouchComponent(entityMgr runtime.EntityMgr, entity ec.Entity, component ec.Component) {
 	if component.GetState() != ec.ComponentState_Attach {
 		return
 	}

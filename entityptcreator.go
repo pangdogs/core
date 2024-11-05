@@ -58,9 +58,15 @@ func (c EntityPTCreator) Scope(scope ec.Scope) EntityPTCreator {
 	return c
 }
 
-// AwakeOnFirstAccess 设置开启组件被首次访问时，检测并调用Awake()
-func (c EntityPTCreator) AwakeOnFirstAccess(b bool) EntityPTCreator {
-	c.atti.AwakeOnFirstAccess = &b
+// ComponentAwakeOnFirstTouch 开启组件被首次访问时，检测并调用Awake()
+func (c EntityPTCreator) ComponentAwakeOnFirstTouch(b bool) EntityPTCreator {
+	c.atti.ComponentAwakeOnFirstTouch = &b
+	return c
+}
+
+// ComponentUniqueID 开启组件唯一Id
+func (c EntityPTCreator) ComponentUniqueID(b bool) EntityPTCreator {
+	c.atti.ComponentUniqueID = &b
 	return c
 }
 

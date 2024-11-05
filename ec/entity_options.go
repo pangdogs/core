@@ -28,12 +28,13 @@ import (
 
 // EntityOptions 创建实体的所有选项
 type EntityOptions struct {
-	InstanceFace       iface.Face[Entity] // 实例，用于扩展实体能力
-	Prototype          string             // 实体原型名称
-	Scope              Scope              // 可访问作用域
-	PersistId          uid.Id             // 实体持久化Id
-	AwakeOnFirstAccess bool               // 开启组件被首次访问时，检测并调用Awake()
-	Meta               meta.Meta          // Meta信息
+	InstanceFace               iface.Face[Entity] // 实例，用于扩展实体能力
+	Prototype                  string             // 实体原型名称
+	Scope                      Scope              // 可访问作用域
+	PersistId                  uid.Id             // 实体持久化Id
+	ComponentAwakeOnFirstTouch bool               // 开启组件被首次访问时，检测并调用Awake()
+	ComponentUniqueID          bool               // 开启组件唯一Id
+	Meta                       meta.Meta          // Meta信息
 }
 
 var With _Option
@@ -47,7 +48,8 @@ func (_Option) Default() option.Setting[EntityOptions] {
 		With.Prototype("")(o)
 		With.Scope(Scope_Global)(o)
 		With.PersistId(uid.Nil)(o)
-		With.AwakeOnFirstAccess(false)(o)
+		With.ComponentAwakeOnFirstTouch(false)(o)
+		With.ComponentUniqueID(false)(o)
 		With.Meta(nil)(o)
 	}
 }
@@ -80,10 +82,17 @@ func (_Option) PersistId(id uid.Id) option.Setting[EntityOptions] {
 	}
 }
 
-// AwakeOnFirstAccess 开启组件被首次访问时，检测并调用Awake()
-func (_Option) AwakeOnFirstAccess(b bool) option.Setting[EntityOptions] {
+// ComponentAwakeOnFirstTouch 开启组件被首次访问时，检测并调用Awake()
+func (_Option) ComponentAwakeOnFirstTouch(b bool) option.Setting[EntityOptions] {
 	return func(o *EntityOptions) {
-		o.AwakeOnFirstAccess = b
+		o.ComponentAwakeOnFirstTouch = b
+	}
+}
+
+// ComponentUniqueID 开启组件唯一Id
+func (_Option) ComponentUniqueID(b bool) option.Setting[EntityOptions] {
+	return func(o *EntityOptions) {
+		o.ComponentUniqueID = b
 	}
 }
 

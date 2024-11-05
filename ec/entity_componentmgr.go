@@ -55,15 +55,15 @@ type iComponentMgr interface {
 	// RemoveComponentById 使用组件Id删除组件
 	RemoveComponentById(id uid.Id)
 
-	iAutoEventComponentMgrAddComponents        // 事件：实体的组件管理器添加组件
-	iAutoEventComponentMgrRemoveComponent      // 事件：实体的组件管理器删除组件
-	iAutoEventComponentMgrFirstAccessComponent // 事件：实体的组件管理器首次访问组件
+	iAutoEventComponentMgrAddComponents       // 事件：实体的组件管理器添加组件
+	iAutoEventComponentMgrRemoveComponent     // 事件：实体的组件管理器删除组件
+	iAutoEventComponentMgrFirstTouchComponent // 事件：实体的组件管理器首次访问组件
 }
 
 // GetComponent 使用名称查询组件，组件同名时，返回首个组件
 func (entity *EntityBehavior) GetComponent(name string) Component {
 	if node, ok := entity.getComponentNode(name); ok {
-		return entity.accessComponent(node.V)
+		return entity.touchComponent(node.V)
 	}
 	return nil
 }
@@ -71,7 +71,7 @@ func (entity *EntityBehavior) GetComponent(name string) Component {
 // GetComponentById 使用组件Id查询组件
 func (entity *EntityBehavior) GetComponentById(id uid.Id) Component {
 	if node, ok := entity.getComponentNodeById(id); ok {
-		return entity.accessComponent(node.V)
+		return entity.touchComponent(node.V)
 	}
 	return nil
 }
@@ -91,7 +91,7 @@ func (entity *EntityBehavior) ContainsComponentById(id uid.Id) bool {
 // RangeComponents 遍历所有组件
 func (entity *EntityBehavior) RangeComponents(fun generic.Func1[Component, bool]) {
 	entity.components.Traversal(func(node *generic.Node[Component]) bool {
-		comp := entity.accessComponent(node.V)
+		comp := entity.touchComponent(node.V)
 		if comp == nil {
 			return true
 		}
@@ -102,7 +102,7 @@ func (entity *EntityBehavior) RangeComponents(fun generic.Func1[Component, bool]
 // ReversedRangeComponents 反向遍历所有组件
 func (entity *EntityBehavior) ReversedRangeComponents(fun generic.Func1[Component, bool]) {
 	entity.components.ReversedTraversal(func(node *generic.Node[Component]) bool {
-		comp := entity.accessComponent(node.V)
+		comp := entity.touchComponent(node.V)
 		if comp == nil {
 			return true
 		}
@@ -123,7 +123,7 @@ func (entity *EntityBehavior) FilterComponents(fun generic.Func1[Component, bool
 	})
 
 	for i := range components {
-		if entity.accessComponent(components[i]) == nil {
+		if entity.touchComponent(components[i]) == nil {
 			components[i] = nil
 		}
 	}
@@ -145,7 +145,7 @@ func (entity *EntityBehavior) GetComponents() []Component {
 	})
 
 	for i := range components {
-		if entity.accessComponent(components[i]) == nil {
+		if entity.touchComponent(components[i]) == nil {
 			components[i] = nil
 		}
 	}
@@ -251,9 +251,9 @@ func (entity *EntityBehavior) EventComponentMgrRemoveComponent() event.IEvent {
 	return &entity.eventComponentMgrRemoveComponent
 }
 
-// EventComponentMgrFirstAccessComponent 事件：实体的组件管理器首次访问组件
-func (entity *EntityBehavior) EventComponentMgrFirstAccessComponent() event.IEvent {
-	return &entity.eventComponentMgrFirstAccessComponent
+// EventComponentMgrFirstTouchComponent 事件：实体的组件管理器首次访问组件
+func (entity *EntityBehavior) EventComponentMgrFirstTouchComponent() event.IEvent {
+	return &entity.eventComponentMgrFirstTouchComponent
 }
 
 func (entity *EntityBehavior) addComponent(name string, component Component) {
@@ -305,11 +305,11 @@ func (entity *EntityBehavior) getComponentNodeById(id uid.Id) (*generic.Node[Com
 	return compNode, compNode != nil
 }
 
-func (entity *EntityBehavior) accessComponent(comp Component) Component {
-	if entity.opts.AwakeOnFirstAccess && comp.GetState() == ComponentState_Attach {
+func (entity *EntityBehavior) touchComponent(comp Component) Component {
+	if entity.opts.ComponentAwakeOnFirstTouch && comp.GetState() == ComponentState_Attach {
 		switch entity.GetState() {
 		case EntityState_Awake, EntityState_Start, EntityState_Alive:
-			_EmitEventComponentMgrFirstAccessComponent(entity, entity.opts.InstanceFace.Iface, comp)
+			_EmitEventComponentMgrFirstTouchComponent(entity, entity.opts.InstanceFace.Iface, comp)
 		}
 	}
 

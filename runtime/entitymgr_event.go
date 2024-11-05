@@ -46,8 +46,8 @@ type EventEntityMgrEntityRemoveComponent interface {
 	OnEntityMgrEntityRemoveComponent(entityMgr EntityMgr, entity ec.Entity, component ec.Component)
 }
 
-// EventEntityMgrEntityFirstAccessComponent 事件：实体管理器中的实体首次访问组件
+// EventEntityMgrEntityFirstTouchComponent 事件：实体管理器中的实体首次访问组件
 // +event-gen:export=0
-type EventEntityMgrEntityFirstAccessComponent interface {
-	OnEntityMgrEntityFirstAccessComponent(entityMgr EntityMgr, entity ec.Entity, component ec.Component)
+type EventEntityMgrEntityFirstTouchComponent interface {
+	OnEntityMgrEntityFirstTouchComponent(entityMgr EntityMgr, entity ec.Entity, component ec.Component)
 }

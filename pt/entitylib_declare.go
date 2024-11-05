@@ -26,19 +26,21 @@ import (
 
 // EntityAtti 实体原型属性
 type EntityAtti struct {
-	Prototype          string    // 实体原型名称（必填）
-	Instance           any       // 实体实例
-	Scope              *ec.Scope // 可访问作用域
-	AwakeOnFirstAccess *bool     // 设置开启组件被首次访问时，检测并调用Awake()
+	Prototype                  string    // 实体原型名称（必填）
+	Instance                   any       // 实体实例
+	Scope                      *ec.Scope // 可访问作用域
+	ComponentAwakeOnFirstTouch *bool     // 开启组件被首次访问时，检测并调用Awake()
+	ComponentUniqueID          *bool     // 开启组件唯一Id
 }
 
 // EntityWith 创建实体原型属性，用于注册实体原型时自定义相关属性
-func EntityWith(prototype string, inst any, scope *ec.Scope, awakeOnFirstAccess *bool) EntityAtti {
+func EntityWith(prototype string, inst any, scope *ec.Scope, componentAwakeOnFirstTouch, componentUniqueID *bool) EntityAtti {
 	return EntityAtti{
-		Prototype:          prototype,
-		Instance:           inst,
-		Scope:              scope,
-		AwakeOnFirstAccess: awakeOnFirstAccess,
+		Prototype:                  prototype,
+		Instance:                   inst,
+		Scope:                      scope,
+		ComponentAwakeOnFirstTouch: componentAwakeOnFirstTouch,
+		ComponentUniqueID:          componentUniqueID,
 	}
 }
 

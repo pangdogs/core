@@ -117,48 +117,48 @@ func (h EventComponentMgrRemoveComponentHandler) OnComponentMgrRemoveComponent(e
 	h(entity, component)
 }
 
-type iAutoEventComponentMgrFirstAccessComponent interface {
-	EventComponentMgrFirstAccessComponent() event.IEvent
+type iAutoEventComponentMgrFirstTouchComponent interface {
+	EventComponentMgrFirstTouchComponent() event.IEvent
 }
 
-func BindEventComponentMgrFirstAccessComponent(auto iAutoEventComponentMgrFirstAccessComponent, subscriber EventComponentMgrFirstAccessComponent, priority ...int32) event.Hook {
+func BindEventComponentMgrFirstTouchComponent(auto iAutoEventComponentMgrFirstTouchComponent, subscriber EventComponentMgrFirstTouchComponent, priority ...int32) event.Hook {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
-	return event.Bind[EventComponentMgrFirstAccessComponent](auto.EventComponentMgrFirstAccessComponent(), subscriber, priority...)
+	return event.Bind[EventComponentMgrFirstTouchComponent](auto.EventComponentMgrFirstTouchComponent(), subscriber, priority...)
 }
 
-func _EmitEventComponentMgrFirstAccessComponent(auto iAutoEventComponentMgrFirstAccessComponent, entity Entity, component Component) {
+func _EmitEventComponentMgrFirstTouchComponent(auto iAutoEventComponentMgrFirstTouchComponent, entity Entity, component Component) {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
-	event.UnsafeEvent(auto.EventComponentMgrFirstAccessComponent()).Emit(func(subscriber event.Cache) bool {
-		event.Cache2Iface[EventComponentMgrFirstAccessComponent](subscriber).OnComponentMgrFirstAccessComponent(entity, component)
+	event.UnsafeEvent(auto.EventComponentMgrFirstTouchComponent()).Emit(func(subscriber event.Cache) bool {
+		event.Cache2Iface[EventComponentMgrFirstTouchComponent](subscriber).OnComponentMgrFirstTouchComponent(entity, component)
 		return true
 	})
 }
 
-func _EmitEventComponentMgrFirstAccessComponentWithInterrupt(auto iAutoEventComponentMgrFirstAccessComponent, interrupt func(entity Entity, component Component) bool, entity Entity, component Component) {
+func _EmitEventComponentMgrFirstTouchComponentWithInterrupt(auto iAutoEventComponentMgrFirstTouchComponent, interrupt func(entity Entity, component Component) bool, entity Entity, component Component) {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
-	event.UnsafeEvent(auto.EventComponentMgrFirstAccessComponent()).Emit(func(subscriber event.Cache) bool {
+	event.UnsafeEvent(auto.EventComponentMgrFirstTouchComponent()).Emit(func(subscriber event.Cache) bool {
 		if interrupt != nil {
 			if interrupt(entity, component) {
 				return false
 			}
 		}
-		event.Cache2Iface[EventComponentMgrFirstAccessComponent](subscriber).OnComponentMgrFirstAccessComponent(entity, component)
+		event.Cache2Iface[EventComponentMgrFirstTouchComponent](subscriber).OnComponentMgrFirstTouchComponent(entity, component)
 		return true
 	})
 }
 
-func HandleEventComponentMgrFirstAccessComponent(fun func(entity Entity, component Component)) EventComponentMgrFirstAccessComponentHandler {
-	return EventComponentMgrFirstAccessComponentHandler(fun)
+func HandleEventComponentMgrFirstTouchComponent(fun func(entity Entity, component Component)) EventComponentMgrFirstTouchComponentHandler {
+	return EventComponentMgrFirstTouchComponentHandler(fun)
 }
 
-type EventComponentMgrFirstAccessComponentHandler func(entity Entity, component Component)
+type EventComponentMgrFirstTouchComponentHandler func(entity Entity, component Component)
 
-func (h EventComponentMgrFirstAccessComponentHandler) OnComponentMgrFirstAccessComponent(entity Entity, component Component) {
+func (h EventComponentMgrFirstTouchComponentHandler) OnComponentMgrFirstTouchComponent(entity Entity, component Component) {
 	h(entity, component)
 }

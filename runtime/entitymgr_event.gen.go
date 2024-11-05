@@ -210,48 +210,48 @@ func (h EventEntityMgrEntityRemoveComponentHandler) OnEntityMgrEntityRemoveCompo
 	h(entityMgr, entity, component)
 }
 
-type iAutoEventEntityMgrEntityFirstAccessComponent interface {
-	EventEntityMgrEntityFirstAccessComponent() event.IEvent
+type iAutoEventEntityMgrEntityFirstTouchComponent interface {
+	EventEntityMgrEntityFirstTouchComponent() event.IEvent
 }
 
-func BindEventEntityMgrEntityFirstAccessComponent(auto iAutoEventEntityMgrEntityFirstAccessComponent, subscriber EventEntityMgrEntityFirstAccessComponent, priority ...int32) event.Hook {
+func BindEventEntityMgrEntityFirstTouchComponent(auto iAutoEventEntityMgrEntityFirstTouchComponent, subscriber EventEntityMgrEntityFirstTouchComponent, priority ...int32) event.Hook {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
-	return event.Bind[EventEntityMgrEntityFirstAccessComponent](auto.EventEntityMgrEntityFirstAccessComponent(), subscriber, priority...)
+	return event.Bind[EventEntityMgrEntityFirstTouchComponent](auto.EventEntityMgrEntityFirstTouchComponent(), subscriber, priority...)
 }
 
-func _EmitEventEntityMgrEntityFirstAccessComponent(auto iAutoEventEntityMgrEntityFirstAccessComponent, entityMgr EntityMgr, entity ec.Entity, component ec.Component) {
+func _EmitEventEntityMgrEntityFirstTouchComponent(auto iAutoEventEntityMgrEntityFirstTouchComponent, entityMgr EntityMgr, entity ec.Entity, component ec.Component) {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
-	event.UnsafeEvent(auto.EventEntityMgrEntityFirstAccessComponent()).Emit(func(subscriber event.Cache) bool {
-		event.Cache2Iface[EventEntityMgrEntityFirstAccessComponent](subscriber).OnEntityMgrEntityFirstAccessComponent(entityMgr, entity, component)
+	event.UnsafeEvent(auto.EventEntityMgrEntityFirstTouchComponent()).Emit(func(subscriber event.Cache) bool {
+		event.Cache2Iface[EventEntityMgrEntityFirstTouchComponent](subscriber).OnEntityMgrEntityFirstTouchComponent(entityMgr, entity, component)
 		return true
 	})
 }
 
-func _EmitEventEntityMgrEntityFirstAccessComponentWithInterrupt(auto iAutoEventEntityMgrEntityFirstAccessComponent, interrupt func(entityMgr EntityMgr, entity ec.Entity, component ec.Component) bool, entityMgr EntityMgr, entity ec.Entity, component ec.Component) {
+func _EmitEventEntityMgrEntityFirstTouchComponentWithInterrupt(auto iAutoEventEntityMgrEntityFirstTouchComponent, interrupt func(entityMgr EntityMgr, entity ec.Entity, component ec.Component) bool, entityMgr EntityMgr, entity ec.Entity, component ec.Component) {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
-	event.UnsafeEvent(auto.EventEntityMgrEntityFirstAccessComponent()).Emit(func(subscriber event.Cache) bool {
+	event.UnsafeEvent(auto.EventEntityMgrEntityFirstTouchComponent()).Emit(func(subscriber event.Cache) bool {
 		if interrupt != nil {
 			if interrupt(entityMgr, entity, component) {
 				return false
 			}
 		}
-		event.Cache2Iface[EventEntityMgrEntityFirstAccessComponent](subscriber).OnEntityMgrEntityFirstAccessComponent(entityMgr, entity, component)
+		event.Cache2Iface[EventEntityMgrEntityFirstTouchComponent](subscriber).OnEntityMgrEntityFirstTouchComponent(entityMgr, entity, component)
 		return true
 	})
 }
 
-func HandleEventEntityMgrEntityFirstAccessComponent(fun func(entityMgr EntityMgr, entity ec.Entity, component ec.Component)) EventEntityMgrEntityFirstAccessComponentHandler {
-	return EventEntityMgrEntityFirstAccessComponentHandler(fun)
+func HandleEventEntityMgrEntityFirstTouchComponent(fun func(entityMgr EntityMgr, entity ec.Entity, component ec.Component)) EventEntityMgrEntityFirstTouchComponentHandler {
+	return EventEntityMgrEntityFirstTouchComponentHandler(fun)
 }
 
-type EventEntityMgrEntityFirstAccessComponentHandler func(entityMgr EntityMgr, entity ec.Entity, component ec.Component)
+type EventEntityMgrEntityFirstTouchComponentHandler func(entityMgr EntityMgr, entity ec.Entity, component ec.Component)
 
-func (h EventEntityMgrEntityFirstAccessComponentHandler) OnEntityMgrEntityFirstAccessComponent(entityMgr EntityMgr, entity ec.Entity, component ec.Component) {
+func (h EventEntityMgrEntityFirstTouchComponentHandler) OnEntityMgrEntityFirstTouchComponent(entityMgr EntityMgr, entity ec.Entity, component ec.Component) {
 	h(entityMgr, entity, component)
 }

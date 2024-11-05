@@ -170,9 +170,10 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) EntityPT {
 	}
 
 	entityPT := &_EntityPT{
-		prototype:          entityAtti.Prototype,
-		scope:              entityAtti.Scope,
-		awakeOnFirstAccess: entityAtti.AwakeOnFirstAccess,
+		prototype:                  entityAtti.Prototype,
+		scope:                      entityAtti.Scope,
+		componentAwakeOnFirstTouch: entityAtti.ComponentAwakeOnFirstTouch,
+		componentUniqueID:          entityAtti.ComponentUniqueID,
 	}
 
 	if entityAtti.Instance != nil {

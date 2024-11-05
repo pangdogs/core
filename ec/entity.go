@@ -95,24 +95,24 @@ type iEntity interface {
 // EntityBehavior 实体行为，在扩展实体能力时，匿名嵌入至实体结构体中
 type EntityBehavior struct {
 	context.Context
-	terminate                             context.CancelFunc
-	terminated                            chan struct{}
-	opts                                  EntityOptions
-	context                               iface.Cache
-	components                            generic.List[Component]
-	state                                 EntityState
-	reflected                             reflect.Value
-	treeNodeState                         TreeNodeState
-	treeNodeParent                        Entity
-	eventEntityDestroySelf                event.Event
-	eventComponentMgrAddComponents        event.Event
-	eventComponentMgrRemoveComponent      event.Event
-	eventComponentMgrFirstAccessComponent event.Event
-	eventTreeNodeAddChild                 event.Event
-	eventTreeNodeRemoveChild              event.Event
-	eventTreeNodeEnterParent              event.Event
-	eventTreeNodeLeaveParent              event.Event
-	managedHooks                          []event.Hook
+	terminate                            context.CancelFunc
+	terminated                           chan struct{}
+	opts                                 EntityOptions
+	context                              iface.Cache
+	components                           generic.List[Component]
+	state                                EntityState
+	reflected                            reflect.Value
+	treeNodeState                        TreeNodeState
+	treeNodeParent                       Entity
+	eventEntityDestroySelf               event.Event
+	eventComponentMgrAddComponents       event.Event
+	eventComponentMgrRemoveComponent     event.Event
+	eventComponentMgrFirstTouchComponent event.Event
+	eventTreeNodeAddChild                event.Event
+	eventTreeNodeRemoveChild             event.Event
+	eventTreeNodeEnterParent             event.Event
+	eventTreeNodeLeaveParent             event.Event
+	managedHooks                         []event.Hook
 }
 
 // GetId 获取实体Id
@@ -192,7 +192,7 @@ func (entity *EntityBehavior) init(opts EntityOptions) {
 	entity.eventEntityDestroySelf.Init(false, nil, event.EventRecursion_Discard)
 	entity.eventComponentMgrAddComponents.Init(false, nil, event.EventRecursion_Allow)
 	entity.eventComponentMgrRemoveComponent.Init(false, nil, event.EventRecursion_Allow)
-	entity.eventComponentMgrFirstAccessComponent.Init(false, nil, event.EventRecursion_Allow)
+	entity.eventComponentMgrFirstTouchComponent.Init(false, nil, event.EventRecursion_Allow)
 	entity.eventTreeNodeAddChild.Init(false, nil, event.EventRecursion_Allow)
 	entity.eventTreeNodeRemoveChild.Init(false, nil, event.EventRecursion_Allow)
 	entity.eventTreeNodeEnterParent.Init(false, nil, event.EventRecursion_Allow)
@@ -228,7 +228,7 @@ func (entity *EntityBehavior) setState(state EntityState) {
 		entity.eventEntityDestroySelf.Close()
 		entity.eventComponentMgrAddComponents.Close()
 		entity.eventComponentMgrRemoveComponent.Close()
-		entity.eventComponentMgrFirstAccessComponent.Close()
+		entity.eventComponentMgrFirstTouchComponent.Close()
 	case EntityState_Shut:
 		entity.eventTreeNodeAddChild.Close()
 		entity.eventTreeNodeRemoveChild.Close()

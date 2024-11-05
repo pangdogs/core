@@ -174,7 +174,7 @@ func (rt *RuntimeBehavior) loopStart() (hooks [5]event.Hook) {
 	hooks[1] = runtime.BindEventEntityMgrRemoveEntity(ctx.GetEntityMgr(), rt)
 	hooks[2] = runtime.BindEventEntityMgrEntityAddComponents(ctx.GetEntityMgr(), rt)
 	hooks[3] = runtime.BindEventEntityMgrEntityRemoveComponent(ctx.GetEntityMgr(), rt)
-	hooks[4] = runtime.BindEventEntityMgrEntityFirstAccessComponent(ctx.GetEntityMgr(), rt)
+	hooks[4] = runtime.BindEventEntityMgrEntityFirstTouchComponent(ctx.GetEntityMgr(), rt)
 
 	return
 }

@@ -43,8 +43,10 @@ type EntityPT interface {
 	InstanceRT() reflect.Type
 	// Scope 可访问作用域
 	Scope() *ec.Scope
-	// AwakeOnFirstAccess 设置开启组件被首次访问时，检测并调用Awake()
-	AwakeOnFirstAccess() *bool
+	// ComponentAwakeOnFirstTouch 开启组件被首次访问时，检测并调用Awake()
+	ComponentAwakeOnFirstTouch() *bool
+	// ComponentUniqueID 开启组件唯一Id
+	ComponentUniqueID() *bool
 	// CountComponents // 组件数量
 	CountComponents() int
 	// Component 获取组件
@@ -56,11 +58,12 @@ type EntityPT interface {
 }
 
 type _EntityPT struct {
-	prototype          string
-	instanceRT         reflect.Type
-	scope              *ec.Scope
-	awakeOnFirstAccess *bool
-	components         []ComponentDesc
+	prototype                  string
+	instanceRT                 reflect.Type
+	scope                      *ec.Scope
+	componentAwakeOnFirstTouch *bool
+	componentUniqueID          *bool
+	components                 []ComponentDesc
 }
 
 // Prototype 实体原型名称
@@ -78,9 +81,14 @@ func (pt *_EntityPT) Scope() *ec.Scope {
 	return pt.scope
 }
 
-// AwakeOnFirstAccess 设置开启组件被首次访问时，检测并调用Awake()
-func (pt *_EntityPT) AwakeOnFirstAccess() *bool {
-	return pt.awakeOnFirstAccess
+// ComponentAwakeOnFirstTouch 开启组件被首次访问时，检测并调用Awake()
+func (pt *_EntityPT) ComponentAwakeOnFirstTouch() *bool {
+	return pt.componentAwakeOnFirstTouch
+}
+
+// ComponentUniqueID 开启组件唯一Id
+func (pt *_EntityPT) ComponentUniqueID() *bool {
+	return pt.componentUniqueID
 }
 
 // CountComponents // 组件数量
@@ -110,8 +118,11 @@ func (pt *_EntityPT) Construct(settings ...option.Setting[ec.EntityOptions]) ec.
 	if pt.scope != nil {
 		options.Scope = *pt.scope
 	}
-	if pt.awakeOnFirstAccess != nil {
-		options.AwakeOnFirstAccess = *pt.awakeOnFirstAccess
+	if pt.componentAwakeOnFirstTouch != nil {
+		options.ComponentAwakeOnFirstTouch = *pt.componentAwakeOnFirstTouch
+	}
+	if pt.componentUniqueID != nil {
+		options.ComponentUniqueID = *pt.componentUniqueID
 	}
 	options = option.Append(options, settings...)
 	options.Prototype = pt.prototype
