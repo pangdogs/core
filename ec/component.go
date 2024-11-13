@@ -67,17 +67,16 @@ type iComponent interface {
 // ComponentBehavior 组件行为，需要在开发新组件时，匿名嵌入至组件结构体中
 type ComponentBehavior struct {
 	context.Context
-	terminate     context.CancelFunc
-	terminated    chan struct{}
-	id            uid.Id
-	name          string
-	entity        Entity
-	instance      Component
-	state         ComponentState
-	reflected     reflect.Value
-	nonRemovable  bool
-	dynamicEvents event.CombineEventCtrlTab
-	managedHooks  []event.Hook
+	terminate    context.CancelFunc
+	terminated   chan struct{}
+	id           uid.Id
+	name         string
+	entity       Entity
+	instance     Component
+	state        ComponentState
+	reflected    reflect.Value
+	nonRemovable bool
+	managedHooks []event.Hook
 
 	componentEventTab
 }
