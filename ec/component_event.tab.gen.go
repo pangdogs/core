@@ -40,17 +40,6 @@ func (eventTab *componentEventTab) Init(autoRecover bool, reportError chan error
 	(*eventTab)[0].Init(autoRecover, reportError, event.EventRecursion_Discard)
 }
 
-func (eventTab *componentEventTab) Event(id uint64) event.IEvent {
-	if _componentEventTabId != id & 0xFFFFFFFF00000000 {
-		return nil
-	}
-	pos := id & 0xFFFFFFFF
-	if pos >= uint64(len(*eventTab)) {
-		return nil
-	}
-	return &(*eventTab)[pos]
-}
-
 func (eventTab *componentEventTab) Open() {
 	for i := range *eventTab {
 		(*eventTab)[i].Open()
@@ -67,6 +56,21 @@ func (eventTab *componentEventTab) Clean() {
 	for i := range *eventTab {
 		(*eventTab)[i].Clean()
 	}
+}
+
+func (eventTab *componentEventTab) Ctrl() event.IEventCtrl {
+	return eventTab
+}
+
+func (eventTab *componentEventTab) Event(id uint64) event.IEvent {
+	if _componentEventTabId != id & 0xFFFFFFFF00000000 {
+		return nil
+	}
+	pos := id & 0xFFFFFFFF
+	if pos >= uint64(len(*eventTab)) {
+		return nil
+	}
+	return &(*eventTab)[pos]
 }
 
 func (eventTab *componentEventTab) EventComponentDestroySelf() event.IEvent {

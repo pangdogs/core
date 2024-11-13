@@ -78,7 +78,7 @@ type ComponentBehavior struct {
 	nonRemovable bool
 	managedHooks []event.Hook
 
-	componentEventTab
+	componentEventTab componentEventTab
 }
 
 // GetId 获取组件Id
@@ -121,6 +121,11 @@ func (comp *ComponentBehavior) DestroySelf() {
 	case ComponentState_Awake, ComponentState_Start, ComponentState_Alive:
 		_EmitEventComponentDestroySelf(comp, comp.instance)
 	}
+}
+
+// EventComponentDestroySelf 事件：组件销毁自身
+func (comp *ComponentBehavior) EventComponentDestroySelf() event.IEvent {
+	return comp.componentEventTab.EventComponentDestroySelf()
 }
 
 // Terminated 已停止

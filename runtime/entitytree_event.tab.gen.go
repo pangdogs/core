@@ -43,17 +43,6 @@ func (eventTab *entityTreeEventTab) Init(autoRecover bool, reportError chan erro
 	(*eventTab)[1].Init(autoRecover, reportError, recursion)
 }
 
-func (eventTab *entityTreeEventTab) Event(id uint64) event.IEvent {
-	if _entityTreeEventTabId != id & 0xFFFFFFFF00000000 {
-		return nil
-	}
-	pos := id & 0xFFFFFFFF
-	if pos >= uint64(len(*eventTab)) {
-		return nil
-	}
-	return &(*eventTab)[pos]
-}
-
 func (eventTab *entityTreeEventTab) Open() {
 	for i := range *eventTab {
 		(*eventTab)[i].Open()
@@ -70,6 +59,21 @@ func (eventTab *entityTreeEventTab) Clean() {
 	for i := range *eventTab {
 		(*eventTab)[i].Clean()
 	}
+}
+
+func (eventTab *entityTreeEventTab) Ctrl() event.IEventCtrl {
+	return eventTab
+}
+
+func (eventTab *entityTreeEventTab) Event(id uint64) event.IEvent {
+	if _entityTreeEventTabId != id & 0xFFFFFFFF00000000 {
+		return nil
+	}
+	pos := id & 0xFFFFFFFF
+	if pos >= uint64(len(*eventTab)) {
+		return nil
+	}
+	return &(*eventTab)[pos]
 }
 
 func (eventTab *entityTreeEventTab) EventEntityTreeAddNode() event.IEvent {

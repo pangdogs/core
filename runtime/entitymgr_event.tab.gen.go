@@ -52,17 +52,6 @@ func (eventTab *entityMgrEventTab) Init(autoRecover bool, reportError chan error
 	(*eventTab)[4].Init(autoRecover, reportError, recursion)
 }
 
-func (eventTab *entityMgrEventTab) Event(id uint64) event.IEvent {
-	if _entityMgrEventTabId != id & 0xFFFFFFFF00000000 {
-		return nil
-	}
-	pos := id & 0xFFFFFFFF
-	if pos >= uint64(len(*eventTab)) {
-		return nil
-	}
-	return &(*eventTab)[pos]
-}
-
 func (eventTab *entityMgrEventTab) Open() {
 	for i := range *eventTab {
 		(*eventTab)[i].Open()
@@ -79,6 +68,21 @@ func (eventTab *entityMgrEventTab) Clean() {
 	for i := range *eventTab {
 		(*eventTab)[i].Clean()
 	}
+}
+
+func (eventTab *entityMgrEventTab) Ctrl() event.IEventCtrl {
+	return eventTab
+}
+
+func (eventTab *entityMgrEventTab) Event(id uint64) event.IEvent {
+	if _entityMgrEventTabId != id & 0xFFFFFFFF00000000 {
+		return nil
+	}
+	pos := id & 0xFFFFFFFF
+	if pos >= uint64(len(*eventTab)) {
+		return nil
+	}
+	return &(*eventTab)[pos]
 }
 
 func (eventTab *entityMgrEventTab) EventEntityMgrAddEntity() event.IEvent {

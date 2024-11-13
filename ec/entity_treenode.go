@@ -19,6 +19,8 @@
 
 package ec
 
+import "git.golaxy.org/core/event"
+
 type iTreeNode interface {
 	// GetTreeNodeState 获取实体树节点状态
 	GetTreeNodeState() TreeNodeState
@@ -41,6 +43,26 @@ func (entity *EntityBehavior) GetTreeNodeState() TreeNodeState {
 // GetTreeNodeParent 获取在实体树中的父实体
 func (entity *EntityBehavior) GetTreeNodeParent() (Entity, bool) {
 	return entity.treeNodeParent, entity.treeNodeParent != nil
+}
+
+// EventTreeNodeAddChild 事件：实体节点添加子实体
+func (entity *EntityBehavior) EventTreeNodeAddChild() event.IEvent {
+	return entity.entityTreeNodeEventTab.EventTreeNodeAddChild()
+}
+
+// EventTreeNodeRemoveChild 事件：实体节点删除子实体
+func (entity *EntityBehavior) EventTreeNodeRemoveChild() event.IEvent {
+	return entity.entityTreeNodeEventTab.EventTreeNodeRemoveChild()
+}
+
+// EventTreeNodeEnterParent 事件：实体加入父实体节点
+func (entity *EntityBehavior) EventTreeNodeEnterParent() event.IEvent {
+	return entity.entityTreeNodeEventTab.EventTreeNodeEnterParent()
+}
+
+// EventTreeNodeLeaveParent 事件：实体离开父实体节点
+func (entity *EntityBehavior) EventTreeNodeLeaveParent() event.IEvent {
+	return entity.entityTreeNodeEventTab.EventTreeNodeLeaveParent()
 }
 
 func (entity *EntityBehavior) setTreeNodeState(state TreeNodeState) {

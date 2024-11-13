@@ -98,21 +98,10 @@ var (
 	4.如果不想写代码记录hook，可以使用ec.ComponentBehavior、ec.EntityBehavior或runtime.Context的ManagedHooks()来记录hook，在它们生命周期结束时，将会自动解除绑定
 */
 type IEvent interface {
+	ctrl() IEventCtrl
 	emit(fun generic.Func1[iface.Cache, bool])
 	newHook(subscriberFace iface.FaceAny, priority int32) Hook
 	removeSubscriber(subscriber any)
-}
-
-// IEventCtrl 事件控制接口
-type IEventCtrl interface {
-	// Init 初始化事件
-	Init(autoRecover bool, reportError chan error, recursion EventRecursion)
-	// Open 打开事件
-	Open()
-	// Close 关闭事件
-	Close()
-	// Clean 清除全部订阅者
-	Clean()
 }
 
 // Event 事件
@@ -161,6 +150,10 @@ func (event *Event) Clean() {
 		n.V.Unbind()
 		return true
 	})
+}
+
+func (event *Event) ctrl() IEventCtrl {
+	return event
 }
 
 func (event *Event) emit(fun generic.Func1[iface.Cache, bool]) {

@@ -106,9 +106,9 @@ type EntityBehavior struct {
 	treeNodeParent Entity
 	managedHooks   []event.Hook
 
-	entityEventTab
-	entityComponentMgrEventTab
-	entityTreeNodeEventTab
+	entityEventTab             entityEventTab
+	entityComponentMgrEventTab entityComponentMgrEventTab
+	entityTreeNodeEventTab     entityTreeNodeEventTab
 }
 
 // GetId 获取实体Id
@@ -151,6 +151,11 @@ func (entity *EntityBehavior) DestroySelf() {
 	case EntityState_Awake, EntityState_Start, EntityState_Alive:
 		_EmitEventEntityDestroySelf(entity, entity.opts.InstanceFace.Iface)
 	}
+}
+
+// EventEntityDestroySelf 事件：实体销毁自身
+func (entity *EntityBehavior) EventEntityDestroySelf() event.IEvent {
+	return entity.entityEventTab.EventEntityDestroySelf()
 }
 
 // GetCurrentContext 获取当前上下文

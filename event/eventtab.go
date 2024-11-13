@@ -30,13 +30,8 @@ package event
 		+event-tab-gen:recursion=[allow,disallow,discard,truncate,deepest]
 */
 type IEventTab interface {
-	// Event 获取事件
-	Event(id uint64) IEvent
-}
-
-// IEventCtrlTab 事件控制表接口，方便管理多个事件
-type IEventCtrlTab interface {
-	IEventCtrl
+	// Ctrl 事件控制器
+	Ctrl() IEventCtrl
 	// Event 获取事件
 	Event(id uint64) IEvent
 }
