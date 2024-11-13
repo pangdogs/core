@@ -18,6 +18,7 @@
  */
 
 //go:generate go run git.golaxy.org/core/event/eventc event
+//go:generate go run git.golaxy.org/core/event/eventc eventtab --name=entityTreeNodeEventTab
 package ec
 
 // EventTreeNodeAddChild 事件：实体节点添加子实体

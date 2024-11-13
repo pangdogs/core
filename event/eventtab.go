@@ -19,7 +19,7 @@
 
 package event
 
-// IEventTab 事件表接口，方便管理多个事件
+// IEventTab 事件表接口，方便访问多个事件
 /*
 使用方式：
 	1.在定义事件的源码文件（.go）头部添加以下注释，在编译前自动化生成代码：
@@ -30,7 +30,13 @@ package event
 		+event-tab-gen:recursion=[allow,disallow,discard,truncate,deepest]
 */
 type IEventTab interface {
+	// Event 获取事件
+	Event(id uint64) IEvent
+}
+
+// IEventCtrlTab 事件控制表接口，方便管理多个事件
+type IEventCtrlTab interface {
 	IEventCtrl
-	// Get 获取事件
-	Get(id uint64) IEvent
+	// Event 获取事件
+	Event(id uint64) IEvent
 }

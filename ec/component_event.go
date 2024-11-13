@@ -18,10 +18,12 @@
  */
 
 //go:generate go run git.golaxy.org/core/event/eventc event
+//go:generate go run git.golaxy.org/core/event/eventc eventtab --name=componentEventTab
 package ec
 
 // EventComponentDestroySelf 事件：组件销毁自身
 // +event-gen:export=0
+// +event-tab-gen:recursion=discard
 type EventComponentDestroySelf interface {
 	OnComponentDestroySelf(comp Component)
 }

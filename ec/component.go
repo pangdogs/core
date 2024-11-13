@@ -51,7 +51,7 @@ type Component interface {
 	// DestroySelf 销毁自身
 	DestroySelf()
 
-	iAutoEventComponentDestroySelf // 事件：组件销毁自身
+	IComponentEventTab
 }
 
 type iComponent interface {
@@ -67,17 +67,19 @@ type iComponent interface {
 // ComponentBehavior 组件行为，需要在开发新组件时，匿名嵌入至组件结构体中
 type ComponentBehavior struct {
 	context.Context
-	terminate                 context.CancelFunc
-	terminated                chan struct{}
-	id                        uid.Id
-	name                      string
-	entity                    Entity
-	instance                  Component
-	state                     ComponentState
-	reflected                 reflect.Value
-	nonRemovable              bool
-	eventComponentDestroySelf event.Event
-	managedHooks              []event.Hook
+	terminate     context.CancelFunc
+	terminated    chan struct{}
+	id            uid.Id
+	name          string
+	entity        Entity
+	instance      Component
+	state         ComponentState
+	reflected     reflect.Value
+	nonRemovable  bool
+	dynamicEvents event.CombineEventCtrlTab
+	managedHooks  []event.Hook
+
+	componentEventTab
 }
 
 // GetId 获取组件Id
@@ -122,11 +124,6 @@ func (comp *ComponentBehavior) DestroySelf() {
 	}
 }
 
-// EventComponentDestroySelf 事件：组件销毁自身
-func (comp *ComponentBehavior) EventComponentDestroySelf() event.IEvent {
-	return &comp.eventComponentDestroySelf
-}
-
 // Terminated 已停止
 func (comp *ComponentBehavior) Terminated() <-chan struct{} {
 	return comp.terminated
@@ -151,7 +148,7 @@ func (comp *ComponentBehavior) init(name string, entity Entity, instance Compone
 	comp.name = name
 	comp.entity = entity
 	comp.instance = instance
-	comp.eventComponentDestroySelf.Init(false, nil, event.EventRecursion_Discard)
+	comp.componentEventTab.Init(false, nil, event.EventRecursion_Allow)
 }
 
 func (comp *ComponentBehavior) setId(id uid.Id) {
@@ -168,7 +165,7 @@ func (comp *ComponentBehavior) setState(state ComponentState) {
 	switch comp.state {
 	case ComponentState_Detach:
 		comp.terminate()
-		comp.eventComponentDestroySelf.Close()
+		comp.componentEventTab.Close()
 	case ComponentState_Death:
 		close(comp.terminated)
 	}

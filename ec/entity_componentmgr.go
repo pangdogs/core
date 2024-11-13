@@ -21,7 +21,6 @@ package ec
 
 import (
 	"fmt"
-	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/uid"
@@ -55,9 +54,7 @@ type iComponentMgr interface {
 	// RemoveComponentById 使用组件Id删除组件
 	RemoveComponentById(id uid.Id)
 
-	iAutoEventComponentMgrAddComponents       // 事件：实体的组件管理器添加组件
-	iAutoEventComponentMgrRemoveComponent     // 事件：实体的组件管理器删除组件
-	iAutoEventComponentMgrFirstTouchComponent // 事件：实体的组件管理器首次访问组件
+	IEntityComponentMgrEventTab
 }
 
 // GetComponent 使用名称查询组件，组件同名时，返回首个组件
@@ -239,21 +236,6 @@ func (entity *EntityBehavior) RemoveComponentById(id uid.Id) {
 	_EmitEventComponentMgrRemoveComponent(entity, entity.opts.InstanceFace.Iface, comp)
 
 	compNode.Escape()
-}
-
-// EventComponentMgrAddComponents 事件：实体的组件管理器添加组件
-func (entity *EntityBehavior) EventComponentMgrAddComponents() event.IEvent {
-	return &entity.eventComponentMgrAddComponents
-}
-
-// EventComponentMgrRemoveComponent 事件：实体的组件管理器删除组件
-func (entity *EntityBehavior) EventComponentMgrRemoveComponent() event.IEvent {
-	return &entity.eventComponentMgrRemoveComponent
-}
-
-// EventComponentMgrFirstTouchComponent 事件：实体的组件管理器首次访问组件
-func (entity *EntityBehavior) EventComponentMgrFirstTouchComponent() event.IEvent {
-	return &entity.eventComponentMgrFirstTouchComponent
 }
 
 func (entity *EntityBehavior) addComponent(name string, component Component) {

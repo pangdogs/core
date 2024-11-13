@@ -1,4 +1,3 @@
-//go:generate go run git.golaxy.org/core/event/eventc event
 /*
  * This file is part of Golaxy Distributed Service Development Framework.
  *
@@ -18,10 +17,13 @@
  * Copyright (c) 2024 pangdogs.
  */
 
+//go:generate go run git.golaxy.org/core/event/eventc event
+//go:generate go run git.golaxy.org/core/event/eventc eventtab --name=entityEventTab
 package ec
 
 // EventEntityDestroySelf 事件：实体销毁自身
 // +event-gen:export=0
+// +event-tab-gen:recursion=discard
 type EventEntityDestroySelf interface {
 	OnEntityDestroySelf(entity Entity)
 }

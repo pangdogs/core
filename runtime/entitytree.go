@@ -22,7 +22,6 @@ package runtime
 import (
 	"fmt"
 	"git.golaxy.org/core/ec"
-	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
@@ -55,8 +54,7 @@ type EntityTree interface {
 	// GetParent 获取父实体
 	GetParent(entityId uid.Id) (ec.Entity, bool)
 
-	iAutoEventEntityTreeAddNode    // 事件：新增实体树节点
-	iAutoEventEntityTreeRemoveNode // 事件：删除实体树节点
+	IEntityTreeEventTab
 }
 
 // AddNode 新增实体节点，会向实体管理器添加实体
@@ -230,16 +228,6 @@ func (mgr *_EntityMgrBehavior) GetParent(entityId uid.Id) (ec.Entity, bool) {
 		return nil, false
 	}
 	return entity.GetTreeNodeParent()
-}
-
-// EventEntityTreeAddNode 事件：新增实体树节点
-func (mgr *_EntityMgrBehavior) EventEntityTreeAddNode() event.IEvent {
-	return &mgr.eventEntityTreeAddChild
-}
-
-// EventEntityTreeRemoveNode 事件：删除实体树节点
-func (mgr *_EntityMgrBehavior) EventEntityTreeRemoveNode() event.IEvent {
-	return &mgr.eventEntityTreeRemoveChild
 }
 
 func (mgr *_EntityMgrBehavior) addToParentNode(entity, parent ec.Entity) {

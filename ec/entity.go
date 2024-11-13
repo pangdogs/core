@@ -77,7 +77,7 @@ type Entity interface {
 	// DestroySelf 销毁自身
 	DestroySelf()
 
-	iAutoEventEntityDestroySelf // 事件：实体销毁自身
+	IEntityEventTab
 }
 
 type iEntity interface {
@@ -95,24 +95,20 @@ type iEntity interface {
 // EntityBehavior 实体行为，在扩展实体能力时，匿名嵌入至实体结构体中
 type EntityBehavior struct {
 	context.Context
-	terminate                            context.CancelFunc
-	terminated                           chan struct{}
-	opts                                 EntityOptions
-	context                              iface.Cache
-	components                           generic.List[Component]
-	state                                EntityState
-	reflected                            reflect.Value
-	treeNodeState                        TreeNodeState
-	treeNodeParent                       Entity
-	eventEntityDestroySelf               event.Event
-	eventComponentMgrAddComponents       event.Event
-	eventComponentMgrRemoveComponent     event.Event
-	eventComponentMgrFirstTouchComponent event.Event
-	eventTreeNodeAddChild                event.Event
-	eventTreeNodeRemoveChild             event.Event
-	eventTreeNodeEnterParent             event.Event
-	eventTreeNodeLeaveParent             event.Event
-	managedHooks                         []event.Hook
+	terminate      context.CancelFunc
+	terminated     chan struct{}
+	opts           EntityOptions
+	context        iface.Cache
+	components     generic.List[Component]
+	state          EntityState
+	reflected      reflect.Value
+	treeNodeState  TreeNodeState
+	treeNodeParent Entity
+	managedHooks   []event.Hook
+
+	entityEventTab
+	entityComponentMgrEventTab
+	entityTreeNodeEventTab
 }
 
 // GetId 获取实体Id
@@ -157,11 +153,6 @@ func (entity *EntityBehavior) DestroySelf() {
 	}
 }
 
-// EventEntityDestroySelf 事件：实体销毁自身
-func (entity *EntityBehavior) EventEntityDestroySelf() event.IEvent {
-	return &entity.eventEntityDestroySelf
-}
-
 // GetCurrentContext 获取当前上下文
 func (entity *EntityBehavior) GetCurrentContext() iface.Cache {
 	return entity.context
@@ -189,14 +180,9 @@ func (entity *EntityBehavior) init(opts EntityOptions) {
 		entity.opts.InstanceFace = iface.MakeFaceT[Entity](entity)
 	}
 
-	entity.eventEntityDestroySelf.Init(false, nil, event.EventRecursion_Discard)
-	entity.eventComponentMgrAddComponents.Init(false, nil, event.EventRecursion_Allow)
-	entity.eventComponentMgrRemoveComponent.Init(false, nil, event.EventRecursion_Allow)
-	entity.eventComponentMgrFirstTouchComponent.Init(false, nil, event.EventRecursion_Allow)
-	entity.eventTreeNodeAddChild.Init(false, nil, event.EventRecursion_Allow)
-	entity.eventTreeNodeRemoveChild.Init(false, nil, event.EventRecursion_Allow)
-	entity.eventTreeNodeEnterParent.Init(false, nil, event.EventRecursion_Allow)
-	entity.eventTreeNodeLeaveParent.Init(false, nil, event.EventRecursion_Allow)
+	entity.entityEventTab.Init(false, nil, event.EventRecursion_Allow)
+	entity.entityComponentMgrEventTab.Init(false, nil, event.EventRecursion_Allow)
+	entity.entityTreeNodeEventTab.Init(false, nil, event.EventRecursion_Allow)
 }
 
 func (entity *EntityBehavior) getOptions() *EntityOptions {
@@ -225,15 +211,10 @@ func (entity *EntityBehavior) setState(state EntityState) {
 	switch entity.state {
 	case EntityState_Leave:
 		entity.terminate()
-		entity.eventEntityDestroySelf.Close()
-		entity.eventComponentMgrAddComponents.Close()
-		entity.eventComponentMgrRemoveComponent.Close()
-		entity.eventComponentMgrFirstTouchComponent.Close()
+		entity.entityEventTab.Close()
+		entity.entityComponentMgrEventTab.Close()
 	case EntityState_Shut:
-		entity.eventTreeNodeAddChild.Close()
-		entity.eventTreeNodeRemoveChild.Close()
-		entity.eventTreeNodeEnterParent.Close()
-		entity.eventTreeNodeLeaveParent.Close()
+		entity.entityTreeNodeEventTab.Close()
 	case EntityState_Death:
 		close(entity.terminated)
 	}

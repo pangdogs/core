@@ -18,6 +18,7 @@
  */
 
 //go:generate go run git.golaxy.org/core/event/eventc event
+//go:generate go run git.golaxy.org/core/event/eventc eventtab --name=entityComponentMgrEventTab
 package ec
 
 // EventComponentMgrAddComponents 事件：实体的组件管理器添加组件

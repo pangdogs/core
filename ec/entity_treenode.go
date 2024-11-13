@@ -19,8 +19,6 @@
 
 package ec
 
-import "git.golaxy.org/core/event"
-
 type iTreeNode interface {
 	// GetTreeNodeState 获取实体树节点状态
 	GetTreeNodeState() TreeNodeState
@@ -32,10 +30,7 @@ type iTreeNode interface {
 	enterParentNode()
 	leaveParentNode()
 
-	iAutoEventTreeNodeAddChild    // 事件：实体节点添加子实体
-	iAutoEventTreeNodeRemoveChild // 事件：实体节点删除子实体
-	iAutoEventTreeNodeEnterParent // 事件：实体加入父实体节点
-	iAutoEventTreeNodeLeaveParent // 事件：实体离开父实体节点
+	IEntityTreeNodeEventTab
 }
 
 // GetTreeNodeState 获取实体树节点状态
@@ -46,26 +41,6 @@ func (entity *EntityBehavior) GetTreeNodeState() TreeNodeState {
 // GetTreeNodeParent 获取在实体树中的父实体
 func (entity *EntityBehavior) GetTreeNodeParent() (Entity, bool) {
 	return entity.treeNodeParent, entity.treeNodeParent != nil
-}
-
-// EventTreeNodeAddChild 事件：实体节点添加子实体
-func (entity *EntityBehavior) EventTreeNodeAddChild() event.IEvent {
-	return &entity.eventTreeNodeAddChild
-}
-
-// EventTreeNodeRemoveChild 事件：实体节点删除子实体
-func (entity *EntityBehavior) EventTreeNodeRemoveChild() event.IEvent {
-	return &entity.eventTreeNodeRemoveChild
-}
-
-// EventTreeNodeEnterParent 事件：实体加入父实体节点
-func (entity *EntityBehavior) EventTreeNodeEnterParent() event.IEvent {
-	return &entity.eventTreeNodeEnterParent
-}
-
-// EventTreeNodeLeaveParent 事件：实体离开父实体节点
-func (entity *EntityBehavior) EventTreeNodeLeaveParent() event.IEvent {
-	return &entity.eventTreeNodeLeaveParent
 }
 
 func (entity *EntityBehavior) setTreeNodeState(state TreeNodeState) {

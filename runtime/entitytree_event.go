@@ -18,6 +18,7 @@
  */
 
 //go:generate go run git.golaxy.org/core/event/eventc event
+//go:generate go run git.golaxy.org/core/event/eventc eventtab --name=entityTreeEventTab
 package runtime
 
 import (

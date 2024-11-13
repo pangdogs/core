@@ -54,11 +54,7 @@ type EntityMgr interface {
 	// CountEntities 获取实体数量
 	CountEntities() int
 
-	iAutoEventEntityMgrAddEntity                 // 事件：实体管理器添加实体
-	iAutoEventEntityMgrRemoveEntity              // 事件：实体管理器删除实体
-	iAutoEventEntityMgrEntityAddComponents       // 事件：实体管理器中的实体添加组件
-	iAutoEventEntityMgrEntityRemoveComponent     // 事件：实体管理器中的实体删除组件
-	iAutoEventEntityMgrEntityFirstTouchComponent // 事件：实体管理器中的实体首次访问组件
+	IEntityMgrEventTab
 }
 
 type _EntityEntry struct {
@@ -72,17 +68,13 @@ type _TreeNode struct {
 }
 
 type _EntityMgrBehavior struct {
-	ctx                                     Context
-	entityIdx                               map[uid.Id]*_EntityEntry
-	entityList                              generic.List[iface.FaceAny]
-	treeNodes                               map[uid.Id]*_TreeNode
-	eventEntityMgrAddEntity                 event.Event
-	eventEntityMgrRemoveEntity              event.Event
-	eventEntityMgrEntityAddComponents       event.Event
-	eventEntityMgrEntityRemoveComponent     event.Event
-	eventEntityMgrEntityFirstTouchComponent event.Event
-	eventEntityTreeAddChild                 event.Event
-	eventEntityTreeRemoveChild              event.Event
+	ctx        Context
+	entityIdx  map[uid.Id]*_EntityEntry
+	entityList generic.List[iface.FaceAny]
+	treeNodes  map[uid.Id]*_TreeNode
+
+	entityMgrEventTab
+	entityTreeEventTab
 }
 
 func (mgr *_EntityMgrBehavior) init(ctx Context) {
@@ -94,13 +86,8 @@ func (mgr *_EntityMgrBehavior) init(ctx Context) {
 	mgr.entityIdx = map[uid.Id]*_EntityEntry{}
 	mgr.treeNodes = map[uid.Id]*_TreeNode{}
 
-	ctx.ActivateEvent(&mgr.eventEntityMgrAddEntity, event.EventRecursion_Allow)
-	ctx.ActivateEvent(&mgr.eventEntityMgrRemoveEntity, event.EventRecursion_Allow)
-	ctx.ActivateEvent(&mgr.eventEntityMgrEntityAddComponents, event.EventRecursion_Allow)
-	ctx.ActivateEvent(&mgr.eventEntityMgrEntityRemoveComponent, event.EventRecursion_Allow)
-	ctx.ActivateEvent(&mgr.eventEntityMgrEntityFirstTouchComponent, event.EventRecursion_Allow)
-	ctx.ActivateEvent(&mgr.eventEntityTreeAddChild, event.EventRecursion_Allow)
-	ctx.ActivateEvent(&mgr.eventEntityTreeRemoveChild, event.EventRecursion_Allow)
+	ctx.ActivateEvent(&mgr.entityMgrEventTab, event.EventRecursion_Allow)
+	ctx.ActivateEvent(&mgr.entityTreeEventTab, event.EventRecursion_Allow)
 }
 
 func (mgr *_EntityMgrBehavior) changeRunningState(state RunningState) {
@@ -116,13 +103,8 @@ func (mgr *_EntityMgrBehavior) changeRunningState(state RunningState) {
 			return true
 		})
 	case RunningState_Terminated:
-		mgr.eventEntityMgrAddEntity.Close()
-		mgr.eventEntityMgrRemoveEntity.Close()
-		mgr.eventEntityMgrEntityAddComponents.Close()
-		mgr.eventEntityMgrEntityRemoveComponent.Close()
-		mgr.eventEntityMgrEntityFirstTouchComponent.Close()
-		mgr.eventEntityTreeAddChild.Close()
-		mgr.eventEntityTreeRemoveChild.Close()
+		mgr.entityMgrEventTab.Close()
+		mgr.entityTreeEventTab.Close()
 	}
 }
 
@@ -212,31 +194,6 @@ func (mgr *_EntityMgrBehavior) GetEntities() []ec.Entity {
 // CountEntities 获取实体数量
 func (mgr *_EntityMgrBehavior) CountEntities() int {
 	return mgr.entityList.Len()
-}
-
-// EventEntityMgrAddEntity 事件：实体管理器添加实体
-func (mgr *_EntityMgrBehavior) EventEntityMgrAddEntity() event.IEvent {
-	return &mgr.eventEntityMgrAddEntity
-}
-
-// EventEntityMgrRemoveEntity 事件：实体管理器删除实体
-func (mgr *_EntityMgrBehavior) EventEntityMgrRemoveEntity() event.IEvent {
-	return &mgr.eventEntityMgrRemoveEntity
-}
-
-// EventEntityMgrEntityAddComponents 事件：实体管理器中的实体添加组件
-func (mgr *_EntityMgrBehavior) EventEntityMgrEntityAddComponents() event.IEvent {
-	return &mgr.eventEntityMgrEntityAddComponents
-}
-
-// EventEntityMgrEntityRemoveComponent 事件：实体管理器中的实体删除组件
-func (mgr *_EntityMgrBehavior) EventEntityMgrEntityRemoveComponent() event.IEvent {
-	return &mgr.eventEntityMgrEntityRemoveComponent
-}
-
-// EventEntityMgrEntityFirstTouchComponent 事件：实体管理器中的实体首次访问组件
-func (mgr *_EntityMgrBehavior) EventEntityMgrEntityFirstTouchComponent() event.IEvent {
-	return &mgr.eventEntityMgrEntityFirstTouchComponent
 }
 
 func (mgr *_EntityMgrBehavior) OnComponentMgrAddComponents(entity ec.Entity, components []ec.Component) {
