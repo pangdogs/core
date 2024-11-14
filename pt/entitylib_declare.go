@@ -21,50 +21,48 @@ package pt
 
 import (
 	"git.golaxy.org/core/ec"
-	"git.golaxy.org/core/utils/types"
+	"git.golaxy.org/core/utils/generic"
 )
+
+// CustomAtti 自定义原型属性
+type CustomAtti = generic.SliceMap[string, any]
 
 // EntityAtti 实体原型属性
 type EntityAtti struct {
-	Prototype                  string    // 实体原型名称（必填）
-	Instance                   any       // 实体实例
-	Scope                      *ec.Scope // 可访问作用域
-	ComponentAwakeOnFirstTouch *bool     // 开启组件被首次访问时，检测并调用Awake()
-	ComponentUniqueID          *bool     // 开启组件唯一Id
+	Prototype                  string     // 实体原型名称（必填）
+	Instance                   any        // 实体实例
+	Scope                      *ec.Scope  // 可访问作用域
+	ComponentAwakeOnFirstTouch *bool      // 开启组件被首次访问时，检测并调用Awake()
+	ComponentUniqueID          *bool      // 开启组件唯一Id
+	CustomAtti                 CustomAtti // 自定义原型属性
 }
 
 // EntityWith 创建实体原型属性，用于注册实体原型时自定义相关属性
-func EntityWith(prototype string, inst any, scope *ec.Scope, componentAwakeOnFirstTouch, componentUniqueID *bool) EntityAtti {
+func EntityWith(prototype string, inst any, scope *ec.Scope, componentAwakeOnFirstTouch, componentUniqueID *bool, customAtti ...generic.KV[string, any]) EntityAtti {
 	return EntityAtti{
 		Prototype:                  prototype,
 		Instance:                   inst,
 		Scope:                      scope,
 		ComponentAwakeOnFirstTouch: componentAwakeOnFirstTouch,
 		ComponentUniqueID:          componentUniqueID,
+		CustomAtti:                 generic.MakeSliceMap(customAtti...),
 	}
 }
 
 // CompAtti 组件原型属性
 type CompAtti struct {
-	Instance     any    // 组件实例（必填）
-	Name         string // 组件名称
-	NonRemovable bool   // 是否不可删除
+	Instance     any        // 组件实例（必填）
+	Name         string     // 组件名称
+	NonRemovable bool       // 是否不可删除
+	CustomAtti   CustomAtti // 自定义原型属性
 }
 
 // CompWith 创建组件原型属性，用于注册实体原型时自定义相关属性
-func CompWith(inst any, name string, nonRemovable bool) CompAtti {
+func CompWith(inst any, name string, nonRemovable bool, customAtti ...generic.KV[string, any]) CompAtti {
 	return CompAtti{
 		Instance:     inst,
 		Name:         name,
 		NonRemovable: nonRemovable,
-	}
-}
-
-// CompInterfaceWith 创建组件原型属性，用于注册实体原型时使用接口名作为组件名称，并自定义相关属性
-func CompInterfaceWith[FACE any](inst any, nonRemovable bool) CompAtti {
-	return CompAtti{
-		Instance:     inst,
-		Name:         types.FullNameT[FACE](),
-		NonRemovable: nonRemovable,
+		CustomAtti:   generic.MakeSliceMap(customAtti...),
 	}
 }

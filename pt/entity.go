@@ -33,6 +33,7 @@ type ComponentDesc struct {
 	PT           ComponentPT // 组件原型
 	Name         string      // 组件名称
 	NonRemovable bool        // 不可删除
+	CustomAtti   CustomAtti  // 自定义原型属性
 }
 
 // EntityPT 实体原型接口
@@ -47,6 +48,8 @@ type EntityPT interface {
 	ComponentAwakeOnFirstTouch() *bool
 	// ComponentUniqueID 开启组件唯一Id
 	ComponentUniqueID() *bool
+	// CustomAtti 自定义原型属性
+	CustomAtti() CustomAtti
 	// CountComponents // 组件数量
 	CountComponents() int
 	// Component 获取组件
@@ -63,6 +66,7 @@ type _EntityPT struct {
 	scope                      *ec.Scope
 	componentAwakeOnFirstTouch *bool
 	componentUniqueID          *bool
+	customAtti                 CustomAtti
 	components                 []ComponentDesc
 }
 
@@ -94,6 +98,11 @@ func (pt *_EntityPT) ComponentUniqueID() *bool {
 // CountComponents // 组件数量
 func (pt *_EntityPT) CountComponents() int {
 	return len(pt.components)
+}
+
+// CustomAtti 自定义原型属性
+func (pt *_EntityPT) CustomAtti() CustomAtti {
+	return pt.customAtti
 }
 
 // Component 获取组件

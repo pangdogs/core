@@ -33,14 +33,6 @@ func Component[COMP any](name ...string) ComponentDefinition {
 	}
 }
 
-// ComponentInterface 定义有接口的组件
-func ComponentInterface[COMP, COMP_IFACE any]() ComponentDefinition {
-	return ComponentDefinition{
-		Prototype: pt.DefaultComponentLib().Declare(types.ZeroT[COMP]()).Prototype(),
-		Name:      types.FullNameT[COMP_IFACE](),
-	}
-}
-
 // ComponentDefinition 组件定义
 type ComponentDefinition struct {
 	Prototype string // 组件原型名称

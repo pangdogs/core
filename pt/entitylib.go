@@ -174,6 +174,7 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) EntityPT {
 		scope:                      entityAtti.Scope,
 		componentAwakeOnFirstTouch: entityAtti.ComponentAwakeOnFirstTouch,
 		componentUniqueID:          entityAtti.ComponentUniqueID,
+		customAtti:                 entityAtti.CustomAtti,
 	}
 
 	if entityAtti.Instance != nil {
@@ -205,11 +206,13 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) EntityPT {
 		case CompAtti:
 			compDesc.Name = v.Name
 			compDesc.NonRemovable = v.NonRemovable
+			compDesc.CustomAtti = v.CustomAtti
 			comp = v.Instance
 			goto retry
 		case *CompAtti:
 			compDesc.Name = v.Name
 			compDesc.NonRemovable = v.NonRemovable
+			compDesc.CustomAtti = v.CustomAtti
 			comp = v.Instance
 			goto retry
 		case string:
