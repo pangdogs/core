@@ -34,6 +34,8 @@ import (
 type EntityLib interface {
 	EntityPTProvider
 
+	// GetComponentLib 获取组件原型库
+	GetComponentLib() ComponentLib
 	// Declare 声明实体原型
 	Declare(prototype any, comps ...any) EntityPT
 	// Redeclare 重新声明实体原型
@@ -77,6 +79,11 @@ type _EntityLib struct {
 // GetEntityLib 获取实体原型库
 func (lib *_EntityLib) GetEntityLib() EntityLib {
 	return lib
+}
+
+// GetComponentLib 获取组件原型库
+func (lib *_EntityLib) GetComponentLib() ComponentLib {
+	return lib.compLib
 }
 
 // Declare 声明实体原型
