@@ -38,6 +38,8 @@ type Component interface {
 
 	// GetId 获取组件Id
 	GetId() uid.Id
+	// GetPrototype 获取组件原型
+	GetPrototype() string
 	// GetName 获取组件名称
 	GetName() string
 	// GetEntity 获取组件依附的实体
@@ -57,6 +59,7 @@ type Component interface {
 type iComponent interface {
 	init(name string, entity Entity, instance Component)
 	setId(id uid.Id)
+	setPrototype(prototype string)
 	setState(state ComponentState)
 	setReflected(v reflect.Value)
 	withContext(ctx context.Context)
@@ -70,6 +73,7 @@ type ComponentBehavior struct {
 	terminate    context.CancelFunc
 	terminated   chan struct{}
 	id           uid.Id
+	prototype    string
 	name         string
 	entity       Entity
 	instance     Component
@@ -84,6 +88,11 @@ type ComponentBehavior struct {
 // GetId 获取组件Id
 func (comp *ComponentBehavior) GetId() uid.Id {
 	return comp.id
+}
+
+// GetPrototype 获取组件原型
+func (comp *ComponentBehavior) GetPrototype() string {
+	return comp.prototype
 }
 
 // GetName 获取组件名称
@@ -157,6 +166,10 @@ func (comp *ComponentBehavior) init(name string, entity Entity, instance Compone
 
 func (comp *ComponentBehavior) setId(id uid.Id) {
 	comp.id = id
+}
+
+func (comp *ComponentBehavior) setPrototype(prototype string) {
+	comp.prototype = prototype
 }
 
 func (comp *ComponentBehavior) setState(state ComponentState) {

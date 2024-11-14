@@ -46,6 +46,11 @@ func (uc _UnsafeComponent) SetId(id uid.Id) {
 	uc.setId(id)
 }
 
+// SetPrototype 设置原型
+func (uc _UnsafeComponent) SetPrototype(prototype string) {
+	uc.setPrototype(prototype)
+}
+
 // SetState 设置状态
 func (uc _UnsafeComponent) SetState(state ComponentState) {
 	uc.setState(state)

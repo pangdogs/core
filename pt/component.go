@@ -54,6 +54,7 @@ func (pt *_ComponentPT) Construct() ec.Component {
 	compRV := reflect.New(pt.instanceRT)
 
 	comp := compRV.Interface().(ec.Component)
+	ec.UnsafeComponent(comp).SetPrototype(pt.prototype)
 	ec.UnsafeComponent(comp).SetReflected(compRV)
 
 	return comp
