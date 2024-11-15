@@ -42,7 +42,7 @@ func CreateEntityPT(svcCtx service.Context, prototype string) EntityPTCreator {
 // EntityPTCreator 实体原型构建器
 type EntityPTCreator struct {
 	svcCtx service.Context
-	atti   pt.EntityAtti
+	atti   pt.EntityAttribute
 	comps  []any
 }
 
@@ -73,7 +73,7 @@ func (c EntityPTCreator) ComponentUniqueID(b bool) EntityPTCreator {
 // AddComponent 添加组件
 func (c EntityPTCreator) AddComponent(comp any, name ...string) EntityPTCreator {
 	switch v := comp.(type) {
-	case pt.ComponentAtti, *pt.ComponentAtti:
+	case pt.ComponentAttribute, *pt.ComponentAttribute:
 		c.comps = append(c.comps, v)
 	default:
 		c.comps = append(c.comps, pt.ComponentWith(comp, pie.First(name), true))

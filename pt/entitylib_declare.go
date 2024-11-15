@@ -22,47 +22,48 @@ package pt
 import (
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/utils/generic"
+	"github.com/elliotchance/pie/v2"
 )
 
-// CustomAtti 自定义原型属性
-type CustomAtti = generic.SliceMap[string, any]
+// Extra 自定义属性
+type Extra = generic.SliceMap[string, any]
 
-// EntityAtti 实体原型属性
-type EntityAtti struct {
-	Prototype                  string     // 实体原型名称（必填）
-	Instance                   any        // 实体实例
-	Scope                      *ec.Scope  // 可访问作用域
-	ComponentAwakeOnFirstTouch *bool      // 开启组件被首次访问时，检测并调用Awake()
-	ComponentUniqueID          *bool      // 开启组件唯一Id
-	CustomAtti                 CustomAtti // 自定义原型属性
+// EntityAttribute 实体原型属性
+type EntityAttribute struct {
+	Prototype                  string    // 实体原型名称（必填）
+	Instance                   any       // 实体实例
+	Scope                      *ec.Scope // 可访问作用域
+	ComponentAwakeOnFirstTouch *bool     // 开启组件被首次访问时，检测并调用Awake()
+	ComponentUniqueID          *bool     // 开启组件唯一Id
+	Extra                      Extra     // 自定义属性
 }
 
 // EntityWith 创建实体原型属性，用于注册实体原型时自定义相关属性
-func EntityWith(prototype string, inst any, scope *ec.Scope, componentAwakeOnFirstTouch, componentUniqueID *bool, customAtti ...generic.KV[string, any]) EntityAtti {
-	return EntityAtti{
+func EntityWith(prototype string, inst any, scope *ec.Scope, componentAwakeOnFirstTouch, componentUniqueID *bool, extra ...map[string]any) EntityAttribute {
+	return EntityAttribute{
 		Prototype:                  prototype,
 		Instance:                   inst,
 		Scope:                      scope,
 		ComponentAwakeOnFirstTouch: componentAwakeOnFirstTouch,
 		ComponentUniqueID:          componentUniqueID,
-		CustomAtti:                 generic.MakeSliceMap(customAtti...),
+		Extra:                      generic.MakeSliceMapFromGoMap(pie.First(extra)),
 	}
 }
 
-// ComponentAtti 组件原型属性
-type ComponentAtti struct {
-	Instance     any        // 组件实例（必填）
-	Name         string     // 组件名称
-	NonRemovable bool       // 是否不可删除
-	CustomAtti   CustomAtti // 自定义原型属性
+// ComponentAttribute 组件原型属性
+type ComponentAttribute struct {
+	Instance     any    // 组件实例（必填）
+	Name         string // 组件名称
+	NonRemovable bool   // 是否不可删除
+	Extra        Extra  // 自定义属性
 }
 
 // ComponentWith 创建组件原型属性，用于注册实体原型时自定义相关属性
-func ComponentWith(inst any, name string, nonRemovable bool, customAtti ...generic.KV[string, any]) ComponentAtti {
-	return ComponentAtti{
+func ComponentWith(inst any, name string, nonRemovable bool, extra ...map[string]any) ComponentAttribute {
+	return ComponentAttribute{
 		Instance:     inst,
 		Name:         name,
 		NonRemovable: nonRemovable,
-		CustomAtti:   generic.MakeSliceMap(customAtti...),
+		Extra:        generic.MakeSliceMapFromGoMap(pie.First(extra)),
 	}
 }

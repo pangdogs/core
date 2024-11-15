@@ -159,15 +159,15 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) EntityPT {
 	lib.Lock()
 	defer lib.Unlock()
 
-	var entityAtti EntityAtti
+	var entityAtti EntityAttribute
 
 	switch v := prototype.(type) {
-	case EntityAtti:
+	case EntityAttribute:
 		entityAtti = v
-	case *EntityAtti:
+	case *EntityAttribute:
 		entityAtti = *v
 	case string:
-		entityAtti = EntityAtti{Prototype: v}
+		entityAtti = EntityAttribute{Prototype: v}
 	default:
 		exception.Panicf("%w: invalid prototype type: %T", ErrPt, prototype)
 	}
@@ -181,7 +181,7 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) EntityPT {
 		scope:                      entityAtti.Scope,
 		componentAwakeOnFirstTouch: entityAtti.ComponentAwakeOnFirstTouch,
 		componentUniqueID:          entityAtti.ComponentUniqueID,
-		customAtti:                 entityAtti.CustomAtti,
+		extra:                      entityAtti.Extra,
 	}
 
 	if entityAtti.Instance != nil {
@@ -210,16 +210,16 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) EntityPT {
 
 	retry:
 		switch v := comp.(type) {
-		case ComponentAtti:
+		case ComponentAttribute:
 			compDesc.Name = v.Name
 			compDesc.NonRemovable = v.NonRemovable
-			compDesc.CustomAtti = v.CustomAtti
+			compDesc.Extra = v.Extra
 			comp = v.Instance
 			goto retry
-		case *ComponentAtti:
+		case *ComponentAttribute:
 			compDesc.Name = v.Name
 			compDesc.NonRemovable = v.NonRemovable
-			compDesc.CustomAtti = v.CustomAtti
+			compDesc.Extra = v.Extra
 			comp = v.Instance
 			goto retry
 		case string:
