@@ -49,17 +49,17 @@ func EntityWith(prototype string, inst any, scope *ec.Scope, componentAwakeOnFir
 	}
 }
 
-// CompAtti 组件原型属性
-type CompAtti struct {
+// ComponentAtti 组件原型属性
+type ComponentAtti struct {
 	Instance     any        // 组件实例（必填）
 	Name         string     // 组件名称
 	NonRemovable bool       // 是否不可删除
 	CustomAtti   CustomAtti // 自定义原型属性
 }
 
-// CompWith 创建组件原型属性，用于注册实体原型时自定义相关属性
-func CompWith(inst any, name string, nonRemovable bool, customAtti ...generic.KV[string, any]) CompAtti {
-	return CompAtti{
+// ComponentWith 创建组件原型属性，用于注册实体原型时自定义相关属性
+func ComponentWith(inst any, name string, nonRemovable bool, customAtti ...generic.KV[string, any]) ComponentAtti {
+	return ComponentAtti{
 		Instance:     inst,
 		Name:         name,
 		NonRemovable: nonRemovable,

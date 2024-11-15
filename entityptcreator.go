@@ -73,10 +73,10 @@ func (c EntityPTCreator) ComponentUniqueID(b bool) EntityPTCreator {
 // AddComponent 添加组件
 func (c EntityPTCreator) AddComponent(comp any, name ...string) EntityPTCreator {
 	switch v := comp.(type) {
-	case pt.CompAtti, *pt.CompAtti:
+	case pt.ComponentAtti, *pt.ComponentAtti:
 		c.comps = append(c.comps, v)
 	default:
-		c.comps = append(c.comps, pt.CompWith(comp, pie.First(name), true))
+		c.comps = append(c.comps, pt.ComponentWith(comp, pie.First(name), true))
 	}
 	return c
 }

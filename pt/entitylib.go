@@ -210,13 +210,13 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) EntityPT {
 
 	retry:
 		switch v := comp.(type) {
-		case CompAtti:
+		case ComponentAtti:
 			compDesc.Name = v.Name
 			compDesc.NonRemovable = v.NonRemovable
 			compDesc.CustomAtti = v.CustomAtti
 			comp = v.Instance
 			goto retry
-		case *CompAtti:
+		case *ComponentAtti:
 			compDesc.Name = v.Name
 			compDesc.NonRemovable = v.NonRemovable
 			compDesc.CustomAtti = v.CustomAtti
