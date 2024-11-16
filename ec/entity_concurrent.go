@@ -35,8 +35,8 @@ type ConcurrentEntity interface {
 
 	// GetId 获取实体Id
 	GetId() uid.Id
-	// GetPrototype 获取实体原型
-	GetPrototype() string
+	// GetPT 获取实体原型信息
+	GetPT() EntityPT
 }
 
 type iContext interface {

@@ -51,9 +51,9 @@ func (uc _UnsafeComponent) SetId(id uid.Id) {
 	uc.setId(id)
 }
 
-// SetPT 设置组件原型信息
-func (uc _UnsafeComponent) SetPT(desc *ComponentDesc) {
-	uc.setPT(desc)
+// SetDesc 设置组件原型信息
+func (uc _UnsafeComponent) SetDesc(desc *ComponentDesc) {
+	uc.setDesc(desc)
 }
 
 // SetState 设置状态

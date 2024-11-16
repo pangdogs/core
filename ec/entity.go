@@ -180,7 +180,7 @@ func (entity *EntityBehavior) GetInstanceFaceCache() iface.Cache {
 
 // String implements fmt.Stringer
 func (entity *EntityBehavior) String() string {
-	return fmt.Sprintf(`{"id":%q, "desc":%q}`, entity.GetId(), entity.GetPT())
+	return fmt.Sprintf(`{"id":%q, "prototype":%q}`, entity.GetId(), entity.GetPT().Prototype())
 }
 
 func (entity *EntityBehavior) init(opts EntityOptions) {

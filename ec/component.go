@@ -38,8 +38,8 @@ type Component interface {
 
 	// GetId 获取组件Id
 	GetId() uid.Id
-	// GetPT 获取组件原型信息
-	GetPT() ComponentDesc
+	// GetDesc 获取组件原型信息
+	GetDesc() ComponentDesc
 	// GetName 获取组件名称
 	GetName() string
 	// GetEntity 获取组件依附的实体
@@ -60,7 +60,7 @@ type iComponent interface {
 	init(name string, entity Entity, instance Component)
 	withContext(ctx context.Context)
 	setId(id uid.Id)
-	setPT(desc *ComponentDesc)
+	setDesc(desc *ComponentDesc)
 	setState(state ComponentState)
 	setReflected(v reflect.Value)
 	setNonRemovable(b bool)
@@ -90,8 +90,8 @@ func (comp *ComponentBehavior) GetId() uid.Id {
 	return comp.id
 }
 
-// GetPT 获取组件原型信息
-func (comp *ComponentBehavior) GetPT() ComponentDesc {
+// GetDesc 获取组件原型信息
+func (comp *ComponentBehavior) GetDesc() ComponentDesc {
 	if comp.desc == nil {
 		return *noneComponentDesc
 	}
@@ -157,7 +157,7 @@ func (comp *ComponentBehavior) GetConcurrentContext() iface.Cache {
 
 // String implements fmt.Stringer
 func (comp *ComponentBehavior) String() string {
-	return fmt.Sprintf(`{"id":%q, "name":%q, "entity_id":%q}`, comp.GetId(), comp.GetName(), comp.GetEntity().GetId())
+	return fmt.Sprintf(`{"id":%q, "entity_id":%q, "name":%q, "prototype":%q}`, comp.GetId(), comp.GetEntity().GetId(), comp.GetName(), comp.GetDesc().PT.Prototype())
 }
 
 func (comp *ComponentBehavior) init(name string, entity Entity, instance Component) {
@@ -176,7 +176,7 @@ func (comp *ComponentBehavior) setId(id uid.Id) {
 	comp.id = id
 }
 
-func (comp *ComponentBehavior) setPT(desc *ComponentDesc) {
+func (comp *ComponentBehavior) setDesc(desc *ComponentDesc) {
 	comp.desc = desc
 }
 

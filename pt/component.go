@@ -45,7 +45,7 @@ func (pt *_Component) Construct() ec.Component {
 	compRV := reflect.New(pt.instanceRT)
 
 	comp := compRV.Interface().(ec.Component)
-	ec.UnsafeComponent(comp).SetPT(pt.desc)
+	ec.UnsafeComponent(comp).SetDesc(pt.desc)
 	ec.UnsafeComponent(comp).SetReflected(compRV)
 
 	return comp

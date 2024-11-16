@@ -118,7 +118,7 @@ func (pt *_Entity) assemble(entity ec.Entity) ec.Entity {
 		compDesc := &pt.components[i]
 
 		comp := compDesc.PT.Construct()
-		ec.UnsafeComponent(comp).SetPT(compDesc)
+		ec.UnsafeComponent(comp).SetDesc(compDesc)
 		ec.UnsafeComponent(comp).SetNonRemovable(compDesc.NonRemovable)
 
 		if err := entity.AddComponent(compDesc.Name, comp); err != nil {
