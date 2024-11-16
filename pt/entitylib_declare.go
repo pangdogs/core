@@ -25,17 +25,14 @@ import (
 	"github.com/elliotchance/pie/v2"
 )
 
-// Extra 自定义属性
-type Extra = generic.SliceMap[string, any]
-
 // EntityAttribute 实体原型属性
 type EntityAttribute struct {
-	Prototype                  string    // 实体原型名称（必填）
-	Instance                   any       // 实体实例
-	Scope                      *ec.Scope // 可访问作用域
-	ComponentAwakeOnFirstTouch *bool     // 开启组件被首次访问时，检测并调用Awake()
-	ComponentUniqueID          *bool     // 开启组件唯一Id
-	Extra                      Extra     // 自定义属性
+	Prototype                  string                        // 实体原型名称（必填）
+	Instance                   any                           // 实体实例
+	Scope                      *ec.Scope                     // 可访问作用域
+	ComponentAwakeOnFirstTouch *bool                         // 开启组件被首次访问时，检测并调用Awake()
+	ComponentUniqueID          *bool                         // 开启组件唯一Id
+	Extra                      generic.SliceMap[string, any] // 自定义属性
 }
 
 // EntityWith 创建实体原型属性，用于注册实体原型时自定义相关属性
@@ -52,10 +49,10 @@ func EntityWith(prototype string, inst any, scope *ec.Scope, componentAwakeOnFir
 
 // ComponentAttribute 组件原型属性
 type ComponentAttribute struct {
-	Instance     any    // 组件实例（必填）
-	Name         string // 组件名称
-	NonRemovable bool   // 是否不可删除
-	Extra        Extra  // 自定义属性
+	Instance     any                           // 组件实例（必填）
+	Name         string                        // 组件名称
+	NonRemovable bool                          // 是否不可删除
+	Extra        generic.SliceMap[string, any] // 自定义属性
 }
 
 // ComponentWith 创建组件原型属性，用于注册实体原型时自定义相关属性

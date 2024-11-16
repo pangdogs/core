@@ -42,6 +42,11 @@ func (ue _UnsafeEntity) Init(opts EntityOptions) {
 	ue.init(opts)
 }
 
+// WithContext 传递上下文
+func (ue _UnsafeEntity) WithContext(ctx context.Context) {
+	ue.withContext(ctx)
+}
+
 // GetOptions 获取实体所有选项
 func (ue _UnsafeEntity) GetOptions() *EntityOptions {
 	return ue.getOptions()
@@ -50,6 +55,11 @@ func (ue _UnsafeEntity) GetOptions() *EntityOptions {
 // SetId 设置Id
 func (ue _UnsafeEntity) SetId(id uid.Id) {
 	ue.setId(id)
+}
+
+// SetPT 设置实体原型信息
+func (ue _UnsafeEntity) SetPT(prototype EntityPT) {
+	ue.setPT(prototype)
 }
 
 // SetContext 设置上下文
@@ -70,11 +80,6 @@ func (ue _UnsafeEntity) SetState(state EntityState) {
 // SetReflected 设置反射值
 func (ue _UnsafeEntity) SetReflected(v reflect.Value) {
 	ue.setReflected(v)
-}
-
-// WithContext 传递上下文
-func (ue _UnsafeEntity) WithContext(ctx context.Context) {
-	ue.withContext(ctx)
 }
 
 // SetTreeNodeState 设置实体树节点状态

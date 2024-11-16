@@ -32,15 +32,15 @@ import (
 // ComponentLib 组件原型库
 type ComponentLib interface {
 	// Declare 声明组件原型
-	Declare(comp any) ComponentPT
+	Declare(comp any) ec.ComponentPT
 	// Undeclare 取消声明组件原型
 	Undeclare(prototype string)
 	// Get 获取组件原型
-	Get(prototype string) (ComponentPT, bool)
+	Get(prototype string) (ec.ComponentPT, bool)
 	// Range 遍历所有已注册的组件原型
-	Range(fun generic.Func1[ComponentPT, bool])
+	Range(fun generic.Func1[ec.ComponentPT, bool])
 	// ReversedRange 反向遍历所有已注册的组件原型
-	ReversedRange(fun generic.Func1[ComponentPT, bool])
+	ReversedRange(fun generic.Func1[ec.ComponentPT, bool])
 }
 
 var compLib = NewComponentLib()
@@ -53,18 +53,18 @@ func DefaultComponentLib() ComponentLib {
 // NewComponentLib 创建组件原型库
 func NewComponentLib() ComponentLib {
 	return &_ComponentLib{
-		compIdx: map[string]*_ComponentPT{},
+		compIdx: map[string]*_Component{},
 	}
 }
 
 type _ComponentLib struct {
 	sync.RWMutex
-	compIdx  map[string]*_ComponentPT
-	compList []*_ComponentPT
+	compIdx  map[string]*_Component
+	compList []*_Component
 }
 
 // Declare 声明组件原型
-func (lib *_ComponentLib) Declare(comp any) ComponentPT {
+func (lib *_ComponentLib) Declare(comp any) ec.ComponentPT {
 	return lib.declare(comp)
 }
 
@@ -75,13 +75,13 @@ func (lib *_ComponentLib) Undeclare(prototype string) {
 
 	delete(lib.compIdx, prototype)
 
-	lib.compList = slices.DeleteFunc(lib.compList, func(pt *_ComponentPT) bool {
+	lib.compList = slices.DeleteFunc(lib.compList, func(pt *_Component) bool {
 		return pt.Prototype() == prototype
 	})
 }
 
 // Get 获取组件原型
-func (lib *_ComponentLib) Get(prototype string) (ComponentPT, bool) {
+func (lib *_ComponentLib) Get(prototype string) (ec.ComponentPT, bool) {
 	lib.RLock()
 	defer lib.RUnlock()
 
@@ -94,7 +94,7 @@ func (lib *_ComponentLib) Get(prototype string) (ComponentPT, bool) {
 }
 
 // Range 遍历所有已注册的组件原型
-func (lib *_ComponentLib) Range(fun generic.Func1[ComponentPT, bool]) {
+func (lib *_ComponentLib) Range(fun generic.Func1[ec.ComponentPT, bool]) {
 	lib.RLock()
 	copied := slices.Clone(lib.compList)
 	lib.RUnlock()
@@ -107,7 +107,7 @@ func (lib *_ComponentLib) Range(fun generic.Func1[ComponentPT, bool]) {
 }
 
 // ReversedRange 反向遍历所有已注册的组件原型
-func (lib *_ComponentLib) ReversedRange(fun generic.Func1[ComponentPT, bool]) {
+func (lib *_ComponentLib) ReversedRange(fun generic.Func1[ec.ComponentPT, bool]) {
 	lib.RLock()
 	copied := slices.Clone(lib.compList)
 	lib.RUnlock()
@@ -119,7 +119,7 @@ func (lib *_ComponentLib) ReversedRange(fun generic.Func1[ComponentPT, bool]) {
 	}
 }
 
-func (lib *_ComponentLib) declare(comp any) ComponentPT {
+func (lib *_ComponentLib) declare(comp any) ec.ComponentPT {
 	if comp == nil {
 		exception.Panicf("%w: %w: comp is nil", ErrPt, exception.ErrArgs)
 	}
@@ -151,10 +151,11 @@ func (lib *_ComponentLib) declare(comp any) ComponentPT {
 		return compPT
 	}
 
-	compPT = &_ComponentPT{
+	compPT = &_Component{
 		prototype:  prototype,
 		instanceRT: compRT,
 	}
+	compPT.desc = &ec.ComponentDesc{PT: compPT, Offset: -1}
 
 	lib.compIdx[prototype] = compPT
 	lib.compList = append(lib.compList, compPT)

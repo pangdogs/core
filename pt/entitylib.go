@@ -37,17 +37,17 @@ type EntityLib interface {
 	// GetComponentLib 获取组件原型库
 	GetComponentLib() ComponentLib
 	// Declare 声明实体原型
-	Declare(prototype any, comps ...any) EntityPT
-	// Redeclare 重新声明实体原型
-	Redeclare(prototype any, comps ...any) EntityPT
+	Declare(prototype any, comps ...any) ec.EntityPT
+	// Redeclare 重声明实体原型
+	Redeclare(prototype any, comps ...any) ec.EntityPT
 	// Undeclare 取消声明实体原型
 	Undeclare(prototype string)
 	// Get 获取实体原型
-	Get(prototype string) (EntityPT, bool)
+	Get(prototype string) (ec.EntityPT, bool)
 	// Range 遍历所有已注册的实体原型
-	Range(fun generic.Func1[EntityPT, bool])
+	Range(fun generic.Func1[ec.EntityPT, bool])
 	// ReversedRange 反向遍历所有已注册的实体原型
-	ReversedRange(fun generic.Func1[EntityPT, bool])
+	ReversedRange(fun generic.Func1[ec.EntityPT, bool])
 }
 
 var entityLib = NewEntityLib(DefaultComponentLib())
@@ -65,15 +65,15 @@ func NewEntityLib(compLib ComponentLib) EntityLib {
 
 	return &_EntityLib{
 		compLib:   compLib,
-		entityIdx: map[string]*_EntityPT{},
+		entityIdx: map[string]*_Entity{},
 	}
 }
 
 type _EntityLib struct {
 	sync.RWMutex
 	compLib    ComponentLib
-	entityIdx  map[string]*_EntityPT
-	entityList []*_EntityPT
+	entityIdx  map[string]*_Entity
+	entityList []*_Entity
 }
 
 // GetEntityLib 获取实体原型库
@@ -87,12 +87,12 @@ func (lib *_EntityLib) GetComponentLib() ComponentLib {
 }
 
 // Declare 声明实体原型
-func (lib *_EntityLib) Declare(prototype any, comps ...any) EntityPT {
+func (lib *_EntityLib) Declare(prototype any, comps ...any) ec.EntityPT {
 	return lib.declare(false, prototype, comps...)
 }
 
-// Redeclare 重新声明实体原型
-func (lib *_EntityLib) Redeclare(prototype any, comps ...any) EntityPT {
+// Redeclare 重声明实体原型
+func (lib *_EntityLib) Redeclare(prototype any, comps ...any) ec.EntityPT {
 	return lib.declare(true, prototype, comps...)
 }
 
@@ -103,13 +103,13 @@ func (lib *_EntityLib) Undeclare(prototype string) {
 
 	delete(lib.entityIdx, prototype)
 
-	lib.entityList = slices.DeleteFunc(lib.entityList, func(pt *_EntityPT) bool {
+	lib.entityList = slices.DeleteFunc(lib.entityList, func(pt *_Entity) bool {
 		return pt.prototype == prototype
 	})
 }
 
 // Get 获取实体原型
-func (lib *_EntityLib) Get(prototype string) (EntityPT, bool) {
+func (lib *_EntityLib) Get(prototype string) (ec.EntityPT, bool) {
 	lib.RLock()
 	defer lib.RUnlock()
 
@@ -122,7 +122,7 @@ func (lib *_EntityLib) Get(prototype string) (EntityPT, bool) {
 }
 
 // Range 遍历所有已注册的实体原型
-func (lib *_EntityLib) Range(fun generic.Func1[EntityPT, bool]) {
+func (lib *_EntityLib) Range(fun generic.Func1[ec.EntityPT, bool]) {
 	lib.RLock()
 	copied := slices.Clone(lib.entityList)
 	lib.RUnlock()
@@ -135,7 +135,7 @@ func (lib *_EntityLib) Range(fun generic.Func1[EntityPT, bool]) {
 }
 
 // ReversedRange 反向遍历所有已注册的实体原型
-func (lib *_EntityLib) ReversedRange(fun generic.Func1[EntityPT, bool]) {
+func (lib *_EntityLib) ReversedRange(fun generic.Func1[ec.EntityPT, bool]) {
 	lib.RLock()
 	copied := slices.Clone(lib.entityList)
 	lib.RUnlock()
@@ -147,7 +147,7 @@ func (lib *_EntityLib) ReversedRange(fun generic.Func1[EntityPT, bool]) {
 	}
 }
 
-func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) EntityPT {
+func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) ec.EntityPT {
 	if prototype == nil {
 		exception.Panicf("%w: %w: prototype is nil", ErrPt, exception.ErrArgs)
 	}
@@ -176,7 +176,7 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) EntityPT {
 		exception.Panicf("%w: prototype can't empty", ErrPt)
 	}
 
-	entityPT := &_EntityPT{
+	entityPT := &_Entity{
 		prototype:                  entityAtti.Prototype,
 		scope:                      entityAtti.Scope,
 		componentAwakeOnFirstTouch: entityAtti.ComponentAwakeOnFirstTouch,
@@ -205,8 +205,11 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) EntityPT {
 		entityPT.instanceRT = instanceRT
 	}
 
-	for _, comp := range comps {
-		compDesc := ComponentDesc{NonRemovable: true}
+	for i, comp := range comps {
+		compDesc := ec.ComponentDesc{
+			Offset:       i,
+			NonRemovable: true,
+		}
 
 	retry:
 		switch v := comp.(type) {
@@ -241,7 +244,7 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) EntityPT {
 
 	if _, ok := lib.entityIdx[entityAtti.Prototype]; ok {
 		if re {
-			lib.entityList = slices.DeleteFunc(lib.entityList, func(pt *_EntityPT) bool {
+			lib.entityList = slices.DeleteFunc(lib.entityList, func(pt *_Entity) bool {
 				return pt.prototype == prototype
 			})
 		} else {

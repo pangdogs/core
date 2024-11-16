@@ -41,14 +41,19 @@ func (uc _UnsafeComponent) Init(name string, entity Entity, instance Component) 
 	uc.init(name, entity, instance)
 }
 
+// WithContext 传递上下文
+func (uc _UnsafeComponent) WithContext(ctx context.Context) {
+	uc.withContext(ctx)
+}
+
 // SetId 设置Id
 func (uc _UnsafeComponent) SetId(id uid.Id) {
 	uc.setId(id)
 }
 
-// SetPrototype 设置原型
-func (uc _UnsafeComponent) SetPrototype(prototype string) {
-	uc.setPrototype(prototype)
+// SetPT 设置组件原型信息
+func (uc _UnsafeComponent) SetPT(desc *ComponentDesc) {
+	uc.setPT(desc)
 }
 
 // SetState 设置状态
@@ -59,11 +64,6 @@ func (uc _UnsafeComponent) SetState(state ComponentState) {
 // SetReflected 设置反射值
 func (uc _UnsafeComponent) SetReflected(v reflect.Value) {
 	uc.setReflected(v)
-}
-
-// WithContext 传递上下文
-func (uc _UnsafeComponent) WithContext(ctx context.Context) {
-	uc.withContext(ctx)
 }
 
 // SetNonRemovable 设置是否不可删除

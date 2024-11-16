@@ -38,8 +38,8 @@ type Component interface {
 
 	// GetId 获取组件Id
 	GetId() uid.Id
-	// GetPrototype 获取组件原型
-	GetPrototype() string
+	// GetPT 获取组件原型信息
+	GetPT() ComponentDesc
 	// GetName 获取组件名称
 	GetName() string
 	// GetEntity 获取组件依附的实体
@@ -58,11 +58,11 @@ type Component interface {
 
 type iComponent interface {
 	init(name string, entity Entity, instance Component)
+	withContext(ctx context.Context)
 	setId(id uid.Id)
-	setPrototype(prototype string)
+	setPT(desc *ComponentDesc)
 	setState(state ComponentState)
 	setReflected(v reflect.Value)
-	withContext(ctx context.Context)
 	setNonRemovable(b bool)
 	cleanManagedHooks()
 }
@@ -73,7 +73,7 @@ type ComponentBehavior struct {
 	terminate    context.CancelFunc
 	terminated   chan struct{}
 	id           uid.Id
-	prototype    string
+	desc         *ComponentDesc
 	name         string
 	entity       Entity
 	instance     Component
@@ -90,9 +90,12 @@ func (comp *ComponentBehavior) GetId() uid.Id {
 	return comp.id
 }
 
-// GetPrototype 获取组件原型
-func (comp *ComponentBehavior) GetPrototype() string {
-	return comp.prototype
+// GetPT 获取组件原型信息
+func (comp *ComponentBehavior) GetPT() ComponentDesc {
+	if comp.desc == nil {
+		return *noneComponentDesc
+	}
+	return *comp.desc
 }
 
 // GetName 获取组件名称
@@ -164,12 +167,17 @@ func (comp *ComponentBehavior) init(name string, entity Entity, instance Compone
 	comp.componentEventTab.Init(false, nil, event.EventRecursion_Allow)
 }
 
+func (comp *ComponentBehavior) withContext(ctx context.Context) {
+	comp.Context, comp.terminate = context.WithCancel(ctx)
+	comp.terminated = make(chan struct{})
+}
+
 func (comp *ComponentBehavior) setId(id uid.Id) {
 	comp.id = id
 }
 
-func (comp *ComponentBehavior) setPrototype(prototype string) {
-	comp.prototype = prototype
+func (comp *ComponentBehavior) setPT(desc *ComponentDesc) {
+	comp.desc = desc
 }
 
 func (comp *ComponentBehavior) setState(state ComponentState) {
@@ -190,11 +198,6 @@ func (comp *ComponentBehavior) setState(state ComponentState) {
 
 func (comp *ComponentBehavior) setReflected(v reflect.Value) {
 	comp.reflected = v
-}
-
-func (comp *ComponentBehavior) withContext(ctx context.Context) {
-	comp.Context, comp.terminate = context.WithCancel(ctx)
-	comp.terminated = make(chan struct{})
 }
 
 func (comp *ComponentBehavior) setNonRemovable(b bool) {

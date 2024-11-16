@@ -24,37 +24,28 @@ import (
 	"reflect"
 )
 
-// ComponentPT 组件原型接口
-type ComponentPT interface {
-	// Prototype 组件原型名称
-	Prototype() string
-	// InstanceRT 组件实例反射类型
-	InstanceRT() reflect.Type
-	// Construct 创建组件
-	Construct() ec.Component
-}
-
-type _ComponentPT struct {
-	prototype  string       // 组件原型名称
-	instanceRT reflect.Type // 实例反射类型
+type _Component struct {
+	prototype  string
+	instanceRT reflect.Type
+	desc       *ec.ComponentDesc
 }
 
 // Prototype 组件原型名称
-func (pt *_ComponentPT) Prototype() string {
+func (pt *_Component) Prototype() string {
 	return pt.prototype
 }
 
 // InstanceRT 组件实例反射类型
-func (pt *_ComponentPT) InstanceRT() reflect.Type {
+func (pt *_Component) InstanceRT() reflect.Type {
 	return pt.instanceRT
 }
 
 // Construct 创建组件
-func (pt *_ComponentPT) Construct() ec.Component {
+func (pt *_Component) Construct() ec.Component {
 	compRV := reflect.New(pt.instanceRT)
 
 	comp := compRV.Interface().(ec.Component)
-	ec.UnsafeComponent(comp).SetPrototype(pt.prototype)
+	ec.UnsafeComponent(comp).SetPT(pt.desc)
 	ec.UnsafeComponent(comp).SetReflected(compRV)
 
 	return comp

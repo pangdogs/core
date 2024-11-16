@@ -29,7 +29,6 @@ import (
 // EntityOptions 创建实体的所有选项
 type EntityOptions struct {
 	InstanceFace               iface.Face[Entity] // 实例，用于扩展实体能力
-	Prototype                  string             // 实体原型名称
 	Scope                      Scope              // 可访问作用域
 	PersistId                  uid.Id             // 实体持久化Id
 	ComponentAwakeOnFirstTouch bool               // 开启组件被首次访问时，检测并调用Awake()
@@ -45,7 +44,6 @@ type _Option struct{}
 func (_Option) Default() option.Setting[EntityOptions] {
 	return func(o *EntityOptions) {
 		With.InstanceFace(iface.Face[Entity]{})(o)
-		With.Prototype("")(o)
 		With.Scope(Scope_Global)(o)
 		With.PersistId(uid.Nil)(o)
 		With.ComponentAwakeOnFirstTouch(false)(o)
@@ -58,13 +56,6 @@ func (_Option) Default() option.Setting[EntityOptions] {
 func (_Option) InstanceFace(face iface.Face[Entity]) option.Setting[EntityOptions] {
 	return func(o *EntityOptions) {
 		o.InstanceFace = face
-	}
-}
-
-// Prototype 实体原型名称
-func (_Option) Prototype(pt string) option.Setting[EntityOptions] {
-	return func(o *EntityOptions) {
-		o.Prototype = pt
 	}
 }
 

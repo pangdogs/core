@@ -64,8 +64,8 @@ type Entity interface {
 
 	// GetId 获取实体Id
 	GetId() uid.Id
-	// GetPrototype 获取实体原型
-	GetPrototype() string
+	// GetPT 获取实体原型信息
+	GetPT() EntityPT
 	// GetScope 获取可访问作用域
 	GetScope() Scope
 	// GetState 获取实体状态
@@ -82,13 +82,14 @@ type Entity interface {
 
 type iEntity interface {
 	init(opts EntityOptions)
+	withContext(ctx context.Context)
 	getOptions() *EntityOptions
 	setId(id uid.Id)
+	setPT(prototype EntityPT)
 	setContext(ctx iface.Cache)
 	getVersion() int64
 	setState(state EntityState)
 	setReflected(v reflect.Value)
-	withContext(ctx context.Context)
 	cleanManagedHooks()
 }
 
@@ -98,6 +99,7 @@ type EntityBehavior struct {
 	terminate      context.CancelFunc
 	terminated     chan struct{}
 	opts           EntityOptions
+	prototype      EntityPT
 	context        iface.Cache
 	components     generic.List[Component]
 	state          EntityState
@@ -116,9 +118,12 @@ func (entity *EntityBehavior) GetId() uid.Id {
 	return entity.opts.PersistId
 }
 
-// GetPrototype 获取实体原型
-func (entity *EntityBehavior) GetPrototype() string {
-	return entity.opts.Prototype
+// GetPT 获取实体原型
+func (entity *EntityBehavior) GetPT() EntityPT {
+	if entity.prototype == nil {
+		return noneEntityPT
+	}
+	return entity.prototype
 }
 
 // GetScope 获取可访问作用域
@@ -175,7 +180,7 @@ func (entity *EntityBehavior) GetInstanceFaceCache() iface.Cache {
 
 // String implements fmt.Stringer
 func (entity *EntityBehavior) String() string {
-	return fmt.Sprintf(`{"id":%q, "prototype":%q}`, entity.GetId(), entity.GetPrototype())
+	return fmt.Sprintf(`{"id":%q, "desc":%q}`, entity.GetId(), entity.GetPT())
 }
 
 func (entity *EntityBehavior) init(opts EntityOptions) {
@@ -190,12 +195,21 @@ func (entity *EntityBehavior) init(opts EntityOptions) {
 	entity.entityTreeNodeEventTab.Init(false, nil, event.EventRecursion_Allow)
 }
 
+func (entity *EntityBehavior) withContext(ctx context.Context) {
+	entity.Context, entity.terminate = context.WithCancel(ctx)
+	entity.terminated = make(chan struct{})
+}
+
 func (entity *EntityBehavior) getOptions() *EntityOptions {
 	return &entity.opts
 }
 
 func (entity *EntityBehavior) setId(id uid.Id) {
 	entity.opts.PersistId = id
+}
+
+func (entity *EntityBehavior) setPT(prototype EntityPT) {
+	entity.prototype = prototype
 }
 
 func (entity *EntityBehavior) setContext(ctx iface.Cache) {
@@ -227,9 +241,4 @@ func (entity *EntityBehavior) setState(state EntityState) {
 
 func (entity *EntityBehavior) setReflected(v reflect.Value) {
 	entity.reflected = v
-}
-
-func (entity *EntityBehavior) withContext(ctx context.Context) {
-	entity.Context, entity.terminate = context.WithCancel(ctx)
-	entity.terminated = make(chan struct{})
 }

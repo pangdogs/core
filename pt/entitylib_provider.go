@@ -20,6 +20,7 @@
 package pt
 
 import (
+	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/utils/exception"
 )
 
@@ -30,7 +31,7 @@ type EntityPTProvider interface {
 }
 
 // For 查询实体原型
-func For(provider EntityPTProvider, prototype string) EntityPT {
+func For(provider EntityPTProvider, prototype string) ec.EntityPT {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrPt, exception.ErrArgs)
 	}
