@@ -16,18 +16,18 @@
 - 异步调用方案（`Async/Await`）：支持异步操作，简化异步代码的编写，提升系统的响应能力。
 
 ## 目录
-| Directory | Description |
-| --------- | ----------- |
-| [/](https://github.com/pangdogs/core) | 主要实现服务与运行时相关功能。|
-| [/define](https://github.com/pangdogs/core/tree/main/define) | 利用泛型特性，支持定义插件或组件，简化代码编写。 |
-| [/ec](https://github.com/pangdogs/core/tree/main/ec) | 实体组件框架。 |
-| [/event](https://github.com/pangdogs/core/tree/main/event) | 本地事件系统。 |
+| Directory                                                                | Description |
+|--------------------------------------------------------------------------| ----------- |
+| [/](https://github.com/pangdogs/core)                                    | 主要实现服务与运行时相关功能。|
+| [/define](https://github.com/pangdogs/core/tree/main/define)             | 利用泛型特性，支持定义插件或组件，简化代码编写。 |
+| [/ec](https://github.com/pangdogs/core/tree/main/ec)                     | 实体组件框架。 |
+| [/ec/pt](https://github.com/pangdogs/core/tree/main/ec/pt)               | 实体原型系统。 |
+| [/event](https://github.com/pangdogs/core/tree/main/event)               | 本地事件系统。 |
 | [/event/eventc](https://github.com/pangdogs/core/tree/main/event/eventc) | 本地事件代码生成器。 |
-| [/plugin](https://github.com/pangdogs/core/tree/main/plugin) | 插件系统。 |
-| [/pt](https://github.com/pangdogs/core/tree/main/pt) | 实体原型系统。 |
-| [/runtime](https://github.com/pangdogs/core/tree/main/runtime) | 运行时上下文。 |
-| [/service](https://github.com/pangdogs/core/tree/main/service) | 服务上下文。 |
-| [/utils](https://github.com/pangdogs/core/tree/main/utils) | 一些工具类与函数。 |
+| [/plugin](https://github.com/pangdogs/core/tree/main/plugin)             | 插件系统。 |
+| [/runtime](https://github.com/pangdogs/core/tree/main/runtime)           | 运行时上下文。 |
+| [/service](https://github.com/pangdogs/core/tree/main/service)           | 服务上下文。 |
+| [/utils](https://github.com/pangdogs/core/tree/main/utils)               | 一些工具类与函数。 |
 
 ## 示例
 

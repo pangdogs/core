@@ -20,7 +20,7 @@
 package define
 
 import (
-	"git.golaxy.org/core/pt"
+	"git.golaxy.org/core/ec/pt"
 	"git.golaxy.org/core/utils/types"
 	"github.com/elliotchance/pie/v2"
 )

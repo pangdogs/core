@@ -21,7 +21,7 @@ package core
 
 import (
 	"git.golaxy.org/core/ec"
-	"git.golaxy.org/core/pt"
+	"git.golaxy.org/core/ec/pt"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/exception"
 	"github.com/elliotchance/pie/v2"

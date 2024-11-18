@@ -16,18 +16,18 @@ This project is the [**core**](https://github.com/pangdogs/core) part of the fra
 - **Asynchronous Call Scheme (`Async/Await`)**: Supports asynchronous operations, simplifying the writing of asynchronous code, and enhancing the system's responsiveness.
 
 ## Directory
-| Directory | Description |
-| --------- | ----------- |
-| [/](https://github.com/pangdogs/core) | Main implementation of service and runtime related functionalities. |
-| [/define](https://github.com/pangdogs/core/tree/main/define) | Supports the definition of plugins or components using generics, simplifying code writing. |
-| [/ec](https://github.com/pangdogs/core/tree/main/ec) | Entity Component Framework. |
-| [/event](https://github.com/pangdogs/core/tree/main/event) | Local Event System. |
+| Directory                                                                | Description |
+|--------------------------------------------------------------------------| ----------- |
+| [/](https://github.com/pangdogs/core)                                    | Main implementation of service and runtime related functionalities. |
+| [/define](https://github.com/pangdogs/core/tree/main/define)             | Supports the definition of plugins or components using generics, simplifying code writing. |
+| [/ec](https://github.com/pangdogs/core/tree/main/ec)                     | Entity Component Framework. |
+| [/ec/pt](https://github.com/pangdogs/core/tree/main/ec/pt)               | Entity Prototype System. |
+| [/event](https://github.com/pangdogs/core/tree/main/event)               | Local Event System. |
 | [/event/eventc](https://github.com/pangdogs/core/tree/main/event/eventc) | Local Event Code Generator. |
-| [/plugin](https://github.com/pangdogs/core/tree/main/plugin) | Plugin System. |
-| [/pt](https://github.com/pangdogs/core/tree/main/pt) | Entity Prototype System. |
-| [/runtime](https://github.com/pangdogs/core/tree/main/runtime) | Runtime Context. |
-| [/service](https://github.com/pangdogs/core/tree/main/service) | Service Context. |
-| [/utils](https://github.com/pangdogs/core/tree/main/utils) | Various utility classes and functions. |
+| [/plugin](https://github.com/pangdogs/core/tree/main/plugin)             | Plugin System. |
+| [/runtime](https://github.com/pangdogs/core/tree/main/runtime)           | Runtime Context. |
+| [/service](https://github.com/pangdogs/core/tree/main/service)           | Service Context. |
+| [/utils](https://github.com/pangdogs/core/tree/main/utils)               | Various utility classes and functions. |
 
 ## Examples
 

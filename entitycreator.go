@@ -21,8 +21,8 @@ package core
 
 import (
 	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/ec/pt"
 	"git.golaxy.org/core/internal/ictx"
-	"git.golaxy.org/core/pt"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/exception"
