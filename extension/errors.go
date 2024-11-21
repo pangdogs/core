@@ -17,14 +17,13 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-//go:generate stringer -type PluginState
-package plugin
+package extension
 
-// PluginState 插件状态
-type PluginState int8
+import (
+	"fmt"
+	"git.golaxy.org/core/utils/exception"
+)
 
-const (
-	PluginState_Loaded   PluginState = iota // 已加载
-	PluginState_Active                      // 已激活
-	PluginState_Inactive                    // 未激活
+var (
+	ErrExtension = fmt.Errorf("%w: extension", exception.ErrCore) // 插件系统错误
 )

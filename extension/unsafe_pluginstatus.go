@@ -17,27 +17,20 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package plugin
+package extension
 
-import "git.golaxy.org/core/utils/generic"
-
-// Deprecated: UnsafePluginBundle 访问插件包的内部方法
-func UnsafePluginBundle(pluginBundle PluginBundle) _UnsafePluginBundle {
-	return _UnsafePluginBundle{
-		PluginBundle: pluginBundle,
+// Deprecated: UnsafePluginStatus 访问插件状态信息的内部方法
+func UnsafePluginStatus(status PluginStatus) _UnsafePluginStatus {
+	return _UnsafePluginStatus{
+		PluginStatus: status,
 	}
 }
 
-type _UnsafePluginBundle struct {
-	PluginBundle
+type _UnsafePluginStatus struct {
+	PluginStatus
 }
 
-// SetInstallCB 设置安装插件回调
-func (up _UnsafePluginBundle) SetInstallCB(cb generic.Action1[PluginStatus]) {
-	up.setInstallCB(cb)
-}
-
-// SetUninstallCB 设置卸载插件回调
-func (up _UnsafePluginBundle) SetUninstallCB(cb generic.Action1[PluginStatus]) {
-	up.setUninstallCB(cb)
+// SetState 修改状态
+func (up _UnsafePluginStatus) SetState(state, must PluginState) bool {
+	return up.setState(state, must)
 }

@@ -22,8 +22,8 @@ package runtime
 import (
 	"fmt"
 	"git.golaxy.org/core/event"
+	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/internal/ictx"
-	"git.golaxy.org/core/plugin"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/exception"
@@ -59,7 +59,7 @@ type Context interface {
 	ictx.Context
 	ictx.CurrentContextProvider
 	reinterpret.InstanceProvider
-	plugin.PluginProvider
+	extension.PluginProvider
 	async.Caller
 	GCCollector
 	fmt.Stringer

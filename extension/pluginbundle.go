@@ -17,7 +17,7 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package plugin
+package extension
 
 import (
 	"git.golaxy.org/core/utils/exception"
@@ -134,7 +134,7 @@ func (bundle *_PluginBundle) setUninstallCB(cb generic.Action1[PluginStatus]) {
 
 func (bundle *_PluginBundle) install(pluginFace iface.FaceAny, name ...string) *_PluginStatus {
 	if pluginFace.IsNil() {
-		exception.Panicf("%w: %w: pluginFace is nil", ErrPlugin, exception.ErrArgs)
+		exception.Panicf("%w: %w: pluginFace is nil", ErrExtension, exception.ErrArgs)
 	}
 
 	bundle.Lock()
@@ -146,7 +146,7 @@ func (bundle *_PluginBundle) install(pluginFace iface.FaceAny, name ...string) *
 	}
 
 	if _, ok := bundle.pluginIdx[pluginName]; ok {
-		exception.Panicf("%w: plugin %q is already installed", ErrPlugin, pluginName)
+		exception.Panicf("%w: plugin %q is already installed", ErrExtension, pluginName)
 	}
 
 	status := &_PluginStatus{

@@ -11,7 +11,7 @@ This project is the [**core**](https://github.com/pangdogs/core) part of the fra
 - **Actor Thread Model (`Actor Model`)**: Based on the Actor model's thread processing mechanism, each Actor runs in an independent computing unit, achieving parallel task processing and enhancing the system's concurrency performance and stability.
 - **Runtime Environment (`Runtime and Context`)**: Implements an independent runtime thread environment for Actors, providing mechanisms for entity management and communication calls.
 - **Service Environment (`Service and Context`)**: Supports the startup, shutdown, and management of services, offering global entity management and communication call mechanisms.
-- **Plugin System (`Plugin Support`)**: Provides mechanisms for extending framework functions, supporting the implementation of new features in the runtime or service environments.
+- **Plugin System (`Plugin System`)**: Provides mechanisms for extending framework functions, supporting the implementation of new features in the runtime or service environments.
 - **Local Event System (`Local Event`)**: Based on a code generator, it provides an efficient local event mechanism within the independent runtime thread environment of Actors.
 - **Asynchronous Call Scheme (`Async/Await`)**: Supports asynchronous operations, simplifying the writing of asynchronous code, and enhancing the system's responsiveness.
 
@@ -24,7 +24,7 @@ This project is the [**core**](https://github.com/pangdogs/core) part of the fra
 | [/ec/pt](https://github.com/pangdogs/core/tree/main/ec/pt)               | Entity Prototype System. |
 | [/event](https://github.com/pangdogs/core/tree/main/event)               | Local Event System. |
 | [/event/eventc](https://github.com/pangdogs/core/tree/main/event/eventc) | Local Event Code Generator. |
-| [/plugin](https://github.com/pangdogs/core/tree/main/plugin)             | Plugin System. |
+| [/extension](https://github.com/pangdogs/core/tree/main/extension)       | Plugin System. |
 | [/runtime](https://github.com/pangdogs/core/tree/main/runtime)           | Runtime Context. |
 | [/service](https://github.com/pangdogs/core/tree/main/service)           | Service Context. |
 | [/utils](https://github.com/pangdogs/core/tree/main/utils)               | Various utility classes and functions. |

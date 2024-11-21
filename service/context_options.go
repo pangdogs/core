@@ -22,7 +22,7 @@ package service
 import (
 	"context"
 	"git.golaxy.org/core/ec/pt"
-	"git.golaxy.org/core/plugin"
+	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/option"
@@ -35,15 +35,15 @@ type (
 
 // ContextOptions 创建服务上下文的所有选项
 type ContextOptions struct {
-	InstanceFace   iface.Face[Context] // 实例，用于扩展服务上下文能力
-	Context        context.Context     // 父Context
-	AutoRecover    bool                // 是否开启panic时自动恢复
-	ReportError    chan error          // panic时错误写入的error channel
-	Name           string              // 服务名称
-	PersistId      uid.Id              // 服务持久化Id
-	EntityLib      pt.EntityLib        // 实体原型库
-	PluginBundle   plugin.PluginBundle // 插件包
-	RunningHandler RunningHandler      // 运行状态变化处理器
+	InstanceFace   iface.Face[Context]    // 实例，用于扩展服务上下文能力
+	Context        context.Context        // 父Context
+	AutoRecover    bool                   // 是否开启panic时自动恢复
+	ReportError    chan error             // panic时错误写入的error channel
+	Name           string                 // 服务名称
+	PersistId      uid.Id                 // 服务持久化Id
+	EntityLib      pt.EntityLib           // 实体原型库
+	PluginBundle   extension.PluginBundle // 插件包
+	RunningHandler RunningHandler         // 运行状态变化处理器
 }
 
 var With _Option
@@ -59,7 +59,7 @@ func (_Option) Default() option.Setting[ContextOptions] {
 		With.Name("")(o)
 		With.PersistId(uid.Nil)(o)
 		With.EntityLib(pt.DefaultEntityLib())(o)
-		With.PluginBundle(plugin.NewPluginBundle())(o)
+		With.PluginBundle(extension.NewPluginBundle())(o)
 		With.RunningHandler(nil)(o)
 	}
 }
@@ -108,7 +108,7 @@ func (_Option) EntityLib(lib pt.EntityLib) option.Setting[ContextOptions] {
 }
 
 // PluginBundle 插件包
-func (_Option) PluginBundle(bundle plugin.PluginBundle) option.Setting[ContextOptions] {
+func (_Option) PluginBundle(bundle extension.PluginBundle) option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
 		o.PluginBundle = bundle
 	}

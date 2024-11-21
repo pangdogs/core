@@ -17,20 +17,10 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package plugin
-
-// Deprecated: UnsafePluginStatus 访问插件状态信息的内部方法
-func UnsafePluginStatus(status PluginStatus) _UnsafePluginStatus {
-	return _UnsafePluginStatus{
-		PluginStatus: status,
-	}
-}
-
-type _UnsafePluginStatus struct {
-	PluginStatus
-}
-
-// SetState 修改状态
-func (up _UnsafePluginStatus) SetState(state, must PluginState) bool {
-	return up.setState(state, must)
-}
+// Package extension 插件系统，用于扩展服务和运行时能力，例如服务发现、消息队列与日志系统等。
+/*
+   - 插件主要以组合方式安装在上下文上，用于扩展上下文的能力。
+   - 服务与运行时上下文均支持安装插件，注意服务类插件需要支持多线程并发，运行时类插件仅需支持单线程即可。
+   - 有一类较为特殊的通用类插件，指在服务与运行时上下文均可安装的插件。
+*/
+package extension

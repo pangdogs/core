@@ -21,8 +21,8 @@ package core
 
 import (
 	"context"
+	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/internal/ictx"
-	"git.golaxy.org/core/plugin"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
@@ -106,10 +106,10 @@ func (svc *ServiceBehavior) initPlugin() {
 		return
 	}
 
-	plugin.UnsafePluginBundle(pluginBundle).SetInstallCB(svc.activatePlugin)
-	plugin.UnsafePluginBundle(pluginBundle).SetUninstallCB(svc.deactivatePlugin)
+	extension.UnsafePluginBundle(pluginBundle).SetInstallCB(svc.activatePlugin)
+	extension.UnsafePluginBundle(pluginBundle).SetUninstallCB(svc.deactivatePlugin)
 
-	pluginBundle.Range(func(pluginStatus plugin.PluginStatus) bool {
+	pluginBundle.Range(func(pluginStatus extension.PluginStatus) bool {
 		svc.activatePlugin(pluginStatus)
 		return true
 	})
@@ -121,17 +121,17 @@ func (svc *ServiceBehavior) shutPlugin() {
 		return
 	}
 
-	plugin.UnsafePluginBundle(pluginBundle).SetInstallCB(nil)
-	plugin.UnsafePluginBundle(pluginBundle).SetUninstallCB(nil)
+	extension.UnsafePluginBundle(pluginBundle).SetInstallCB(nil)
+	extension.UnsafePluginBundle(pluginBundle).SetUninstallCB(nil)
 
-	pluginBundle.ReversedRange(func(pluginStatus plugin.PluginStatus) bool {
+	pluginBundle.ReversedRange(func(pluginStatus extension.PluginStatus) bool {
 		svc.deactivatePlugin(pluginStatus)
 		return true
 	})
 }
 
-func (svc *ServiceBehavior) activatePlugin(pluginStatus plugin.PluginStatus) {
-	if pluginStatus.State() != plugin.PluginState_Loaded {
+func (svc *ServiceBehavior) activatePlugin(pluginStatus extension.PluginStatus) {
+	if pluginStatus.State() != extension.PluginState_Loaded {
 		return
 	}
 
@@ -142,14 +142,14 @@ func (svc *ServiceBehavior) activatePlugin(pluginStatus plugin.PluginStatus) {
 		generic.MakeAction1(pluginInit.InitSP).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx)
 	}
 
-	plugin.UnsafePluginStatus(pluginStatus).SetState(plugin.PluginState_Active, plugin.PluginState_Loaded)
+	extension.UnsafePluginStatus(pluginStatus).SetState(extension.PluginState_Active, extension.PluginState_Loaded)
 }
 
-func (svc *ServiceBehavior) deactivatePlugin(pluginStatus plugin.PluginStatus) {
+func (svc *ServiceBehavior) deactivatePlugin(pluginStatus extension.PluginStatus) {
 	svc.changeRunningState(service.RunningState_PluginDeactivating, pluginStatus)
 	defer svc.changeRunningState(service.RunningState_PluginDeactivated, pluginStatus)
 
-	if !plugin.UnsafePluginStatus(pluginStatus).SetState(plugin.PluginState_Inactive, plugin.PluginState_Active) {
+	if !extension.UnsafePluginStatus(pluginStatus).SetState(extension.PluginState_Inactive, extension.PluginState_Active) {
 		return
 	}
 

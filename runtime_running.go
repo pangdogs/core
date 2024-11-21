@@ -22,8 +22,8 @@ package core
 import (
 	"context"
 	"git.golaxy.org/core/event"
+	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/internal/ictx"
-	"git.golaxy.org/core/plugin"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
@@ -110,10 +110,10 @@ func (rt *RuntimeBehavior) initPlugin() {
 		return
 	}
 
-	plugin.UnsafePluginBundle(pluginBundle).SetInstallCB(rt.activatePlugin)
-	plugin.UnsafePluginBundle(pluginBundle).SetUninstallCB(rt.deactivatePlugin)
+	extension.UnsafePluginBundle(pluginBundle).SetInstallCB(rt.activatePlugin)
+	extension.UnsafePluginBundle(pluginBundle).SetUninstallCB(rt.deactivatePlugin)
 
-	pluginBundle.Range(func(pluginStatus plugin.PluginStatus) bool {
+	pluginBundle.Range(func(pluginStatus extension.PluginStatus) bool {
 		rt.activatePlugin(pluginStatus)
 		return true
 	})
@@ -125,17 +125,17 @@ func (rt *RuntimeBehavior) shutPlugin() {
 		return
 	}
 
-	plugin.UnsafePluginBundle(pluginBundle).SetInstallCB(nil)
-	plugin.UnsafePluginBundle(pluginBundle).SetUninstallCB(nil)
+	extension.UnsafePluginBundle(pluginBundle).SetInstallCB(nil)
+	extension.UnsafePluginBundle(pluginBundle).SetUninstallCB(nil)
 
-	pluginBundle.ReversedRange(func(pluginStatus plugin.PluginStatus) bool {
+	pluginBundle.ReversedRange(func(pluginStatus extension.PluginStatus) bool {
 		rt.deactivatePlugin(pluginStatus)
 		return true
 	})
 }
 
-func (rt *RuntimeBehavior) activatePlugin(pluginStatus plugin.PluginStatus) {
-	if pluginStatus.State() != plugin.PluginState_Loaded {
+func (rt *RuntimeBehavior) activatePlugin(pluginStatus extension.PluginStatus) {
+	if pluginStatus.State() != extension.PluginState_Loaded {
 		return
 	}
 
@@ -146,14 +146,14 @@ func (rt *RuntimeBehavior) activatePlugin(pluginStatus plugin.PluginStatus) {
 		generic.MakeAction1(pluginInit.InitRP).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
 	}
 
-	plugin.UnsafePluginStatus(pluginStatus).SetState(plugin.PluginState_Active, plugin.PluginState_Loaded)
+	extension.UnsafePluginStatus(pluginStatus).SetState(extension.PluginState_Active, extension.PluginState_Loaded)
 }
 
-func (rt *RuntimeBehavior) deactivatePlugin(pluginStatus plugin.PluginStatus) {
+func (rt *RuntimeBehavior) deactivatePlugin(pluginStatus extension.PluginStatus) {
 	rt.changeRunningState(runtime.RunningState_PluginDeactivating, pluginStatus)
 	defer rt.changeRunningState(runtime.RunningState_PluginDeactivated, pluginStatus)
 
-	if !plugin.UnsafePluginStatus(pluginStatus).SetState(plugin.PluginState_Inactive, plugin.PluginState_Active) {
+	if !extension.UnsafePluginStatus(pluginStatus).SetState(extension.PluginState_Inactive, extension.PluginState_Active) {
 		return
 	}
 

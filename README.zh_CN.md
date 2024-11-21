@@ -11,7 +11,7 @@
 - Actor线程模型（`Actor Model`）：基于Actor模型的线程处理机制，每个Actor在独立的计算单元，实现并行任务处理，提升系统的并发性能和稳定性。
 - 运行时环境（`Runtime and Context`）：实现Actor独立运行线程环境，并提供实体管理与通信调用机制。
 - 服务环境（`Service and Context`）：支持服务的启动、停止和管理，提供全局的实体管理与通信调用机制。
-- 插件系统（`Plugin Support`）：提供扩展框架功能的机制，支持在运行时环境或服务环境中扩展实现新功能。
+- 插件系统（`Plugin System`）：提供扩展框架功能的机制，支持在运行时环境或服务环境中扩展实现新功能。
 - 本地事件系统（`Local Event`）：基于代码生成器，在Actor独立运行线程环境中，提供高效的本地事件机制。
 - 异步调用方案（`Async/Await`）：支持异步操作，简化异步代码的编写，提升系统的响应能力。
 
@@ -24,7 +24,7 @@
 | [/ec/pt](https://github.com/pangdogs/core/tree/main/ec/pt)               | 实体原型系统。 |
 | [/event](https://github.com/pangdogs/core/tree/main/event)               | 本地事件系统。 |
 | [/event/eventc](https://github.com/pangdogs/core/tree/main/event/eventc) | 本地事件代码生成器。 |
-| [/plugin](https://github.com/pangdogs/core/tree/main/plugin)             | 插件系统。 |
+| [/extension](https://github.com/pangdogs/core/tree/main/extension)       | 插件系统。 |
 | [/runtime](https://github.com/pangdogs/core/tree/main/runtime)           | 运行时上下文。 |
 | [/service](https://github.com/pangdogs/core/tree/main/service)           | 服务上下文。 |
 | [/utils](https://github.com/pangdogs/core/tree/main/utils)               | 一些工具类与函数。 |

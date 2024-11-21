@@ -23,8 +23,8 @@ import (
 	"context"
 	"fmt"
 	"git.golaxy.org/core/ec/pt"
+	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/internal/ictx"
-	"git.golaxy.org/core/plugin"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/option"
 	"git.golaxy.org/core/utils/reinterpret"
@@ -55,7 +55,7 @@ type Context interface {
 	iContext
 	ictx.Context
 	reinterpret.InstanceProvider
-	plugin.PluginProvider
+	extension.PluginProvider
 	pt.EntityPTProvider
 	Caller
 	fmt.Stringer

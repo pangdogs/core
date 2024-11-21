@@ -17,13 +17,27 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package plugin
+package extension
 
-import (
-	"fmt"
-	"git.golaxy.org/core/utils/exception"
-)
+import "git.golaxy.org/core/utils/generic"
 
-var (
-	ErrPlugin = fmt.Errorf("%w: plugin", exception.ErrCore) // 插件错误
-)
+// Deprecated: UnsafePluginBundle 访问插件包的内部方法
+func UnsafePluginBundle(pluginBundle PluginBundle) _UnsafePluginBundle {
+	return _UnsafePluginBundle{
+		PluginBundle: pluginBundle,
+	}
+}
+
+type _UnsafePluginBundle struct {
+	PluginBundle
+}
+
+// SetInstallCB 设置安装插件回调
+func (up _UnsafePluginBundle) SetInstallCB(cb generic.Action1[PluginStatus]) {
+	up.setInstallCB(cb)
+}
+
+// SetUninstallCB 设置卸载插件回调
+func (up _UnsafePluginBundle) SetUninstallCB(cb generic.Action1[PluginStatus]) {
+	up.setUninstallCB(cb)
+}

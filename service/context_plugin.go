@@ -20,10 +20,10 @@
 package service
 
 import (
-	"git.golaxy.org/core/plugin"
+	"git.golaxy.org/core/extension"
 )
 
 // GetPluginBundle 获取插件包
-func (ctx *ContextBehavior) GetPluginBundle() plugin.PluginBundle {
+func (ctx *ContextBehavior) GetPluginBundle() extension.PluginBundle {
 	return ctx.opts.PluginBundle
 }
