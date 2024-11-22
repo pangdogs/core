@@ -31,6 +31,6 @@ type _UnsafePluginStatus struct {
 }
 
 // SetState 修改状态
-func (up _UnsafePluginStatus) SetState(state, must PluginState) bool {
-	return up.setState(state, must)
+func (u _UnsafePluginStatus) SetState(state, must PluginState) bool {
+	return u.setState(state, must)
 }

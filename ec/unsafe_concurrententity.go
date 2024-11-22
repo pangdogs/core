@@ -30,6 +30,6 @@ type _UnsafeConcurrentEntity struct {
 	ConcurrentEntity
 }
 
-func (ue _UnsafeConcurrentEntity) GetEntity() Entity {
-	return ue.getEntity()
+func (u _UnsafeConcurrentEntity) GetEntity() Entity {
+	return u.getEntity()
 }

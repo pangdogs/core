@@ -68,12 +68,13 @@ type iRuntime interface {
 
 // RuntimeBehavior 运行时行为，在扩展运行时能力时，匿名嵌入至运行时结构体中
 type RuntimeBehavior struct {
-	ctx             runtime.Context
-	opts            RuntimeOptions
-	hooksMap        map[uid.Id][3]event.Hook
-	processQueue    chan _Task
-	eventUpdate     event.Event
-	eventLateUpdate event.Event
+	ctx                             runtime.Context
+	opts                            RuntimeOptions
+	hooksMap                        map[uid.Id][3]event.Hook
+	processQueue                    chan _Task
+	eventUpdate                     event.Event
+	eventLateUpdate                 event.Event
+	eventRuntimeRunningStateChanged event.Event
 }
 
 // GetCurrentContext 获取当前上下文
@@ -115,6 +116,7 @@ func (rt *RuntimeBehavior) init(rtCtx runtime.Context, opts RuntimeOptions) {
 
 	rtCtx.ActivateEvent(&rt.eventUpdate, event.EventRecursion_Disallow)
 	rtCtx.ActivateEvent(&rt.eventLateUpdate, event.EventRecursion_Disallow)
+	rtCtx.ActivateEvent(&rt.eventRuntimeRunningStateChanged, event.EventRecursion_Allow)
 
 	rt.changeRunningState(runtime.RunningState_Birth)
 

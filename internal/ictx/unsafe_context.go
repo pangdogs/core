@@ -35,20 +35,20 @@ type _UnsafeContext struct {
 }
 
 // Init 初始化
-func (uc _UnsafeContext) Init(parentCtx context.Context, autoRecover bool, reportError chan error) {
-	uc.init(parentCtx, autoRecover, reportError)
+func (u _UnsafeContext) Init(parentCtx context.Context, autoRecover bool, reportError chan error) {
+	u.init(parentCtx, autoRecover, reportError)
 }
 
 // SetPaired 设置配对标记
-func (uc _UnsafeContext) SetPaired(v bool) bool {
-	return uc.setPaired(v)
+func (u _UnsafeContext) SetPaired(v bool) bool {
+	return u.setPaired(v)
 }
 
 // GetPaired 获取配对标记
-func (uc _UnsafeContext) GetPaired() bool {
-	return uc.getPaired()
+func (u _UnsafeContext) GetPaired() bool {
+	return u.getPaired()
 }
 
-func (uc _UnsafeContext) GetTerminatedChan() chan struct{} {
-	return uc.getTerminatedChan()
+func (u _UnsafeContext) GetTerminatedChan() chan struct{} {
+	return u.getTerminatedChan()
 }

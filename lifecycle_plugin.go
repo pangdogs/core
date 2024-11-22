@@ -24,22 +24,15 @@ import (
 	"git.golaxy.org/core/service"
 )
 
-// LifecycleServicePluginInit 服务上的插件初始化回调，插件实现此接口即可使用
-type LifecycleServicePluginInit interface {
-	InitSP(svcCtx service.Context)
+// LifecyclePluginInit 插件初始化回调，插件实现此接口即可使用，当插件安装在服务上时，rtCtx为nil
+type LifecyclePluginInit interface {
+	Init(svcCtx service.Context, rtCtx runtime.Context)
 }
 
-// LifecycleServicePluginShut 服务上的插件结束回调，插件实现此接口即可使用
-type LifecycleServicePluginShut interface {
-	ShutSP(svcCtx service.Context)
+// LifecyclePluginShut 插件结束回调，插件实现此接口即可使用，当插件安装在服务上时，rtCtx为nil
+type LifecyclePluginShut interface {
+	Shut(svcCtx service.Context, rtCtx runtime.Context)
 }
 
-// LifecycleRuntimePluginInit 运行时上的插件初始化回调，插件实现此接口即可使用
-type LifecycleRuntimePluginInit interface {
-	InitRP(rtCtx runtime.Context)
-}
-
-// LifecycleRuntimePluginShut 运行时上的插件结束回调，插件实现此接口即可使用
-type LifecycleRuntimePluginShut interface {
-	ShutRP(rtCtx runtime.Context)
-}
+// LifecyclePluginOnRuntimeRunningStateChanged 运行时运行状态变化，当插件安装在运行时上时，插件实现此接口即可使用
+type LifecyclePluginOnRuntimeRunningStateChanged = eventRuntimeRunningStateChanged

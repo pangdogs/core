@@ -31,7 +31,7 @@ import (
 
 // ComponentLib 组件原型库
 type ComponentLib interface {
-	// Declare 声明组件原型
+	// Declare 声明组件原型（可以重复声明）
 	Declare(comp any) ec.ComponentPT
 	// Undeclare 取消声明组件原型
 	Undeclare(prototype string)
@@ -63,7 +63,7 @@ type _ComponentLib struct {
 	compList []*_Component
 }
 
-// Declare 声明组件原型
+// Declare 声明组件原型（可以重复声明）
 func (lib *_ComponentLib) Declare(comp any) ec.ComponentPT {
 	return lib.declare(comp)
 }

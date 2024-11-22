@@ -25,7 +25,7 @@ import (
 	"git.golaxy.org/core/utils/generic"
 )
 
-// ServicePlugin 定义服务插件
+// ServicePlugin 定义服务插件，支持服务上下文
 func ServicePlugin[PLUGIN_IFACE, OPTION any](creator generic.FuncVar0[OPTION, PLUGIN_IFACE]) ServicePluginDefinition[PLUGIN_IFACE, OPTION] {
 	plug := definePlugin[PLUGIN_IFACE, OPTION](creator)
 
@@ -37,7 +37,7 @@ func ServicePlugin[PLUGIN_IFACE, OPTION any](creator generic.FuncVar0[OPTION, PL
 	}
 }
 
-// ServicePluginDefinition 服务插件定义，只能在服务上下文中安装与使用
+// ServicePluginDefinition 服务插件定义
 type ServicePluginDefinition[PLUGIN_IFACE, OPTION any] struct {
 	Name      string                                               // 插件名称
 	Install   generic.ActionVar1[extension.PluginProvider, OPTION] // 向插件包安装

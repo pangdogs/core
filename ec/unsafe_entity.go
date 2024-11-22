@@ -38,71 +38,71 @@ type _UnsafeEntity struct {
 }
 
 // Init 初始化
-func (ue _UnsafeEntity) Init(opts EntityOptions) {
-	ue.init(opts)
+func (u _UnsafeEntity) Init(opts EntityOptions) {
+	u.init(opts)
 }
 
 // WithContext 传递上下文
-func (ue _UnsafeEntity) WithContext(ctx context.Context) {
-	ue.withContext(ctx)
+func (u _UnsafeEntity) WithContext(ctx context.Context) {
+	u.withContext(ctx)
 }
 
 // GetOptions 获取实体所有选项
-func (ue _UnsafeEntity) GetOptions() *EntityOptions {
-	return ue.getOptions()
+func (u _UnsafeEntity) GetOptions() *EntityOptions {
+	return u.getOptions()
 }
 
 // SetId 设置Id
-func (ue _UnsafeEntity) SetId(id uid.Id) {
-	ue.setId(id)
+func (u _UnsafeEntity) SetId(id uid.Id) {
+	u.setId(id)
 }
 
 // SetPT 设置实体原型信息
-func (ue _UnsafeEntity) SetPT(prototype EntityPT) {
-	ue.setPT(prototype)
+func (u _UnsafeEntity) SetPT(prototype EntityPT) {
+	u.setPT(prototype)
 }
 
 // SetContext 设置上下文
-func (ue _UnsafeEntity) SetContext(ctx iface.Cache) {
-	ue.setContext(ctx)
+func (u _UnsafeEntity) SetContext(ctx iface.Cache) {
+	u.setContext(ctx)
 }
 
 // GetVersion 获取组件列表变化版本号
-func (ue _UnsafeEntity) GetVersion() int64 {
-	return ue.getVersion()
+func (u _UnsafeEntity) GetVersion() int64 {
+	return u.getVersion()
 }
 
 // SetState 设置状态
-func (ue _UnsafeEntity) SetState(state EntityState) {
-	ue.setState(state)
+func (u _UnsafeEntity) SetState(state EntityState) {
+	u.setState(state)
 }
 
 // SetReflected 设置反射值
-func (ue _UnsafeEntity) SetReflected(v reflect.Value) {
-	ue.setReflected(v)
+func (u _UnsafeEntity) SetReflected(v reflect.Value) {
+	u.setReflected(v)
 }
 
 // SetTreeNodeState 设置实体树节点状态
-func (ue _UnsafeEntity) SetTreeNodeState(state TreeNodeState) {
-	ue.setTreeNodeState(state)
+func (u _UnsafeEntity) SetTreeNodeState(state TreeNodeState) {
+	u.setTreeNodeState(state)
 }
 
 // SetTreeNodeParent 设置在实体树中的父实体
-func (ue _UnsafeEntity) SetTreeNodeParent(parent Entity) {
-	ue.setTreeNodeParent(parent)
+func (u _UnsafeEntity) SetTreeNodeParent(parent Entity) {
+	u.setTreeNodeParent(parent)
 }
 
 // EnterParentNode 进入父节点
-func (ue _UnsafeEntity) EnterParentNode() {
-	ue.enterParentNode()
+func (u _UnsafeEntity) EnterParentNode() {
+	u.enterParentNode()
 }
 
 // LeaveParentNode 离开父节点
-func (ue _UnsafeEntity) LeaveParentNode() {
-	ue.leaveParentNode()
+func (u _UnsafeEntity) LeaveParentNode() {
+	u.leaveParentNode()
 }
 
 // CleanManagedHooks 清理所有的托管hook
-func (ue _UnsafeEntity) CleanManagedHooks() {
-	ue.cleanManagedHooks()
+func (u _UnsafeEntity) CleanManagedHooks() {
+	u.cleanManagedHooks()
 }

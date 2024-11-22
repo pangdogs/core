@@ -17,5 +17,5 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Package pt 实体与组件原型，用于创建实例。
+// Package pt 实体与组件原型，用于创建实体。
 package pt

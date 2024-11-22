@@ -136,8 +136,8 @@ func (svc *ServiceBehavior) activatePlugin(pluginStatus extension.PluginStatus) 
 	svc.changeRunningState(service.RunningState_PluginActivating, pluginStatus)
 	defer svc.changeRunningState(service.RunningState_PluginActivated, pluginStatus)
 
-	if pluginInit, ok := pluginStatus.InstanceFace().Iface.(LifecycleServicePluginInit); ok {
-		generic.MakeAction1(pluginInit.InitSP).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx)
+	if pluginInit, ok := pluginStatus.InstanceFace().Iface.(LifecyclePluginInit); ok {
+		generic.MakeAction2(pluginInit.Init).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
 	}
 
 	extension.UnsafePluginStatus(pluginStatus).SetState(extension.PluginState_Active, extension.PluginState_Loaded)
@@ -151,7 +151,7 @@ func (svc *ServiceBehavior) deactivatePlugin(pluginStatus extension.PluginStatus
 		return
 	}
 
-	if pluginShut, ok := pluginStatus.InstanceFace().Iface.(LifecycleServicePluginShut); ok {
-		generic.MakeAction1(pluginShut.ShutSP).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx)
+	if pluginShut, ok := pluginStatus.InstanceFace().Iface.(LifecyclePluginShut); ok {
+		generic.MakeAction2(pluginShut.Shut).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
 	}
 }

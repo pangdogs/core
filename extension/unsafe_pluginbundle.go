@@ -33,6 +33,6 @@ type _UnsafePluginBundle struct {
 }
 
 // SetCallback 设置回调
-func (up _UnsafePluginBundle) SetCallback(installCB, uninstallCB generic.Action1[PluginStatus]) {
-	up.setCallback(installCB, uninstallCB)
+func (u _UnsafePluginBundle) SetCallback(installCB, uninstallCB generic.Action1[PluginStatus]) {
+	u.setCallback(installCB, uninstallCB)
 }

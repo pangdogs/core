@@ -35,21 +35,21 @@ type _UnsafeEvent struct {
 }
 
 // Ctrl 事件控制器
-func (ue _UnsafeEvent) Ctrl() IEventCtrl {
-	return ue.ctrl()
+func (u _UnsafeEvent) Ctrl() IEventCtrl {
+	return u.ctrl()
 }
 
 // Emit 发送事件
-func (ue _UnsafeEvent) Emit(fun func(subscriber iface.Cache) bool) {
-	ue.emit(fun)
+func (u _UnsafeEvent) Emit(fun func(subscriber iface.Cache) bool) {
+	u.emit(fun)
 }
 
 // NewHook 创建事件钩子
-func (ue _UnsafeEvent) NewHook(subscriberFace iface.FaceAny, priority int32) Hook {
-	return ue.newHook(subscriberFace, priority)
+func (u _UnsafeEvent) NewHook(subscriberFace iface.FaceAny, priority int32) Hook {
+	return u.newHook(subscriberFace, priority)
 }
 
 // RemoveSubscriber 删除订阅者
-func (ue _UnsafeEvent) RemoveSubscriber(subscriber any) {
-	ue.removeSubscriber(subscriber)
+func (u _UnsafeEvent) RemoveSubscriber(subscriber any) {
+	u.removeSubscriber(subscriber)
 }

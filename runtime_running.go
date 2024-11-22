@@ -25,6 +25,7 @@ import (
 	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/runtime"
+	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 )
@@ -102,6 +103,8 @@ func (rt *RuntimeBehavior) changeRunningState(state runtime.RunningState, args .
 	}
 
 	runtime.UnsafeContext(rt.ctx).ChangeRunningState(state, args...)
+
+	_EmitEventRuntimeRunningStateChanged(&rt.eventRuntimeRunningStateChanged, rt.ctx, state, args...)
 }
 
 func (rt *RuntimeBehavior) initPlugin() {
@@ -133,21 +136,35 @@ func (rt *RuntimeBehavior) shutPlugin() {
 }
 
 func (rt *RuntimeBehavior) activatePlugin(pluginStatus extension.PluginStatus) {
-	if pluginStatus.State() != extension.PluginState_Loaded {
+	func() {
+		if pluginStatus.State() != extension.PluginState_Loaded {
+			return
+		}
+
+		rt.changeRunningState(runtime.RunningState_PluginActivating, pluginStatus)
+		defer rt.changeRunningState(runtime.RunningState_PluginActivated, pluginStatus)
+
+		if pluginInit, ok := pluginStatus.InstanceFace().Iface.(LifecyclePluginInit); ok {
+			generic.MakeAction2(pluginInit.Init).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), service.Current(rt), rt.ctx)
+		}
+
+		extension.UnsafePluginStatus(pluginStatus).SetState(extension.PluginState_Active, extension.PluginState_Loaded)
+	}()
+
+	if pluginStatus.State() != extension.PluginState_Active {
 		return
 	}
 
-	rt.changeRunningState(runtime.RunningState_PluginActivating, pluginStatus)
-	defer rt.changeRunningState(runtime.RunningState_PluginActivated, pluginStatus)
-
-	if pluginInit, ok := pluginStatus.InstanceFace().Iface.(LifecycleRuntimePluginInit); ok {
-		generic.MakeAction1(pluginInit.InitRP).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
+	if pluginOnRuntimeRunningStateChanged, ok := pluginStatus.InstanceFace().Iface.(LifecyclePluginOnRuntimeRunningStateChanged); ok {
+		event.Bind[LifecyclePluginOnRuntimeRunningStateChanged](&rt.eventRuntimeRunningStateChanged, pluginOnRuntimeRunningStateChanged)
 	}
-
-	extension.UnsafePluginStatus(pluginStatus).SetState(extension.PluginState_Active, extension.PluginState_Loaded)
 }
 
 func (rt *RuntimeBehavior) deactivatePlugin(pluginStatus extension.PluginStatus) {
+	if pluginOnRuntimeRunningStateChanged, ok := pluginStatus.InstanceFace().Iface.(LifecyclePluginOnRuntimeRunningStateChanged); ok {
+		event.Unbind[LifecyclePluginOnRuntimeRunningStateChanged](&rt.eventRuntimeRunningStateChanged, pluginOnRuntimeRunningStateChanged)
+	}
+
 	rt.changeRunningState(runtime.RunningState_PluginDeactivating, pluginStatus)
 	defer rt.changeRunningState(runtime.RunningState_PluginDeactivated, pluginStatus)
 
@@ -155,8 +172,8 @@ func (rt *RuntimeBehavior) deactivatePlugin(pluginStatus extension.PluginStatus)
 		return
 	}
 
-	if pluginShut, ok := pluginStatus.InstanceFace().Iface.(LifecycleRuntimePluginShut); ok {
-		generic.MakeAction1(pluginShut.ShutRP).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
+	if pluginShut, ok := pluginStatus.InstanceFace().Iface.(LifecyclePluginShut); ok {
+		generic.MakeAction2(pluginShut.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), service.Current(rt), rt.ctx)
 	}
 }
 

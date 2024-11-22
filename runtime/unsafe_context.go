@@ -36,36 +36,36 @@ type _UnsafeContext struct {
 }
 
 // Init 初始化
-func (uc _UnsafeContext) Init(svcCtx service.Context, opts ContextOptions) {
-	uc.Context.init(svcCtx, opts)
+func (u _UnsafeContext) Init(svcCtx service.Context, opts ContextOptions) {
+	u.Context.init(svcCtx, opts)
 }
 
 // GetOptions 获取运行时上下文所有选项
-func (uc _UnsafeContext) GetOptions() *ContextOptions {
-	return uc.getOptions()
+func (u _UnsafeContext) GetOptions() *ContextOptions {
+	return u.getOptions()
 }
 
 // SetFrame 设置帧
-func (uc _UnsafeContext) SetFrame(frame Frame) {
-	uc.setFrame(frame)
+func (u _UnsafeContext) SetFrame(frame Frame) {
+	u.setFrame(frame)
 }
 
 // SetCallee 设置调用接受者
-func (uc _UnsafeContext) SetCallee(callee async.Callee) {
-	uc.setCallee(callee)
+func (u _UnsafeContext) SetCallee(callee async.Callee) {
+	u.setCallee(callee)
 }
 
 // GetServiceCtx 获取服务上下文
-func (uc _UnsafeContext) GetServiceCtx() service.Context {
-	return uc.getServiceCtx()
+func (u _UnsafeContext) GetServiceCtx() service.Context {
+	return u.getServiceCtx()
 }
 
 // ChangeRunningState 修改运行状态
-func (uc _UnsafeContext) ChangeRunningState(state RunningState, args ...any) {
-	uc.changeRunningState(state, args...)
+func (u _UnsafeContext) ChangeRunningState(state RunningState, args ...any) {
+	u.changeRunningState(state, args...)
 }
 
 // GC GC
-func (uc _UnsafeContext) GC() {
-	uc.gc()
+func (u _UnsafeContext) GC() {
+	u.gc()
 }

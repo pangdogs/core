@@ -230,7 +230,7 @@ func %[9]s%[1]s%[7]s(evt %[6]sIEvent%[4]s) {
 	})
 }
 
-func %[9]s%[1]s%[7]sWithInterrupt(evt %[6]sIEvent%[4]s, interrupt func(%[10]s) bool) {
+func %[9]s%[1]s%[7]sWithInterrupt(evt %[6]sIEvent, interrupt func(%[10]s) bool%[4]s) {
 	if evt == nil {
 		%[6]sPanicf("%%w: %%w: evt is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
@@ -257,7 +257,7 @@ func %[9]s%[1]s%[7]s(evt %[6]sIEvent%[4]s) {
 	})
 }
 
-func %[9]s%[1]s%[7]sWithInterrupt(evt %[6]sIEvent%[4]s, interrupt func(%[10]s) bool) {
+func %[9]s%[1]s%[7]sWithInterrupt(evt %[6]sIEvent, interrupt func(%[10]s) bool%[4]s) {
 	if evt == nil {
 		%[6]sPanicf("%%w: %%w: evt is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}

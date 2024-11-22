@@ -24,7 +24,7 @@ import (
 	"git.golaxy.org/core/utils/generic"
 )
 
-// RuntimePluginInterface 定义运行时插件接口，因为仅有接口没有实现，所以不能用于向插件包安装插件
+// RuntimePluginInterface 定义运行时插件接口，支持运行时上下文，通常用于为同类插件的不同实现提供统一的接口
 func RuntimePluginInterface[PLUGIN_IFACE any]() RuntimePluginInterfaceDefinition[PLUGIN_IFACE] {
 	plug := definePluginInterface[PLUGIN_IFACE]()
 
@@ -34,7 +34,7 @@ func RuntimePluginInterface[PLUGIN_IFACE any]() RuntimePluginInterfaceDefinition
 	}
 }
 
-// RuntimePluginInterfaceDefinition 运行时插件接口定义，只能在运行时上下文中使用
+// RuntimePluginInterfaceDefinition 运行时插件接口定义
 type RuntimePluginInterfaceDefinition[PLUGIN_IFACE any] struct {
 	Name  string                                       // 插件名称
 	Using generic.Func1[runtime.Context, PLUGIN_IFACE] // 使用插件

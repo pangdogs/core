@@ -17,7 +17,7 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Package service 运行时环境提供的一些接口与函数。
+// Package service 为服务环境提供的一些接口与函数。
 /*
    - 服务上下文（context）
    - 并发实体管理器（EntityMgr）

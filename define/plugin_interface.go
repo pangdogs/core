@@ -25,12 +25,12 @@ import (
 	"git.golaxy.org/core/utils/types"
 )
 
-// PluginInterface 定义通用插件接口，因为仅有接口没有实现，所以不能用于向插件包安装插件
+// PluginInterface 定义通用插件接口，支持运行时和服务上下文，通常用于为同类插件的不同实现提供统一的接口
 func PluginInterface[PLUGIN_IFACE any]() PluginInterfaceDefinition[PLUGIN_IFACE] {
 	return definePluginInterface[PLUGIN_IFACE]()
 }
 
-// PluginInterfaceDefinition 通用插件接口定义，在运行时上下文和服务上下文中，均可使用
+// PluginInterfaceDefinition 通用插件接口定义
 type PluginInterfaceDefinition[PLUGIN_IFACE any] struct {
 	Name  string                                                // 插件名称
 	Using generic.Func1[extension.PluginProvider, PLUGIN_IFACE] // 使用插件

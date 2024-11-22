@@ -31,16 +31,16 @@ type _UnsafeContext struct {
 }
 
 // Init 初始化
-func (uc _UnsafeContext) Init(opts ContextOptions) {
-	uc.Context.init(opts)
+func (u _UnsafeContext) Init(opts ContextOptions) {
+	u.Context.init(opts)
 }
 
 // GetOptions 获取服务上下文所有选项
-func (uc _UnsafeContext) GetOptions() *ContextOptions {
-	return uc.getOptions()
+func (u _UnsafeContext) GetOptions() *ContextOptions {
+	return u.getOptions()
 }
 
 // ChangeRunningState 修改运行状态
-func (uc _UnsafeContext) ChangeRunningState(state RunningState, args ...any) {
-	uc.changeRunningState(state, args...)
+func (u _UnsafeContext) ChangeRunningState(state RunningState, args ...any) {
+	u.changeRunningState(state, args...)
 }

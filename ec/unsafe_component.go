@@ -37,41 +37,41 @@ type _UnsafeComponent struct {
 }
 
 // Init 初始化
-func (uc _UnsafeComponent) Init(name string, entity Entity, instance Component) {
-	uc.init(name, entity, instance)
+func (u _UnsafeComponent) Init(name string, entity Entity, instance Component) {
+	u.init(name, entity, instance)
 }
 
 // WithContext 传递上下文
-func (uc _UnsafeComponent) WithContext(ctx context.Context) {
-	uc.withContext(ctx)
+func (u _UnsafeComponent) WithContext(ctx context.Context) {
+	u.withContext(ctx)
 }
 
 // SetId 设置Id
-func (uc _UnsafeComponent) SetId(id uid.Id) {
-	uc.setId(id)
+func (u _UnsafeComponent) SetId(id uid.Id) {
+	u.setId(id)
 }
 
 // SetDesc 设置组件原型信息
-func (uc _UnsafeComponent) SetDesc(desc *ComponentDesc) {
-	uc.setDesc(desc)
+func (u _UnsafeComponent) SetDesc(desc *ComponentDesc) {
+	u.setDesc(desc)
 }
 
 // SetState 设置状态
-func (uc _UnsafeComponent) SetState(state ComponentState) {
-	uc.setState(state)
+func (u _UnsafeComponent) SetState(state ComponentState) {
+	u.setState(state)
 }
 
 // SetReflected 设置反射值
-func (uc _UnsafeComponent) SetReflected(v reflect.Value) {
-	uc.setReflected(v)
+func (u _UnsafeComponent) SetReflected(v reflect.Value) {
+	u.setReflected(v)
 }
 
 // SetNonRemovable 设置是否不可删除
-func (uc _UnsafeComponent) SetNonRemovable(b bool) {
-	uc.setNonRemovable(b)
+func (u _UnsafeComponent) SetNonRemovable(b bool) {
+	u.setNonRemovable(b)
 }
 
 // CleanManagedHooks 清理所有的托管hook
-func (uc _UnsafeComponent) CleanManagedHooks() {
-	uc.cleanManagedHooks()
+func (u _UnsafeComponent) CleanManagedHooks() {
+	u.cleanManagedHooks()
 }

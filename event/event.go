@@ -42,61 +42,6 @@ var (
 )
 
 // IEvent 事件接口
-/*
-定义事件：
-	1.按以下格式编写一个接口，即完成事件的定义：
-	type Event{事件名} interface {
-		On{事件名}({参数列表})
-	}
-
-	2.在定义事件的源码文件（.go）头部添加以下注释，在编译前自动化生成代码：
-	//go:generate go run git.golaxy.org/core/event/eventc event
-
-定义事件的选项（添加到定义事件的注释里）：
-	1.发送事件的代码的可见性
-		+event-gen:export=[0,1]
-
-	2.是否生成简化绑定事件的代码
-		+event-gen:auto=[0,1]
-
-使用事件：
-	1.事件一般作为组件的成员，在组件Awake时初始化，组件Dispose时关闭，示例如下：
-	type Comp struct {
-		ec.ComponentBehavior
-		event{事件名} event.Event
-	}
-	func (c *Comp) Awake() {
-		runtime.Current(c).ActivateEvent(&c.event{事件名}, event.EventRecursion_Discard)
-	}
-	func (c *Comp) Dispose() {
-		c.event{事件名}.Close()
-	}
-
-订阅事件：
-	1.在组件的成员函数，编写以下代码：
-	func (c *Comp) On{事件名}({参数列表}) {
-		...
-	}
-
-	2.在需要订阅事件时，编写以下代码：
-	func (c *Comp) MethodXXX() {
-		{事件定义包名}.Bind{事件名}({发布者}, c)
-	}
-
-	3.如果订阅者生命周期小于发布者，那么需要记录hook并且在Dispose时解除绑定，示例如下：
-	type Comp struct {
-		ec.ComponentBehavior
-		hook event.Hook
-	}
-	func (c *Comp) MethodXXX() {
-		c.hook = {事件定义包名}.Bind{事件名}({发布者}, c)
-	}
-	func (c *Comp) Dispose() {
-		c.hook.Unbind()
-	}
-
-	4.如果不想写代码记录hook，可以使用ec.ComponentBehavior、ec.EntityBehavior或runtime.Context的ManagedHooks()来记录hook，在它们生命周期结束时，将会自动解除绑定
-*/
 type IEvent interface {
 	ctrl() IEventCtrl
 	emit(fun generic.Func1[iface.Cache, bool])

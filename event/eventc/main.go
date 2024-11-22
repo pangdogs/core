@@ -17,15 +17,15 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Package eventc 使用go:generate功能，在编译前自动化生成代码
+// Package eventc 使用 go:generate 功能，在编译前自动化生成代码
 /*
-	- 可以生成事件（event）与事件表（event table）代码。
+	- 可以生成事件（Event）与事件表（Event Table）代码。
 	- 用于生成事件代码时，在事件定义代码源文件（.go）头部，添加以下注释：
 		//go:generate go run git.golaxy.org/core/event/eventc event
 	- 用于生成事件表代码时，在事件定义代码源文件（.go）头部，添加以下注释：
 		//go:generate go run git.golaxy.org/core/event/eventc eventtab --name={事件表名称}
-	- 在cmd控制台中，进入事件定义代码源文件（.go）的目录，输入go generate指令即可生成代码，此外也可以使用IDE提供的go generate功能。
-	- 编译本包并执行eventc --help，可以查看命令行参数，通过参数可以调整生成的代码。
+	- 在 cmd 控制台中，进入事件定义代码源文件（.go）的目录，输入 go generate 指令即可生成代码，此外也可以使用 IDE 提供的 go generate 功能。
+	- 编译本包并执行 eventc --help ，可以查看命令行参数，通过参数可以调整生成的代码。
 */
 package main
 

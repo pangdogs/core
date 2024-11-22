@@ -159,7 +159,7 @@ func TimeTick(ctx context.Context, dur time.Duration) async.AsyncRet {
 	return asyncRet
 }
 
-// ReadChan 读取channel
+// ReadChan 读取channel转换为AsyncRet
 func ReadChan[T any](ctx context.Context, ch <-chan T) async.AsyncRet {
 	if ctx == nil {
 		ctx = context.Background()

@@ -20,10 +20,16 @@
 //go:generate go run git.golaxy.org/core/event/eventc event --default_export=false --default_auto=false
 package core
 
+import "git.golaxy.org/core/runtime"
+
 type eventUpdate interface {
 	Update()
 }
 
 type eventLateUpdate interface {
 	LateUpdate()
+}
+
+type eventRuntimeRunningStateChanged interface {
+	OnRuntimeRunningStateChanged(rtCtx runtime.Context, state runtime.RunningState, args ...any)
 }

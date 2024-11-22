@@ -23,6 +23,7 @@ package core
 
 import (
 	event "git.golaxy.org/core/event"
+	"git.golaxy.org/core/runtime"
 )
 
 func _EmitEventUpdate(evt event.IEvent) {
@@ -93,4 +94,39 @@ type _EventLateUpdateHandler func()
 
 func (h _EventLateUpdateHandler) LateUpdate() {
 	h()
+}
+
+func _EmitEventRuntimeRunningStateChanged(evt event.IEvent, rtCtx runtime.Context, state runtime.RunningState, args ...any) {
+	if evt == nil {
+		event.Panicf("%w: %w: evt is nil", event.ErrEvent, event.ErrArgs)
+	}
+	event.UnsafeEvent(evt).Emit(func(subscriber event.Cache) bool {
+		event.Cache2Iface[eventRuntimeRunningStateChanged](subscriber).OnRuntimeRunningStateChanged(rtCtx, state, args)
+		return true
+	})
+}
+
+func _EmitEventRuntimeRunningStateChangedWithInterrupt(evt event.IEvent, interrupt func(rtCtx runtime.Context, state runtime.RunningState, args ...any) bool, rtCtx runtime.Context, state runtime.RunningState, args ...any) {
+	if evt == nil {
+		event.Panicf("%w: %w: evt is nil", event.ErrEvent, event.ErrArgs)
+	}
+	event.UnsafeEvent(evt).Emit(func(subscriber event.Cache) bool {
+		if interrupt != nil {
+			if interrupt(rtCtx, state, args) {
+				return false
+			}
+		}
+		event.Cache2Iface[eventRuntimeRunningStateChanged](subscriber).OnRuntimeRunningStateChanged(rtCtx, state, args)
+		return true
+	})
+}
+
+func _HandleEventRuntimeRunningStateChanged(fun func(rtCtx runtime.Context, state runtime.RunningState, args ...any)) _EventRuntimeRunningStateChangedHandler {
+	return _EventRuntimeRunningStateChangedHandler(fun)
+}
+
+type _EventRuntimeRunningStateChangedHandler func(rtCtx runtime.Context, state runtime.RunningState, args ...any)
+
+func (h _EventRuntimeRunningStateChangedHandler) OnRuntimeRunningStateChanged(rtCtx runtime.Context, state runtime.RunningState, args ...any) {
+	h(rtCtx, state, args)
 }

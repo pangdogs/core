@@ -26,12 +26,12 @@ import (
 	"git.golaxy.org/core/utils/types"
 )
 
-// Plugin 定义通用插件
+// Plugin 定义通用插件，支持运行时和服务上下文
 func Plugin[PLUGIN_IFACE, OPTION any](creator generic.FuncVar0[OPTION, PLUGIN_IFACE]) PluginDefinition[PLUGIN_IFACE, OPTION] {
 	return definePlugin[PLUGIN_IFACE, OPTION](creator)
 }
 
-// PluginDefinition 通用插件定义，在运行时上下文和服务上下文中，均可安装与使用
+// PluginDefinition 通用插件定义
 type PluginDefinition[PLUGIN_IFACE, OPTION any] struct {
 	Name      string                                                // 插件名称
 	Install   generic.ActionVar1[extension.PluginProvider, OPTION]  // 向插件包安装

@@ -25,7 +25,7 @@ import (
 	"git.golaxy.org/core/utils/generic"
 )
 
-// RuntimePlugin 定义运行时插件
+// RuntimePlugin 定义运行时插件，支持运行时上下文
 func RuntimePlugin[PLUGIN_IFACE, OPTION any](creator generic.FuncVar0[OPTION, PLUGIN_IFACE]) RuntimePluginDefinition[PLUGIN_IFACE, OPTION] {
 	plug := definePlugin[PLUGIN_IFACE, OPTION](creator)
 
@@ -37,7 +37,7 @@ func RuntimePlugin[PLUGIN_IFACE, OPTION any](creator generic.FuncVar0[OPTION, PL
 	}
 }
 
-// RuntimePluginDefinition 运行时插件定义，只能在运行时上下文中安装与使用
+// RuntimePluginDefinition 运行时插件定义
 type RuntimePluginDefinition[PLUGIN_IFACE, OPTION any] struct {
 	Name      string                                               // 插件名称
 	Install   generic.ActionVar1[extension.PluginProvider, OPTION] // 向插件包安装
