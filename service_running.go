@@ -106,8 +106,7 @@ func (svc *ServiceBehavior) initPlugin() {
 		return
 	}
 
-	extension.UnsafePluginBundle(pluginBundle).SetInstallCB(svc.activatePlugin)
-	extension.UnsafePluginBundle(pluginBundle).SetUninstallCB(svc.deactivatePlugin)
+	extension.UnsafePluginBundle(pluginBundle).SetCallback(svc.activatePlugin, svc.deactivatePlugin)
 
 	pluginBundle.Range(func(pluginStatus extension.PluginStatus) bool {
 		svc.activatePlugin(pluginStatus)
@@ -121,8 +120,7 @@ func (svc *ServiceBehavior) shutPlugin() {
 		return
 	}
 
-	extension.UnsafePluginBundle(pluginBundle).SetInstallCB(nil)
-	extension.UnsafePluginBundle(pluginBundle).SetUninstallCB(nil)
+	extension.UnsafePluginBundle(pluginBundle).SetCallback(nil, nil)
 
 	pluginBundle.ReversedRange(func(pluginStatus extension.PluginStatus) bool {
 		svc.deactivatePlugin(pluginStatus)

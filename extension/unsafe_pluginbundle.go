@@ -32,12 +32,7 @@ type _UnsafePluginBundle struct {
 	PluginBundle
 }
 
-// SetInstallCB 设置安装插件回调
-func (up _UnsafePluginBundle) SetInstallCB(cb generic.Action1[PluginStatus]) {
-	up.setInstallCB(cb)
-}
-
-// SetUninstallCB 设置卸载插件回调
-func (up _UnsafePluginBundle) SetUninstallCB(cb generic.Action1[PluginStatus]) {
-	up.setUninstallCB(cb)
+// SetCallback 设置回调
+func (up _UnsafePluginBundle) SetCallback(installCB, uninstallCB generic.Action1[PluginStatus]) {
+	up.setCallback(installCB, uninstallCB)
 }

@@ -110,8 +110,7 @@ func (rt *RuntimeBehavior) initPlugin() {
 		return
 	}
 
-	extension.UnsafePluginBundle(pluginBundle).SetInstallCB(rt.activatePlugin)
-	extension.UnsafePluginBundle(pluginBundle).SetUninstallCB(rt.deactivatePlugin)
+	extension.UnsafePluginBundle(pluginBundle).SetCallback(rt.activatePlugin, rt.deactivatePlugin)
 
 	pluginBundle.Range(func(pluginStatus extension.PluginStatus) bool {
 		rt.activatePlugin(pluginStatus)
@@ -125,8 +124,7 @@ func (rt *RuntimeBehavior) shutPlugin() {
 		return
 	}
 
-	extension.UnsafePluginBundle(pluginBundle).SetInstallCB(nil)
-	extension.UnsafePluginBundle(pluginBundle).SetUninstallCB(nil)
+	extension.UnsafePluginBundle(pluginBundle).SetCallback(nil, nil)
 
 	pluginBundle.ReversedRange(func(pluginStatus extension.PluginStatus) bool {
 		rt.deactivatePlugin(pluginStatus)

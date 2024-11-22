@@ -48,8 +48,7 @@ type PluginBundle interface {
 }
 
 type iPluginBundle interface {
-	setInstallCB(cb generic.Action1[PluginStatus])
-	setUninstallCB(cb generic.Action1[PluginStatus])
+	setCallback(installCB, uninstallCB generic.Action1[PluginStatus])
 }
 
 // NewPluginBundle 创建插件包
@@ -124,12 +123,12 @@ func (bundle *_PluginBundle) ReversedRange(fun generic.Func1[PluginStatus, bool]
 	}
 }
 
-func (bundle *_PluginBundle) setInstallCB(cb generic.Action1[PluginStatus]) {
-	bundle.installCB = cb
-}
+func (bundle *_PluginBundle) setCallback(installCB, uninstallCB generic.Action1[PluginStatus]) {
+	bundle.Lock()
+	defer bundle.Unlock()
 
-func (bundle *_PluginBundle) setUninstallCB(cb generic.Action1[PluginStatus]) {
-	bundle.uninstallCB = cb
+	bundle.installCB = installCB
+	bundle.uninstallCB = uninstallCB
 }
 
 func (bundle *_PluginBundle) install(pluginFace iface.FaceAny, name ...string) *_PluginStatus {
