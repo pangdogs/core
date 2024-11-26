@@ -206,7 +206,7 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) ec.EntityPT
 	}
 
 	for i, comp := range comps {
-		compDesc := ec.ComponentDesc{
+		builtin := ec.BuiltinComponent{
 			Offset:       i,
 			NonRemovable: true,
 		}
@@ -214,15 +214,15 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) ec.EntityPT
 	retry:
 		switch v := comp.(type) {
 		case ComponentAttribute:
-			compDesc.Name = v.Name
-			compDesc.NonRemovable = v.NonRemovable
-			compDesc.Extra = v.Extra
+			builtin.Name = v.Name
+			builtin.NonRemovable = v.NonRemovable
+			builtin.Extra = v.Extra
 			comp = v.Instance
 			goto retry
 		case *ComponentAttribute:
-			compDesc.Name = v.Name
-			compDesc.NonRemovable = v.NonRemovable
-			compDesc.Extra = v.Extra
+			builtin.Name = v.Name
+			builtin.NonRemovable = v.NonRemovable
+			builtin.Extra = v.Extra
 			comp = v.Instance
 			goto retry
 		case string:
@@ -230,16 +230,16 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) ec.EntityPT
 			if !ok {
 				exception.Panicf("%w: entity %q component %q was not declared", ErrPt, prototype, v)
 			}
-			compDesc.PT = compPT
+			builtin.PT = compPT
 		default:
-			compDesc.PT = lib.compLib.Declare(v)
+			builtin.PT = lib.compLib.Declare(v)
 		}
 
-		if compDesc.Name == "" {
-			compDesc.Name = compDesc.PT.Prototype()
+		if builtin.Name == "" {
+			builtin.Name = builtin.PT.Prototype()
 		}
 
-		entityPT.components = append(entityPT.components, compDesc)
+		entityPT.components = append(entityPT.components, builtin)
 	}
 
 	if _, ok := lib.entityIdx[entityAtti.Prototype]; ok {

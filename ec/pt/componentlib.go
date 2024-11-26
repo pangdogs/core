@@ -155,7 +155,7 @@ func (lib *_ComponentLib) declare(comp any) ec.ComponentPT {
 		prototype:  prototype,
 		instanceRT: compRT,
 	}
-	compPT.desc = &ec.ComponentDesc{PT: compPT, Offset: -1}
+	compPT.builtin = &ec.BuiltinComponent{PT: compPT, Offset: -1}
 
 	lib.compIdx[prototype] = compPT
 	lib.compList = append(lib.compList, compPT)

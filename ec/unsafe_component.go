@@ -51,9 +51,9 @@ func (u _UnsafeComponent) SetId(id uid.Id) {
 	u.setId(id)
 }
 
-// SetDesc 设置组件原型信息
-func (u _UnsafeComponent) SetDesc(desc *ComponentDesc) {
-	u.setDesc(desc)
+// SetBuiltin 设置实体原型中的组件信息
+func (u _UnsafeComponent) SetBuiltin(builtin *BuiltinComponent) {
+	u.setBuiltin(builtin)
 }
 
 // SetState 设置状态

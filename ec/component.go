@@ -38,8 +38,8 @@ type Component interface {
 
 	// GetId 获取组件Id
 	GetId() uid.Id
-	// GetDesc 获取组件原型信息
-	GetDesc() ComponentDesc
+	// GetBuiltin 获取实体原型中的组件信息
+	GetBuiltin() BuiltinComponent
 	// GetName 获取组件名称
 	GetName() string
 	// GetEntity 获取组件依附的实体
@@ -60,7 +60,7 @@ type iComponent interface {
 	init(name string, entity Entity, instance Component)
 	withContext(ctx context.Context)
 	setId(id uid.Id)
-	setDesc(desc *ComponentDesc)
+	setBuiltin(builtin *BuiltinComponent)
 	setState(state ComponentState)
 	setReflected(v reflect.Value)
 	setNonRemovable(b bool)
@@ -73,7 +73,7 @@ type ComponentBehavior struct {
 	terminate    context.CancelFunc
 	terminated   chan struct{}
 	id           uid.Id
-	desc         *ComponentDesc
+	builtin      *BuiltinComponent
 	name         string
 	entity       Entity
 	instance     Component
@@ -90,12 +90,12 @@ func (comp *ComponentBehavior) GetId() uid.Id {
 	return comp.id
 }
 
-// GetDesc 获取组件原型信息
-func (comp *ComponentBehavior) GetDesc() ComponentDesc {
-	if comp.desc == nil {
-		return *noneComponentDesc
+// GetBuiltin 获取实体原型中的组件信息
+func (comp *ComponentBehavior) GetBuiltin() BuiltinComponent {
+	if comp.builtin == nil {
+		return *noneBuiltinComponent
 	}
-	return *comp.desc
+	return *comp.builtin
 }
 
 // GetName 获取组件名称
@@ -157,7 +157,7 @@ func (comp *ComponentBehavior) GetConcurrentContext() iface.Cache {
 
 // String implements fmt.Stringer
 func (comp *ComponentBehavior) String() string {
-	return fmt.Sprintf(`{"id":%q, "entity_id":%q, "name":%q, "prototype":%q}`, comp.GetId(), comp.GetEntity().GetId(), comp.GetName(), comp.GetDesc().PT.Prototype())
+	return fmt.Sprintf(`{"id":%q, "entity_id":%q, "name":%q, "prototype":%q}`, comp.GetId(), comp.GetEntity().GetId(), comp.GetName(), comp.GetBuiltin().PT.Prototype())
 }
 
 func (comp *ComponentBehavior) init(name string, entity Entity, instance Component) {
@@ -176,8 +176,8 @@ func (comp *ComponentBehavior) setId(id uid.Id) {
 	comp.id = id
 }
 
-func (comp *ComponentBehavior) setDesc(desc *ComponentDesc) {
-	comp.desc = desc
+func (comp *ComponentBehavior) setBuiltin(builtin *BuiltinComponent) {
+	comp.builtin = builtin
 }
 
 func (comp *ComponentBehavior) setState(state ComponentState) {

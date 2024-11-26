@@ -36,7 +36,7 @@ type _Entity struct {
 	componentAwakeOnFirstTouch *bool
 	componentUniqueID          *bool
 	extra                      generic.SliceMap[string, any]
-	components                 []ec.ComponentDesc
+	components                 []ec.BuiltinComponent
 }
 
 // Prototype 实体原型名称
@@ -75,7 +75,7 @@ func (pt *_Entity) Extra() generic.SliceMap[string, any] {
 }
 
 // Component 获取组件
-func (pt *_Entity) Component(idx int) ec.ComponentDesc {
+func (pt *_Entity) Component(idx int) ec.BuiltinComponent {
 	if idx < 0 || idx >= len(pt.components) {
 		exception.Panicf("%w: %w: idx out of range", ErrPt, exception.ErrArgs)
 	}
@@ -83,7 +83,7 @@ func (pt *_Entity) Component(idx int) ec.ComponentDesc {
 }
 
 // Components 获取所有组件
-func (pt *_Entity) Components() []ec.ComponentDesc {
+func (pt *_Entity) Components() []ec.BuiltinComponent {
 	return slices.Clone(pt.components)
 }
 
@@ -115,13 +115,13 @@ func (pt *_Entity) assemble(entity ec.Entity) ec.Entity {
 	ec.UnsafeEntity(entity).SetPT(pt)
 
 	for i := range pt.components {
-		compDesc := &pt.components[i]
+		builtin := &pt.components[i]
 
-		comp := compDesc.PT.Construct()
-		ec.UnsafeComponent(comp).SetDesc(compDesc)
-		ec.UnsafeComponent(comp).SetNonRemovable(compDesc.NonRemovable)
+		comp := builtin.PT.Construct()
+		ec.UnsafeComponent(comp).SetBuiltin(builtin)
+		ec.UnsafeComponent(comp).SetNonRemovable(builtin.NonRemovable)
 
-		if err := entity.AddComponent(compDesc.Name, comp); err != nil {
+		if err := entity.AddComponent(builtin.Name, comp); err != nil {
 			exception.Panicf("%w: %w", ErrPt, err)
 		}
 	}

@@ -27,7 +27,7 @@ import (
 type _Component struct {
 	prototype  string
 	instanceRT reflect.Type
-	desc       *ec.ComponentDesc
+	builtin    *ec.BuiltinComponent
 }
 
 // Prototype 组件原型名称
@@ -45,7 +45,7 @@ func (pt *_Component) Construct() ec.Component {
 	compRV := reflect.New(pt.instanceRT)
 
 	comp := compRV.Interface().(ec.Component)
-	ec.UnsafeComponent(comp).SetDesc(pt.desc)
+	ec.UnsafeComponent(comp).SetBuiltin(pt.builtin)
 	ec.UnsafeComponent(comp).SetReflected(compRV)
 
 	return comp

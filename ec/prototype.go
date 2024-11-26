@@ -24,15 +24,15 @@ type EntityPT interface {
 	// CountComponents // 组件数量
 	CountComponents() int
 	// Component 获取组件
-	Component(idx int) ComponentDesc
+	Component(idx int) BuiltinComponent
 	// Components 获取所有组件
-	Components() []ComponentDesc
+	Components() []BuiltinComponent
 	// Construct 创建实体
 	Construct(settings ...option.Setting[EntityOptions]) Entity
 }
 
-// ComponentDesc 组件描述
-type ComponentDesc struct {
+// BuiltinComponent 实体原型中的组件信息
+type BuiltinComponent struct {
 	PT           ComponentPT                   // 组件原型
 	Offset       int                           // 组件位置
 	Name         string                        // 组件名称
@@ -51,9 +51,9 @@ type ComponentPT interface {
 }
 
 var (
-	noneEntityPT      = &_NoneEntityPT{}
-	noneComponentPT   = &_NoneComponentPT{}
-	noneComponentDesc = &ComponentDesc{PT: noneComponentPT, Offset: -1}
+	noneEntityPT         = &_NoneEntityPT{}
+	noneComponentPT      = &_NoneComponentPT{}
+	noneBuiltinComponent = &BuiltinComponent{PT: noneComponentPT, Offset: -1}
 )
 
 type _NoneEntityPT struct{}
@@ -94,13 +94,13 @@ func (_NoneEntityPT) CountComponents() int {
 }
 
 // Component 获取组件
-func (_NoneEntityPT) Component(idx int) ComponentDesc {
+func (_NoneEntityPT) Component(idx int) BuiltinComponent {
 	exception.Panicf("%w: %w: idx out of range", ErrEC, exception.ErrArgs)
 	panic("unreachable")
 }
 
 // Components 获取所有组件
-func (_NoneEntityPT) Components() []ComponentDesc {
+func (_NoneEntityPT) Components() []BuiltinComponent {
 	return nil
 }
 
