@@ -96,6 +96,12 @@ func (m *UnorderedSliceMap[K, V]) Delete(k K) bool {
 	return idx >= 0
 }
 
+func (m UnorderedSliceMap[K, V]) Index(k K) int {
+	return slices.IndexFunc(m, func(kv UnorderedKV[K, V]) bool {
+		return kv.K == k
+	})
+}
+
 func (m UnorderedSliceMap[K, V]) Get(k K) (V, bool) {
 	idx := slices.IndexFunc(m, func(kv UnorderedKV[K, V]) bool {
 		return kv.K == k
