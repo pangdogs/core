@@ -162,7 +162,7 @@ func (rt *RuntimeBehavior) activatePlugin(pluginStatus extension.PluginStatus) {
 
 func (rt *RuntimeBehavior) deactivatePlugin(pluginStatus extension.PluginStatus) {
 	if pluginOnRuntimeRunningStateChanged, ok := pluginStatus.InstanceFace().Iface.(LifecyclePluginOnRuntimeRunningStateChanged); ok {
-		event.Unbind[LifecyclePluginOnRuntimeRunningStateChanged](&rt.eventRuntimeRunningStateChanged, pluginOnRuntimeRunningStateChanged)
+		event.Unbind(&rt.eventRuntimeRunningStateChanged, pluginOnRuntimeRunningStateChanged)
 	}
 
 	rt.changeRunningState(runtime.RunningState_PluginDeactivating, pluginStatus)
