@@ -39,12 +39,12 @@ import (
 	}
 	...
 	type CompositeAB struct {
-		IA `ec:"A"`
-		IB
+		IA `ec:"A"`			// 指定组件名
+		IB `ec:",CompB"`	// 指定组件原型名
 	}
 	...
 	entity.AddComponent("A", compA)
-	entity.AddComponent(types.FullNameT[IB](), compB)
+	entity.AddComponent("B", compB)
 	...
 	v, ok := As[CompositeAB](entity)
 	if ok {
@@ -55,7 +55,7 @@ import (
 注意：
 	1.内部逻辑有使用反射，为了提高性能，可以使用一次后存储转换结果重复使用。
 	2.实体更新组件后，需要重新提取。
-	3.需要使用tag标记组件名称，若没有标记，将会尝试使用字段类型去查找。
+	3.需要使用tag标记组件名或组件原型名，若没有标记，将会尝试使用字段名作为组件名去查找。
 */
 func As[T comparable](entity ec.Entity) (T, bool) {
 	iface := types.ZeroT[T]()
@@ -80,12 +80,12 @@ func As[T comparable](entity ec.Entity) (T, bool) {
 	}
 	...
 	type CompositeAB struct {
-		IA `ec:"A"`
-		IB
+		IA `ec:"A"`			// 指定组件名
+		IB `ec:",CompB"`	// 指定组件原型名
 	}
 	...
 	entity.AddComponent("A", compA)
-	entity.AddComponent(types.FullNameT[IB](), compB)
+	entity.AddComponent("B", compB)
 	...
 	Cast[CompositeAB](entity).MethodA()
 	Cast[CompositeAB](entity).MethodB()
@@ -93,7 +93,7 @@ func As[T comparable](entity ec.Entity) (T, bool) {
 注意：
 	1.内部逻辑有使用反射，为了提高性能，可以使用一次后存储转换结果重复使用。
 	2.实体更新组件后，需要重新提取。
-	3.需要使用tag标记组件名称，若没有标记，将会尝试使用字段类型去查找。
+	3.需要使用tag标记组件名或组件原型名，若没有标记，将会尝试使用字段名作为组件名去查找。
 */
 func Cast[T comparable](entity ec.Entity) T {
 	iface, ok := As[T](entity)
@@ -125,12 +125,12 @@ func Compose[T comparable](entity ec.Entity) *Composite[T] {
 	}
 	...
 	type CompositeAB struct {
-		IA `ec:"A"`
-		IB
+		IA `ec:"A"`			// 指定组件名
+		IB `ec:",CompB"`	// 指定组件原型名
 	}
 	...
 	entity.AddComponent("A", compA)
-	entity.AddComponent(types.FullNameT[IB](), compB)
+	entity.AddComponent("B", compB)
 	...
 	cx := Compose[CompositeAB](entity)
 	if v, ok := cx.As(); ok {
@@ -196,7 +196,6 @@ func as(entity ec.Entity, ifaceRV reflect.Value) bool {
 	}
 
 	ifaceRT := ifaceRV.Type()
-	sb := strings.Builder{}
 
 	switch ifaceRV.Kind() {
 	case reflect.Struct:
@@ -204,48 +203,39 @@ func as(entity ec.Entity, ifaceRV reflect.Value) bool {
 			field := ifaceRT.Field(i)
 			fieldRV := ifaceRV.Field(i)
 
-			name, _, _ := strings.Cut(field.Tag.Get("ec"), ",")
-			name = strings.TrimSpace(name)
-
-			if name == "" || name == "-" {
-				fieldRT := fieldRV.Type()
-
-				switch fieldRV.Kind() {
-				case reflect.Pointer:
-					fieldRT = fieldRT.Elem()
-					break
-				case reflect.Interface:
-					break
-				default:
-					return false
-				}
-
-				sb.Reset()
-				types.WriteFullNameRT(&sb, fieldRT)
-
-				name = sb.String()
+			tag := strings.TrimSpace(field.Tag.Get("ec"))
+			if tag == "-" {
+				continue
 			}
 
-			comp := entity.GetComponent(name)
+			name, prototype, _ := strings.Cut(tag, ",")
+			name = strings.TrimSpace(name)
+			prototype = strings.TrimSpace(prototype)
+
+			if name != "" {
+				comp := entity.GetComponent(name)
+				if comp == nil {
+					return false
+				}
+				fieldRV.Set(comp.GetReflected())
+				continue
+			}
+
+			if prototype != "" {
+				comp := entity.GetComponentByPT(prototype)
+				if comp == nil {
+					return false
+				}
+				fieldRV.Set(comp.GetReflected())
+				continue
+			}
+
+			comp := entity.GetComponent(field.Name)
 			if comp == nil {
 				return false
 			}
-
 			fieldRV.Set(comp.GetReflected())
 		}
-
-		return true
-
-	case reflect.Interface:
-		sb.Reset()
-		types.WriteFullNameRT(&sb, ifaceRT)
-
-		comp := entity.GetComponent(sb.String())
-		if comp == nil {
-			return false
-		}
-
-		ifaceRV.Set(comp.GetReflected())
 
 		return true
 

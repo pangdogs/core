@@ -34,10 +34,14 @@ type iComponentMgr interface {
 	GetComponent(name string) Component
 	// GetComponentById 使用组件Id查询组件
 	GetComponentById(id uid.Id) Component
+	// GetComponentByPT 使用组件原型查询组件
+	GetComponentByPT(prototype string) Component
 	// ContainsComponent 组件是否存在
 	ContainsComponent(name string) bool
 	// ContainsComponentById 使用组件Id检测组件是否存在
 	ContainsComponentById(id uid.Id) bool
+	// ContainsComponentByPT 使用组件原型查询组件
+	ContainsComponentByPT(prototype string) bool
 	// RangeComponents 遍历所有组件
 	RangeComponents(fun generic.Func1[Component, bool])
 	// ReversedRangeComponents 反向遍历所有组件
@@ -74,6 +78,14 @@ func (entity *EntityBehavior) GetComponentById(id uid.Id) Component {
 	return nil
 }
 
+// GetComponentByPT 使用组件原型查询组件
+func (entity *EntityBehavior) GetComponentByPT(prototype string) Component {
+	if node, ok := entity.getComponentNodeByPT(prototype); ok {
+		return entity.touchComponent(node.V)
+	}
+	return nil
+}
+
 // ContainsComponent 组件是否存在
 func (entity *EntityBehavior) ContainsComponent(name string) bool {
 	_, ok := entity.getComponentNode(name)
@@ -83,6 +95,12 @@ func (entity *EntityBehavior) ContainsComponent(name string) bool {
 // ContainsComponentById 使用组件Id检测组件是否存在
 func (entity *EntityBehavior) ContainsComponentById(id uid.Id) bool {
 	_, ok := entity.getComponentNodeById(id)
+	return ok
+}
+
+// ContainsComponentByPT 使用组件原型查询组件
+func (entity *EntityBehavior) ContainsComponentByPT(prototype string) bool {
+	_, ok := entity.getComponentNodeByPT(prototype)
 	return ok
 }
 
@@ -294,6 +312,20 @@ func (entity *EntityBehavior) getComponentNodeById(id uid.Id) (*generic.Node[Com
 
 	entity.components.Traversal(func(node *generic.Node[Component]) bool {
 		if node.V.GetId() == id {
+			compNode = node
+			return false
+		}
+		return true
+	})
+
+	return compNode, compNode != nil
+}
+
+func (entity *EntityBehavior) getComponentNodeByPT(prototype string) (*generic.Node[Component], bool) {
+	var compNode *generic.Node[Component]
+
+	entity.components.Traversal(func(node *generic.Node[Component]) bool {
+		if node.V.GetBuiltin().PT.Prototype() == prototype {
 			compNode = node
 			return false
 		}
