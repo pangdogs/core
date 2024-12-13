@@ -24,16 +24,48 @@ import (
 	"strings"
 )
 
+// Zero 创建零值
+func Zero(t any) reflect.Value {
+	return ZeroRT(reflect.TypeOf(t))
+}
+
+// ZeroRT 创建零值
+func ZeroRT(t reflect.Type) reflect.Value {
+	return reflect.New(t).Elem()
+}
+
 // ZeroT 创建零值
 func ZeroT[T any]() T {
 	var zero T
 	return zero
 }
 
+// New 新建零值
+func New(t any) reflect.Value {
+	return ZeroRT(reflect.TypeOf(t))
+}
+
+// NewRT 新建零值
+func NewRT(t reflect.Type) reflect.Value {
+	return reflect.New(t)
+}
+
 // NewT 新建零值
 func NewT[T any]() *T {
 	var zero T
 	return &zero
+}
+
+// NewCopied 新建拷贝值
+func NewCopied(src any) reflect.Value {
+	return NewCopiedRT(reflect.ValueOf(src))
+}
+
+// NewCopiedRT 新建拷贝值
+func NewCopiedRT(src reflect.Value) reflect.Value {
+	copied := reflect.New(src.Type())
+	copied.Elem().Set(src)
+	return copied
 }
 
 // NewCopiedT 新建拷贝值
@@ -79,8 +111,8 @@ func FullNameT[T any]() string {
 	return FullNameRT(reflect.TypeFor[T]())
 }
 
-// WriteAnyFullName 写入类型全名
-func WriteAnyFullName(sb *strings.Builder, i any) {
+// WriteFullName 写入类型全名
+func WriteFullName(sb *strings.Builder, i any) {
 	t, ok := i.(reflect.Type)
 	if !ok {
 		t = reflect.TypeOf(i)
