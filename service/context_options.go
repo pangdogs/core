@@ -42,7 +42,7 @@ type ContextOptions struct {
 	Name           string                 // 服务名称
 	PersistId      uid.Id                 // 服务持久化Id
 	EntityLib      pt.EntityLib           // 实体原型库
-	PluginBundle   extension.PluginBundle // 插件包
+	AddInManager   extension.AddInManager // 插件管理器
 	RunningHandler RunningHandler         // 运行状态变化处理器
 }
 
@@ -59,7 +59,7 @@ func (_Option) Default() option.Setting[ContextOptions] {
 		With.Name("")(o)
 		With.PersistId(uid.Nil)(o)
 		With.EntityLib(pt.DefaultEntityLib())(o)
-		With.PluginBundle(extension.NewPluginBundle())(o)
+		With.AddInManager(extension.NewAddInManager())(o)
 		With.RunningHandler(nil)(o)
 	}
 }
@@ -107,10 +107,10 @@ func (_Option) EntityLib(lib pt.EntityLib) option.Setting[ContextOptions] {
 	}
 }
 
-// PluginBundle 插件包
-func (_Option) PluginBundle(bundle extension.PluginBundle) option.Setting[ContextOptions] {
+// AddInManager 插件管理器
+func (_Option) AddInManager(bundle extension.AddInManager) option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
-		o.PluginBundle = bundle
+		o.AddInManager = bundle
 	}
 }
 

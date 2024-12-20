@@ -156,7 +156,7 @@ func (ctx *ContextBehavior) CallVoidDelegate(entityId uid.Id, fun generic.Delega
 }
 
 func (ctx *ContextBehavior) getEntity(id uid.Id) (ec.Entity, error) {
-	entity, ok := ctx.entityMgr.GetEntity(id)
+	entity, ok := ctx.entityManager.GetEntity(id)
 	if !ok {
 		return nil, fmt.Errorf("%w: entity not exist", ErrContext)
 	}

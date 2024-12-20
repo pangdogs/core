@@ -24,13 +24,13 @@ package service
 type RunningState int32
 
 const (
-	RunningState_Birth              RunningState = iota // 出生
-	RunningState_Starting                               // 开始启动
-	RunningState_Started                                // 已启动
-	RunningState_Terminating                            // 开始停止
-	RunningState_Terminated                             // 已停止
-	RunningState_PluginActivating                       // 开始激活插件
-	RunningState_PluginActivated                        // 插件已激活
-	RunningState_PluginDeactivating                     // 开始去激活插件
-	RunningState_PluginDeactivated                      // 插件已去激活
+	RunningState_Birth             RunningState = iota // 出生
+	RunningState_Starting                              // 开始启动
+	RunningState_Started                               // 已启动
+	RunningState_Terminating                           // 开始停止
+	RunningState_Terminated                            // 已停止
+	RunningState_AddInActivating                       // 开始激活插件
+	RunningState_AddInActivated                        // 插件已激活
+	RunningState_AddInDeactivating                     // 开始去激活插件
+	RunningState_AddInDeactivated                      // 插件已去激活
 )

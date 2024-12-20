@@ -21,18 +21,18 @@ package extension
 
 import "git.golaxy.org/core/utils/generic"
 
-// Deprecated: UnsafePluginBundle 访问插件包的内部方法
-func UnsafePluginBundle(pluginBundle PluginBundle) _UnsafePluginBundle {
-	return _UnsafePluginBundle{
-		PluginBundle: pluginBundle,
+// Deprecated: UnsafeAddInManager 访问插件管理器的内部方法
+func UnsafeAddInManager(addInManager AddInManager) _UnsafeAddInManager {
+	return _UnsafeAddInManager{
+		AddInManager: addInManager,
 	}
 }
 
-type _UnsafePluginBundle struct {
-	PluginBundle
+type _UnsafeAddInManager struct {
+	AddInManager
 }
 
 // SetCallback 设置回调
-func (u _UnsafePluginBundle) SetCallback(installCB, uninstallCB generic.Action1[PluginStatus]) {
+func (u _UnsafeAddInManager) SetCallback(installCB, uninstallCB generic.Action1[AddInStatus]) {
 	u.setCallback(installCB, uninstallCB)
 }

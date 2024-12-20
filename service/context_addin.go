@@ -23,7 +23,7 @@ import (
 	"git.golaxy.org/core/extension"
 )
 
-// GetPluginBundle 获取插件包
-func (ctx *ContextBehavior) GetPluginBundle() extension.PluginBundle {
-	return ctx.opts.PluginBundle
+// GetAddInManager 获取插件管理器
+func (ctx *ContextBehavior) GetAddInManager() extension.AddInManager {
+	return ctx.opts.AddInManager
 }

@@ -55,7 +55,7 @@ type Context interface {
 	iContext
 	ictx.Context
 	reinterpret.InstanceProvider
-	extension.PluginProvider
+	extension.AddInProvider
 	pt.EntityPTProvider
 	Caller
 	fmt.Stringer
@@ -66,8 +66,8 @@ type Context interface {
 	GetId() uid.Id
 	// GetReflected 获取反射值
 	GetReflected() reflect.Value
-	// GetEntityMgr 获取实体管理器
-	GetEntityMgr() EntityMgr
+	// GetEntityManager 获取实体管理器
+	GetEntityManager() EntityManager
 }
 
 type iContext interface {
@@ -79,9 +79,9 @@ type iContext interface {
 // ContextBehavior 服务上下文行为，在扩展服务上下文能力时，匿名嵌入至服务上下文结构体中
 type ContextBehavior struct {
 	ictx.ContextBehavior
-	opts      ContextOptions
-	reflected reflect.Value
-	entityMgr _EntityMgrBehavior
+	opts          ContextOptions
+	reflected     reflect.Value
+	entityManager _EntityManagerBehavior
 }
 
 // GetName 获取名称
@@ -99,9 +99,9 @@ func (ctx *ContextBehavior) GetReflected() reflect.Value {
 	return ctx.reflected
 }
 
-// GetEntityMgr 获取实体管理器
-func (ctx *ContextBehavior) GetEntityMgr() EntityMgr {
-	return &ctx.entityMgr
+// GetEntityManager 获取实体管理器
+func (ctx *ContextBehavior) GetEntityManager() EntityManager {
+	return &ctx.entityManager
 }
 
 // GetInstanceFaceCache 支持重新解释类型
@@ -131,7 +131,7 @@ func (ctx *ContextBehavior) init(opts ContextOptions) {
 
 	ictx.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
 	ctx.reflected = reflect.ValueOf(ctx.opts.InstanceFace.Iface)
-	ctx.entityMgr.init(ctx.opts.InstanceFace.Iface)
+	ctx.entityManager.init(ctx.opts.InstanceFace.Iface)
 }
 
 func (ctx *ContextBehavior) getOptions() *ContextOptions {

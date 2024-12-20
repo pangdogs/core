@@ -20,6 +20,6 @@
 // Package service 为服务环境提供的一些接口与函数。
 /*
    - 服务上下文（context）
-   - 并发实体管理器（EntityMgr）
+   - 并发实体管理器（EntityManager）
 */
 package service

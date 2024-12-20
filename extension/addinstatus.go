@@ -25,9 +25,9 @@ import (
 	"sync/atomic"
 )
 
-// PluginStatus 插件状态信息
-type PluginStatus interface {
-	iPluginStatus
+// AddInStatus 插件状态信息
+type AddInStatus interface {
+	iAddInStatus
 
 	// Name 插件名称
 	Name() string
@@ -36,14 +36,14 @@ type PluginStatus interface {
 	// Reflected 插件反射值
 	Reflected() reflect.Value
 	// State 状态
-	State() PluginState
+	State() AddInState
 }
 
-type iPluginStatus interface {
-	setState(state, must PluginState) bool
+type iAddInStatus interface {
+	setState(state, must AddInState) bool
 }
 
-type _PluginStatus struct {
+type _AddInStatus struct {
 	name         string
 	instanceFace iface.FaceAny
 	reflected    reflect.Value
@@ -51,25 +51,25 @@ type _PluginStatus struct {
 }
 
 // Name 插件名称
-func (s *_PluginStatus) Name() string {
+func (s *_AddInStatus) Name() string {
 	return s.name
 }
 
 // InstanceFace 插件实例
-func (s *_PluginStatus) InstanceFace() iface.FaceAny {
+func (s *_AddInStatus) InstanceFace() iface.FaceAny {
 	return s.instanceFace
 }
 
 // Reflected 插件反射值
-func (s *_PluginStatus) Reflected() reflect.Value {
+func (s *_AddInStatus) Reflected() reflect.Value {
 	return s.reflected
 }
 
 // State 状态
-func (s *_PluginStatus) State() PluginState {
-	return PluginState(s.state.Load())
+func (s *_AddInStatus) State() AddInState {
+	return AddInState(s.state.Load())
 }
 
-func (s *_PluginStatus) setState(state, must PluginState) bool {
+func (s *_AddInStatus) setState(state, must AddInState) bool {
 	return s.state.CompareAndSwap(int32(must), int32(state))
 }

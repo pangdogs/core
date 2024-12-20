@@ -17,22 +17,13 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package core
+package runtime
 
 import (
-	"git.golaxy.org/core/runtime"
-	"git.golaxy.org/core/service"
+	"git.golaxy.org/core/extension"
 )
 
-// LifecyclePluginInit 插件初始化回调，插件实现此接口即可使用，当插件安装在服务上时，rtCtx为nil
-type LifecyclePluginInit interface {
-	Init(svcCtx service.Context, rtCtx runtime.Context)
+// GetAddInManager 获取插件管理器
+func (ctx *ContextBehavior) GetAddInManager() extension.AddInManager {
+	return ctx.opts.AddInManager
 }
-
-// LifecyclePluginShut 插件结束回调，插件实现此接口即可使用，当插件安装在服务上时，rtCtx为nil
-type LifecyclePluginShut interface {
-	Shut(svcCtx service.Context, rtCtx runtime.Context)
-}
-
-// LifecyclePluginOnRuntimeRunningStateChanged 运行时运行状态变化，当插件安装在运行时上时，插件实现此接口即可使用
-type LifecyclePluginOnRuntimeRunningStateChanged = eventRuntimeRunningStateChanged

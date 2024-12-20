@@ -24,42 +24,42 @@ import (
 	"git.golaxy.org/core/utils/iface"
 )
 
-// PluginProvider 插件提供者
-type PluginProvider interface {
-	// GetPluginBundle 获取插件包
-	GetPluginBundle() PluginBundle
+// AddInProvider 插件提供者
+type AddInProvider interface {
+	// GetAddInManager 获取插件管理器
+	GetAddInManager() AddInManager
 }
 
 // Using 使用插件
-func Using[T any](provider PluginProvider, name string) T {
+func Using[T any](provider AddInProvider, name string) T {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrExtension, exception.ErrArgs)
 	}
 
-	status, ok := provider.GetPluginBundle().Get(name)
+	status, ok := provider.GetAddInManager().Get(name)
 	if !ok {
-		exception.Panicf("%w: plugin %q not installed", ErrExtension, name)
+		exception.Panicf("%w: addIn %q not installed", ErrExtension, name)
 	}
 
-	if status.State() != PluginState_Active {
-		exception.Panicf("%w: plugin %q not actived", ErrExtension, name)
+	if status.State() != AddInState_Active {
+		exception.Panicf("%w: addIn %q not actived", ErrExtension, name)
 	}
 
 	return iface.Cache2Iface[T](status.InstanceFace().Cache)
 }
 
 // Install 安装插件
-func Install[T any](provider PluginProvider, plugin T, name ...string) {
+func Install[T any](provider AddInProvider, addIn T, name ...string) {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrExtension, exception.ErrArgs)
 	}
-	provider.GetPluginBundle().Install(iface.MakeFaceAny(plugin), name...)
+	provider.GetAddInManager().Install(iface.MakeFaceAny(addIn), name...)
 }
 
 // Uninstall 卸载插件
-func Uninstall(provider PluginProvider, name string) {
+func Uninstall(provider AddInProvider, name string) {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrExtension, exception.ErrArgs)
 	}
-	provider.GetPluginBundle().Uninstall(name)
+	provider.GetAddInManager().Uninstall(name)
 }

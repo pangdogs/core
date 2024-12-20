@@ -40,7 +40,7 @@ type ContextOptions struct {
 	ReportError    chan error             // panic时错误写入的error channel
 	Name           string                 // 运行时名称
 	PersistId      uid.Id                 // 运行时持久化Id
-	PluginBundle   extension.PluginBundle // 插件包
+	AddInManager   extension.AddInManager // 插件管理器
 	RunningHandler RunningHandler         // 运行状态变化处理器
 }
 
@@ -54,7 +54,7 @@ func (_ContextOption) Default() option.Setting[ContextOptions] {
 		With.Context.PanicHandling(false, nil)(o)
 		With.Context.Name("")(o)
 		With.Context.PersistId(uid.Nil)(o)
-		With.Context.PluginBundle(extension.NewPluginBundle())(o)
+		With.Context.AddInManager(extension.NewAddInManager())(o)
 		With.Context.RunningHandler(nil)(o)
 	}
 }
@@ -95,10 +95,10 @@ func (_ContextOption) PersistId(id uid.Id) option.Setting[ContextOptions] {
 	}
 }
 
-// PluginBundle 插件包
-func (_ContextOption) PluginBundle(bundle extension.PluginBundle) option.Setting[ContextOptions] {
+// AddInManager 插件管理器
+func (_ContextOption) AddInManager(bundle extension.AddInManager) option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
-		o.PluginBundle = bundle
+		o.AddInManager = bundle
 	}
 }
 

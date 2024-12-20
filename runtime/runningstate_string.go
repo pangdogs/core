@@ -21,15 +21,15 @@ func _() {
 	_ = x[RunningState_RunGCEnd-10]
 	_ = x[RunningState_Terminating-11]
 	_ = x[RunningState_Terminated-12]
-	_ = x[RunningState_PluginActivating-13]
-	_ = x[RunningState_PluginActivated-14]
-	_ = x[RunningState_PluginDeactivating-15]
-	_ = x[RunningState_PluginDeactivated-16]
+	_ = x[RunningState_AddInActivating-13]
+	_ = x[RunningState_AddInActivated-14]
+	_ = x[RunningState_AddInDeactivating-15]
+	_ = x[RunningState_AddInDeactivated-16]
 }
 
-const _RunningState_name = "RunningState_BirthRunningState_StartingRunningState_StartedRunningState_FrameLoopBeginRunningState_FrameUpdateBeginRunningState_FrameUpdateEndRunningState_FrameLoopEndRunningState_RunCallBeginRunningState_RunCallEndRunningState_RunGCBeginRunningState_RunGCEndRunningState_TerminatingRunningState_TerminatedRunningState_PluginActivatingRunningState_PluginActivatedRunningState_PluginDeactivatingRunningState_PluginDeactivated"
+const _RunningState_name = "RunningState_BirthRunningState_StartingRunningState_StartedRunningState_FrameLoopBeginRunningState_FrameUpdateBeginRunningState_FrameUpdateEndRunningState_FrameLoopEndRunningState_RunCallBeginRunningState_RunCallEndRunningState_RunGCBeginRunningState_RunGCEndRunningState_TerminatingRunningState_TerminatedRunningState_AddInActivatingRunningState_AddInActivatedRunningState_AddInDeactivatingRunningState_AddInDeactivated"
 
-var _RunningState_index = [...]uint16{0, 18, 39, 59, 86, 115, 142, 167, 192, 215, 238, 259, 283, 306, 335, 363, 394, 424}
+var _RunningState_index = [...]uint16{0, 18, 39, 59, 86, 115, 142, 167, 192, 215, 238, 259, 283, 306, 334, 361, 391, 420}
 
 func (i RunningState) String() string {
 	if i < 0 || i >= RunningState(len(_RunningState_index)-1) {

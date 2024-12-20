@@ -59,7 +59,7 @@ type Context interface {
 	ictx.Context
 	ictx.CurrentContextProvider
 	reinterpret.InstanceProvider
-	extension.PluginProvider
+	extension.AddInProvider
 	async.Caller
 	GCCollector
 	fmt.Stringer
@@ -72,8 +72,8 @@ type Context interface {
 	GetReflected() reflect.Value
 	// GetFrame 获取帧
 	GetFrame() Frame
-	// GetEntityMgr 获取实体管理器
-	GetEntityMgr() EntityMgr
+	// GetEntityManager 获取实体管理器
+	GetEntityManager() EntityManager
 	// GetEntityTree 获取实体树
 	GetEntityTree() EntityTree
 	// ActivateEvent 启用事件
@@ -95,14 +95,14 @@ type iContext interface {
 // ContextBehavior 运行时上下文行为，在扩展运行时上下文能力时，匿名嵌入至运行时上下文结构体中
 type ContextBehavior struct {
 	ictx.ContextBehavior
-	svcCtx       service.Context
-	opts         ContextOptions
-	reflected    reflect.Value
-	frame        Frame
-	entityMgr    _EntityMgrBehavior
-	callee       async.Callee
-	managedHooks []event.Hook
-	gcList       []GC
+	svcCtx        service.Context
+	opts          ContextOptions
+	reflected     reflect.Value
+	frame         Frame
+	entityManager _EntityManagerBehavior
+	callee        async.Callee
+	managedHooks  []event.Hook
+	gcList        []GC
 }
 
 // GetName 获取名称
@@ -125,14 +125,14 @@ func (ctx *ContextBehavior) GetFrame() Frame {
 	return ctx.frame
 }
 
-// GetEntityMgr 获取实体管理器
-func (ctx *ContextBehavior) GetEntityMgr() EntityMgr {
-	return &ctx.entityMgr
+// GetEntityManager 获取实体管理器
+func (ctx *ContextBehavior) GetEntityManager() EntityManager {
+	return &ctx.entityManager
 }
 
 // GetEntityTree 获取主实体树
 func (ctx *ContextBehavior) GetEntityTree() EntityTree {
-	return &ctx.entityMgr
+	return &ctx.entityManager
 }
 
 // ActivateEvent 启用事件
@@ -194,7 +194,7 @@ func (ctx *ContextBehavior) init(svcCtx service.Context, opts ContextOptions) {
 	ictx.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
 	ctx.svcCtx = svcCtx
 	ctx.reflected = reflect.ValueOf(ctx.opts.InstanceFace.Iface)
-	ctx.entityMgr.init(ctx.opts.InstanceFace.Iface)
+	ctx.entityManager.init(ctx.opts.InstanceFace.Iface)
 }
 
 func (ctx *ContextBehavior) getOptions() *ContextOptions {
@@ -214,7 +214,7 @@ func (ctx *ContextBehavior) getServiceCtx() service.Context {
 }
 
 func (ctx *ContextBehavior) changeRunningState(state RunningState, args ...any) {
-	ctx.entityMgr.changeRunningState(state)
+	ctx.entityManager.changeRunningState(state)
 	ctx.opts.RunningHandler.Call(ctx.GetAutoRecover(), ctx.GetReportError(), nil, ctx.opts.InstanceFace.Iface, state, args...)
 
 	switch state {

@@ -17,24 +17,25 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-//go:generate go run git.golaxy.org/core/event/eventc event
-//go:generate go run git.golaxy.org/core/event/eventc eventtab --name=entityComponentMgrEventTab
-package ec
+package define
 
-// EventComponentMgrAddComponents 事件：实体的组件管理器添加组件
-// +event-gen:export=0
-type EventComponentMgrAddComponents interface {
-	OnComponentMgrAddComponents(entity Entity, components []Component)
+import (
+	"git.golaxy.org/core/runtime"
+	"git.golaxy.org/core/utils/generic"
+)
+
+// RuntimeAddInInterface 定义运行时插件接口，支持运行时上下文，通常用于为同类插件的不同实现提供统一的接口
+func RuntimeAddInInterface[ADDIN_IFACE any]() RuntimeAddInInterfaceDefinition[ADDIN_IFACE] {
+	plug := defineAddInInterface[ADDIN_IFACE]()
+
+	return RuntimeAddInInterfaceDefinition[ADDIN_IFACE]{
+		Name:  plug.Name,
+		Using: func(rtCtx runtime.Context) ADDIN_IFACE { return plug.Using(rtCtx) },
+	}
 }
 
-// EventComponentMgrRemoveComponent 事件：实体的组件管理器删除组件
-// +event-gen:export=0
-type EventComponentMgrRemoveComponent interface {
-	OnComponentMgrRemoveComponent(entity Entity, component Component)
-}
-
-// EventComponentMgrFirstTouchComponent 事件：实体的组件管理器首次访问组件
-// +event-gen:export=0
-type EventComponentMgrFirstTouchComponent interface {
-	OnComponentMgrFirstTouchComponent(entity Entity, component Component)
+// RuntimeAddInInterfaceDefinition 运行时插件接口定义
+type RuntimeAddInInterfaceDefinition[ADDIN_IFACE any] struct {
+	Name  string                                      // 插件名称
+	Using generic.Func1[runtime.Context, ADDIN_IFACE] // 使用插件
 }

@@ -129,20 +129,20 @@ func (rt *RuntimeBehavior) getOptions() *RuntimeOptions {
 	return &rt.opts
 }
 
-// OnEntityMgrAddEntity 事件处理器：实体管理器添加实体
-func (rt *RuntimeBehavior) OnEntityMgrAddEntity(entityMgr runtime.EntityMgr, entity ec.Entity) {
+// OnEntityManagerAddEntity 事件处理器：实体管理器添加实体
+func (rt *RuntimeBehavior) OnEntityManagerAddEntity(entityManager runtime.EntityManager, entity ec.Entity) {
 	rt.activateEntity(entity)
 	rt.initEntity(entity)
 }
 
-// OnEntityMgrRemoveEntity 事件处理器：实体管理器删除实体
-func (rt *RuntimeBehavior) OnEntityMgrRemoveEntity(entityMgr runtime.EntityMgr, entity ec.Entity) {
+// OnEntityManagerRemoveEntity 事件处理器：实体管理器删除实体
+func (rt *RuntimeBehavior) OnEntityManagerRemoveEntity(entityManager runtime.EntityManager, entity ec.Entity) {
 	rt.deactivateEntity(entity)
 	rt.shutEntity(entity)
 }
 
-// OnEntityMgrEntityFirstTouchComponent 事件处理器：实体管理器中的实体首次访问组件
-func (rt *RuntimeBehavior) OnEntityMgrEntityFirstTouchComponent(entityMgr runtime.EntityMgr, entity ec.Entity, component ec.Component) {
+// OnEntityManagerEntityFirstTouchComponent 事件处理器：实体管理器中的实体首次访问组件
+func (rt *RuntimeBehavior) OnEntityManagerEntityFirstTouchComponent(entityManager runtime.EntityManager, entity ec.Entity, component ec.Component) {
 	if component.GetState() != ec.ComponentState_Attach {
 		return
 	}
@@ -156,20 +156,20 @@ func (rt *RuntimeBehavior) OnEntityMgrEntityFirstTouchComponent(entityMgr runtim
 	ec.UnsafeComponent(component).SetState(ec.ComponentState_Start)
 }
 
-// OnEntityMgrEntityAddComponents 事件处理器：实体管理器中的实体添加组件
-func (rt *RuntimeBehavior) OnEntityMgrEntityAddComponents(entityMgr runtime.EntityMgr, entity ec.Entity, components []ec.Component) {
+// OnEntityManagerEntityAddComponents 事件处理器：实体管理器中的实体添加组件
+func (rt *RuntimeBehavior) OnEntityManagerEntityAddComponents(entityManager runtime.EntityManager, entity ec.Entity, components []ec.Component) {
 	rt.addComponents(entity, components)
 }
 
-// OnEntityMgrEntityRemoveComponent 事件处理器：实体管理器中的实体删除组件
-func (rt *RuntimeBehavior) OnEntityMgrEntityRemoveComponent(entityMgr runtime.EntityMgr, entity ec.Entity, component ec.Component) {
+// OnEntityManagerEntityRemoveComponent 事件处理器：实体管理器中的实体删除组件
+func (rt *RuntimeBehavior) OnEntityManagerEntityRemoveComponent(entityManager runtime.EntityManager, entity ec.Entity, component ec.Component) {
 	rt.deactivateComponent(component)
 	rt.removeComponent(component)
 }
 
 // OnEntityDestroySelf 事件处理器：实体销毁自身
 func (rt *RuntimeBehavior) OnEntityDestroySelf(entity ec.Entity) {
-	rt.ctx.GetEntityMgr().RemoveEntity(entity.GetId())
+	rt.ctx.GetEntityManager().RemoveEntity(entity.GetId())
 }
 
 // OnComponentDestroySelf 事件处理器：组件销毁自身

@@ -108,7 +108,7 @@ func (c EntityCreator) Spawn() (ec.Entity, error) {
 	entity := pt.For(service.Current(c.rtCtx), c.prototype).Construct(c.settings...)
 
 	if c.parentId.IsNil() {
-		if err := c.rtCtx.GetEntityMgr().AddEntity(entity); err != nil {
+		if err := c.rtCtx.GetEntityManager().AddEntity(entity); err != nil {
 			return nil, err
 		}
 	} else {

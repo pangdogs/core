@@ -92,66 +92,66 @@ loop:
 func (svc *ServiceBehavior) changeRunningState(state service.RunningState, args ...any) {
 	switch state {
 	case service.RunningState_Starting:
-		svc.initPlugin()
+		svc.initAddIn()
 	case service.RunningState_Terminated:
-		svc.shutPlugin()
+		svc.shutAddIn()
 	}
 
 	service.UnsafeContext(svc.ctx).ChangeRunningState(state, args...)
 }
 
-func (svc *ServiceBehavior) initPlugin() {
-	pluginBundle := svc.ctx.GetPluginBundle()
-	if pluginBundle == nil {
+func (svc *ServiceBehavior) initAddIn() {
+	addInManager := svc.ctx.GetAddInManager()
+	if addInManager == nil {
 		return
 	}
 
-	extension.UnsafePluginBundle(pluginBundle).SetCallback(svc.activatePlugin, svc.deactivatePlugin)
+	extension.UnsafeAddInManager(addInManager).SetCallback(svc.activateAddIn, svc.deactivateAddIn)
 
-	pluginBundle.Range(func(pluginStatus extension.PluginStatus) bool {
-		svc.activatePlugin(pluginStatus)
+	addInManager.Range(func(addInStatus extension.AddInStatus) bool {
+		svc.activateAddIn(addInStatus)
 		return true
 	})
 }
 
-func (svc *ServiceBehavior) shutPlugin() {
-	pluginBundle := svc.ctx.GetPluginBundle()
-	if pluginBundle == nil {
+func (svc *ServiceBehavior) shutAddIn() {
+	addInManager := svc.ctx.GetAddInManager()
+	if addInManager == nil {
 		return
 	}
 
-	extension.UnsafePluginBundle(pluginBundle).SetCallback(nil, nil)
+	extension.UnsafeAddInManager(addInManager).SetCallback(nil, nil)
 
-	pluginBundle.ReversedRange(func(pluginStatus extension.PluginStatus) bool {
-		svc.deactivatePlugin(pluginStatus)
+	addInManager.ReversedRange(func(addInStatus extension.AddInStatus) bool {
+		svc.deactivateAddIn(addInStatus)
 		return true
 	})
 }
 
-func (svc *ServiceBehavior) activatePlugin(pluginStatus extension.PluginStatus) {
-	if pluginStatus.State() != extension.PluginState_Loaded {
+func (svc *ServiceBehavior) activateAddIn(addInStatus extension.AddInStatus) {
+	if addInStatus.State() != extension.AddInState_Loaded {
 		return
 	}
 
-	svc.changeRunningState(service.RunningState_PluginActivating, pluginStatus)
-	defer svc.changeRunningState(service.RunningState_PluginActivated, pluginStatus)
+	svc.changeRunningState(service.RunningState_AddInActivating, addInStatus)
+	defer svc.changeRunningState(service.RunningState_AddInActivated, addInStatus)
 
-	if pluginInit, ok := pluginStatus.InstanceFace().Iface.(LifecyclePluginInit); ok {
-		generic.MakeAction2(pluginInit.Init).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
+	if addInInit, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInInit); ok {
+		generic.MakeAction2(addInInit.Init).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
 	}
 
-	extension.UnsafePluginStatus(pluginStatus).SetState(extension.PluginState_Active, extension.PluginState_Loaded)
+	extension.UnsafeAddInStatus(addInStatus).SetState(extension.AddInState_Active, extension.AddInState_Loaded)
 }
 
-func (svc *ServiceBehavior) deactivatePlugin(pluginStatus extension.PluginStatus) {
-	svc.changeRunningState(service.RunningState_PluginDeactivating, pluginStatus)
-	defer svc.changeRunningState(service.RunningState_PluginDeactivated, pluginStatus)
+func (svc *ServiceBehavior) deactivateAddIn(addInStatus extension.AddInStatus) {
+	svc.changeRunningState(service.RunningState_AddInDeactivating, addInStatus)
+	defer svc.changeRunningState(service.RunningState_AddInDeactivated, addInStatus)
 
-	if !extension.UnsafePluginStatus(pluginStatus).SetState(extension.PluginState_Inactive, extension.PluginState_Active) {
+	if !extension.UnsafeAddInStatus(addInStatus).SetState(extension.AddInState_Inactive, extension.AddInState_Active) {
 		return
 	}
 
-	if pluginShut, ok := pluginStatus.InstanceFace().Iface.(LifecyclePluginShut); ok {
-		generic.MakeAction2(pluginShut.Shut).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
+	if addInShut, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInShut); ok {
+		generic.MakeAction2(addInShut.Shut).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
 	}
 }

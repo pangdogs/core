@@ -17,14 +17,14 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-//go:generate stringer -type PluginState
+//go:generate stringer -type AddInState
 package extension
 
-// PluginState 插件状态
-type PluginState int8
+// AddInState 插件状态
+type AddInState int8
 
 const (
-	PluginState_Loaded   PluginState = iota // 已加载
-	PluginState_Active                      // 已激活
-	PluginState_Inactive                    // 未激活
+	AddInState_Loaded   AddInState = iota // 已加载
+	AddInState_Active                     // 已激活
+	AddInState_Inactive                   // 未激活
 )

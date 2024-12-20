@@ -21,28 +21,26 @@ package define
 
 import (
 	"git.golaxy.org/core/extension"
+	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/utils/generic"
-	"git.golaxy.org/core/utils/types"
 )
 
-// PluginInterface 定义通用插件接口，支持运行时和服务上下文，通常用于为同类插件的不同实现提供统一的接口
-func PluginInterface[PLUGIN_IFACE any]() PluginInterfaceDefinition[PLUGIN_IFACE] {
-	return definePluginInterface[PLUGIN_IFACE]()
-}
+// RuntimeAddIn 定义运行时插件，支持运行时上下文
+func RuntimeAddIn[ADDIN_IFACE, OPTION any](creator generic.FuncVar0[OPTION, ADDIN_IFACE]) RuntimeAddInDefinition[ADDIN_IFACE, OPTION] {
+	plug := defineAddIn[ADDIN_IFACE, OPTION](creator)
 
-// PluginInterfaceDefinition 通用插件接口定义
-type PluginInterfaceDefinition[PLUGIN_IFACE any] struct {
-	Name  string                                                // 插件名称
-	Using generic.Func1[extension.PluginProvider, PLUGIN_IFACE] // 使用插件
-}
-
-func definePluginInterface[PLUGIN_IFACE any]() PluginInterfaceDefinition[PLUGIN_IFACE] {
-	name := types.FullNameT[PLUGIN_IFACE]()
-
-	return PluginInterfaceDefinition[PLUGIN_IFACE]{
-		Name: name,
-		Using: func(provider extension.PluginProvider) PLUGIN_IFACE {
-			return extension.Using[PLUGIN_IFACE](provider, name)
-		},
+	return RuntimeAddInDefinition[ADDIN_IFACE, OPTION]{
+		Name:      plug.Name,
+		Install:   plug.Install,
+		Uninstall: plug.Uninstall,
+		Using:     func(rtCtx runtime.Context) ADDIN_IFACE { return plug.Using(rtCtx) },
 	}
+}
+
+// RuntimeAddInDefinition 运行时插件定义
+type RuntimeAddInDefinition[ADDIN_IFACE, OPTION any] struct {
+	Name      string                                              // 插件名称
+	Install   generic.ActionVar1[extension.AddInProvider, OPTION] // 向插件管理器安装
+	Uninstall generic.Action1[extension.AddInProvider]            // 从插件管理器卸载
+	Using     generic.Func1[runtime.Context, ADDIN_IFACE]         // 使用插件
 }

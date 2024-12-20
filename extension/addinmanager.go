@@ -30,53 +30,53 @@ import (
 	"sync"
 )
 
-// PluginBundle 插件包
-type PluginBundle interface {
-	iPluginBundle
-	PluginProvider
+// AddInManager 插件管理器
+type AddInManager interface {
+	iAddInManager
+	AddInProvider
 
 	// Install 安装插件，不设置插件名称时，将会使用插件实例名称作为插件名称
-	Install(pluginFace iface.FaceAny, name ...string)
+	Install(addInFace iface.FaceAny, name ...string)
 	// Uninstall 卸载插件
 	Uninstall(name string)
 	// Get 获取插件
-	Get(name string) (PluginStatus, bool)
+	Get(name string) (AddInStatus, bool)
 	// Range 遍历所有已注册的插件
-	Range(fun generic.Func1[PluginStatus, bool])
+	Range(fun generic.Func1[AddInStatus, bool])
 	// ReversedRange 反向遍历所有已注册的插件
-	ReversedRange(fun generic.Func1[PluginStatus, bool])
+	ReversedRange(fun generic.Func1[AddInStatus, bool])
 }
 
-type iPluginBundle interface {
-	setCallback(installCB, uninstallCB generic.Action1[PluginStatus])
+type iAddInManager interface {
+	setCallback(installCB, uninstallCB generic.Action1[AddInStatus])
 }
 
-// NewPluginBundle 创建插件包
-func NewPluginBundle() PluginBundle {
-	return &_PluginBundle{
-		pluginIdx: map[string]*_PluginStatus{},
+// NewAddInManager 创建插件管理器
+func NewAddInManager() AddInManager {
+	return &_AddInManager{
+		addInIdx: map[string]*_AddInStatus{},
 	}
 }
 
-type _PluginBundle struct {
+type _AddInManager struct {
 	sync.RWMutex
-	pluginIdx              map[string]*_PluginStatus
-	pluginList             []*_PluginStatus
-	installCB, uninstallCB generic.Action1[PluginStatus]
+	addInIdx               map[string]*_AddInStatus
+	addInList              []*_AddInStatus
+	installCB, uninstallCB generic.Action1[AddInStatus]
 }
 
-// GetPluginBundle 获取插件包
-func (bundle *_PluginBundle) GetPluginBundle() PluginBundle {
+// GetAddInManager 获取插件管理器
+func (bundle *_AddInManager) GetAddInManager() AddInManager {
 	return bundle
 }
 
 // Install 安装插件，不设置插件名称时，将会使用插件实例名称作为插件名称
-func (bundle *_PluginBundle) Install(pluginFace iface.FaceAny, name ...string) {
-	bundle.installCB.Exec(bundle.install(pluginFace, name...))
+func (bundle *_AddInManager) Install(addInFace iface.FaceAny, name ...string) {
+	bundle.installCB.Exec(bundle.install(addInFace, name...))
 }
 
 // Uninstall 卸载插件
-func (bundle *_PluginBundle) Uninstall(name string) {
+func (bundle *_AddInManager) Uninstall(name string) {
 	status, ok := bundle.uninstall(name)
 	if !ok {
 		return
@@ -85,11 +85,11 @@ func (bundle *_PluginBundle) Uninstall(name string) {
 }
 
 // Get 获取插件
-func (bundle *_PluginBundle) Get(name string) (PluginStatus, bool) {
+func (bundle *_AddInManager) Get(name string) (AddInStatus, bool) {
 	bundle.RLock()
 	defer bundle.RUnlock()
 
-	status, ok := bundle.pluginIdx[name]
+	status, ok := bundle.addInIdx[name]
 	if !ok {
 		return nil, false
 	}
@@ -98,9 +98,9 @@ func (bundle *_PluginBundle) Get(name string) (PluginStatus, bool) {
 }
 
 // Range 遍历所有已注册的插件
-func (bundle *_PluginBundle) Range(fun generic.Func1[PluginStatus, bool]) {
+func (bundle *_AddInManager) Range(fun generic.Func1[AddInStatus, bool]) {
 	bundle.RLock()
-	copied := slices.Clone(bundle.pluginList)
+	copied := slices.Clone(bundle.addInList)
 	bundle.RUnlock()
 
 	for i := range copied {
@@ -111,9 +111,9 @@ func (bundle *_PluginBundle) Range(fun generic.Func1[PluginStatus, bool]) {
 }
 
 // ReversedRange 反向遍历所有已注册的插件
-func (bundle *_PluginBundle) ReversedRange(fun generic.Func1[PluginStatus, bool]) {
+func (bundle *_AddInManager) ReversedRange(fun generic.Func1[AddInStatus, bool]) {
 	bundle.RLock()
-	copied := slices.Clone(bundle.pluginList)
+	copied := slices.Clone(bundle.addInList)
 	bundle.RUnlock()
 
 	for i := len(copied) - 1; i >= 0; i-- {
@@ -123,7 +123,7 @@ func (bundle *_PluginBundle) ReversedRange(fun generic.Func1[PluginStatus, bool]
 	}
 }
 
-func (bundle *_PluginBundle) setCallback(installCB, uninstallCB generic.Action1[PluginStatus]) {
+func (bundle *_AddInManager) setCallback(installCB, uninstallCB generic.Action1[AddInStatus]) {
 	bundle.Lock()
 	defer bundle.Unlock()
 
@@ -131,48 +131,48 @@ func (bundle *_PluginBundle) setCallback(installCB, uninstallCB generic.Action1[
 	bundle.uninstallCB = uninstallCB
 }
 
-func (bundle *_PluginBundle) install(pluginFace iface.FaceAny, name ...string) *_PluginStatus {
-	if pluginFace.IsNil() {
-		exception.Panicf("%w: %w: pluginFace is nil", ErrExtension, exception.ErrArgs)
+func (bundle *_AddInManager) install(addInFace iface.FaceAny, name ...string) *_AddInStatus {
+	if addInFace.IsNil() {
+		exception.Panicf("%w: %w: addInFace is nil", ErrExtension, exception.ErrArgs)
 	}
 
 	bundle.Lock()
 	defer bundle.Unlock()
 
-	pluginName := pie.First(name)
-	if pluginName == "" {
-		pluginName = types.FullName(pluginFace.Iface)
+	addInName := pie.First(name)
+	if addInName == "" {
+		addInName = types.FullName(addInFace.Iface)
 	}
 
-	if _, ok := bundle.pluginIdx[pluginName]; ok {
-		exception.Panicf("%w: plugin %q is already installed", ErrExtension, pluginName)
+	if _, ok := bundle.addInIdx[addInName]; ok {
+		exception.Panicf("%w: addIn %q is already installed", ErrExtension, addInName)
 	}
 
-	status := &_PluginStatus{
-		name:         pluginName,
-		instanceFace: pluginFace,
-		reflected:    reflect.ValueOf(pluginFace.Iface),
+	status := &_AddInStatus{
+		name:         addInName,
+		instanceFace: addInFace,
+		reflected:    reflect.ValueOf(addInFace.Iface),
 	}
-	status.state.Store(int32(PluginState_Loaded))
+	status.state.Store(int32(AddInState_Loaded))
 
-	bundle.pluginList = append(bundle.pluginList, status)
-	bundle.pluginIdx[pluginName] = status
+	bundle.addInList = append(bundle.addInList, status)
+	bundle.addInIdx[addInName] = status
 
 	return status
 }
 
-func (bundle *_PluginBundle) uninstall(name string) (*_PluginStatus, bool) {
+func (bundle *_AddInManager) uninstall(name string) (*_AddInStatus, bool) {
 	bundle.Lock()
 	defer bundle.Unlock()
 
-	status, ok := bundle.pluginIdx[name]
+	status, ok := bundle.addInIdx[name]
 	if !ok {
 		return nil, false
 	}
 
-	delete(bundle.pluginIdx, name)
+	delete(bundle.addInIdx, name)
 
-	bundle.pluginList = slices.DeleteFunc(bundle.pluginList, func(status *_PluginStatus) bool {
+	bundle.addInList = slices.DeleteFunc(bundle.addInList, func(status *_AddInStatus) bool {
 		return status.name == name
 	})
 

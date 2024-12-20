@@ -58,15 +58,15 @@ type EntityTree interface {
 }
 
 // AddNode 新增实体节点，会向实体管理器添加实体
-func (mgr *_EntityMgrBehavior) AddNode(entity ec.Entity, parentId uid.Id) error {
+func (mgr *_EntityManagerBehavior) AddNode(entity ec.Entity, parentId uid.Id) error {
 	if parentId.IsNil() {
-		return fmt.Errorf("%w: %w: parentId is nil", ErrEntityMgr, exception.ErrArgs)
+		return fmt.Errorf("%w: %w: parentId is nil", ErrEntityManager, exception.ErrArgs)
 	}
 	return mgr.addEntity(entity, parentId)
 }
 
 // PruningNode 实体树节点剪枝
-func (mgr *_EntityMgrBehavior) PruningNode(entityId uid.Id) {
+func (mgr *_EntityManagerBehavior) PruningNode(entityId uid.Id) {
 	entity, ok := mgr.GetEntity(entityId)
 	if !ok {
 		return
@@ -87,7 +87,7 @@ func (mgr *_EntityMgrBehavior) PruningNode(entityId uid.Id) {
 }
 
 // RangeChildren 遍历子实体
-func (mgr *_EntityMgrBehavior) RangeChildren(entityId uid.Id, fun generic.Func1[ec.Entity, bool]) {
+func (mgr *_EntityManagerBehavior) RangeChildren(entityId uid.Id, fun generic.Func1[ec.Entity, bool]) {
 	node, ok := mgr.treeNodes[entityId]
 	if !ok || node.children == nil {
 		return
@@ -99,7 +99,7 @@ func (mgr *_EntityMgrBehavior) RangeChildren(entityId uid.Id, fun generic.Func1[
 }
 
 // ReversedRangeChildren 反向遍历子实体
-func (mgr *_EntityMgrBehavior) ReversedRangeChildren(entityId uid.Id, fun generic.Func1[ec.Entity, bool]) {
+func (mgr *_EntityManagerBehavior) ReversedRangeChildren(entityId uid.Id, fun generic.Func1[ec.Entity, bool]) {
 	node, ok := mgr.treeNodes[entityId]
 	if !ok || node.children == nil {
 		return
@@ -111,7 +111,7 @@ func (mgr *_EntityMgrBehavior) ReversedRangeChildren(entityId uid.Id, fun generi
 }
 
 // FilterChildren 过滤并获取子实体
-func (mgr *_EntityMgrBehavior) FilterChildren(entityId uid.Id, fun generic.Func1[ec.Entity, bool]) []ec.Entity {
+func (mgr *_EntityManagerBehavior) FilterChildren(entityId uid.Id, fun generic.Func1[ec.Entity, bool]) []ec.Entity {
 	node, ok := mgr.treeNodes[entityId]
 	if !ok || node.children == nil {
 		return nil
@@ -133,7 +133,7 @@ func (mgr *_EntityMgrBehavior) FilterChildren(entityId uid.Id, fun generic.Func1
 }
 
 // GetChildren 获取所有子实体
-func (mgr *_EntityMgrBehavior) GetChildren(entityId uid.Id) []ec.Entity {
+func (mgr *_EntityManagerBehavior) GetChildren(entityId uid.Id) []ec.Entity {
 	node, ok := mgr.treeNodes[entityId]
 	if !ok || node.children == nil {
 		return nil
@@ -150,7 +150,7 @@ func (mgr *_EntityMgrBehavior) GetChildren(entityId uid.Id) []ec.Entity {
 }
 
 // CountChildren 获取子实体数量
-func (mgr *_EntityMgrBehavior) CountChildren(entityId uid.Id) int {
+func (mgr *_EntityManagerBehavior) CountChildren(entityId uid.Id) int {
 	node, ok := mgr.treeNodes[entityId]
 	if !ok || node.children == nil {
 		return 0
@@ -159,7 +159,7 @@ func (mgr *_EntityMgrBehavior) CountChildren(entityId uid.Id) int {
 }
 
 // IsTop 是否是顶层节点
-func (mgr *_EntityMgrBehavior) IsTop(entityId uid.Id) bool {
+func (mgr *_EntityManagerBehavior) IsTop(entityId uid.Id) bool {
 	node, ok := mgr.treeNodes[entityId]
 	if !ok {
 		return false
@@ -168,14 +168,14 @@ func (mgr *_EntityMgrBehavior) IsTop(entityId uid.Id) bool {
 }
 
 // ChangeParent 修改父实体
-func (mgr *_EntityMgrBehavior) ChangeParent(entityId, parentId uid.Id) error {
+func (mgr *_EntityManagerBehavior) ChangeParent(entityId, parentId uid.Id) error {
 	entity, ok := mgr.GetEntity(entityId)
 	if !ok {
-		return fmt.Errorf("%w: entity not exist", ErrEntityMgr)
+		return fmt.Errorf("%w: entity not exist", ErrEntityManager)
 	}
 
 	if entity.GetState() > ec.EntityState_Alive {
-		return fmt.Errorf("%w: invalid entity state %q", ErrEntityMgr, entity.GetState())
+		return fmt.Errorf("%w: invalid entity state %q", ErrEntityManager, entity.GetState())
 	}
 
 	if parentId.IsNil() {
@@ -185,15 +185,15 @@ func (mgr *_EntityMgrBehavior) ChangeParent(entityId, parentId uid.Id) error {
 
 	parent, ok := mgr.GetEntity(parentId)
 	if !ok {
-		return fmt.Errorf("%w: parent not exist", ErrEntityMgr)
+		return fmt.Errorf("%w: parent not exist", ErrEntityManager)
 	}
 
 	if parent.GetState() > ec.EntityState_Alive {
-		return fmt.Errorf("%w: invalid parent state %q", ErrEntityMgr, parent.GetState())
+		return fmt.Errorf("%w: invalid parent state %q", ErrEntityManager, parent.GetState())
 	}
 
 	if parent.GetId() == entity.GetId() {
-		return fmt.Errorf("%w: parent and child cannot be the same", ErrEntityMgr)
+		return fmt.Errorf("%w: parent and child cannot be the same", ErrEntityManager)
 	}
 
 	switch entity.GetTreeNodeState() {
@@ -209,20 +209,20 @@ func (mgr *_EntityMgrBehavior) ChangeParent(entityId, parentId uid.Id) error {
 
 		for p, _ := parent.GetTreeNodeParent(); p != nil; p, _ = p.GetTreeNodeParent() {
 			if p.GetId() == entity.GetId() {
-				return fmt.Errorf("%w: detected a cycle in the tree structure", ErrEntityMgr)
+				return fmt.Errorf("%w: detected a cycle in the tree structure", ErrEntityManager)
 			}
 		}
 
 		mgr.changeParentNode(entity, parent)
 	default:
-		return fmt.Errorf("%w: invalid entity tree node state %q", ErrEntityMgr, entity.GetTreeNodeState())
+		return fmt.Errorf("%w: invalid entity tree node state %q", ErrEntityManager, entity.GetTreeNodeState())
 	}
 
 	return nil
 }
 
 // GetParent 获取父实体
-func (mgr *_EntityMgrBehavior) GetParent(entityId uid.Id) (ec.Entity, bool) {
+func (mgr *_EntityManagerBehavior) GetParent(entityId uid.Id) (ec.Entity, bool) {
 	entity, ok := mgr.GetEntity(entityId)
 	if !ok {
 		return nil, false
@@ -230,13 +230,13 @@ func (mgr *_EntityMgrBehavior) GetParent(entityId uid.Id) (ec.Entity, bool) {
 	return entity.GetTreeNodeParent()
 }
 
-func (mgr *_EntityMgrBehavior) addToParentNode(entity, parent ec.Entity) {
+func (mgr *_EntityManagerBehavior) addToParentNode(entity, parent ec.Entity) {
 	if entity == nil {
-		exception.Panicf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs)
+		exception.Panicf("%w: %w: entity is nil", ErrEntityManager, exception.ErrArgs)
 	}
 
 	if parent == nil {
-		exception.Panicf("%w: %w: parent is nil", ErrEntityMgr, exception.ErrArgs)
+		exception.Panicf("%w: %w: parent is nil", ErrEntityManager, exception.ErrArgs)
 	}
 
 	if entity.GetState() > ec.EntityState_Alive || parent.GetState() > ec.EntityState_Alive {
@@ -250,13 +250,13 @@ func (mgr *_EntityMgrBehavior) addToParentNode(entity, parent ec.Entity) {
 	mgr.enterParent(entity, parent)
 }
 
-func (mgr *_EntityMgrBehavior) attachParentNode(entity, parent ec.Entity) {
+func (mgr *_EntityManagerBehavior) attachParentNode(entity, parent ec.Entity) {
 	if entity == nil {
-		exception.Panicf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs)
+		exception.Panicf("%w: %w: entity is nil", ErrEntityManager, exception.ErrArgs)
 	}
 
 	if parent == nil {
-		exception.Panicf("%w: %w: parent is nil", ErrEntityMgr, exception.ErrArgs)
+		exception.Panicf("%w: %w: parent is nil", ErrEntityManager, exception.ErrArgs)
 	}
 
 	if entity.GetState() > ec.EntityState_Alive || parent.GetState() > ec.EntityState_Alive {
@@ -280,9 +280,9 @@ func (mgr *_EntityMgrBehavior) attachParentNode(entity, parent ec.Entity) {
 	ec.UnsafeEntity(entity).SetTreeNodeState(ec.TreeNodeState_Attached)
 }
 
-func (mgr *_EntityMgrBehavior) detachParentNode(entity ec.Entity) {
+func (mgr *_EntityManagerBehavior) detachParentNode(entity ec.Entity) {
 	if entity == nil {
-		exception.Panicf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs)
+		exception.Panicf("%w: %w: entity is nil", ErrEntityManager, exception.ErrArgs)
 	}
 
 	if entity.GetTreeNodeState() != ec.TreeNodeState_Detaching {
@@ -301,21 +301,21 @@ func (mgr *_EntityMgrBehavior) detachParentNode(entity ec.Entity) {
 	ec.UnsafeEntity(entity).LeaveParentNode()
 }
 
-func (mgr *_EntityMgrBehavior) removeFromParentNode(entity ec.Entity) {
+func (mgr *_EntityManagerBehavior) removeFromParentNode(entity ec.Entity) {
 	if entity == nil {
-		exception.Panicf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs)
+		exception.Panicf("%w: %w: entity is nil", ErrEntityManager, exception.ErrArgs)
 	}
 
 	mgr.leaveParent(entity)
 }
 
-func (mgr *_EntityMgrBehavior) changeParentNode(entity, parent ec.Entity) {
+func (mgr *_EntityManagerBehavior) changeParentNode(entity, parent ec.Entity) {
 	if entity == nil {
-		exception.Panicf("%w: %w: entity is nil", ErrEntityMgr, exception.ErrArgs)
+		exception.Panicf("%w: %w: entity is nil", ErrEntityManager, exception.ErrArgs)
 	}
 
 	if parent == nil {
-		exception.Panicf("%w: %w: parent is nil", ErrEntityMgr, exception.ErrArgs)
+		exception.Panicf("%w: %w: parent is nil", ErrEntityManager, exception.ErrArgs)
 	}
 
 	if entity.GetState() > ec.EntityState_Alive || parent.GetState() > ec.EntityState_Alive {
@@ -338,7 +338,7 @@ func (mgr *_EntityMgrBehavior) changeParentNode(entity, parent ec.Entity) {
 	mgr.attachParentNode(entity, parent)
 }
 
-func (mgr *_EntityMgrBehavior) enterParent(entity, parent ec.Entity) {
+func (mgr *_EntityManagerBehavior) enterParent(entity, parent ec.Entity) {
 	parentNode, ok := mgr.treeNodes[parent.GetId()]
 	if !ok {
 		parentNode = &_TreeNode{}
@@ -365,7 +365,7 @@ func (mgr *_EntityMgrBehavior) enterParent(entity, parent ec.Entity) {
 	ec.UnsafeEntity(entity).SetTreeNodeState(ec.TreeNodeState_Attaching)
 }
 
-func (mgr *_EntityMgrBehavior) leaveParent(entity ec.Entity) {
+func (mgr *_EntityManagerBehavior) leaveParent(entity ec.Entity) {
 	ec.UnsafeEntity(entity).SetTreeNodeParent(nil)
 	ec.UnsafeEntity(entity).SetTreeNodeState(ec.TreeNodeState_Freedom)
 

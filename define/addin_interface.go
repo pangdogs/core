@@ -20,22 +20,29 @@
 package define
 
 import (
-	"git.golaxy.org/core/runtime"
+	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/utils/generic"
+	"git.golaxy.org/core/utils/types"
 )
 
-// RuntimePluginInterface 定义运行时插件接口，支持运行时上下文，通常用于为同类插件的不同实现提供统一的接口
-func RuntimePluginInterface[PLUGIN_IFACE any]() RuntimePluginInterfaceDefinition[PLUGIN_IFACE] {
-	plug := definePluginInterface[PLUGIN_IFACE]()
-
-	return RuntimePluginInterfaceDefinition[PLUGIN_IFACE]{
-		Name:  plug.Name,
-		Using: func(rtCtx runtime.Context) PLUGIN_IFACE { return plug.Using(rtCtx) },
-	}
+// AddInInterface 定义通用插件接口，支持运行时和服务上下文，通常用于为同类插件的不同实现提供统一的接口
+func AddInInterface[ADDIN_IFACE any]() AddInInterfaceDefinition[ADDIN_IFACE] {
+	return defineAddInInterface[ADDIN_IFACE]()
 }
 
-// RuntimePluginInterfaceDefinition 运行时插件接口定义
-type RuntimePluginInterfaceDefinition[PLUGIN_IFACE any] struct {
-	Name  string                                       // 插件名称
-	Using generic.Func1[runtime.Context, PLUGIN_IFACE] // 使用插件
+// AddInInterfaceDefinition 通用插件接口定义
+type AddInInterfaceDefinition[ADDIN_IFACE any] struct {
+	Name  string                                              // 插件名称
+	Using generic.Func1[extension.AddInProvider, ADDIN_IFACE] // 使用插件
+}
+
+func defineAddInInterface[ADDIN_IFACE any]() AddInInterfaceDefinition[ADDIN_IFACE] {
+	name := types.FullNameT[ADDIN_IFACE]()
+
+	return AddInInterfaceDefinition[ADDIN_IFACE]{
+		Name: name,
+		Using: func(provider extension.AddInProvider) ADDIN_IFACE {
+			return extension.Using[ADDIN_IFACE](provider, name)
+		},
+	}
 }

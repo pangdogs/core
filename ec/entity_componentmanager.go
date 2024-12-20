@@ -28,8 +28,8 @@ import (
 	"slices"
 )
 
-// iComponentMgr 组件管理器接口
-type iComponentMgr interface {
+// iComponentManager 组件管理器接口
+type iComponentManager interface {
 	// GetComponent 使用名称查询组件，组件同名时，返回首个组件
 	GetComponent(name string) Component
 	// GetComponentById 使用组件Id查询组件
@@ -59,7 +59,7 @@ type iComponentMgr interface {
 	// RemoveComponentById 使用组件Id删除组件
 	RemoveComponentById(id uid.Id)
 
-	IEntityComponentMgrEventTab
+	IEntityComponentManagerEventTab
 }
 
 // GetComponent 使用名称查询组件，组件同名时，返回首个组件
@@ -200,7 +200,7 @@ func (entity *EntityBehavior) AddComponent(name string, components ...Component)
 		entity.addComponent(name, components[i])
 	}
 
-	_EmitEventComponentMgrAddComponents(entity, entity.opts.InstanceFace.Iface, components)
+	_EmitEventComponentManagerAddComponents(entity, entity.opts.InstanceFace.Iface, components)
 	return nil
 }
 
@@ -227,7 +227,7 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 		}
 		comp.setState(ComponentState_Detach)
 
-		_EmitEventComponentMgrRemoveComponent(entity, entity.opts.InstanceFace.Iface, comp)
+		_EmitEventComponentManagerRemoveComponent(entity, entity.opts.InstanceFace.Iface, comp)
 
 		node.Escape()
 		return true
@@ -252,24 +252,24 @@ func (entity *EntityBehavior) RemoveComponentById(id uid.Id) {
 	}
 	comp.setState(ComponentState_Detach)
 
-	_EmitEventComponentMgrRemoveComponent(entity, entity.opts.InstanceFace.Iface, comp)
+	_EmitEventComponentManagerRemoveComponent(entity, entity.opts.InstanceFace.Iface, comp)
 
 	compNode.Escape()
 }
 
-// EventComponentMgrAddComponents 事件：实体的组件管理器添加组件
-func (entity *EntityBehavior) EventComponentMgrAddComponents() event.IEvent {
-	return entity.entityComponentMgrEventTab.EventComponentMgrRemoveComponent()
+// EventComponentManagerAddComponents 事件：实体的组件管理器添加组件
+func (entity *EntityBehavior) EventComponentManagerAddComponents() event.IEvent {
+	return entity.entityComponentManagerEventTab.EventComponentManagerRemoveComponent()
 }
 
-// EventComponentMgrRemoveComponent 事件：实体的组件管理器删除组件
-func (entity *EntityBehavior) EventComponentMgrRemoveComponent() event.IEvent {
-	return entity.entityComponentMgrEventTab.EventComponentMgrRemoveComponent()
+// EventComponentManagerRemoveComponent 事件：实体的组件管理器删除组件
+func (entity *EntityBehavior) EventComponentManagerRemoveComponent() event.IEvent {
+	return entity.entityComponentManagerEventTab.EventComponentManagerRemoveComponent()
 }
 
-// EventComponentMgrFirstTouchComponent 事件：实体的组件管理器首次访问组件
-func (entity *EntityBehavior) EventComponentMgrFirstTouchComponent() event.IEvent {
-	return entity.entityComponentMgrEventTab.EventComponentMgrFirstTouchComponent()
+// EventComponentManagerFirstTouchComponent 事件：实体的组件管理器首次访问组件
+func (entity *EntityBehavior) EventComponentManagerFirstTouchComponent() event.IEvent {
+	return entity.entityComponentManagerEventTab.EventComponentManagerFirstTouchComponent()
 }
 
 func (entity *EntityBehavior) addComponent(name string, component Component) {
@@ -339,7 +339,7 @@ func (entity *EntityBehavior) touchComponent(comp Component) Component {
 	if entity.opts.ComponentAwakeOnFirstTouch && comp.GetState() == ComponentState_Attach {
 		switch entity.GetState() {
 		case EntityState_Awake, EntityState_Start, EntityState_Alive:
-			_EmitEventComponentMgrFirstTouchComponent(entity, entity.opts.InstanceFace.Iface, comp)
+			_EmitEventComponentManagerFirstTouchComponent(entity, entity.opts.InstanceFace.Iface, comp)
 		}
 	}
 

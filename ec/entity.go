@@ -56,7 +56,7 @@ type Entity interface {
 	iEntity
 	iConcurrentEntity
 	iContext
-	iComponentMgr
+	iComponentManager
 	iTreeNode
 	ictx.CurrentContextProvider
 	reinterpret.InstanceProvider
@@ -108,9 +108,9 @@ type EntityBehavior struct {
 	treeNodeParent Entity
 	managedHooks   []event.Hook
 
-	entityEventTab             entityEventTab
-	entityComponentMgrEventTab entityComponentMgrEventTab
-	entityTreeNodeEventTab     entityTreeNodeEventTab
+	entityEventTab                 entityEventTab
+	entityComponentManagerEventTab entityComponentManagerEventTab
+	entityTreeNodeEventTab         entityTreeNodeEventTab
 }
 
 // GetId 获取实体Id
@@ -191,7 +191,7 @@ func (entity *EntityBehavior) init(opts EntityOptions) {
 	}
 
 	entity.entityEventTab.Init(false, nil, event.EventRecursion_Allow)
-	entity.entityComponentMgrEventTab.Init(false, nil, event.EventRecursion_Allow)
+	entity.entityComponentManagerEventTab.Init(false, nil, event.EventRecursion_Allow)
 	entity.entityTreeNodeEventTab.Init(false, nil, event.EventRecursion_Allow)
 }
 
@@ -231,7 +231,7 @@ func (entity *EntityBehavior) setState(state EntityState) {
 	case EntityState_Leave:
 		entity.terminate()
 		entity.entityEventTab.Close()
-		entity.entityComponentMgrEventTab.Close()
+		entity.entityComponentManagerEventTab.Close()
 	case EntityState_Shut:
 		entity.entityTreeNodeEventTab.Close()
 	case EntityState_Death:

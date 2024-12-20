@@ -17,13 +17,24 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package runtime
+//go:generate go run git.golaxy.org/core/event/eventc event
+//go:generate go run git.golaxy.org/core/event/eventc eventtab --name=entityComponentManagerEventTab
+package ec
 
-import (
-	"git.golaxy.org/core/extension"
-)
+// EventComponentManagerAddComponents 事件：实体的组件管理器添加组件
+// +event-gen:export=0
+type EventComponentManagerAddComponents interface {
+	OnComponentManagerAddComponents(entity Entity, components []Component)
+}
 
-// GetPluginBundle 获取插件包
-func (ctx *ContextBehavior) GetPluginBundle() extension.PluginBundle {
-	return ctx.opts.PluginBundle
+// EventComponentManagerRemoveComponent 事件：实体的组件管理器删除组件
+// +event-gen:export=0
+type EventComponentManagerRemoveComponent interface {
+	OnComponentManagerRemoveComponent(entity Entity, component Component)
+}
+
+// EventComponentManagerFirstTouchComponent 事件：实体的组件管理器首次访问组件
+// +event-gen:export=0
+type EventComponentManagerFirstTouchComponent interface {
+	OnComponentManagerFirstTouchComponent(entity Entity, component Component)
 }

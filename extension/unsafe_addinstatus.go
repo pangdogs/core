@@ -17,25 +17,20 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package define
+package extension
 
-import (
-	"git.golaxy.org/core/service"
-	"git.golaxy.org/core/utils/generic"
-)
-
-// ServicePluginInterface 定义服务插件接口，支持服务上下文，通常用于为同类插件的不同实现提供统一的接口
-func ServicePluginInterface[PLUGIN_IFACE any]() ServicePluginInterfaceDefinition[PLUGIN_IFACE] {
-	plug := definePluginInterface[PLUGIN_IFACE]()
-
-	return ServicePluginInterfaceDefinition[PLUGIN_IFACE]{
-		Name:  plug.Name,
-		Using: func(svcCtx service.Context) PLUGIN_IFACE { return plug.Using(svcCtx) },
+// Deprecated: UnsafeAddInStatus 访问插件状态信息的内部方法
+func UnsafeAddInStatus(status AddInStatus) _UnsafeAddInStatus {
+	return _UnsafeAddInStatus{
+		AddInStatus: status,
 	}
 }
 
-// ServicePluginInterfaceDefinition 服务插件接口定义
-type ServicePluginInterfaceDefinition[PLUGIN_IFACE any] struct {
-	Name  string                                       // 插件名称
-	Using generic.Func1[service.Context, PLUGIN_IFACE] // 使用插件
+type _UnsafeAddInStatus struct {
+	AddInStatus
+}
+
+// SetState 修改状态
+func (u _UnsafeAddInStatus) SetState(state, must AddInState) bool {
+	return u.setState(state, must)
 }

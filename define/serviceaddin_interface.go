@@ -20,27 +20,22 @@
 package define
 
 import (
-	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/generic"
 )
 
-// ServicePlugin 定义服务插件，支持服务上下文
-func ServicePlugin[PLUGIN_IFACE, OPTION any](creator generic.FuncVar0[OPTION, PLUGIN_IFACE]) ServicePluginDefinition[PLUGIN_IFACE, OPTION] {
-	plug := definePlugin[PLUGIN_IFACE, OPTION](creator)
+// ServiceAddInInterface 定义服务插件接口，支持服务上下文，通常用于为同类插件的不同实现提供统一的接口
+func ServiceAddInInterface[ADDIN_IFACE any]() ServiceAddInInterfaceDefinition[ADDIN_IFACE] {
+	plug := defineAddInInterface[ADDIN_IFACE]()
 
-	return ServicePluginDefinition[PLUGIN_IFACE, OPTION]{
-		Name:      plug.Name,
-		Install:   plug.Install,
-		Uninstall: plug.Uninstall,
-		Using:     func(svcCtx service.Context) PLUGIN_IFACE { return plug.Using(svcCtx) },
+	return ServiceAddInInterfaceDefinition[ADDIN_IFACE]{
+		Name:  plug.Name,
+		Using: func(svcCtx service.Context) ADDIN_IFACE { return plug.Using(svcCtx) },
 	}
 }
 
-// ServicePluginDefinition 服务插件定义
-type ServicePluginDefinition[PLUGIN_IFACE, OPTION any] struct {
-	Name      string                                               // 插件名称
-	Install   generic.ActionVar1[extension.PluginProvider, OPTION] // 向插件包安装
-	Uninstall generic.Action1[extension.PluginProvider]            // 从插件包卸载
-	Using     generic.Func1[service.Context, PLUGIN_IFACE]         // 使用插件
+// ServiceAddInInterfaceDefinition 服务插件接口定义
+type ServiceAddInInterfaceDefinition[ADDIN_IFACE any] struct {
+	Name  string                                      // 插件名称
+	Using generic.Func1[service.Context, ADDIN_IFACE] // 使用插件
 }

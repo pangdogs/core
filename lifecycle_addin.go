@@ -17,20 +17,22 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package extension
+package core
 
-// Deprecated: UnsafePluginStatus 访问插件状态信息的内部方法
-func UnsafePluginStatus(status PluginStatus) _UnsafePluginStatus {
-	return _UnsafePluginStatus{
-		PluginStatus: status,
-	}
+import (
+	"git.golaxy.org/core/runtime"
+	"git.golaxy.org/core/service"
+)
+
+// LifecycleAddInInit 插件初始化回调，插件实现此接口即可使用，当插件安装在服务上时，rtCtx为nil
+type LifecycleAddInInit interface {
+	Init(svcCtx service.Context, rtCtx runtime.Context)
 }
 
-type _UnsafePluginStatus struct {
-	PluginStatus
+// LifecycleAddInShut 插件结束回调，插件实现此接口即可使用，当插件安装在服务上时，rtCtx为nil
+type LifecycleAddInShut interface {
+	Shut(svcCtx service.Context, rtCtx runtime.Context)
 }
 
-// SetState 修改状态
-func (u _UnsafePluginStatus) SetState(state, must PluginState) bool {
-	return u.setState(state, must)
-}
+// LifecycleAddInOnRuntimeRunningStateChanged 运行时运行状态变化，当插件安装在运行时上时，插件实现此接口即可使用
+type LifecycleAddInOnRuntimeRunningStateChanged = eventRuntimeRunningStateChanged

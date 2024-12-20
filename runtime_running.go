@@ -89,7 +89,7 @@ func (rt *RuntimeBehavior) running() {
 func (rt *RuntimeBehavior) changeRunningState(state runtime.RunningState, args ...any) {
 	switch state {
 	case runtime.RunningState_Starting:
-		rt.initPlugin()
+		rt.initAddIn()
 	case runtime.RunningState_FrameLoopBegin:
 		runtime.UnsafeFrame(rt.opts.Frame).LoopBegin()
 	case runtime.RunningState_FrameUpdateBegin:
@@ -99,7 +99,7 @@ func (rt *RuntimeBehavior) changeRunningState(state runtime.RunningState, args .
 	case runtime.RunningState_FrameLoopEnd:
 		runtime.UnsafeFrame(rt.opts.Frame).LoopEnd()
 	case runtime.RunningState_Terminated:
-		rt.shutPlugin()
+		rt.shutAddIn()
 	}
 
 	runtime.UnsafeContext(rt.ctx).ChangeRunningState(state, args...)
@@ -107,73 +107,73 @@ func (rt *RuntimeBehavior) changeRunningState(state runtime.RunningState, args .
 	_EmitEventRuntimeRunningStateChanged(&rt.eventRuntimeRunningStateChanged, rt.ctx, state, args...)
 }
 
-func (rt *RuntimeBehavior) initPlugin() {
-	pluginBundle := rt.ctx.GetPluginBundle()
-	if pluginBundle == nil {
+func (rt *RuntimeBehavior) initAddIn() {
+	addInManager := rt.ctx.GetAddInManager()
+	if addInManager == nil {
 		return
 	}
 
-	extension.UnsafePluginBundle(pluginBundle).SetCallback(rt.activatePlugin, rt.deactivatePlugin)
+	extension.UnsafeAddInManager(addInManager).SetCallback(rt.activateAddIn, rt.deactivateAddIn)
 
-	pluginBundle.Range(func(pluginStatus extension.PluginStatus) bool {
-		rt.activatePlugin(pluginStatus)
+	addInManager.Range(func(addInStatus extension.AddInStatus) bool {
+		rt.activateAddIn(addInStatus)
 		return true
 	})
 }
 
-func (rt *RuntimeBehavior) shutPlugin() {
-	pluginBundle := rt.ctx.GetPluginBundle()
-	if pluginBundle == nil {
+func (rt *RuntimeBehavior) shutAddIn() {
+	addInManager := rt.ctx.GetAddInManager()
+	if addInManager == nil {
 		return
 	}
 
-	extension.UnsafePluginBundle(pluginBundle).SetCallback(nil, nil)
+	extension.UnsafeAddInManager(addInManager).SetCallback(nil, nil)
 
-	pluginBundle.ReversedRange(func(pluginStatus extension.PluginStatus) bool {
-		rt.deactivatePlugin(pluginStatus)
+	addInManager.ReversedRange(func(addInStatus extension.AddInStatus) bool {
+		rt.deactivateAddIn(addInStatus)
 		return true
 	})
 }
 
-func (rt *RuntimeBehavior) activatePlugin(pluginStatus extension.PluginStatus) {
+func (rt *RuntimeBehavior) activateAddIn(addInStatus extension.AddInStatus) {
 	func() {
-		if pluginStatus.State() != extension.PluginState_Loaded {
+		if addInStatus.State() != extension.AddInState_Loaded {
 			return
 		}
 
-		rt.changeRunningState(runtime.RunningState_PluginActivating, pluginStatus)
-		defer rt.changeRunningState(runtime.RunningState_PluginActivated, pluginStatus)
+		rt.changeRunningState(runtime.RunningState_AddInActivating, addInStatus)
+		defer rt.changeRunningState(runtime.RunningState_AddInActivated, addInStatus)
 
-		if pluginInit, ok := pluginStatus.InstanceFace().Iface.(LifecyclePluginInit); ok {
-			generic.MakeAction2(pluginInit.Init).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), service.Current(rt), rt.ctx)
+		if addInInit, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInInit); ok {
+			generic.MakeAction2(addInInit.Init).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), service.Current(rt), rt.ctx)
 		}
 
-		extension.UnsafePluginStatus(pluginStatus).SetState(extension.PluginState_Active, extension.PluginState_Loaded)
+		extension.UnsafeAddInStatus(addInStatus).SetState(extension.AddInState_Active, extension.AddInState_Loaded)
 	}()
 
-	if pluginStatus.State() != extension.PluginState_Active {
+	if addInStatus.State() != extension.AddInState_Active {
 		return
 	}
 
-	if pluginOnRuntimeRunningStateChanged, ok := pluginStatus.InstanceFace().Iface.(LifecyclePluginOnRuntimeRunningStateChanged); ok {
-		event.Bind[LifecyclePluginOnRuntimeRunningStateChanged](&rt.eventRuntimeRunningStateChanged, pluginOnRuntimeRunningStateChanged)
+	if addInOnRuntimeRunningStateChanged, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInOnRuntimeRunningStateChanged); ok {
+		event.Bind[LifecycleAddInOnRuntimeRunningStateChanged](&rt.eventRuntimeRunningStateChanged, addInOnRuntimeRunningStateChanged)
 	}
 }
 
-func (rt *RuntimeBehavior) deactivatePlugin(pluginStatus extension.PluginStatus) {
-	if pluginOnRuntimeRunningStateChanged, ok := pluginStatus.InstanceFace().Iface.(LifecyclePluginOnRuntimeRunningStateChanged); ok {
-		event.Unbind(&rt.eventRuntimeRunningStateChanged, pluginOnRuntimeRunningStateChanged)
+func (rt *RuntimeBehavior) deactivateAddIn(addInStatus extension.AddInStatus) {
+	if addInOnRuntimeRunningStateChanged, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInOnRuntimeRunningStateChanged); ok {
+		event.Unbind(&rt.eventRuntimeRunningStateChanged, addInOnRuntimeRunningStateChanged)
 	}
 
-	rt.changeRunningState(runtime.RunningState_PluginDeactivating, pluginStatus)
-	defer rt.changeRunningState(runtime.RunningState_PluginDeactivated, pluginStatus)
+	rt.changeRunningState(runtime.RunningState_AddInDeactivating, addInStatus)
+	defer rt.changeRunningState(runtime.RunningState_AddInDeactivated, addInStatus)
 
-	if !extension.UnsafePluginStatus(pluginStatus).SetState(extension.PluginState_Inactive, extension.PluginState_Active) {
+	if !extension.UnsafeAddInStatus(addInStatus).SetState(extension.AddInState_Inactive, extension.AddInState_Active) {
 		return
 	}
 
-	if pluginShut, ok := pluginStatus.InstanceFace().Iface.(LifecyclePluginShut); ok {
-		generic.MakeAction2(pluginShut.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), service.Current(rt), rt.ctx)
+	if addInShut, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInShut); ok {
+		generic.MakeAction2(addInShut.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), service.Current(rt), rt.ctx)
 	}
 }
 
@@ -185,11 +185,11 @@ func (rt *RuntimeBehavior) loopStart() (hooks [5]event.Hook) {
 		runtime.UnsafeFrame(frame).RunningBegin()
 	}
 
-	hooks[0] = runtime.BindEventEntityMgrAddEntity(ctx.GetEntityMgr(), rt)
-	hooks[1] = runtime.BindEventEntityMgrRemoveEntity(ctx.GetEntityMgr(), rt)
-	hooks[2] = runtime.BindEventEntityMgrEntityAddComponents(ctx.GetEntityMgr(), rt)
-	hooks[3] = runtime.BindEventEntityMgrEntityRemoveComponent(ctx.GetEntityMgr(), rt)
-	hooks[4] = runtime.BindEventEntityMgrEntityFirstTouchComponent(ctx.GetEntityMgr(), rt)
+	hooks[0] = runtime.BindEventEntityManagerAddEntity(ctx.GetEntityManager(), rt)
+	hooks[1] = runtime.BindEventEntityManagerRemoveEntity(ctx.GetEntityManager(), rt)
+	hooks[2] = runtime.BindEventEntityManagerEntityAddComponents(ctx.GetEntityManager(), rt)
+	hooks[3] = runtime.BindEventEntityManagerEntityRemoveComponent(ctx.GetEntityManager(), rt)
+	hooks[4] = runtime.BindEventEntityManagerEntityFirstTouchComponent(ctx.GetEntityManager(), rt)
 
 	return
 }
