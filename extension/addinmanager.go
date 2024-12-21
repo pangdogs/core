@@ -66,30 +66,30 @@ type _AddInManager struct {
 }
 
 // GetAddInManager 获取插件管理器
-func (bundle *_AddInManager) GetAddInManager() AddInManager {
-	return bundle
+func (mgr *_AddInManager) GetAddInManager() AddInManager {
+	return mgr
 }
 
 // Install 安装插件，不设置插件名称时，将会使用插件实例名称作为插件名称
-func (bundle *_AddInManager) Install(addInFace iface.FaceAny, name ...string) {
-	bundle.installCB.Exec(bundle.install(addInFace, name...))
+func (mgr *_AddInManager) Install(addInFace iface.FaceAny, name ...string) {
+	mgr.installCB.Exec(mgr.install(addInFace, name...))
 }
 
 // Uninstall 卸载插件
-func (bundle *_AddInManager) Uninstall(name string) {
-	status, ok := bundle.uninstall(name)
+func (mgr *_AddInManager) Uninstall(name string) {
+	status, ok := mgr.uninstall(name)
 	if !ok {
 		return
 	}
-	bundle.uninstallCB.Exec(status)
+	mgr.uninstallCB.Exec(status)
 }
 
 // Get 获取插件
-func (bundle *_AddInManager) Get(name string) (AddInStatus, bool) {
-	bundle.RLock()
-	defer bundle.RUnlock()
+func (mgr *_AddInManager) Get(name string) (AddInStatus, bool) {
+	mgr.RLock()
+	defer mgr.RUnlock()
 
-	status, ok := bundle.addInIdx[name]
+	status, ok := mgr.addInIdx[name]
 	if !ok {
 		return nil, false
 	}
@@ -98,10 +98,10 @@ func (bundle *_AddInManager) Get(name string) (AddInStatus, bool) {
 }
 
 // Range 遍历所有已注册的插件
-func (bundle *_AddInManager) Range(fun generic.Func1[AddInStatus, bool]) {
-	bundle.RLock()
-	copied := slices.Clone(bundle.addInList)
-	bundle.RUnlock()
+func (mgr *_AddInManager) Range(fun generic.Func1[AddInStatus, bool]) {
+	mgr.RLock()
+	copied := slices.Clone(mgr.addInList)
+	mgr.RUnlock()
 
 	for i := range copied {
 		if !fun.Exec(copied[i]) {
@@ -111,10 +111,10 @@ func (bundle *_AddInManager) Range(fun generic.Func1[AddInStatus, bool]) {
 }
 
 // ReversedRange 反向遍历所有已注册的插件
-func (bundle *_AddInManager) ReversedRange(fun generic.Func1[AddInStatus, bool]) {
-	bundle.RLock()
-	copied := slices.Clone(bundle.addInList)
-	bundle.RUnlock()
+func (mgr *_AddInManager) ReversedRange(fun generic.Func1[AddInStatus, bool]) {
+	mgr.RLock()
+	copied := slices.Clone(mgr.addInList)
+	mgr.RUnlock()
 
 	for i := len(copied) - 1; i >= 0; i-- {
 		if !fun.Exec(copied[i]) {
@@ -123,28 +123,28 @@ func (bundle *_AddInManager) ReversedRange(fun generic.Func1[AddInStatus, bool])
 	}
 }
 
-func (bundle *_AddInManager) setCallback(installCB, uninstallCB generic.Action1[AddInStatus]) {
-	bundle.Lock()
-	defer bundle.Unlock()
+func (mgr *_AddInManager) setCallback(installCB, uninstallCB generic.Action1[AddInStatus]) {
+	mgr.Lock()
+	defer mgr.Unlock()
 
-	bundle.installCB = installCB
-	bundle.uninstallCB = uninstallCB
+	mgr.installCB = installCB
+	mgr.uninstallCB = uninstallCB
 }
 
-func (bundle *_AddInManager) install(addInFace iface.FaceAny, name ...string) *_AddInStatus {
+func (mgr *_AddInManager) install(addInFace iface.FaceAny, name ...string) *_AddInStatus {
 	if addInFace.IsNil() {
 		exception.Panicf("%w: %w: addInFace is nil", ErrExtension, exception.ErrArgs)
 	}
 
-	bundle.Lock()
-	defer bundle.Unlock()
+	mgr.Lock()
+	defer mgr.Unlock()
 
 	addInName := pie.First(name)
 	if addInName == "" {
 		addInName = types.FullName(addInFace.Iface)
 	}
 
-	if _, ok := bundle.addInIdx[addInName]; ok {
+	if _, ok := mgr.addInIdx[addInName]; ok {
 		exception.Panicf("%w: addIn %q is already installed", ErrExtension, addInName)
 	}
 
@@ -155,24 +155,24 @@ func (bundle *_AddInManager) install(addInFace iface.FaceAny, name ...string) *_
 	}
 	status.state.Store(int32(AddInState_Loaded))
 
-	bundle.addInList = append(bundle.addInList, status)
-	bundle.addInIdx[addInName] = status
+	mgr.addInList = append(mgr.addInList, status)
+	mgr.addInIdx[addInName] = status
 
 	return status
 }
 
-func (bundle *_AddInManager) uninstall(name string) (*_AddInStatus, bool) {
-	bundle.Lock()
-	defer bundle.Unlock()
+func (mgr *_AddInManager) uninstall(name string) (*_AddInStatus, bool) {
+	mgr.Lock()
+	defer mgr.Unlock()
 
-	status, ok := bundle.addInIdx[name]
+	status, ok := mgr.addInIdx[name]
 	if !ok {
 		return nil, false
 	}
 
-	delete(bundle.addInIdx, name)
+	delete(mgr.addInIdx, name)
 
-	bundle.addInList = slices.DeleteFunc(bundle.addInList, func(status *_AddInStatus) bool {
+	mgr.addInList = slices.DeleteFunc(mgr.addInList, func(status *_AddInStatus) bool {
 		return status.name == name
 	})
 

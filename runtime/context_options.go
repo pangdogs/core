@@ -96,9 +96,9 @@ func (_ContextOption) PersistId(id uid.Id) option.Setting[ContextOptions] {
 }
 
 // AddInManager 插件管理器
-func (_ContextOption) AddInManager(bundle extension.AddInManager) option.Setting[ContextOptions] {
+func (_ContextOption) AddInManager(mgr extension.AddInManager) option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
-		o.AddInManager = bundle
+		o.AddInManager = mgr
 	}
 }
 

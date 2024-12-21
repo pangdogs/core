@@ -108,9 +108,9 @@ func (_Option) EntityLib(lib pt.EntityLib) option.Setting[ContextOptions] {
 }
 
 // AddInManager 插件管理器
-func (_Option) AddInManager(bundle extension.AddInManager) option.Setting[ContextOptions] {
+func (_Option) AddInManager(mgr extension.AddInManager) option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
-		o.AddInManager = bundle
+		o.AddInManager = mgr
 	}
 }
 
