@@ -27,7 +27,7 @@ import (
 type Setting[T any] generic.Action1[*T]
 
 func (s Setting[T]) Apply(opts *T) {
-	generic.MakeAction1(s).Exec(opts)
+	generic.CastAction1(s).Exec(opts)
 }
 
 func Make[T any](defaults Setting[T], settings ...Setting[T]) (opts T) {

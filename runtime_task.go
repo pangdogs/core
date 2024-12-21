@@ -34,9 +34,9 @@ const (
 type _Task struct {
 	typ            _TaskType
 	fun            generic.FuncVar0[any, async.Ret]
-	delegateFun    generic.DelegateFuncVar0[any, async.Ret]
+	delegateFun    generic.DelegateVar0[any, async.Ret]
 	action         generic.ActionVar0[any]
-	delegateAction generic.DelegateActionVar0[any]
+	delegateAction generic.DelegateVoidVar0[any]
 	args           []any
 	asyncRet       chan async.Ret
 }

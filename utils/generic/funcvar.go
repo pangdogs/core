@@ -59,7 +59,7 @@ func (f FuncVar0[VA, R]) Call(autoRecover bool, reportError chan error, args ...
 	return f(args...), nil
 }
 
-func (f FuncVar0[VA, R]) ToDelegate() DelegateFuncVar0[VA, R] {
+func (f FuncVar0[VA, R]) ToDelegate() DelegateVar0[VA, R] {
 	return []FuncVar0[VA, R]{f}
 }
 
@@ -97,7 +97,7 @@ func (f FuncVar1[A1, VA, R]) Call(autoRecover bool, reportError chan error, a1 A
 	return f(a1, args...), nil
 }
 
-func (f FuncVar1[A1, VA, R]) ToDelegate() DelegateFuncVar1[A1, VA, R] {
+func (f FuncVar1[A1, VA, R]) ToDelegate() DelegateVar1[A1, VA, R] {
 	return []FuncVar1[A1, VA, R]{f}
 }
 
@@ -135,7 +135,7 @@ func (f FuncVar2[A1, A2, VA, R]) Call(autoRecover bool, reportError chan error, 
 	return f(a1, a2, args...), nil
 }
 
-func (f FuncVar2[A1, A2, VA, R]) ToDelegate() DelegateFuncVar2[A1, A2, VA, R] {
+func (f FuncVar2[A1, A2, VA, R]) ToDelegate() DelegateVar2[A1, A2, VA, R] {
 	return []FuncVar2[A1, A2, VA, R]{f}
 }
 
@@ -173,7 +173,7 @@ func (f FuncVar3[A1, A2, A3, VA, R]) Call(autoRecover bool, reportError chan err
 	return f(a1, a2, a3, args...), nil
 }
 
-func (f FuncVar3[A1, A2, A3, VA, R]) ToDelegate() DelegateFuncVar3[A1, A2, A3, VA, R] {
+func (f FuncVar3[A1, A2, A3, VA, R]) ToDelegate() DelegateVar3[A1, A2, A3, VA, R] {
 	return []FuncVar3[A1, A2, A3, VA, R]{f}
 }
 
@@ -211,7 +211,7 @@ func (f FuncVar4[A1, A2, A3, A4, VA, R]) Call(autoRecover bool, reportError chan
 	return f(a1, a2, a3, a4, args...), nil
 }
 
-func (f FuncVar4[A1, A2, A3, A4, VA, R]) ToDelegate() DelegateFuncVar4[A1, A2, A3, A4, VA, R] {
+func (f FuncVar4[A1, A2, A3, A4, VA, R]) ToDelegate() DelegateVar4[A1, A2, A3, A4, VA, R] {
 	return []FuncVar4[A1, A2, A3, A4, VA, R]{f}
 }
 
@@ -258,7 +258,7 @@ func (f FuncVar5[A1, A2, A3, A4, A5, VA, R]) Call(
 	return f(a1, a2, a3, a4, a5, args...), nil
 }
 
-func (f FuncVar5[A1, A2, A3, A4, A5, VA, R]) ToDelegate() DelegateFuncVar5[A1, A2, A3, A4, A5, VA, R] {
+func (f FuncVar5[A1, A2, A3, A4, A5, VA, R]) ToDelegate() DelegateVar5[A1, A2, A3, A4, A5, VA, R] {
 	return []FuncVar5[A1, A2, A3, A4, A5, VA, R]{f}
 }
 
@@ -305,7 +305,7 @@ func (f FuncVar6[A1, A2, A3, A4, A5, A6, VA, R]) Call(
 	return f(a1, a2, a3, a4, a5, a6, args...), nil
 }
 
-func (f FuncVar6[A1, A2, A3, A4, A5, A6, VA, R]) ToDelegate() DelegateFuncVar6[A1, A2, A3, A4, A5, A6, VA, R] {
+func (f FuncVar6[A1, A2, A3, A4, A5, A6, VA, R]) ToDelegate() DelegateVar6[A1, A2, A3, A4, A5, A6, VA, R] {
 	return []FuncVar6[A1, A2, A3, A4, A5, A6, VA, R]{f}
 }
 
@@ -352,7 +352,7 @@ func (f FuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R]) Call(
 	return f(a1, a2, a3, a4, a5, a6, a7, args...), nil
 }
 
-func (f FuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R]) ToDelegate() DelegateFuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R] {
+func (f FuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R]) ToDelegate() DelegateVar7[A1, A2, A3, A4, A5, A6, A7, VA, R] {
 	return []FuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R]{f}
 }
 
@@ -399,7 +399,7 @@ func (f FuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R]) Call(
 	return f(a1, a2, a3, a4, a5, a6, a7, a8, args...), nil
 }
 
-func (f FuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R]) ToDelegate() DelegateFuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R] {
+func (f FuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R]) ToDelegate() DelegateVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R] {
 	return []FuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R]{f}
 }
 
@@ -446,7 +446,7 @@ func (f FuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R]) Call(
 	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, args...), nil
 }
 
-func (f FuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R]) ToDelegate() DelegateFuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R] {
+func (f FuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R]) ToDelegate() DelegateVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R] {
 	return []FuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R]{f}
 }
 
@@ -493,7 +493,7 @@ func (f FuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R]) Call(
 	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, args...), nil
 }
 
-func (f FuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R]) ToDelegate() DelegateFuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R] {
+func (f FuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R]) ToDelegate() DelegateVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R] {
 	return []FuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R]{f}
 }
 
@@ -540,7 +540,7 @@ func (f FuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R]) Call(
 	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, args...), nil
 }
 
-func (f FuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R]) ToDelegate() DelegateFuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R] {
+func (f FuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R]) ToDelegate() DelegateVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R] {
 	return []FuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R]{f}
 }
 
@@ -587,7 +587,7 @@ func (f FuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R]) Cal
 	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, args...), nil
 }
 
-func (f FuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R]) ToDelegate() DelegateFuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R] {
+func (f FuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R]) ToDelegate() DelegateVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R] {
 	return []FuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R]{f}
 }
 
@@ -634,7 +634,7 @@ func (f FuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R]
 	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, args...), nil
 }
 
-func (f FuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R]) ToDelegate() DelegateFuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R] {
+func (f FuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R]) ToDelegate() DelegateVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R] {
 	return []FuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R]{f}
 }
 
@@ -681,7 +681,7 @@ func (f FuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, V
 	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, args...), nil
 }
 
-func (f FuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R]) ToDelegate() DelegateFuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R] {
+func (f FuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R]) ToDelegate() DelegateVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R] {
 	return []FuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R]{f}
 }
 
@@ -728,7 +728,7 @@ func (f FuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A
 	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, args...), nil
 }
 
-func (f FuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R]) ToDelegate() DelegateFuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R] {
+func (f FuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R]) ToDelegate() DelegateVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R] {
 	return []FuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R]{f}
 }
 
@@ -775,6 +775,6 @@ func (f FuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A
 	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, args...), nil
 }
 
-func (f FuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R]) ToDelegate() DelegateFuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R] {
+func (f FuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R]) ToDelegate() DelegateVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R] {
 	return []FuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R]{f}
 }

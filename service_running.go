@@ -137,7 +137,7 @@ func (svc *ServiceBehavior) activateAddIn(addInStatus extension.AddInStatus) {
 	defer svc.changeRunningState(service.RunningState_AddInActivated, addInStatus)
 
 	if addInInit, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInInit); ok {
-		generic.MakeAction2(addInInit.Init).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
+		generic.CastAction2(addInInit.Init).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
 	}
 
 	extension.UnsafeAddInStatus(addInStatus).SetState(extension.AddInState_Active, extension.AddInState_Loaded)
@@ -152,6 +152,6 @@ func (svc *ServiceBehavior) deactivateAddIn(addInStatus extension.AddInStatus) {
 	}
 
 	if addInShut, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInShut); ok {
-		generic.MakeAction2(addInShut.Shut).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
+		generic.CastAction2(addInShut.Shut).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
 	}
 }

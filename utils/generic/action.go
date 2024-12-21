@@ -60,7 +60,7 @@ func (f Action0) Call(autoRecover bool, reportError chan error) (panicErr error)
 	return nil
 }
 
-func (f Action0) ToDelegate() DelegateAction0 {
+func (f Action0) ToDelegate() DelegateVoid0 {
 	return []Action0{f}
 }
 
@@ -99,7 +99,7 @@ func (f Action1[A1]) Call(autoRecover bool, reportError chan error, a1 A1) (pani
 	return nil
 }
 
-func (f Action1[A1]) ToDelegate() DelegateAction1[A1] {
+func (f Action1[A1]) ToDelegate() DelegateVoid1[A1] {
 	return []Action1[A1]{f}
 }
 
@@ -138,7 +138,7 @@ func (f Action2[A1, A2]) Call(autoRecover bool, reportError chan error, a1 A1, a
 	return nil
 }
 
-func (f Action2[A1, A2]) ToDelegate() DelegateAction2[A1, A2] {
+func (f Action2[A1, A2]) ToDelegate() DelegateVoid2[A1, A2] {
 	return []Action2[A1, A2]{f}
 }
 
@@ -177,7 +177,7 @@ func (f Action3[A1, A2, A3]) Call(autoRecover bool, reportError chan error, a1 A
 	return nil
 }
 
-func (f Action3[A1, A2, A3]) ToDelegate() DelegateAction3[A1, A2, A3] {
+func (f Action3[A1, A2, A3]) ToDelegate() DelegateVoid3[A1, A2, A3] {
 	return []Action3[A1, A2, A3]{f}
 }
 
@@ -216,7 +216,7 @@ func (f Action4[A1, A2, A3, A4]) Call(autoRecover bool, reportError chan error, 
 	return nil
 }
 
-func (f Action4[A1, A2, A3, A4]) ToDelegate() DelegateAction4[A1, A2, A3, A4] {
+func (f Action4[A1, A2, A3, A4]) ToDelegate() DelegateVoid4[A1, A2, A3, A4] {
 	return []Action4[A1, A2, A3, A4]{f}
 }
 
@@ -264,7 +264,7 @@ func (f Action5[A1, A2, A3, A4, A5]) Call(
 	return nil
 }
 
-func (f Action5[A1, A2, A3, A4, A5]) ToDelegate() DelegateAction5[A1, A2, A3, A4, A5] {
+func (f Action5[A1, A2, A3, A4, A5]) ToDelegate() DelegateVoid5[A1, A2, A3, A4, A5] {
 	return []Action5[A1, A2, A3, A4, A5]{f}
 }
 
@@ -312,7 +312,7 @@ func (f Action6[A1, A2, A3, A4, A5, A6]) Call(
 	return nil
 }
 
-func (f Action6[A1, A2, A3, A4, A5, A6]) ToDelegate() DelegateAction6[A1, A2, A3, A4, A5, A6] {
+func (f Action6[A1, A2, A3, A4, A5, A6]) ToDelegate() DelegateVoid6[A1, A2, A3, A4, A5, A6] {
 	return []Action6[A1, A2, A3, A4, A5, A6]{f}
 }
 
@@ -360,7 +360,7 @@ func (f Action7[A1, A2, A3, A4, A5, A6, A7]) Call(
 	return nil
 }
 
-func (f Action7[A1, A2, A3, A4, A5, A6, A7]) ToDelegate() DelegateAction7[A1, A2, A3, A4, A5, A6, A7] {
+func (f Action7[A1, A2, A3, A4, A5, A6, A7]) ToDelegate() DelegateVoid7[A1, A2, A3, A4, A5, A6, A7] {
 	return []Action7[A1, A2, A3, A4, A5, A6, A7]{f}
 }
 
@@ -408,7 +408,7 @@ func (f Action8[A1, A2, A3, A4, A5, A6, A7, A8]) Call(
 	return nil
 }
 
-func (f Action8[A1, A2, A3, A4, A5, A6, A7, A8]) ToDelegate() DelegateAction8[A1, A2, A3, A4, A5, A6, A7, A8] {
+func (f Action8[A1, A2, A3, A4, A5, A6, A7, A8]) ToDelegate() DelegateVoid8[A1, A2, A3, A4, A5, A6, A7, A8] {
 	return []Action8[A1, A2, A3, A4, A5, A6, A7, A8]{f}
 }
 
@@ -456,7 +456,7 @@ func (f Action9[A1, A2, A3, A4, A5, A6, A7, A8, A9]) Call(
 	return nil
 }
 
-func (f Action9[A1, A2, A3, A4, A5, A6, A7, A8, A9]) ToDelegate() DelegateAction9[A1, A2, A3, A4, A5, A6, A7, A8, A9] {
+func (f Action9[A1, A2, A3, A4, A5, A6, A7, A8, A9]) ToDelegate() DelegateVoid9[A1, A2, A3, A4, A5, A6, A7, A8, A9] {
 	return []Action9[A1, A2, A3, A4, A5, A6, A7, A8, A9]{f}
 }
 
@@ -504,7 +504,7 @@ func (f Action10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10]) Call(
 	return nil
 }
 
-func (f Action10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10]) ToDelegate() DelegateAction10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10] {
+func (f Action10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10]) ToDelegate() DelegateVoid10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10] {
 	return []Action10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10]{f}
 }
 
@@ -552,7 +552,7 @@ func (f Action11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11]) Call(
 	return nil
 }
 
-func (f Action11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11]) ToDelegate() DelegateAction11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11] {
+func (f Action11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11]) ToDelegate() DelegateVoid11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11] {
 	return []Action11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11]{f}
 }
 
@@ -600,7 +600,7 @@ func (f Action12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12]) Call(
 	return nil
 }
 
-func (f Action12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12]) ToDelegate() DelegateAction12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12] {
+func (f Action12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12]) ToDelegate() DelegateVoid12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12] {
 	return []Action12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12]{f}
 }
 
@@ -648,7 +648,7 @@ func (f Action13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13]) Call(
 	return nil
 }
 
-func (f Action13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13]) ToDelegate() DelegateAction13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13] {
+func (f Action13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13]) ToDelegate() DelegateVoid13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13] {
 	return []Action13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13]{f}
 }
 
@@ -696,7 +696,7 @@ func (f Action14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14]) C
 	return nil
 }
 
-func (f Action14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14]) ToDelegate() DelegateAction14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14] {
+func (f Action14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14]) ToDelegate() DelegateVoid14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14] {
 	return []Action14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14]{f}
 }
 
@@ -744,7 +744,7 @@ func (f Action15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A1
 	return nil
 }
 
-func (f Action15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15]) ToDelegate() DelegateAction15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15] {
+func (f Action15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15]) ToDelegate() DelegateVoid15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15] {
 	return []Action15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15]{f}
 }
 
@@ -792,6 +792,6 @@ func (f Action16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A1
 	return nil
 }
 
-func (f Action16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16]) ToDelegate() DelegateAction16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16] {
+func (f Action16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16]) ToDelegate() DelegateVoid16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16] {
 	return []Action16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16]{f}
 }

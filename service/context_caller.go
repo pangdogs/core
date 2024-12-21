@@ -43,7 +43,7 @@ type Caller interface {
 	//	注意：
 	//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
 	//  - 调用过程中的panic信息，均会转换为error返回。
-	CallDelegate(entityId uid.Id, fun generic.DelegateFuncVar1[ec.Entity, any, async.Ret], args ...any) async.AsyncRet
+	CallDelegate(entityId uid.Id, fun generic.DelegateVar1[ec.Entity, any, async.Ret], args ...any) async.AsyncRet
 
 	// CallVoid 查找实体并异步调用函数，无返回值。在运行时中。不会阻塞当前线程，会返回AsyncRet。
 	//
@@ -52,12 +52,12 @@ type Caller interface {
 	//  - 调用过程中的panic信息，均会转换为error返回。
 	CallVoid(entityId uid.Id, fun generic.ActionVar1[ec.Entity, any], args ...any) async.AsyncRet
 
-	// CallVoidDelegate 查找实体并异步调用委托，无返回值。在运行时中。不会阻塞当前线程，会返回AsyncRet。
+	// CallDelegateVoid 查找实体并异步调用委托，无返回值。在运行时中。不会阻塞当前线程，会返回AsyncRet。
 	//
 	//	注意：
 	//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
 	//  - 调用过程中的panic信息，均会转换为error返回。
-	CallVoidDelegate(entityId uid.Id, fun generic.DelegateActionVar1[ec.Entity, any], args ...any) async.AsyncRet
+	CallDelegateVoid(entityId uid.Id, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) async.AsyncRet
 }
 
 //go:linkname getCaller git.golaxy.org/core/runtime.getCaller
@@ -101,7 +101,7 @@ func (ctx *ContextBehavior) Call(entityId uid.Id, fun generic.FuncVar1[ec.Entity
 //		注意：
 //		- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
 //	 - 调用过程中的panic信息，均会转换为error返回。
-func (ctx *ContextBehavior) CallDelegate(entityId uid.Id, fun generic.DelegateFuncVar1[ec.Entity, any, async.Ret], args ...any) async.AsyncRet {
+func (ctx *ContextBehavior) CallDelegate(entityId uid.Id, fun generic.DelegateVar1[ec.Entity, any, async.Ret], args ...any) async.AsyncRet {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
 		return makeAsyncErr(err)
@@ -135,12 +135,12 @@ func (ctx *ContextBehavior) CallVoid(entityId uid.Id, fun generic.ActionVar1[ec.
 	})
 }
 
-// CallVoidDelegate 查找实体并异步调用委托，无返回值。在运行时中。不会阻塞当前线程，会返回AsyncRet。
+// CallDelegateVoid 查找实体并异步调用委托，无返回值。在运行时中。不会阻塞当前线程，会返回AsyncRet。
 //
 //		注意：
 //		- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
 //	 - 调用过程中的panic信息，均会转换为error返回。
-func (ctx *ContextBehavior) CallVoidDelegate(entityId uid.Id, fun generic.DelegateActionVar1[ec.Entity, any], args ...any) async.AsyncRet {
+func (ctx *ContextBehavior) CallDelegateVoid(entityId uid.Id, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) async.AsyncRet {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
 		return makeAsyncErr(err)

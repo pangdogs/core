@@ -29,7 +29,7 @@ import (
 )
 
 type (
-	CustomGC = generic.DelegateAction1[Runtime] // 自定义GC函数
+	CustomGC = generic.DelegateVoid1[Runtime] // 自定义GC函数
 )
 
 // RuntimeOptions 创建运行时的所有选项

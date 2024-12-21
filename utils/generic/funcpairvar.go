@@ -25,18 +25,18 @@ import (
 	"git.golaxy.org/core/utils/types"
 )
 
-type PairFuncVar0[VA, R1, R2 any] func(...VA) (R1, R2)
+type FuncPairVar0[VA, R1, R2 any] func(...VA) (R1, R2)
 
-func (f PairFuncVar0[VA, R1, R2]) Exec(args ...VA) (r1 R1, r2 R2) {
+func (f FuncPairVar0[VA, R1, R2]) Exec(args ...VA) (r1 R1, r2 R2) {
 	r1, r2, _ = f.Call(false, nil, args...)
 	return
 }
 
-func (f PairFuncVar0[VA, R1, R2]) Invoke(args ...VA) (r1 R1, r2 R2, panicErr error) {
+func (f FuncPairVar0[VA, R1, R2]) Invoke(args ...VA) (r1 R1, r2 R2, panicErr error) {
 	return f.Call(true, nil, args...)
 }
 
-func (f PairFuncVar0[VA, R1, R2]) Call(autoRecover bool, reportError chan error, args ...VA) (r1 R1, r2 R2, panicErr error) {
+func (f FuncPairVar0[VA, R1, R2]) Call(autoRecover bool, reportError chan error, args ...VA) (r1 R1, r2 R2, panicErr error) {
 	if f == nil {
 		return types.ZeroT[R1](), types.ZeroT[R2](), nil
 	}
@@ -60,22 +60,22 @@ func (f PairFuncVar0[VA, R1, R2]) Call(autoRecover bool, reportError chan error,
 	return
 }
 
-func (f PairFuncVar0[VA, R1, R2]) ToDelegate() DelegatePairFuncVar0[VA, R1, R2] {
-	return []PairFuncVar0[VA, R1, R2]{f}
+func (f FuncPairVar0[VA, R1, R2]) ToDelegate() DelegatePairVar0[VA, R1, R2] {
+	return []FuncPairVar0[VA, R1, R2]{f}
 }
 
-type PairFuncVar1[A1, VA, R1, R2 any] func(A1, ...VA) (R1, R2)
+type FuncPairVar1[A1, VA, R1, R2 any] func(A1, ...VA) (R1, R2)
 
-func (f PairFuncVar1[A1, VA, R1, R2]) Exec(a1 A1, args ...VA) (r1 R1, r2 R2) {
+func (f FuncPairVar1[A1, VA, R1, R2]) Exec(a1 A1, args ...VA) (r1 R1, r2 R2) {
 	r1, r2, _ = f.Call(false, nil, a1, args...)
 	return
 }
 
-func (f PairFuncVar1[A1, VA, R1, R2]) Invoke(a1 A1, args ...VA) (r1 R1, r2 R2, panicErr error) {
+func (f FuncPairVar1[A1, VA, R1, R2]) Invoke(a1 A1, args ...VA) (r1 R1, r2 R2, panicErr error) {
 	return f.Call(true, nil, a1, args...)
 }
 
-func (f PairFuncVar1[A1, VA, R1, R2]) Call(autoRecover bool, reportError chan error, a1 A1, args ...VA) (r1 R1, r2 R2, panicErr error) {
+func (f FuncPairVar1[A1, VA, R1, R2]) Call(autoRecover bool, reportError chan error, a1 A1, args ...VA) (r1 R1, r2 R2, panicErr error) {
 	if f == nil {
 		return types.ZeroT[R1](), types.ZeroT[R2](), nil
 	}
@@ -99,22 +99,22 @@ func (f PairFuncVar1[A1, VA, R1, R2]) Call(autoRecover bool, reportError chan er
 	return
 }
 
-func (f PairFuncVar1[A1, VA, R1, R2]) ToDelegate() DelegatePairFuncVar1[A1, VA, R1, R2] {
-	return []PairFuncVar1[A1, VA, R1, R2]{f}
+func (f FuncPairVar1[A1, VA, R1, R2]) ToDelegate() DelegatePairVar1[A1, VA, R1, R2] {
+	return []FuncPairVar1[A1, VA, R1, R2]{f}
 }
 
-type PairFuncVar2[A1, A2, VA, R1, R2 any] func(A1, A2, ...VA) (R1, R2)
+type FuncPairVar2[A1, A2, VA, R1, R2 any] func(A1, A2, ...VA) (R1, R2)
 
-func (f PairFuncVar2[A1, A2, VA, R1, R2]) Exec(a1 A1, a2 A2, args ...VA) (r1 R1, r2 R2) {
+func (f FuncPairVar2[A1, A2, VA, R1, R2]) Exec(a1 A1, a2 A2, args ...VA) (r1 R1, r2 R2) {
 	r1, r2, _ = f.Call(false, nil, a1, a2, args...)
 	return
 }
 
-func (f PairFuncVar2[A1, A2, VA, R1, R2]) Invoke(a1 A1, a2 A2, args ...VA) (r1 R1, r2 R2, panicErr error) {
+func (f FuncPairVar2[A1, A2, VA, R1, R2]) Invoke(a1 A1, a2 A2, args ...VA) (r1 R1, r2 R2, panicErr error) {
 	return f.Call(true, nil, a1, a2, args...)
 }
 
-func (f PairFuncVar2[A1, A2, VA, R1, R2]) Call(autoRecover bool, reportError chan error, a1 A1, a2 A2, args ...VA) (r1 R1, r2 R2, panicErr error) {
+func (f FuncPairVar2[A1, A2, VA, R1, R2]) Call(autoRecover bool, reportError chan error, a1 A1, a2 A2, args ...VA) (r1 R1, r2 R2, panicErr error) {
 	if f == nil {
 		return types.ZeroT[R1](), types.ZeroT[R2](), nil
 	}
@@ -138,22 +138,22 @@ func (f PairFuncVar2[A1, A2, VA, R1, R2]) Call(autoRecover bool, reportError cha
 	return
 }
 
-func (f PairFuncVar2[A1, A2, VA, R1, R2]) ToDelegate() DelegatePairFuncVar2[A1, A2, VA, R1, R2] {
-	return []PairFuncVar2[A1, A2, VA, R1, R2]{f}
+func (f FuncPairVar2[A1, A2, VA, R1, R2]) ToDelegate() DelegatePairVar2[A1, A2, VA, R1, R2] {
+	return []FuncPairVar2[A1, A2, VA, R1, R2]{f}
 }
 
-type PairFuncVar3[A1, A2, A3, VA, R1, R2 any] func(A1, A2, A3, ...VA) (R1, R2)
+type FuncPairVar3[A1, A2, A3, VA, R1, R2 any] func(A1, A2, A3, ...VA) (R1, R2)
 
-func (f PairFuncVar3[A1, A2, A3, VA, R1, R2]) Exec(a1 A1, a2 A2, a3 A3, args ...VA) (r1 R1, r2 R2) {
+func (f FuncPairVar3[A1, A2, A3, VA, R1, R2]) Exec(a1 A1, a2 A2, a3 A3, args ...VA) (r1 R1, r2 R2) {
 	r1, r2, _ = f.Call(false, nil, a1, a2, a3, args...)
 	return
 }
 
-func (f PairFuncVar3[A1, A2, A3, VA, R1, R2]) Invoke(a1 A1, a2 A2, a3 A3, args ...VA) (r1 R1, r2 R2, panicErr error) {
+func (f FuncPairVar3[A1, A2, A3, VA, R1, R2]) Invoke(a1 A1, a2 A2, a3 A3, args ...VA) (r1 R1, r2 R2, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, args...)
 }
 
-func (f PairFuncVar3[A1, A2, A3, VA, R1, R2]) Call(autoRecover bool, reportError chan error, a1 A1, a2 A2, a3 A3, args ...VA) (r1 R1, r2 R2, panicErr error) {
+func (f FuncPairVar3[A1, A2, A3, VA, R1, R2]) Call(autoRecover bool, reportError chan error, a1 A1, a2 A2, a3 A3, args ...VA) (r1 R1, r2 R2, panicErr error) {
 	if f == nil {
 		return types.ZeroT[R1](), types.ZeroT[R2](), nil
 	}
@@ -177,22 +177,22 @@ func (f PairFuncVar3[A1, A2, A3, VA, R1, R2]) Call(autoRecover bool, reportError
 	return
 }
 
-func (f PairFuncVar3[A1, A2, A3, VA, R1, R2]) ToDelegate() DelegatePairFuncVar3[A1, A2, A3, VA, R1, R2] {
-	return []PairFuncVar3[A1, A2, A3, VA, R1, R2]{f}
+func (f FuncPairVar3[A1, A2, A3, VA, R1, R2]) ToDelegate() DelegatePairVar3[A1, A2, A3, VA, R1, R2] {
+	return []FuncPairVar3[A1, A2, A3, VA, R1, R2]{f}
 }
 
-type PairFuncVar4[A1, A2, A3, A4, VA, R1, R2 any] func(A1, A2, A3, A4, ...VA) (R1, R2)
+type FuncPairVar4[A1, A2, A3, A4, VA, R1, R2 any] func(A1, A2, A3, A4, ...VA) (R1, R2)
 
-func (f PairFuncVar4[A1, A2, A3, A4, VA, R1, R2]) Exec(a1 A1, a2 A2, a3 A3, a4 A4, args ...VA) (r1 R1, r2 R2) {
+func (f FuncPairVar4[A1, A2, A3, A4, VA, R1, R2]) Exec(a1 A1, a2 A2, a3 A3, a4 A4, args ...VA) (r1 R1, r2 R2) {
 	r1, r2, _ = f.Call(false, nil, a1, a2, a3, a4, args...)
 	return
 }
 
-func (f PairFuncVar4[A1, A2, A3, A4, VA, R1, R2]) Invoke(a1 A1, a2 A2, a3 A3, a4 A4, args ...VA) (r1 R1, r2 R2, panicErr error) {
+func (f FuncPairVar4[A1, A2, A3, A4, VA, R1, R2]) Invoke(a1 A1, a2 A2, a3 A3, a4 A4, args ...VA) (r1 R1, r2 R2, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, args...)
 }
 
-func (f PairFuncVar4[A1, A2, A3, A4, VA, R1, R2]) Call(autoRecover bool, reportError chan error, a1 A1, a2 A2, a3 A3, a4 A4, args ...VA) (r1 R1, r2 R2, panicErr error) {
+func (f FuncPairVar4[A1, A2, A3, A4, VA, R1, R2]) Call(autoRecover bool, reportError chan error, a1 A1, a2 A2, a3 A3, a4 A4, args ...VA) (r1 R1, r2 R2, panicErr error) {
 	if f == nil {
 		return types.ZeroT[R1](), types.ZeroT[R2](), nil
 	}
@@ -216,28 +216,28 @@ func (f PairFuncVar4[A1, A2, A3, A4, VA, R1, R2]) Call(autoRecover bool, reportE
 	return
 }
 
-func (f PairFuncVar4[A1, A2, A3, A4, VA, R1, R2]) ToDelegate() DelegatePairFuncVar4[A1, A2, A3, A4, VA, R1, R2] {
-	return []PairFuncVar4[A1, A2, A3, A4, VA, R1, R2]{f}
+func (f FuncPairVar4[A1, A2, A3, A4, VA, R1, R2]) ToDelegate() DelegatePairVar4[A1, A2, A3, A4, VA, R1, R2] {
+	return []FuncPairVar4[A1, A2, A3, A4, VA, R1, R2]{f}
 }
 
-type PairFuncVar5[A1, A2, A3, A4, A5, VA, R1, R2 any] func(
+type FuncPairVar5[A1, A2, A3, A4, A5, VA, R1, R2 any] func(
 	A1, A2, A3, A4, A5, ...VA,
 ) (R1, R2)
 
-func (f PairFuncVar5[A1, A2, A3, A4, A5, VA, R1, R2]) Exec(
+func (f FuncPairVar5[A1, A2, A3, A4, A5, VA, R1, R2]) Exec(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, args ...VA,
 ) (r1 R1, r2 R2) {
 	r1, r2, _ = f.Call(false, nil, a1, a2, a3, a4, a5, args...)
 	return
 }
 
-func (f PairFuncVar5[A1, A2, A3, A4, A5, VA, R1, R2]) Invoke(
+func (f FuncPairVar5[A1, A2, A3, A4, A5, VA, R1, R2]) Invoke(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, args...)
 }
 
-func (f PairFuncVar5[A1, A2, A3, A4, A5, VA, R1, R2]) Call(
+func (f FuncPairVar5[A1, A2, A3, A4, A5, VA, R1, R2]) Call(
 	autoRecover bool, reportError chan error,
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
@@ -264,28 +264,28 @@ func (f PairFuncVar5[A1, A2, A3, A4, A5, VA, R1, R2]) Call(
 	return
 }
 
-func (f PairFuncVar5[A1, A2, A3, A4, A5, VA, R1, R2]) ToDelegate() DelegatePairFuncVar5[A1, A2, A3, A4, A5, VA, R1, R2] {
-	return []PairFuncVar5[A1, A2, A3, A4, A5, VA, R1, R2]{f}
+func (f FuncPairVar5[A1, A2, A3, A4, A5, VA, R1, R2]) ToDelegate() DelegatePairVar5[A1, A2, A3, A4, A5, VA, R1, R2] {
+	return []FuncPairVar5[A1, A2, A3, A4, A5, VA, R1, R2]{f}
 }
 
-type PairFuncVar6[A1, A2, A3, A4, A5, A6, VA, R1, R2 any] func(
+type FuncPairVar6[A1, A2, A3, A4, A5, A6, VA, R1, R2 any] func(
 	A1, A2, A3, A4, A5, A6, ...VA,
 ) (R1, R2)
 
-func (f PairFuncVar6[A1, A2, A3, A4, A5, A6, VA, R1, R2]) Exec(
+func (f FuncPairVar6[A1, A2, A3, A4, A5, A6, VA, R1, R2]) Exec(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, args ...VA,
 ) (r1 R1, r2 R2) {
 	r1, r2, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, args...)
 	return
 }
 
-func (f PairFuncVar6[A1, A2, A3, A4, A5, A6, VA, R1, R2]) Invoke(
+func (f FuncPairVar6[A1, A2, A3, A4, A5, A6, VA, R1, R2]) Invoke(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, args...)
 }
 
-func (f PairFuncVar6[A1, A2, A3, A4, A5, A6, VA, R1, R2]) Call(
+func (f FuncPairVar6[A1, A2, A3, A4, A5, A6, VA, R1, R2]) Call(
 	autoRecover bool, reportError chan error,
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
@@ -312,28 +312,28 @@ func (f PairFuncVar6[A1, A2, A3, A4, A5, A6, VA, R1, R2]) Call(
 	return
 }
 
-func (f PairFuncVar6[A1, A2, A3, A4, A5, A6, VA, R1, R2]) ToDelegate() DelegatePairFuncVar6[A1, A2, A3, A4, A5, A6, VA, R1, R2] {
-	return []PairFuncVar6[A1, A2, A3, A4, A5, A6, VA, R1, R2]{f}
+func (f FuncPairVar6[A1, A2, A3, A4, A5, A6, VA, R1, R2]) ToDelegate() DelegatePairVar6[A1, A2, A3, A4, A5, A6, VA, R1, R2] {
+	return []FuncPairVar6[A1, A2, A3, A4, A5, A6, VA, R1, R2]{f}
 }
 
-type PairFuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R1, R2 any] func(
+type FuncPairVar7[A1, A2, A3, A4, A5, A6, A7, VA, R1, R2 any] func(
 	A1, A2, A3, A4, A5, A6, A7, ...VA,
 ) (R1, R2)
 
-func (f PairFuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R1, R2]) Exec(
+func (f FuncPairVar7[A1, A2, A3, A4, A5, A6, A7, VA, R1, R2]) Exec(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, args ...VA,
 ) (r1 R1, r2 R2) {
 	r1, r2, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, args...)
 	return
 }
 
-func (f PairFuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R1, R2]) Invoke(
+func (f FuncPairVar7[A1, A2, A3, A4, A5, A6, A7, VA, R1, R2]) Invoke(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, args...)
 }
 
-func (f PairFuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R1, R2]) Call(
+func (f FuncPairVar7[A1, A2, A3, A4, A5, A6, A7, VA, R1, R2]) Call(
 	autoRecover bool, reportError chan error,
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
@@ -360,28 +360,28 @@ func (f PairFuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R1, R2]) Call(
 	return
 }
 
-func (f PairFuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R1, R2]) ToDelegate() DelegatePairFuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R1, R2] {
-	return []PairFuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R1, R2]{f}
+func (f FuncPairVar7[A1, A2, A3, A4, A5, A6, A7, VA, R1, R2]) ToDelegate() DelegatePairVar7[A1, A2, A3, A4, A5, A6, A7, VA, R1, R2] {
+	return []FuncPairVar7[A1, A2, A3, A4, A5, A6, A7, VA, R1, R2]{f}
 }
 
-type PairFuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R1, R2 any] func(
+type FuncPairVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R1, R2 any] func(
 	A1, A2, A3, A4, A5, A6, A7, A8, ...VA,
 ) (R1, R2)
 
-func (f PairFuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R1, R2]) Exec(
+func (f FuncPairVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R1, R2]) Exec(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, args ...VA,
 ) (r1 R1, r2 R2) {
 	r1, r2, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, args...)
 	return
 }
 
-func (f PairFuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R1, R2]) Invoke(
+func (f FuncPairVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R1, R2]) Invoke(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, args...)
 }
 
-func (f PairFuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R1, R2]) Call(
+func (f FuncPairVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R1, R2]) Call(
 	autoRecover bool, reportError chan error,
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
@@ -408,28 +408,28 @@ func (f PairFuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R1, R2]) Call(
 	return
 }
 
-func (f PairFuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R1, R2]) ToDelegate() DelegatePairFuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R1, R2] {
-	return []PairFuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R1, R2]{f}
+func (f FuncPairVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R1, R2]) ToDelegate() DelegatePairVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R1, R2] {
+	return []FuncPairVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R1, R2]{f}
 }
 
-type PairFuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R1, R2 any] func(
+type FuncPairVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R1, R2 any] func(
 	A1, A2, A3, A4, A5, A6, A7, A8, A9, ...VA,
 ) (R1, R2)
 
-func (f PairFuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R1, R2]) Exec(
+func (f FuncPairVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R1, R2]) Exec(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, args ...VA,
 ) (r1 R1, r2 R2) {
 	r1, r2, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, args...)
 	return
 }
 
-func (f PairFuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R1, R2]) Invoke(
+func (f FuncPairVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R1, R2]) Invoke(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, args...)
 }
 
-func (f PairFuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R1, R2]) Call(
+func (f FuncPairVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R1, R2]) Call(
 	autoRecover bool, reportError chan error,
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
@@ -456,28 +456,28 @@ func (f PairFuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R1, R2]) Call(
 	return
 }
 
-func (f PairFuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R1, R2]) ToDelegate() DelegatePairFuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R1, R2] {
-	return []PairFuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R1, R2]{f}
+func (f FuncPairVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R1, R2]) ToDelegate() DelegatePairVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R1, R2] {
+	return []FuncPairVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R1, R2]{f}
 }
 
-type PairFuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R1, R2 any] func(
+type FuncPairVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R1, R2 any] func(
 	A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, ...VA,
 ) (R1, R2)
 
-func (f PairFuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R1, R2]) Exec(
+func (f FuncPairVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R1, R2]) Exec(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, args ...VA,
 ) (r1 R1, r2 R2) {
 	r1, r2, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, args...)
 	return
 }
 
-func (f PairFuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R1, R2]) Invoke(
+func (f FuncPairVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R1, R2]) Invoke(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, args...)
 }
 
-func (f PairFuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R1, R2]) Call(
+func (f FuncPairVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R1, R2]) Call(
 	autoRecover bool, reportError chan error,
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
@@ -504,28 +504,28 @@ func (f PairFuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R1, R2]) Call
 	return
 }
 
-func (f PairFuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R1, R2]) ToDelegate() DelegatePairFuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R1, R2] {
-	return []PairFuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R1, R2]{f}
+func (f FuncPairVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R1, R2]) ToDelegate() DelegatePairVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R1, R2] {
+	return []FuncPairVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R1, R2]{f}
 }
 
-type PairFuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R1, R2 any] func(
+type FuncPairVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R1, R2 any] func(
 	A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, ...VA,
 ) (R1, R2)
 
-func (f PairFuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R1, R2]) Exec(
+func (f FuncPairVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R1, R2]) Exec(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, args ...VA,
 ) (r1 R1, r2 R2) {
 	r1, r2, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, args...)
 	return
 }
 
-func (f PairFuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R1, R2]) Invoke(
+func (f FuncPairVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R1, R2]) Invoke(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, args...)
 }
 
-func (f PairFuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R1, R2]) Call(
+func (f FuncPairVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R1, R2]) Call(
 	autoRecover bool, reportError chan error,
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
@@ -552,28 +552,28 @@ func (f PairFuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R1, R2])
 	return
 }
 
-func (f PairFuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R1, R2]) ToDelegate() DelegatePairFuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R1, R2] {
-	return []PairFuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R1, R2]{f}
+func (f FuncPairVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R1, R2]) ToDelegate() DelegatePairVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R1, R2] {
+	return []FuncPairVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R1, R2]{f}
 }
 
-type PairFuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R1, R2 any] func(
+type FuncPairVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R1, R2 any] func(
 	A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, ...VA,
 ) (R1, R2)
 
-func (f PairFuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R1, R2]) Exec(
+func (f FuncPairVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R1, R2]) Exec(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, args ...VA,
 ) (r1 R1, r2 R2) {
 	r1, r2, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, args...)
 	return
 }
 
-func (f PairFuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R1, R2]) Invoke(
+func (f FuncPairVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R1, R2]) Invoke(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, args...)
 }
 
-func (f PairFuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R1, R2]) Call(
+func (f FuncPairVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R1, R2]) Call(
 	autoRecover bool, reportError chan error,
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
@@ -600,28 +600,28 @@ func (f PairFuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R1,
 	return
 }
 
-func (f PairFuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R1, R2]) ToDelegate() DelegatePairFuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R1, R2] {
-	return []PairFuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R1, R2]{f}
+func (f FuncPairVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R1, R2]) ToDelegate() DelegatePairVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R1, R2] {
+	return []FuncPairVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R1, R2]{f}
 }
 
-type PairFuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R1, R2 any] func(
+type FuncPairVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R1, R2 any] func(
 	A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, ...VA,
 ) (R1, R2)
 
-func (f PairFuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R1, R2]) Exec(
+func (f FuncPairVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R1, R2]) Exec(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, args ...VA,
 ) (r1 R1, r2 R2) {
 	r1, r2, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, args...)
 	return
 }
 
-func (f PairFuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R1, R2]) Invoke(
+func (f FuncPairVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R1, R2]) Invoke(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, args...)
 }
 
-func (f PairFuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R1, R2]) Call(
+func (f FuncPairVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R1, R2]) Call(
 	autoRecover bool, reportError chan error,
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
@@ -648,28 +648,28 @@ func (f PairFuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA
 	return
 }
 
-func (f PairFuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R1, R2]) ToDelegate() DelegatePairFuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R1, R2] {
-	return []PairFuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R1, R2]{f}
+func (f FuncPairVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R1, R2]) ToDelegate() DelegatePairVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R1, R2] {
+	return []FuncPairVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R1, R2]{f}
 }
 
-type PairFuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R1, R2 any] func(
+type FuncPairVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R1, R2 any] func(
 	A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, ...VA,
 ) (R1, R2)
 
-func (f PairFuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R1, R2]) Exec(
+func (f FuncPairVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R1, R2]) Exec(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, args ...VA,
 ) (r1 R1, r2 R2) {
 	r1, r2, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, args...)
 	return
 }
 
-func (f PairFuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R1, R2]) Invoke(
+func (f FuncPairVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R1, R2]) Invoke(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, args...)
 }
 
-func (f PairFuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R1, R2]) Call(
+func (f FuncPairVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R1, R2]) Call(
 	autoRecover bool, reportError chan error,
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
@@ -696,28 +696,28 @@ func (f PairFuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A1
 	return
 }
 
-func (f PairFuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R1, R2]) ToDelegate() DelegatePairFuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R1, R2] {
-	return []PairFuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R1, R2]{f}
+func (f FuncPairVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R1, R2]) ToDelegate() DelegatePairVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R1, R2] {
+	return []FuncPairVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R1, R2]{f}
 }
 
-type PairFuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R1, R2 any] func(
+type FuncPairVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R1, R2 any] func(
 	A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, ...VA,
 ) (R1, R2)
 
-func (f PairFuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R1, R2]) Exec(
+func (f FuncPairVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R1, R2]) Exec(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, args ...VA,
 ) (r1 R1, r2 R2) {
 	r1, r2, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, args...)
 	return
 }
 
-func (f PairFuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R1, R2]) Invoke(
+func (f FuncPairVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R1, R2]) Invoke(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, args...)
 }
 
-func (f PairFuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R1, R2]) Call(
+func (f FuncPairVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R1, R2]) Call(
 	autoRecover bool, reportError chan error,
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
@@ -744,28 +744,28 @@ func (f PairFuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A1
 	return
 }
 
-func (f PairFuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R1, R2]) ToDelegate() DelegatePairFuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R1, R2] {
-	return []PairFuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R1, R2]{f}
+func (f FuncPairVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R1, R2]) ToDelegate() DelegatePairVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R1, R2] {
+	return []FuncPairVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R1, R2]{f}
 }
 
-type PairFuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R1, R2 any] func(
+type FuncPairVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R1, R2 any] func(
 	A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, ...VA,
 ) (R1, R2)
 
-func (f PairFuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R1, R2]) Exec(
+func (f FuncPairVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R1, R2]) Exec(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, a16 A16, args ...VA,
 ) (r1 R1, r2 R2) {
 	r1, r2, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, args...)
 	return
 }
 
-func (f PairFuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R1, R2]) Invoke(
+func (f FuncPairVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R1, R2]) Invoke(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, a16 A16, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, args...)
 }
 
-func (f PairFuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R1, R2]) Call(
+func (f FuncPairVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R1, R2]) Call(
 	autoRecover bool, reportError chan error,
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, a16 A16, args ...VA,
 ) (r1 R1, r2 R2, panicErr error) {
@@ -792,6 +792,6 @@ func (f PairFuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A1
 	return
 }
 
-func (f PairFuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R1, R2]) ToDelegate() DelegatePairFuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R1, R2] {
-	return []PairFuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R1, R2]{f}
+func (f FuncPairVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R1, R2]) ToDelegate() DelegatePairVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R1, R2] {
+	return []FuncPairVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R1, R2]{f}
 }

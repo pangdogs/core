@@ -29,7 +29,7 @@ func FuncError(err, panicErr error) error {
 	return nil
 }
 
-func PairFuncError[T any](r T, err, panicErr error) (T, error) {
+func FuncPairError[T any](r T, err, panicErr error) (T, error) {
 	if panicErr != nil {
 		return r, panicErr
 	}

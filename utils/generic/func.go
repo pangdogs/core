@@ -59,7 +59,7 @@ func (f Func0[R]) Call(autoRecover bool, reportError chan error) (r R, panicErr 
 	return f(), nil
 }
 
-func (f Func0[R]) ToDelegate() DelegateFunc0[R] {
+func (f Func0[R]) ToDelegate() Delegate0[R] {
 	return []Func0[R]{f}
 }
 
@@ -97,7 +97,7 @@ func (f Func1[A1, R]) Call(autoRecover bool, reportError chan error, a1 A1) (r R
 	return f(a1), nil
 }
 
-func (f Func1[A1, R]) ToDelegate() DelegateFunc1[A1, R] {
+func (f Func1[A1, R]) ToDelegate() Delegate1[A1, R] {
 	return []Func1[A1, R]{f}
 }
 
@@ -135,7 +135,7 @@ func (f Func2[A1, A2, R]) Call(autoRecover bool, reportError chan error, a1 A1, 
 	return f(a1, a2), nil
 }
 
-func (f Func2[A1, A2, R]) ToDelegate() DelegateFunc2[A1, A2, R] {
+func (f Func2[A1, A2, R]) ToDelegate() Delegate2[A1, A2, R] {
 	return []Func2[A1, A2, R]{f}
 }
 
@@ -173,7 +173,7 @@ func (f Func3[A1, A2, A3, R]) Call(autoRecover bool, reportError chan error, a1 
 	return f(a1, a2, a3), nil
 }
 
-func (f Func3[A1, A2, A3, R]) ToDelegate() DelegateFunc3[A1, A2, A3, R] {
+func (f Func3[A1, A2, A3, R]) ToDelegate() Delegate3[A1, A2, A3, R] {
 	return []Func3[A1, A2, A3, R]{f}
 }
 
@@ -211,7 +211,7 @@ func (f Func4[A1, A2, A3, A4, R]) Call(autoRecover bool, reportError chan error,
 	return f(a1, a2, a3, a4), nil
 }
 
-func (f Func4[A1, A2, A3, A4, R]) ToDelegate() DelegateFunc4[A1, A2, A3, A4, R] {
+func (f Func4[A1, A2, A3, A4, R]) ToDelegate() Delegate4[A1, A2, A3, A4, R] {
 	return []Func4[A1, A2, A3, A4, R]{f}
 }
 
@@ -258,7 +258,7 @@ func (f Func5[A1, A2, A3, A4, A5, R]) Call(
 	return f(a1, a2, a3, a4, a5), nil
 }
 
-func (f Func5[A1, A2, A3, A4, A5, R]) ToDelegate() DelegateFunc5[A1, A2, A3, A4, A5, R] {
+func (f Func5[A1, A2, A3, A4, A5, R]) ToDelegate() Delegate5[A1, A2, A3, A4, A5, R] {
 	return []Func5[A1, A2, A3, A4, A5, R]{f}
 }
 
@@ -305,7 +305,7 @@ func (f Func6[A1, A2, A3, A4, A5, A6, R]) Call(
 	return f(a1, a2, a3, a4, a5, a6), nil
 }
 
-func (f Func6[A1, A2, A3, A4, A5, A6, R]) ToDelegate() DelegateFunc6[A1, A2, A3, A4, A5, A6, R] {
+func (f Func6[A1, A2, A3, A4, A5, A6, R]) ToDelegate() Delegate6[A1, A2, A3, A4, A5, A6, R] {
 	return []Func6[A1, A2, A3, A4, A5, A6, R]{f}
 }
 
@@ -352,7 +352,7 @@ func (f Func7[A1, A2, A3, A4, A5, A6, A7, R]) Call(
 	return f(a1, a2, a3, a4, a5, a6, a7), nil
 }
 
-func (f Func7[A1, A2, A3, A4, A5, A6, A7, R]) ToDelegate() DelegateFunc7[A1, A2, A3, A4, A5, A6, A7, R] {
+func (f Func7[A1, A2, A3, A4, A5, A6, A7, R]) ToDelegate() Delegate7[A1, A2, A3, A4, A5, A6, A7, R] {
 	return []Func7[A1, A2, A3, A4, A5, A6, A7, R]{f}
 }
 
@@ -399,7 +399,7 @@ func (f Func8[A1, A2, A3, A4, A5, A6, A7, A8, R]) Call(
 	return f(a1, a2, a3, a4, a5, a6, a7, a8), nil
 }
 
-func (f Func8[A1, A2, A3, A4, A5, A6, A7, A8, R]) ToDelegate() DelegateFunc8[A1, A2, A3, A4, A5, A6, A7, A8, R] {
+func (f Func8[A1, A2, A3, A4, A5, A6, A7, A8, R]) ToDelegate() Delegate8[A1, A2, A3, A4, A5, A6, A7, A8, R] {
 	return []Func8[A1, A2, A3, A4, A5, A6, A7, A8, R]{f}
 }
 
@@ -446,7 +446,7 @@ func (f Func9[A1, A2, A3, A4, A5, A6, A7, A8, A9, R]) Call(
 	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9), nil
 }
 
-func (f Func9[A1, A2, A3, A4, A5, A6, A7, A8, A9, R]) ToDelegate() DelegateFunc9[A1, A2, A3, A4, A5, A6, A7, A8, A9, R] {
+func (f Func9[A1, A2, A3, A4, A5, A6, A7, A8, A9, R]) ToDelegate() Delegate9[A1, A2, A3, A4, A5, A6, A7, A8, A9, R] {
 	return []Func9[A1, A2, A3, A4, A5, A6, A7, A8, A9, R]{f}
 }
 
@@ -493,7 +493,7 @@ func (f Func10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R]) Call(
 	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10), nil
 }
 
-func (f Func10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R]) ToDelegate() DelegateFunc10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R] {
+func (f Func10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R]) ToDelegate() Delegate10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R] {
 	return []Func10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R]{f}
 }
 
@@ -540,7 +540,7 @@ func (f Func11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R]) Call(
 	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11), nil
 }
 
-func (f Func11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R]) ToDelegate() DelegateFunc11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R] {
+func (f Func11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R]) ToDelegate() Delegate11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R] {
 	return []Func11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R]{f}
 }
 
@@ -587,7 +587,7 @@ func (f Func12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R]) Call(
 	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12), nil
 }
 
-func (f Func12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R]) ToDelegate() DelegateFunc12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R] {
+func (f Func12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R]) ToDelegate() Delegate12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R] {
 	return []Func12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R]{f}
 }
 
@@ -634,7 +634,7 @@ func (f Func13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R]) Call(
 	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13), nil
 }
 
-func (f Func13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R]) ToDelegate() DelegateFunc13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R] {
+func (f Func13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R]) ToDelegate() Delegate13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R] {
 	return []Func13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R]{f}
 }
 
@@ -681,7 +681,7 @@ func (f Func14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R]) 
 	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14), nil
 }
 
-func (f Func14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R]) ToDelegate() DelegateFunc14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R] {
+func (f Func14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R]) ToDelegate() Delegate14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R] {
 	return []Func14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R]{f}
 }
 
@@ -728,7 +728,7 @@ func (f Func15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15,
 	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15), nil
 }
 
-func (f Func15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R]) ToDelegate() DelegateFunc15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R] {
+func (f Func15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R]) ToDelegate() Delegate15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R] {
 	return []Func15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R]{f}
 }
 
@@ -775,6 +775,6 @@ func (f Func16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15,
 	return f(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16), nil
 }
 
-func (f Func16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R]) ToDelegate() DelegateFunc16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R] {
+func (f Func16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R]) ToDelegate() Delegate16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R] {
 	return []Func16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R]{f}
 }
