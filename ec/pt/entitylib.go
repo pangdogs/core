@@ -190,7 +190,7 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) ec.EntityPT
 			instanceRT = reflect.TypeOf(entityAtti.Instance)
 		}
 
-		for instanceRT.Kind() == reflect.Pointer || instanceRT.Kind() == reflect.Interface {
+		for instanceRT.Kind() == reflect.Pointer {
 			instanceRT = instanceRT.Elem()
 		}
 

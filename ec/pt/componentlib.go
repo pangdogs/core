@@ -132,7 +132,7 @@ func (lib *_ComponentLib) declare(comp any) ec.ComponentPT {
 		compRT = reflect.TypeOf(comp)
 	}
 
-	for compRT.Kind() == reflect.Pointer || compRT.Kind() == reflect.Interface {
+	for compRT.Kind() == reflect.Pointer {
 		compRT = compRT.Elem()
 	}
 
