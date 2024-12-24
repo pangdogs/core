@@ -70,6 +70,14 @@ func (c EntityPTCreator) ComponentUniqueID(b bool) EntityPTCreator {
 	return c
 }
 
+// Extra 自定义属性
+func (c EntityPTCreator) Extra(extra map[string]any) EntityPTCreator {
+	for k, v := range extra {
+		c.atti.Extra.Add(k, v)
+	}
+	return c
+}
+
 // AddComponent 添加组件
 func (c EntityPTCreator) AddComponent(comp any, name ...string) EntityPTCreator {
 	switch v := comp.(type) {
