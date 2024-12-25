@@ -30,6 +30,6 @@ type eventLateUpdate interface {
 	LateUpdate()
 }
 
-type eventRuntimeRunningStateChanged interface {
-	OnRuntimeRunningStateChanged(rtCtx runtime.Context, state runtime.RunningState, args ...any)
+type eventRuntimeRunningStatusChanged interface {
+	OnRuntimeRunningStatusChanged(rtCtx runtime.Context, status runtime.RunningStatus, args ...any)
 }

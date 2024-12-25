@@ -32,6 +32,7 @@ import (
 
 // EntityLib 实体原型库
 type EntityLib interface {
+	iEntityLib
 	EntityPTProvider
 
 	// GetComponentLib 获取组件原型库
@@ -50,11 +51,8 @@ type EntityLib interface {
 	ReversedRange(fun generic.Func1[ec.EntityPT, bool])
 }
 
-var entityLib = NewEntityLib(DefaultComponentLib())
-
-// DefaultEntityLib 默认实体库
-func DefaultEntityLib() EntityLib {
-	return entityLib
+type iEntityLib interface {
+	setCallback(declareCB, redeclareCB, undeclareCB generic.Action1[ec.EntityPT])
 }
 
 // NewEntityLib 创建实体原型库
@@ -71,9 +69,10 @@ func NewEntityLib(compLib ComponentLib) EntityLib {
 
 type _EntityLib struct {
 	sync.RWMutex
-	compLib    ComponentLib
-	entityIdx  map[string]*_Entity
-	entityList []*_Entity
+	compLib                             ComponentLib
+	entityIdx                           map[string]*_Entity
+	entityList                          []*_Entity
+	declareCB, redeclareCB, undeclareCB generic.Action1[ec.EntityPT]
 }
 
 // GetEntityLib 获取实体原型库
@@ -88,24 +87,25 @@ func (lib *_EntityLib) GetComponentLib() ComponentLib {
 
 // Declare 声明实体原型
 func (lib *_EntityLib) Declare(prototype any, comps ...any) ec.EntityPT {
-	return lib.declare(false, prototype, comps...)
+	entityPT := lib.declare(false, prototype, comps...)
+	lib.declareCB.Exec(entityPT)
+	return entityPT
 }
 
 // Redeclare 重声明实体原型
 func (lib *_EntityLib) Redeclare(prototype any, comps ...any) ec.EntityPT {
-	return lib.declare(true, prototype, comps...)
+	entityPT := lib.declare(true, prototype, comps...)
+	lib.redeclareCB.Exec(entityPT)
+	return entityPT
 }
 
 // Undeclare 取消声明实体原型
 func (lib *_EntityLib) Undeclare(prototype string) {
-	lib.Lock()
-	defer lib.Unlock()
-
-	delete(lib.entityIdx, prototype)
-
-	lib.entityList = slices.DeleteFunc(lib.entityList, func(pt *_Entity) bool {
-		return pt.prototype == prototype
-	})
+	entityPT, ok := lib.undeclare(prototype)
+	if !ok {
+		return
+	}
+	lib.undeclareCB.Exec(entityPT)
 }
 
 // Get 获取实体原型
@@ -145,6 +145,15 @@ func (lib *_EntityLib) ReversedRange(fun generic.Func1[ec.EntityPT, bool]) {
 			return
 		}
 	}
+}
+
+func (lib *_EntityLib) setCallback(declareCB, redeclareCB, undeclareCB generic.Action1[ec.EntityPT]) {
+	lib.Lock()
+	defer lib.Unlock()
+
+	lib.declareCB = declareCB
+	lib.redeclareCB = redeclareCB
+	lib.undeclareCB = undeclareCB
 }
 
 func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) ec.EntityPT {
@@ -256,4 +265,22 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) ec.EntityPT
 	lib.entityList = append(lib.entityList, entityPT)
 
 	return entityPT
+}
+
+func (lib *_EntityLib) undeclare(prototype string) (ec.EntityPT, bool) {
+	lib.Lock()
+	defer lib.Unlock()
+
+	entityPT, ok := lib.entityIdx[prototype]
+	if !ok {
+		return nil, false
+	}
+
+	delete(lib.entityIdx, prototype)
+
+	lib.entityList = slices.DeleteFunc(lib.entityList, func(pt *_Entity) bool {
+		return pt.prototype == prototype
+	})
+
+	return entityPT, true
 }

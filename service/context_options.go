@@ -30,7 +30,7 @@ import (
 )
 
 type (
-	RunningHandler = generic.DelegateVoidVar2[Context, RunningState, any] // 运行状态变化处理器
+	RunningHandler = generic.DelegateVoidVar2[Context, RunningStatus, any] // 运行状态变化处理器
 )
 
 // ContextOptions 创建服务上下文的所有选项
@@ -58,7 +58,7 @@ func (_Option) Default() option.Setting[ContextOptions] {
 		With.PanicHandling(false, nil)(o)
 		With.Name("")(o)
 		With.PersistId(uid.Nil)(o)
-		With.EntityLib(pt.DefaultEntityLib())(o)
+		With.EntityLib(pt.NewEntityLib(pt.DefaultComponentLib()))(o)
 		With.AddInManager(extension.NewAddInManager())(o)
 		With.RunningHandler(nil)(o)
 	}

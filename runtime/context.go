@@ -88,7 +88,7 @@ type iContext interface {
 	setFrame(frame Frame)
 	setCallee(callee async.Callee)
 	getServiceCtx() service.Context
-	changeRunningState(state RunningState, args ...any)
+	changeRunningStatus(status RunningStatus, args ...any)
 	gc()
 }
 
@@ -213,12 +213,12 @@ func (ctx *ContextBehavior) getServiceCtx() service.Context {
 	return ctx.svcCtx
 }
 
-func (ctx *ContextBehavior) changeRunningState(state RunningState, args ...any) {
-	ctx.entityManager.changeRunningState(state)
-	ctx.opts.RunningHandler.Call(ctx.GetAutoRecover(), ctx.GetReportError(), nil, ctx.opts.InstanceFace.Iface, state, args...)
+func (ctx *ContextBehavior) changeRunningStatus(status RunningStatus, args ...any) {
+	ctx.entityManager.changeRunningStatus(status)
+	ctx.opts.RunningHandler.Call(ctx.GetAutoRecover(), ctx.GetReportError(), nil, ctx.opts.InstanceFace.Iface, status, args...)
 
-	switch state {
-	case RunningState_Terminated:
+	switch status {
+	case RunningStatus_Terminated:
 		ctx.cleanManagedHooks()
 	}
 }

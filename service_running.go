@@ -21,6 +21,8 @@ package core
 
 import (
 	"context"
+	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/ec/pt"
 	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/service"
@@ -63,8 +65,8 @@ func (svc *ServiceBehavior) Terminated() <-chan struct{} {
 func (svc *ServiceBehavior) running() {
 	ctx := svc.ctx
 
-	svc.changeRunningState(service.RunningState_Starting)
-	svc.changeRunningState(service.RunningState_Started)
+	svc.changeRunningStatus(service.RunningStatus_Starting)
+	svc.changeRunningStatus(service.RunningStatus_Started)
 
 loop:
 	for {
@@ -76,11 +78,11 @@ loop:
 		}
 	}
 
-	svc.changeRunningState(service.RunningState_Terminating)
+	svc.changeRunningStatus(service.RunningStatus_Terminating)
 
 	ctx.GetWaitGroup().Wait()
 
-	svc.changeRunningState(service.RunningState_Terminated)
+	svc.changeRunningStatus(service.RunningStatus_Terminated)
 
 	if parentCtx, ok := ctx.GetParentContext().(ictx.Context); ok {
 		parentCtx.GetWaitGroup().Done()
@@ -89,15 +91,45 @@ loop:
 	close(ictx.UnsafeContext(ctx).GetTerminatedChan())
 }
 
-func (svc *ServiceBehavior) changeRunningState(state service.RunningState, args ...any) {
-	switch state {
-	case service.RunningState_Starting:
+func (svc *ServiceBehavior) changeRunningStatus(status service.RunningStatus, args ...any) {
+	switch status {
+	case service.RunningStatus_Starting:
+		svc.initEntityPT()
 		svc.initAddIn()
-	case service.RunningState_Terminated:
+	case service.RunningStatus_Terminated:
 		svc.shutAddIn()
+		svc.shutEntityPT()
 	}
 
-	service.UnsafeContext(svc.ctx).ChangeRunningState(state, args...)
+	service.UnsafeContext(svc.ctx).ChangeRunningStatus(status, args...)
+}
+
+func (svc *ServiceBehavior) initEntityPT() {
+	entityLib := svc.ctx.GetEntityLib()
+	if entityLib == nil {
+		return
+	}
+
+	pt.UnsafeEntityLib(entityLib).SetCallback(
+		func(entityPT ec.EntityPT) {
+			svc.changeRunningStatus(service.RunningStatus_EntityPTDeclared, entityPT)
+		},
+		func(entityPT ec.EntityPT) {
+			svc.changeRunningStatus(service.RunningStatus_EntityPTRedeclared, entityPT)
+		},
+		func(entityPT ec.EntityPT) {
+			svc.changeRunningStatus(service.RunningStatus_EntityPTUndeclared, entityPT)
+		},
+	)
+}
+
+func (svc *ServiceBehavior) shutEntityPT() {
+	entityLib := svc.ctx.GetEntityLib()
+	if entityLib == nil {
+		return
+	}
+
+	pt.UnsafeEntityLib(entityLib).SetCallback(nil, nil, nil)
 }
 
 func (svc *ServiceBehavior) initAddIn() {
@@ -133,8 +165,8 @@ func (svc *ServiceBehavior) activateAddIn(addInStatus extension.AddInStatus) {
 		return
 	}
 
-	svc.changeRunningState(service.RunningState_AddInActivating, addInStatus)
-	defer svc.changeRunningState(service.RunningState_AddInActivated, addInStatus)
+	svc.changeRunningStatus(service.RunningStatus_AddInActivating, addInStatus)
+	defer svc.changeRunningStatus(service.RunningStatus_AddInActivated, addInStatus)
 
 	if addInInit, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInInit); ok {
 		generic.CastAction2(addInInit.Init).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
@@ -144,8 +176,8 @@ func (svc *ServiceBehavior) activateAddIn(addInStatus extension.AddInStatus) {
 }
 
 func (svc *ServiceBehavior) deactivateAddIn(addInStatus extension.AddInStatus) {
-	svc.changeRunningState(service.RunningState_AddInDeactivating, addInStatus)
-	defer svc.changeRunningState(service.RunningState_AddInDeactivated, addInStatus)
+	svc.changeRunningStatus(service.RunningStatus_AddInDeactivating, addInStatus)
+	defer svc.changeRunningStatus(service.RunningStatus_AddInDeactivated, addInStatus)
 
 	if !extension.UnsafeAddInStatus(addInStatus).SetState(extension.AddInState_Inactive, extension.AddInState_Active) {
 		return

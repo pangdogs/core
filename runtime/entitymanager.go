@@ -90,19 +90,19 @@ func (mgr *_EntityManagerBehavior) init(ctx Context) {
 	ctx.ActivateEvent(&mgr.entityTreeEventTab, event.EventRecursion_Allow)
 }
 
-func (mgr *_EntityManagerBehavior) changeRunningState(state RunningState) {
-	switch state {
-	case RunningState_Started:
+func (mgr *_EntityManagerBehavior) changeRunningStatus(status RunningStatus) {
+	switch status {
+	case RunningStatus_Started:
 		mgr.RangeEntities(func(entity ec.Entity) bool {
 			_EmitEventEntityManagerAddEntity(mgr, mgr, entity)
 			return true
 		})
-	case RunningState_Terminating:
+	case RunningStatus_Terminating:
 		mgr.ReversedRangeEntities(func(entity ec.Entity) bool {
 			entity.DestroySelf()
 			return true
 		})
-	case RunningState_Terminated:
+	case RunningStatus_Terminated:
 		mgr.entityManagerEventTab.Close()
 		mgr.entityTreeEventTab.Close()
 	}

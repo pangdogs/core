@@ -64,20 +64,20 @@ func (rt *RuntimeBehavior) Terminated() <-chan struct{} {
 func (rt *RuntimeBehavior) running() {
 	ctx := rt.ctx
 
-	rt.changeRunningState(runtime.RunningState_Starting)
+	rt.changeRunningStatus(runtime.RunningStatus_Starting)
 
 	hooks := rt.loopStart()
 
-	rt.changeRunningState(runtime.RunningState_Started)
+	rt.changeRunningStatus(runtime.RunningStatus_Started)
 
 	rt.mainLoop()
 
-	rt.changeRunningState(runtime.RunningState_Terminating)
+	rt.changeRunningStatus(runtime.RunningStatus_Terminating)
 
 	rt.loopStop(hooks)
 	ctx.GetWaitGroup().Wait()
 
-	rt.changeRunningState(runtime.RunningState_Terminated)
+	rt.changeRunningStatus(runtime.RunningStatus_Terminated)
 
 	if parentCtx, ok := ctx.GetParentContext().(ictx.Context); ok {
 		parentCtx.GetWaitGroup().Done()
@@ -86,25 +86,25 @@ func (rt *RuntimeBehavior) running() {
 	close(ictx.UnsafeContext(ctx).GetTerminatedChan())
 }
 
-func (rt *RuntimeBehavior) changeRunningState(state runtime.RunningState, args ...any) {
-	switch state {
-	case runtime.RunningState_Starting:
+func (rt *RuntimeBehavior) changeRunningStatus(status runtime.RunningStatus, args ...any) {
+	switch status {
+	case runtime.RunningStatus_Starting:
 		rt.initAddIn()
-	case runtime.RunningState_FrameLoopBegin:
+	case runtime.RunningStatus_FrameLoopBegin:
 		runtime.UnsafeFrame(rt.opts.Frame).LoopBegin()
-	case runtime.RunningState_FrameUpdateBegin:
+	case runtime.RunningStatus_FrameUpdateBegin:
 		runtime.UnsafeFrame(rt.opts.Frame).UpdateBegin()
-	case runtime.RunningState_FrameUpdateEnd:
+	case runtime.RunningStatus_FrameUpdateEnd:
 		runtime.UnsafeFrame(rt.opts.Frame).UpdateEnd()
-	case runtime.RunningState_FrameLoopEnd:
+	case runtime.RunningStatus_FrameLoopEnd:
 		runtime.UnsafeFrame(rt.opts.Frame).LoopEnd()
-	case runtime.RunningState_Terminated:
+	case runtime.RunningStatus_Terminated:
 		rt.shutAddIn()
 	}
 
-	runtime.UnsafeContext(rt.ctx).ChangeRunningState(state, args...)
+	runtime.UnsafeContext(rt.ctx).ChangeRunningStatus(status, args...)
 
-	_EmitEventRuntimeRunningStateChanged(&rt.eventRuntimeRunningStateChanged, rt.ctx, state, args...)
+	_EmitEventRuntimeRunningStatusChanged(&rt.eventRuntimeRunningStatusChanged, rt.ctx, status, args...)
 }
 
 func (rt *RuntimeBehavior) initAddIn() {
@@ -141,8 +141,8 @@ func (rt *RuntimeBehavior) activateAddIn(addInStatus extension.AddInStatus) {
 			return
 		}
 
-		rt.changeRunningState(runtime.RunningState_AddInActivating, addInStatus)
-		defer rt.changeRunningState(runtime.RunningState_AddInActivated, addInStatus)
+		rt.changeRunningStatus(runtime.RunningStatus_AddInActivating, addInStatus)
+		defer rt.changeRunningStatus(runtime.RunningStatus_AddInActivated, addInStatus)
 
 		if addInInit, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInInit); ok {
 			generic.CastAction2(addInInit.Init).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), service.Current(rt), rt.ctx)
@@ -155,18 +155,18 @@ func (rt *RuntimeBehavior) activateAddIn(addInStatus extension.AddInStatus) {
 		return
 	}
 
-	if addInOnRuntimeRunningStateChanged, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInOnRuntimeRunningStateChanged); ok {
-		event.Bind[LifecycleAddInOnRuntimeRunningStateChanged](&rt.eventRuntimeRunningStateChanged, addInOnRuntimeRunningStateChanged)
+	if addInOnRuntimeRunningStatusChanged, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInOnRuntimeRunningStatusChanged); ok {
+		event.Bind[LifecycleAddInOnRuntimeRunningStatusChanged](&rt.eventRuntimeRunningStatusChanged, addInOnRuntimeRunningStatusChanged)
 	}
 }
 
 func (rt *RuntimeBehavior) deactivateAddIn(addInStatus extension.AddInStatus) {
-	if addInOnRuntimeRunningStateChanged, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInOnRuntimeRunningStateChanged); ok {
-		event.Unbind(&rt.eventRuntimeRunningStateChanged, addInOnRuntimeRunningStateChanged)
+	if addInOnRuntimeRunningStatusChanged, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInOnRuntimeRunningStatusChanged); ok {
+		event.Unbind(&rt.eventRuntimeRunningStatusChanged, addInOnRuntimeRunningStatusChanged)
 	}
 
-	rt.changeRunningState(runtime.RunningState_AddInDeactivating, addInStatus)
-	defer rt.changeRunningState(runtime.RunningState_AddInDeactivated, addInStatus)
+	rt.changeRunningStatus(runtime.RunningStatus_AddInDeactivating, addInStatus)
+	defer rt.changeRunningStatus(runtime.RunningStatus_AddInDeactivated, addInStatus)
 
 	if !extension.UnsafeAddInStatus(addInStatus).SetState(extension.AddInState_Inactive, extension.AddInState_Active) {
 		return
@@ -217,16 +217,16 @@ func (rt *RuntimeBehavior) mainLoop() {
 func (rt *RuntimeBehavior) runTask(task _Task) {
 	switch task.typ {
 	case _TaskType_Call:
-		rt.changeRunningState(runtime.RunningState_RunCallBegin)
+		rt.changeRunningStatus(runtime.RunningStatus_RunCallBegin)
 		task.run(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
-		rt.changeRunningState(runtime.RunningState_RunCallEnd)
+		rt.changeRunningStatus(runtime.RunningStatus_RunCallEnd)
 	case _TaskType_Frame:
 		task.run(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
 }
 
 func (rt *RuntimeBehavior) runGC() {
-	rt.changeRunningState(runtime.RunningState_RunGCBegin)
+	rt.changeRunningStatus(runtime.RunningStatus_RunGCBegin)
 	rt.gc()
-	rt.changeRunningState(runtime.RunningState_RunGCEnd)
+	rt.changeRunningStatus(runtime.RunningStatus_RunGCEnd)
 }

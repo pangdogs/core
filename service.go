@@ -92,7 +92,7 @@ func (svc *ServiceBehavior) init(svcCtx service.Context, opts ServiceOptions) {
 		svc.opts.InstanceFace = iface.MakeFaceT[Service](svc)
 	}
 
-	svc.changeRunningState(service.RunningState_Birth)
+	svc.changeRunningStatus(service.RunningStatus_Birth)
 }
 
 func (svc *ServiceBehavior) getOptions() *ServiceOptions {

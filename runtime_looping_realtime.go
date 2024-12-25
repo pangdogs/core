@@ -102,17 +102,17 @@ func (rt *RuntimeBehavior) frameLoop(...any) {
 }
 
 func (rt *RuntimeBehavior) frameLoopBegin() {
-	rt.changeRunningState(runtime.RunningState_FrameLoopBegin)
-	rt.changeRunningState(runtime.RunningState_FrameUpdateBegin)
+	rt.changeRunningStatus(runtime.RunningStatus_FrameLoopBegin)
+	rt.changeRunningStatus(runtime.RunningStatus_FrameUpdateBegin)
 
 	_EmitEventUpdate(&rt.eventUpdate)
 	_EmitEventLateUpdate(&rt.eventLateUpdate)
 
-	rt.changeRunningState(runtime.RunningState_FrameUpdateEnd)
+	rt.changeRunningStatus(runtime.RunningStatus_FrameUpdateEnd)
 }
 
 func (rt *RuntimeBehavior) frameLoopEnd() {
-	rt.changeRunningState(runtime.RunningState_FrameLoopEnd)
+	rt.changeRunningStatus(runtime.RunningStatus_FrameLoopEnd)
 
 	frame := runtime.UnsafeFrame(rt.opts.Frame)
 	frame.SetCurFrames(frame.GetCurFrames() + 1)

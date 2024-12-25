@@ -60,9 +60,9 @@ func (u _UnsafeContext) GetServiceCtx() service.Context {
 	return u.getServiceCtx()
 }
 
-// ChangeRunningState 修改运行状态
-func (u _UnsafeContext) ChangeRunningState(state RunningState, args ...any) {
-	u.changeRunningState(state, args...)
+// ChangeRunningStatus 修改运行状态
+func (u _UnsafeContext) ChangeRunningStatus(status RunningStatus, args ...any) {
+	u.changeRunningStatus(status, args...)
 }
 
 // GC GC

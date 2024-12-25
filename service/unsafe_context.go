@@ -40,7 +40,7 @@ func (u _UnsafeContext) GetOptions() *ContextOptions {
 	return u.getOptions()
 }
 
-// ChangeRunningState 修改运行状态
-func (u _UnsafeContext) ChangeRunningState(state RunningState, args ...any) {
-	u.changeRunningState(state, args...)
+// ChangeRunningStatus 修改运行状态
+func (u _UnsafeContext) ChangeRunningStatus(status RunningStatus, args ...any) {
+	u.changeRunningStatus(status, args...)
 }
