@@ -136,11 +136,11 @@ func (rt *RuntimeBehavior) shutAddIn() {
 }
 
 func (rt *RuntimeBehavior) activateAddIn(addInStatus extension.AddInStatus) {
-	func() {
-		if addInStatus.State() != extension.AddInState_Loaded {
-			return
-		}
+	if addInStatus.State() != extension.AddInState_Loaded {
+		return
+	}
 
+	if !func() bool {
 		rt.changeRunningStatus(runtime.RunningStatus_AddInActivating, addInStatus)
 		defer rt.changeRunningStatus(runtime.RunningStatus_AddInActivated, addInStatus)
 
@@ -148,10 +148,8 @@ func (rt *RuntimeBehavior) activateAddIn(addInStatus extension.AddInStatus) {
 			generic.CastAction2(addInInit.Init).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), service.Current(rt), rt.ctx)
 		}
 
-		extension.UnsafeAddInStatus(addInStatus).SetState(extension.AddInState_Active, extension.AddInState_Loaded)
-	}()
-
-	if addInStatus.State() != extension.AddInState_Active {
+		return extension.UnsafeAddInStatus(addInStatus).SetState(extension.AddInState_Active, extension.AddInState_Loaded)
+	}() {
 		return
 	}
 
@@ -161,6 +159,10 @@ func (rt *RuntimeBehavior) activateAddIn(addInStatus extension.AddInStatus) {
 }
 
 func (rt *RuntimeBehavior) deactivateAddIn(addInStatus extension.AddInStatus) {
+	if addInStatus.State() != extension.AddInState_Active {
+		return
+	}
+
 	if addInOnRuntimeRunningStatusChanged, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInOnRuntimeRunningStatusChanged); ok {
 		event.Unbind(&rt.eventRuntimeRunningStatusChanged, addInOnRuntimeRunningStatusChanged)
 	}
