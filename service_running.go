@@ -129,6 +129,11 @@ func (svc *ServiceBehavior) initEntityPT() {
 			svc.changeRunningStatus(service.RunningStatus_EntityPTUndeclared, entityPT)
 		},
 	)
+
+	entityLib.Range(func(entityPT ec.EntityPT) bool {
+		svc.changeRunningStatus(service.RunningStatus_EntityPTDeclared, entityPT)
+		return true
+	})
 }
 
 func (svc *ServiceBehavior) shutEntityPT() {
