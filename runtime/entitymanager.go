@@ -90,7 +90,7 @@ func (mgr *_EntityManagerBehavior) init(ctx Context) {
 	ctx.ActivateEvent(&mgr.entityTreeEventTab, event.EventRecursion_Allow)
 }
 
-func (mgr *_EntityManagerBehavior) changeRunningStatus(status RunningStatus) {
+func (mgr *_EntityManagerBehavior) changeRunningStatus(status RunningStatus, args ...any) {
 	switch status {
 	case RunningStatus_Started:
 		mgr.RangeEntities(func(entity ec.Entity) bool {

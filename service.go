@@ -26,6 +26,7 @@ import (
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/option"
 	"git.golaxy.org/core/utils/reinterpret"
+	"sync"
 )
 
 // NewService 创建服务
@@ -61,9 +62,16 @@ type iService interface {
 	getOptions() *ServiceOptions
 }
 
+type _StatusChanges struct {
+	status service.RunningStatus
+	args   []any
+}
+
 type ServiceBehavior struct {
-	ctx  service.Context
-	opts ServiceOptions
+	ctx               service.Context
+	opts              ServiceOptions
+	statusChangesCond *sync.Cond
+	statusChanges     *_StatusChanges
 }
 
 // GetContext 获取服务上下文
@@ -87,6 +95,7 @@ func (svc *ServiceBehavior) init(svcCtx service.Context, opts ServiceOptions) {
 
 	svc.ctx = svcCtx
 	svc.opts = opts
+	svc.statusChangesCond = sync.NewCond(&sync.Mutex{})
 
 	if svc.opts.InstanceFace.IsNil() {
 		svc.opts.InstanceFace = iface.MakeFaceT[Service](svc)

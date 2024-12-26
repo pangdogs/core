@@ -88,8 +88,6 @@ func (rt *RuntimeBehavior) running() {
 
 func (rt *RuntimeBehavior) changeRunningStatus(status runtime.RunningStatus, args ...any) {
 	switch status {
-	case runtime.RunningStatus_Starting:
-		rt.initAddIn()
 	case runtime.RunningStatus_FrameLoopBegin:
 		runtime.UnsafeFrame(rt.opts.Frame).LoopBegin()
 	case runtime.RunningStatus_FrameUpdateBegin:
@@ -98,13 +96,18 @@ func (rt *RuntimeBehavior) changeRunningStatus(status runtime.RunningStatus, arg
 		runtime.UnsafeFrame(rt.opts.Frame).UpdateEnd()
 	case runtime.RunningStatus_FrameLoopEnd:
 		runtime.UnsafeFrame(rt.opts.Frame).LoopEnd()
-	case runtime.RunningStatus_Terminated:
-		rt.shutAddIn()
 	}
 
 	runtime.UnsafeContext(rt.ctx).ChangeRunningStatus(status, args...)
 
 	_EmitEventRuntimeRunningStatusChanged(&rt.eventRuntimeRunningStatusChanged, rt.ctx, status, args...)
+
+	switch status {
+	case runtime.RunningStatus_Starting:
+		rt.initAddIn()
+	case runtime.RunningStatus_Terminated:
+		rt.shutAddIn()
+	}
 }
 
 func (rt *RuntimeBehavior) initAddIn() {

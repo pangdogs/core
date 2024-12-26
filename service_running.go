@@ -28,7 +28,6 @@ import (
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
-	"time"
 )
 
 // Run 运行
@@ -92,6 +91,16 @@ loop:
 }
 
 func (svc *ServiceBehavior) changeRunningStatus(status service.RunningStatus, args ...any) {
+	service.UnsafeContext(svc.ctx).ChangeRunningStatus(status, args...)
+
+	svc.statusChangesCond.L.Lock()
+	svc.statusChanges = &_StatusChanges{
+		status: status,
+		args:   args,
+	}
+	svc.statusChangesCond.Broadcast()
+	svc.statusChangesCond.L.Unlock()
+
 	switch status {
 	case service.RunningStatus_Starting:
 		svc.initEntityPT()
@@ -100,8 +109,6 @@ func (svc *ServiceBehavior) changeRunningStatus(status service.RunningStatus, ar
 		svc.shutAddIn()
 		svc.shutEntityPT()
 	}
-
-	service.UnsafeContext(svc.ctx).ChangeRunningStatus(status, args...)
 }
 
 func (svc *ServiceBehavior) initEntityPT() {
@@ -165,17 +172,51 @@ func (svc *ServiceBehavior) activateAddIn(addInStatus extension.AddInStatus) {
 		return
 	}
 
-	svc.changeRunningStatus(service.RunningStatus_AddInActivating, addInStatus)
-	defer svc.changeRunningStatus(service.RunningStatus_AddInActivated, addInStatus)
+	if !func() bool {
+		svc.changeRunningStatus(service.RunningStatus_AddInActivating, addInStatus)
+		defer svc.changeRunningStatus(service.RunningStatus_AddInActivated, addInStatus)
 
-	if addInInit, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInInit); ok {
-		generic.CastAction2(addInInit.Init).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
+		if addInInit, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInInit); ok {
+			generic.CastAction2(addInInit.Init).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
+		}
+
+		return extension.UnsafeAddInStatus(addInStatus).SetState(extension.AddInState_Active, extension.AddInState_Loaded)
+	}() {
+		return
 	}
 
-	extension.UnsafeAddInStatus(addInStatus).SetState(extension.AddInState_Active, extension.AddInState_Loaded)
+	addInOnServiceRunningStatusChanged, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInOnServiceRunningStatusChanged)
+	if ok {
+		go func() {
+			for {
+				if !func() bool {
+					svc.statusChangesCond.L.Lock()
+					svc.statusChangesCond.Wait()
+					statusChanges := svc.statusChanges
+					svc.statusChangesCond.L.Unlock()
+
+					if statusChanges.status == service.RunningStatus_AddInDeactivating && statusChanges.args[0].(extension.AddInStatus) == addInStatus {
+						return false
+					}
+					if addInStatus.State() != extension.AddInState_Active {
+						return false
+					}
+
+					addInOnServiceRunningStatusChanged.OnServiceRunningStatusChanged(svc.ctx, statusChanges.status, statusChanges.args...)
+					return true
+				}() {
+					return
+				}
+			}
+		}()
+	}
 }
 
 func (svc *ServiceBehavior) deactivateAddIn(addInStatus extension.AddInStatus) {
+	if addInStatus.State() != extension.AddInState_Active {
+		return
+	}
+
 	svc.changeRunningStatus(service.RunningStatus_AddInDeactivating, addInStatus)
 	defer svc.changeRunningStatus(service.RunningStatus_AddInDeactivated, addInStatus)
 

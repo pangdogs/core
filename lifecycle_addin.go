@@ -34,5 +34,10 @@ type LifecycleAddInShut interface {
 	Shut(svcCtx service.Context, rtCtx runtime.Context)
 }
 
-// LifecycleAddInOnRuntimeRunningStatusChanged 运行时运行状态变化，当插件安装在运行时上时，插件实现此接口即可使用
+// LifecycleAddInOnRuntimeRunningStatusChanged 运行时运行状态变化，当插件安装在运行时上时，实现此接口即可使用
 type LifecycleAddInOnRuntimeRunningStatusChanged = eventRuntimeRunningStatusChanged
+
+// LifecycleAddInOnServiceRunningStatusChanged 服务运行状态变化，当插件安装在服务上时，实现此接口即可使用
+type LifecycleAddInOnServiceRunningStatusChanged interface {
+	OnServiceRunningStatusChanged(svcCtx service.Context, status service.RunningStatus, args ...any)
+}
