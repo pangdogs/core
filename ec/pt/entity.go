@@ -46,7 +46,7 @@ func (pt *_Entity) Prototype() string {
 
 // InstanceRT 实体实例反射类型
 func (pt *_Entity) InstanceRT() reflect.Type {
-	return pt.instanceRT
+	return reflect.PointerTo(pt.instanceRT)
 }
 
 // Scope 可访问作用域

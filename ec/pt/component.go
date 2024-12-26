@@ -37,7 +37,7 @@ func (pt *_Component) Prototype() string {
 
 // InstanceRT 组件实例反射类型
 func (pt *_Component) InstanceRT() reflect.Type {
-	return pt.instanceRT
+	return reflect.PointerTo(pt.instanceRT)
 }
 
 // Construct 创建组件
