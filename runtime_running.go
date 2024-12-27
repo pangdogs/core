@@ -190,11 +190,11 @@ func (rt *RuntimeBehavior) loopStart() (hooks [5]event.Hook) {
 		runtime.UnsafeFrame(frame).RunningBegin()
 	}
 
-	hooks[0] = runtime.BindEventEntityManagerAddEntity(ctx.GetEntityManager(), rt)
-	hooks[1] = runtime.BindEventEntityManagerRemoveEntity(ctx.GetEntityManager(), rt)
-	hooks[2] = runtime.BindEventEntityManagerEntityAddComponents(ctx.GetEntityManager(), rt)
-	hooks[3] = runtime.BindEventEntityManagerEntityRemoveComponent(ctx.GetEntityManager(), rt)
-	hooks[4] = runtime.BindEventEntityManagerEntityFirstTouchComponent(ctx.GetEntityManager(), rt)
+	hooks[0] = runtime.BindEventEntityManagerAddEntity(ctx.GetEntityManager(), rt.handleEntityManagerAddEntity)
+	hooks[1] = runtime.BindEventEntityManagerRemoveEntity(ctx.GetEntityManager(), rt.handleEntityManagerRemoveEntity)
+	hooks[2] = runtime.BindEventEntityManagerEntityAddComponents(ctx.GetEntityManager(), rt.handleEntityManagerEntityAddComponents)
+	hooks[3] = runtime.BindEventEntityManagerEntityRemoveComponent(ctx.GetEntityManager(), rt.handleEntityManagerEntityRemoveComponent)
+	hooks[4] = runtime.BindEventEntityManagerEntityFirstTouchComponent(ctx.GetEntityManager(), rt.handleEntityManagerEntityFirstTouchComponent)
 
 	return
 }

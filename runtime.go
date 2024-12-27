@@ -68,13 +68,20 @@ type iRuntime interface {
 
 // RuntimeBehavior 运行时行为，在扩展运行时能力时，匿名嵌入至运行时结构体中
 type RuntimeBehavior struct {
-	ctx                              runtime.Context
-	opts                             RuntimeOptions
-	hooksMap                         map[uid.Id][3]event.Hook
-	processQueue                     chan _Task
-	eventUpdate                      event.Event
-	eventLateUpdate                  event.Event
-	eventRuntimeRunningStatusChanged event.Event
+	ctx                                          runtime.Context
+	opts                                         RuntimeOptions
+	hooksMap                                     map[uid.Id][3]event.Hook
+	processQueue                                 chan _Task
+	eventUpdate                                  event.Event
+	eventLateUpdate                              event.Event
+	eventRuntimeRunningStatusChanged             event.Event
+	handleEntityManagerAddEntity                 runtime.EventEntityManagerAddEntity
+	handleEntityManagerRemoveEntity              runtime.EventEntityManagerRemoveEntity
+	handleEntityManagerEntityFirstTouchComponent runtime.EventEntityManagerEntityFirstTouchComponent
+	handleEntityManagerEntityAddComponents       runtime.EventEntityManagerEntityAddComponents
+	handleEntityManagerEntityRemoveComponent     runtime.EventEntityManagerEntityRemoveComponent
+	handleEventEntityDestroySelf                 ec.EventEntityDestroySelfHandler
+	handleEventComponentDestroySelf              ec.EventComponentDestroySelf
 }
 
 // GetCurrentContext 获取当前上下文
@@ -118,6 +125,14 @@ func (rt *RuntimeBehavior) init(rtCtx runtime.Context, opts RuntimeOptions) {
 	rtCtx.ActivateEvent(&rt.eventLateUpdate, event.EventRecursion_Disallow)
 	rtCtx.ActivateEvent(&rt.eventRuntimeRunningStatusChanged, event.EventRecursion_Allow)
 
+	rt.handleEntityManagerAddEntity = runtime.HandleEventEntityManagerAddEntity(rt.onEntityManagerAddEntity)
+	rt.handleEntityManagerRemoveEntity = runtime.HandleEventEntityManagerRemoveEntity(rt.onEntityManagerRemoveEntity)
+	rt.handleEntityManagerEntityFirstTouchComponent = runtime.HandleEventEntityManagerEntityFirstTouchComponent(rt.onEntityManagerEntityFirstTouchComponent)
+	rt.handleEntityManagerEntityAddComponents = runtime.HandleEventEntityManagerEntityAddComponents(rt.onEntityManagerEntityAddComponents)
+	rt.handleEntityManagerEntityRemoveComponent = runtime.HandleEventEntityManagerEntityRemoveComponent(rt.onEntityManagerEntityRemoveComponent)
+	rt.handleEventEntityDestroySelf = ec.HandleEventEntityDestroySelf(rt.onEntityDestroySelf)
+	rt.handleEventComponentDestroySelf = ec.HandleEventComponentDestroySelf(rt.onComponentDestroySelf)
+
 	rt.changeRunningStatus(runtime.RunningStatus_Birth)
 
 	if rt.opts.AutoRun {
@@ -129,20 +144,20 @@ func (rt *RuntimeBehavior) getOptions() *RuntimeOptions {
 	return &rt.opts
 }
 
-// OnEntityManagerAddEntity 事件处理器：实体管理器添加实体
-func (rt *RuntimeBehavior) OnEntityManagerAddEntity(entityManager runtime.EntityManager, entity ec.Entity) {
+// onEntityManagerAddEntity 事件处理器：实体管理器添加实体
+func (rt *RuntimeBehavior) onEntityManagerAddEntity(entityManager runtime.EntityManager, entity ec.Entity) {
 	rt.activateEntity(entity)
 	rt.initEntity(entity)
 }
 
-// OnEntityManagerRemoveEntity 事件处理器：实体管理器删除实体
-func (rt *RuntimeBehavior) OnEntityManagerRemoveEntity(entityManager runtime.EntityManager, entity ec.Entity) {
+// onEntityManagerRemoveEntity 事件处理器：实体管理器删除实体
+func (rt *RuntimeBehavior) onEntityManagerRemoveEntity(entityManager runtime.EntityManager, entity ec.Entity) {
 	rt.deactivateEntity(entity)
 	rt.shutEntity(entity)
 }
 
-// OnEntityManagerEntityFirstTouchComponent 事件处理器：实体管理器中的实体首次访问组件
-func (rt *RuntimeBehavior) OnEntityManagerEntityFirstTouchComponent(entityManager runtime.EntityManager, entity ec.Entity, component ec.Component) {
+// onEntityManagerEntityFirstTouchComponent 事件处理器：实体管理器中的实体首次访问组件
+func (rt *RuntimeBehavior) onEntityManagerEntityFirstTouchComponent(entityManager runtime.EntityManager, entity ec.Entity, component ec.Component) {
 	if component.GetState() != ec.ComponentState_Attach {
 		return
 	}
@@ -156,24 +171,24 @@ func (rt *RuntimeBehavior) OnEntityManagerEntityFirstTouchComponent(entityManage
 	ec.UnsafeComponent(component).SetState(ec.ComponentState_Start)
 }
 
-// OnEntityManagerEntityAddComponents 事件处理器：实体管理器中的实体添加组件
-func (rt *RuntimeBehavior) OnEntityManagerEntityAddComponents(entityManager runtime.EntityManager, entity ec.Entity, components []ec.Component) {
+// onEntityManagerEntityAddComponents 事件处理器：实体管理器中的实体添加组件
+func (rt *RuntimeBehavior) onEntityManagerEntityAddComponents(entityManager runtime.EntityManager, entity ec.Entity, components []ec.Component) {
 	rt.addComponents(entity, components)
 }
 
-// OnEntityManagerEntityRemoveComponent 事件处理器：实体管理器中的实体删除组件
-func (rt *RuntimeBehavior) OnEntityManagerEntityRemoveComponent(entityManager runtime.EntityManager, entity ec.Entity, component ec.Component) {
+// onEntityManagerEntityRemoveComponent 事件处理器：实体管理器中的实体删除组件
+func (rt *RuntimeBehavior) onEntityManagerEntityRemoveComponent(entityManager runtime.EntityManager, entity ec.Entity, component ec.Component) {
 	rt.deactivateComponent(component)
 	rt.removeComponent(component)
 }
 
-// OnEntityDestroySelf 事件处理器：实体销毁自身
-func (rt *RuntimeBehavior) OnEntityDestroySelf(entity ec.Entity) {
+// onEntityDestroySelf 事件处理器：实体销毁自身
+func (rt *RuntimeBehavior) onEntityDestroySelf(entity ec.Entity) {
 	rt.ctx.GetEntityManager().RemoveEntity(entity.GetId())
 }
 
-// OnComponentDestroySelf 事件处理器：组件销毁自身
-func (rt *RuntimeBehavior) OnComponentDestroySelf(comp ec.Component) {
+// onComponentDestroySelf 事件处理器：组件销毁自身
+func (rt *RuntimeBehavior) onComponentDestroySelf(comp ec.Component) {
 	comp.GetEntity().RemoveComponentById(comp.GetId())
 }
 
@@ -254,7 +269,7 @@ func (rt *RuntimeBehavior) activateEntity(entity ec.Entity) {
 	if entityLateUpdate, ok := entity.(LifecycleEntityLateUpdate); ok {
 		hooks[1] = event.Bind[LifecycleEntityLateUpdate](&rt.eventLateUpdate, entityLateUpdate)
 	}
-	hooks[2] = ec.BindEventEntityDestroySelf(entity, rt)
+	hooks[2] = ec.BindEventEntityDestroySelf(entity, rt.handleEventEntityDestroySelf)
 
 	rt.hooksMap[entity.GetId()] = hooks
 
@@ -300,7 +315,7 @@ func (rt *RuntimeBehavior) activateComponent(comp ec.Component) {
 		bound = true
 	}
 	if !comp.GetNonRemovable() {
-		hooks[2] = ec.BindEventComponentDestroySelf(comp, rt)
+		hooks[2] = ec.BindEventComponentDestroySelf(comp, rt.handleEventComponentDestroySelf)
 		bound = true
 	}
 
