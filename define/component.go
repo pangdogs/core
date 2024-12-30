@@ -27,9 +27,16 @@ import (
 
 // Component 定义组件
 func Component[COMP any](name ...string) ComponentDefinition {
+	comp := pt.DefaultComponentLib().Declare(types.ZeroT[COMP]())
+
+	_name := pie.First(name)
+	if _name == "" {
+		_name = types.NameRT(comp.InstanceRT().Elem())
+	}
+
 	return ComponentDefinition{
-		Prototype: pt.DefaultComponentLib().Declare(types.ZeroT[COMP]()).Prototype(),
-		Name:      pie.First(name),
+		Prototype: comp.Prototype(),
+		Name:      _name,
 	}
 }
 

@@ -245,7 +245,7 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) ec.EntityPT
 		}
 
 		if builtin.Name == "" {
-			builtin.Name = builtin.PT.Prototype()
+			builtin.Name = types.NameRT(builtin.PT.InstanceRT().Elem())
 		}
 
 		entityPT.components = append(entityPT.components, builtin)
