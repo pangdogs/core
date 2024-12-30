@@ -27,7 +27,7 @@ import (
 	"strings"
 )
 
-// As 从实体提取一些需要的组件接口，复合在一起直接使用。
+// As 从实体中提取一些需要的组件，复合在一起直接使用。
 /*
 示例：
 	type IA interface {
@@ -53,22 +53,24 @@ import (
 	}
 
 注意：
-	1.内部逻辑有使用反射，为了提高性能，可以使用一次后存储转换结果重复使用。
-	2.实体更新组件后，需要重新提取。
-	3.需要使用tag标记组件名或组件原型名，若没有标记，将会尝试使用字段名作为组件名去查找。
+	1.类型参数必须为结构体类型，可以是匿名结构体。
+	2.内部逻辑有使用反射，为了提高性能，可以使用一次后存储转换结果重复使用。
+	3.实体更新组件后，需要重新提取。
+	4.需要使用tag标记组件名或组件原型名，若没有标记，将会尝试使用字段名作为组件名去查找。
+	5.提取失败会返回false。
 */
-func As[T comparable](entity ec.Entity) (T, bool) {
-	iface := types.ZeroT[T]()
-	ifaceRV := reflect.ValueOf(&iface).Elem()
+func As[T any](entity ec.Entity) (*T, bool) {
+	comps := types.NewT[T]()
+	compsRV := reflect.ValueOf(comps).Elem()
 
-	if !as(entity, ifaceRV) {
-		return types.ZeroT[T](), false
+	if !as(entity, compsRV) {
+		return nil, false
 	}
 
-	return iface, true
+	return comps, true
 }
 
-// Cast 从实体提取一些需要的组件接口，复合在一起直接使用，提取失败会panic。
+// Cast 从实体中提取一些需要的组件，复合在一起直接使用，提取失败会panic。
 /*
 示例：
 	type IA interface {
@@ -91,20 +93,22 @@ func As[T comparable](entity ec.Entity) (T, bool) {
 	Cast[CompositeAB](entity).MethodB()
 
 注意：
-	1.内部逻辑有使用反射，为了提高性能，可以使用一次后存储转换结果重复使用。
-	2.实体更新组件后，需要重新提取。
-	3.需要使用tag标记组件名或组件原型名，若没有标记，将会尝试使用字段名作为组件名去查找。
+	1.类型参数必须为结构体类型，可以是匿名结构体。
+	2.内部逻辑有使用反射，为了提高性能，可以使用一次后存储转换结果重复使用。
+	3.实体更新组件后，需要重新提取。
+	4.需要使用tag标记组件名或组件原型名，若没有标记，将会尝试使用字段名作为组件名去查找。
+	5.提取失败会panic。
 */
-func Cast[T comparable](entity ec.Entity) T {
-	iface, ok := As[T](entity)
+func Cast[T any](entity ec.Entity) *T {
+	comps, ok := As[T](entity)
 	if !ok {
 		exception.Panicf("%w: incorrect cast", ErrPt)
 	}
-	return iface
+	return comps
 }
 
 // Compose 创建组件复合器
-func Compose[T comparable](entity ec.Entity) *Composite[T] {
+func Compose[T any](entity ec.Entity) *Composite[T] {
 	if entity == nil {
 		exception.Panicf("%w: %w: entity is nil", ErrPt, exception.ErrArgs)
 	}
@@ -140,10 +144,10 @@ func Compose[T comparable](entity ec.Entity) *Composite[T] {
 	cx.Cast().MethodA()
 	cx.Cast().MethodB()
 */
-type Composite[T comparable] struct {
+type Composite[T any] struct {
 	entity  ec.Entity
 	version int64
-	iface   T
+	comps   T
 }
 
 // Entity 实体
@@ -163,45 +167,48 @@ func (c *Composite[T]) Changed() bool {
 }
 
 // As 从实体提取一些需要的组件接口，复合在一起直接使用（实体更新组件后，会自动重新提取）
-func (c *Composite[T]) As() (T, bool) {
+func (c *Composite[T]) As() (*T, bool) {
 	if c.entity == nil {
 		exception.Panicf("%w: entity is nil", ErrPt)
 	}
 
-	if c.iface != types.ZeroT[T]() && !c.Changed() {
-		return c.iface, true
+	if !c.Changed() {
+		return &c.comps, true
 	}
 
-	if !as(c.entity, reflect.ValueOf(c.iface)) {
-		return types.ZeroT[T](), false
+	if !as(c.entity, reflect.ValueOf(c.comps)) {
+		return nil, false
 	}
 
 	c.version = ec.UnsafeEntity(c.entity).GetVersion()
 
-	return c.iface, true
+	return &c.comps, true
 }
 
 // Cast 从实体提取一些需要的组件接口，复合在一起直接使用，提取失败会panic（实体更新组件后，会自动重新提取）
-func (c *Composite[T]) Cast() T {
-	iface, ok := c.As()
+func (c *Composite[T]) Cast() *T {
+	comps, ok := c.As()
 	if !ok {
 		exception.Panicf("%w: incorrect cast", ErrPt)
 	}
-	return iface
+	return comps
 }
 
-func as(entity ec.Entity, ifaceRV reflect.Value) bool {
+func as(entity ec.Entity, compsRV reflect.Value) bool {
 	if entity == nil {
 		return false
 	}
 
-	ifaceRT := ifaceRV.Type()
+	compsRT := compsRV.Type()
+	if compsRT.Kind() != reflect.Struct {
+		return false
+	}
 
-	switch ifaceRV.Kind() {
+	switch compsRV.Kind() {
 	case reflect.Struct:
-		for i := 0; i < ifaceRV.NumField(); i++ {
-			field := ifaceRT.Field(i)
-			fieldRV := ifaceRV.Field(i)
+		for i := range compsRV.NumField() {
+			field := compsRT.Field(i)
+			fieldRV := compsRV.Field(i)
 
 			tag := strings.TrimSpace(field.Tag.Get("ec"))
 			if tag == "-" {
