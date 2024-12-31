@@ -31,8 +31,8 @@ type EntityOptions struct {
 	InstanceFace               iface.Face[Entity] // 实例，用于扩展实体能力
 	Scope                      Scope              // 可访问作用域
 	PersistId                  uid.Id             // 实体持久化Id
-	ComponentAwakeOnFirstTouch bool               // 开启组件被首次访问时，检测并调用Awake()
-	ComponentUniqueID          bool               // 开启组件唯一Id
+	ComponentAwakeOnFirstTouch bool               // 当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
+	ComponentUniqueID          bool               // 是否为实体组件分配唯一Id
 	Meta                       meta.Meta          // Meta信息
 }
 
@@ -73,14 +73,14 @@ func (_Option) PersistId(id uid.Id) option.Setting[EntityOptions] {
 	}
 }
 
-// ComponentAwakeOnFirstTouch 开启组件被首次访问时，检测并调用Awake()
+// ComponentAwakeOnFirstTouch 当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
 func (_Option) ComponentAwakeOnFirstTouch(b bool) option.Setting[EntityOptions] {
 	return func(o *EntityOptions) {
 		o.ComponentAwakeOnFirstTouch = b
 	}
 }
 
-// ComponentUniqueID 开启组件唯一Id
+// ComponentUniqueID 是否为实体组件分配唯一Id
 func (_Option) ComponentUniqueID(b bool) option.Setting[EntityOptions] {
 	return func(o *EntityOptions) {
 		o.ComponentUniqueID = b

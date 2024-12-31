@@ -57,7 +57,7 @@ type EntityManager interface {
 	IEntityManagerEventTab
 }
 
-type _EntityEntry struct {
+type _EntityNode struct {
 	at    *generic.Node[iface.FaceAny]
 	hooks [3]event.Hook
 }
@@ -69,7 +69,7 @@ type _TreeNode struct {
 
 type _EntityManagerBehavior struct {
 	ctx        Context
-	entityIdx  map[uid.Id]*_EntityEntry
+	entityIdx  map[uid.Id]*_EntityNode
 	entityList generic.List[iface.FaceAny]
 	treeNodes  map[uid.Id]*_TreeNode
 
@@ -83,7 +83,7 @@ func (mgr *_EntityManagerBehavior) init(ctx Context) {
 	}
 
 	mgr.ctx = ctx
-	mgr.entityIdx = map[uid.Id]*_EntityEntry{}
+	mgr.entityIdx = map[uid.Id]*_EntityNode{}
 	mgr.treeNodes = map[uid.Id]*_TreeNode{}
 
 	ctx.ActivateEvent(&mgr.entityManagerEventTab, event.EventRecursion_Allow)
@@ -94,7 +94,9 @@ func (mgr *_EntityManagerBehavior) changeRunningStatus(status RunningStatus, arg
 	switch status {
 	case RunningStatus_Started:
 		mgr.RangeEntities(func(entity ec.Entity) bool {
-			_EmitEventEntityManagerAddEntity(mgr, mgr, entity)
+			_EmitEventEntityManagerAddEntityWithInterrupt(mgr, func(entityManager EntityManager, entity ec.Entity) bool {
+				return entity.GetState() > ec.EntityState_Alive
+			}, mgr, entity)
 			return true
 		})
 	case RunningStatus_Terminating:
@@ -130,16 +132,16 @@ func (mgr *_EntityManagerBehavior) RemoveEntity(id uid.Id) {
 
 // GetEntity 查询实体
 func (mgr *_EntityManagerBehavior) GetEntity(id uid.Id) (ec.Entity, bool) {
-	entry, ok := mgr.entityIdx[id]
+	entityNode, ok := mgr.entityIdx[id]
 	if !ok {
 		return nil, false
 	}
 
-	if entry.at.Escaped() {
+	if entityNode.at.Escaped() {
 		return nil, false
 	}
 
-	return iface.Cache2Iface[ec.Entity](entry.at.V.Cache), true
+	return iface.Cache2Iface[ec.Entity](entityNode.at.V.Cache), true
 }
 
 // ContainsEntity 实体是否存在
@@ -286,7 +288,7 @@ func (mgr *_EntityManagerBehavior) addEntity(entity ec.Entity, parentId uid.Id) 
 		}
 	}
 
-	entry := &_EntityEntry{
+	entityNode := &_EntityNode{
 		at: mgr.entityList.PushBack(iface.MakeFaceAny(entity)),
 		hooks: [3]event.Hook{
 			ec.BindEventComponentManagerAddComponents(entity, mgr),
@@ -294,9 +296,9 @@ func (mgr *_EntityManagerBehavior) addEntity(entity ec.Entity, parentId uid.Id) 
 		},
 	}
 	if ec.UnsafeEntity(entity).GetOptions().ComponentAwakeOnFirstTouch {
-		entry.hooks[2] = ec.BindEventComponentManagerFirstTouchComponent(entity, mgr)
+		entityNode.hooks[2] = ec.BindEventComponentManagerFirstTouchComponent(entity, mgr)
 	}
-	mgr.entityIdx[entity.GetId()] = entry
+	mgr.entityIdx[entity.GetId()] = entityNode
 
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Enter)
 
@@ -316,12 +318,12 @@ func (mgr *_EntityManagerBehavior) addEntity(entity ec.Entity, parentId uid.Id) 
 }
 
 func (mgr *_EntityManagerBehavior) removeEntity(id uid.Id) {
-	entry, ok := mgr.entityIdx[id]
+	entityNode, ok := mgr.entityIdx[id]
 	if !ok {
 		return
 	}
 
-	entity := iface.Cache2Iface[ec.Entity](entry.at.V.Cache)
+	entity := iface.Cache2Iface[ec.Entity](entityNode.at.V.Cache)
 
 	if entity.GetState() > ec.EntityState_Alive {
 		return
@@ -344,8 +346,8 @@ func (mgr *_EntityManagerBehavior) removeEntity(id uid.Id) {
 	mgr.removeFromParentNode(entity)
 
 	delete(mgr.entityIdx, id)
-	entry.at.Escape()
-	event.Clean(entry.hooks[:])
+	entityNode.at.Escape()
+	event.Clean(entityNode.hooks[:])
 
 	if entity.GetScope() == ec.Scope_Global {
 		service.Current(mgr).GetEntityManager().RemoveEntity(entity.GetId())

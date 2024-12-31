@@ -58,13 +58,13 @@ func (c EntityPTCreator) Scope(scope ec.Scope) EntityPTCreator {
 	return c
 }
 
-// ComponentAwakeOnFirstTouch 开启组件被首次访问时，检测并调用Awake()
+// ComponentAwakeOnFirstTouch 当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
 func (c EntityPTCreator) ComponentAwakeOnFirstTouch(b bool) EntityPTCreator {
 	c.atti.ComponentAwakeOnFirstTouch = &b
 	return c
 }
 
-// ComponentUniqueID 开启组件唯一Id
+// ComponentUniqueID 是否为实体组件分配唯一Id
 func (c EntityPTCreator) ComponentUniqueID(b bool) EntityPTCreator {
 	c.atti.ComponentUniqueID = &b
 	return c

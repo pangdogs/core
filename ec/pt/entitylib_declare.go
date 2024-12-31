@@ -30,8 +30,8 @@ type EntityAttribute struct {
 	Prototype                  string                        // 实体原型名称（必填）
 	Instance                   any                           // 实体实例
 	Scope                      *ec.Scope                     // 可访问作用域
-	ComponentAwakeOnFirstTouch *bool                         // 开启组件被首次访问时，检测并调用Awake()
-	ComponentUniqueID          *bool                         // 开启组件唯一Id
+	ComponentAwakeOnFirstTouch *bool                         // 当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
+	ComponentUniqueID          *bool                         // 是否为实体组件分配唯一Id
 	Extra                      generic.SliceMap[string, any] // 自定义属性
 }
 

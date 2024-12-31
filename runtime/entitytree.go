@@ -162,7 +162,7 @@ func (mgr *_EntityManagerBehavior) CountChildren(entityId uid.Id) int {
 func (mgr *_EntityManagerBehavior) IsTop(entityId uid.Id) bool {
 	node, ok := mgr.treeNodes[entityId]
 	if !ok {
-		return false
+		return true
 	}
 	return node.parentAt == nil
 }

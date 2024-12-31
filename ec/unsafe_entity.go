@@ -82,6 +82,11 @@ func (u _UnsafeEntity) SetReflected(v reflect.Value) {
 	u.setReflected(v)
 }
 
+// RemoveComponentByRef 使用组件引用删除组件
+func (u _UnsafeEntity) RemoveComponentByRef(comp Component) {
+	u.removeComponentByRef(comp)
+}
+
 // SetTreeNodeState 设置实体树节点状态
 func (u _UnsafeEntity) SetTreeNodeState(state TreeNodeState) {
 	u.setTreeNodeState(state)

@@ -54,12 +54,12 @@ func (pt *_Entity) Scope() *ec.Scope {
 	return pt.scope
 }
 
-// ComponentAwakeOnFirstTouch 开启组件被首次访问时，检测并调用Awake()
+// ComponentAwakeOnFirstTouch 当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
 func (pt *_Entity) ComponentAwakeOnFirstTouch() *bool {
 	return pt.componentAwakeOnFirstTouch
 }
 
-// ComponentUniqueID 开启组件唯一Id
+// ComponentUniqueID 是否为实体组件分配唯一Id
 func (pt *_Entity) ComponentUniqueID() *bool {
 	return pt.componentUniqueID
 }

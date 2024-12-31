@@ -15,9 +15,9 @@ type EntityPT interface {
 	InstanceRT() reflect.Type
 	// Scope 可访问作用域
 	Scope() *Scope
-	// ComponentAwakeOnFirstTouch 开启组件被首次访问时，检测并调用Awake()
+	// ComponentAwakeOnFirstTouch 当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
 	ComponentAwakeOnFirstTouch() *bool
-	// ComponentUniqueID 开启组件唯一Id
+	// ComponentUniqueID 是否为实体组件分配唯一Id
 	ComponentUniqueID() *bool
 	// Extra 自定义原型属性
 	Extra() generic.SliceMap[string, any]
@@ -73,12 +73,12 @@ func (_NoneEntityPT) Scope() *Scope {
 	return nil
 }
 
-// ComponentAwakeOnFirstTouch 开启组件被首次访问时，检测并调用Awake()
+// ComponentAwakeOnFirstTouch 当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
 func (_NoneEntityPT) ComponentAwakeOnFirstTouch() *bool {
 	return nil
 }
 
-// ComponentUniqueID 开启组件唯一Id
+// ComponentUniqueID 是否为实体组件分配唯一Id
 func (_NoneEntityPT) ComponentUniqueID() *bool {
 	return nil
 }

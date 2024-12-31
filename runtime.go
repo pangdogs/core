@@ -30,7 +30,6 @@ import (
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/option"
 	"git.golaxy.org/core/utils/reinterpret"
-	"git.golaxy.org/core/utils/uid"
 )
 
 // NewRuntime 创建运行时
@@ -70,7 +69,7 @@ type iRuntime interface {
 type RuntimeBehavior struct {
 	ctx                                          runtime.Context
 	opts                                         RuntimeOptions
-	hooksMap                                     map[uid.Id][3]event.Hook
+	hooksMap                                     map[any][3]event.Hook
 	processQueue                                 chan _Task
 	eventUpdate                                  event.Event
 	eventLateUpdate                              event.Event
@@ -115,7 +114,7 @@ func (rt *RuntimeBehavior) init(rtCtx runtime.Context, opts RuntimeOptions) {
 		rt.opts.InstanceFace = iface.MakeFaceT[Runtime](rt)
 	}
 
-	rt.hooksMap = make(map[uid.Id][3]event.Hook)
+	rt.hooksMap = make(map[any][3]event.Hook)
 	rt.processQueue = make(chan _Task, rt.opts.ProcessQueueCapacity)
 
 	runtime.UnsafeContext(rtCtx).SetFrame(rt.opts.Frame)
@@ -189,13 +188,11 @@ func (rt *RuntimeBehavior) onEntityDestroySelf(entity ec.Entity) {
 
 // onComponentDestroySelf 事件处理器：组件销毁自身
 func (rt *RuntimeBehavior) onComponentDestroySelf(comp ec.Component) {
-	comp.GetEntity().RemoveComponentById(comp.GetId())
+	ec.UnsafeEntity(comp.GetEntity()).RemoveComponentByRef(comp)
 }
 
 func (rt *RuntimeBehavior) addComponents(entity ec.Entity, components []ec.Component) {
-	switch entity.GetState() {
-	case ec.EntityState_Awake, ec.EntityState_Start, ec.EntityState_Alive:
-	default:
+	if entity.GetState() > ec.EntityState_Alive {
 		return
 	}
 
@@ -205,6 +202,10 @@ func (rt *RuntimeBehavior) addComponents(entity ec.Entity, components []ec.Compo
 
 	for i := range components {
 		comp := components[i]
+
+		if entity.GetState() > ec.EntityState_Alive {
+			return
+		}
 
 		if comp.GetState() != ec.ComponentState_Awake {
 			continue
@@ -217,14 +218,12 @@ func (rt *RuntimeBehavior) addComponents(entity ec.Entity, components []ec.Compo
 		ec.UnsafeComponent(comp).SetState(ec.ComponentState_Start)
 	}
 
-	switch entity.GetState() {
-	case ec.EntityState_Awake, ec.EntityState_Start, ec.EntityState_Alive:
-	default:
-		return
-	}
-
 	for i := range components {
 		comp := components[i]
+
+		if entity.GetState() > ec.EntityState_Alive {
+			return
+		}
 
 		if comp.GetState() != ec.ComponentState_Start {
 			continue
@@ -238,22 +237,28 @@ func (rt *RuntimeBehavior) addComponents(entity ec.Entity, components []ec.Compo
 	}
 }
 
-func (rt *RuntimeBehavior) removeComponent(component ec.Component) {
-	if component.GetState() != ec.ComponentState_Shut {
+func (rt *RuntimeBehavior) removeComponent(comp ec.Component) {
+	entity := comp.GetEntity()
+
+	if entity.GetState() > ec.EntityState_Alive || comp.GetState() != ec.ComponentState_Shut {
 		return
 	}
 
-	if cb, ok := component.(LifecycleComponentShut); ok {
+	if cb, ok := comp.(LifecycleComponentShut); ok {
 		generic.CastAction0(cb.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
 
-	ec.UnsafeComponent(component).SetState(ec.ComponentState_Death)
+	ec.UnsafeComponent(comp).SetState(ec.ComponentState_Death)
 
-	if cb, ok := component.(LifecycleComponentDispose); ok {
+	if entity.GetState() > ec.EntityState_Alive || comp.GetState() != ec.ComponentState_Death {
+		return
+	}
+
+	if cb, ok := comp.(LifecycleComponentDispose); ok {
 		generic.CastAction0(cb.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
 
-	ec.UnsafeComponent(component).CleanManagedHooks()
+	ec.UnsafeComponent(comp).CleanManagedHooks()
 }
 
 func (rt *RuntimeBehavior) activateEntity(entity ec.Entity) {
@@ -271,7 +276,7 @@ func (rt *RuntimeBehavior) activateEntity(entity ec.Entity) {
 	}
 	hooks[2] = ec.BindEventEntityDestroySelf(entity, rt.handleEventEntityDestroySelf)
 
-	rt.hooksMap[entity.GetId()] = hooks
+	rt.hooksMap[entity] = hooks
 
 	entity.RangeComponents(func(comp ec.Component) bool {
 		rt.activateComponent(comp)
@@ -282,11 +287,9 @@ func (rt *RuntimeBehavior) activateEntity(entity ec.Entity) {
 }
 
 func (rt *RuntimeBehavior) deactivateEntity(entity ec.Entity) {
-	entityId := entity.GetId()
-
-	hooks, ok := rt.hooksMap[entityId]
+	hooks, ok := rt.hooksMap[entity]
 	if ok {
-		delete(rt.hooksMap, entityId)
+		delete(rt.hooksMap, entity)
 		event.Clean(hooks[:])
 	}
 
@@ -320,18 +323,16 @@ func (rt *RuntimeBehavior) activateComponent(comp ec.Component) {
 	}
 
 	if bound {
-		rt.hooksMap[comp.GetId()] = hooks
+		rt.hooksMap[comp] = hooks
 	}
 
 	ec.UnsafeComponent(comp).SetState(ec.ComponentState_Awake)
 }
 
 func (rt *RuntimeBehavior) deactivateComponent(comp ec.Component) {
-	compId := comp.GetId()
-
-	hooks, ok := rt.hooksMap[compId]
+	hooks, ok := rt.hooksMap[comp]
 	if ok {
-		delete(rt.hooksMap, compId)
+		delete(rt.hooksMap, comp)
 		event.Clean(hooks[:])
 	}
 
@@ -347,11 +348,11 @@ func (rt *RuntimeBehavior) initEntity(entity ec.Entity) {
 		generic.CastAction0(cb.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
 
-	if entity.GetState() != ec.EntityState_Awake {
-		return
-	}
-
 	entity.RangeComponents(func(comp ec.Component) bool {
+		if entity.GetState() != ec.EntityState_Awake {
+			return false
+		}
+
 		if comp.GetState() != ec.ComponentState_Awake {
 			return true
 		}
@@ -362,14 +363,14 @@ func (rt *RuntimeBehavior) initEntity(entity ec.Entity) {
 
 		ec.UnsafeComponent(comp).SetState(ec.ComponentState_Start)
 
-		return entity.GetState() == ec.EntityState_Awake
+		return true
 	})
 
-	if entity.GetState() != ec.EntityState_Awake {
-		return
-	}
-
 	entity.RangeComponents(func(comp ec.Component) bool {
+		if entity.GetState() != ec.EntityState_Awake {
+			return false
+		}
+
 		if comp.GetState() != ec.ComponentState_Start {
 			return true
 		}
@@ -380,7 +381,7 @@ func (rt *RuntimeBehavior) initEntity(entity ec.Entity) {
 
 		ec.UnsafeComponent(comp).SetState(ec.ComponentState_Alive)
 
-		return entity.GetState() == ec.EntityState_Awake
+		return true
 	})
 
 	if entity.GetState() != ec.EntityState_Awake {
