@@ -147,8 +147,8 @@ func (rt *RuntimeBehavior) activateAddIn(addInStatus extension.AddInStatus) {
 		rt.changeRunningStatus(runtime.RunningStatus_AddInActivating, addInStatus)
 		defer rt.changeRunningStatus(runtime.RunningStatus_AddInActivated, addInStatus)
 
-		if addInInit, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInInit); ok {
-			generic.CastAction2(addInInit.Init).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), service.Current(rt), rt.ctx)
+		if cb, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInInit); ok {
+			generic.CastAction2(cb.Init).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), service.Current(rt), rt.ctx)
 		}
 
 		return extension.UnsafeAddInStatus(addInStatus).SetState(extension.AddInState_Active, extension.AddInState_Loaded)
@@ -156,8 +156,8 @@ func (rt *RuntimeBehavior) activateAddIn(addInStatus extension.AddInStatus) {
 		return
 	}
 
-	if addInOnRuntimeRunningStatusChanged, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInOnRuntimeRunningStatusChanged); ok {
-		event.Bind[LifecycleAddInOnRuntimeRunningStatusChanged](&rt.eventRuntimeRunningStatusChanged, addInOnRuntimeRunningStatusChanged)
+	if cb, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInOnRuntimeRunningStatusChanged); ok {
+		event.Bind[LifecycleAddInOnRuntimeRunningStatusChanged](&rt.eventRuntimeRunningStatusChanged, cb)
 	}
 }
 
@@ -166,8 +166,8 @@ func (rt *RuntimeBehavior) deactivateAddIn(addInStatus extension.AddInStatus) {
 		return
 	}
 
-	if addInOnRuntimeRunningStatusChanged, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInOnRuntimeRunningStatusChanged); ok {
-		event.Unbind(&rt.eventRuntimeRunningStatusChanged, addInOnRuntimeRunningStatusChanged)
+	if cb, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInOnRuntimeRunningStatusChanged); ok {
+		event.Unbind(&rt.eventRuntimeRunningStatusChanged, cb)
 	}
 
 	rt.changeRunningStatus(runtime.RunningStatus_AddInDeactivating, addInStatus)
@@ -177,8 +177,8 @@ func (rt *RuntimeBehavior) deactivateAddIn(addInStatus extension.AddInStatus) {
 		return
 	}
 
-	if addInShut, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInShut); ok {
-		generic.CastAction2(addInShut.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), service.Current(rt), rt.ctx)
+	if cb, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInShut); ok {
+		generic.CastAction2(cb.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), service.Current(rt), rt.ctx)
 	}
 }
 

@@ -164,8 +164,8 @@ func (rt *RuntimeBehavior) onEntityManagerEntityFirstTouchComponent(entityManage
 
 	ec.UnsafeComponent(component).SetState(ec.ComponentState_Awake)
 
-	if compAwake, ok := component.(LifecycleComponentAwake); ok {
-		generic.CastAction0(compAwake.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+	if cb, ok := component.(LifecycleComponentAwake); ok {
+		generic.CastAction0(cb.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
 
 	ec.UnsafeComponent(component).SetState(ec.ComponentState_Start)
@@ -210,8 +210,8 @@ func (rt *RuntimeBehavior) addComponents(entity ec.Entity, components []ec.Compo
 			continue
 		}
 
-		if compAwake, ok := comp.(LifecycleComponentAwake); ok {
-			generic.CastAction0(compAwake.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+		if cb, ok := comp.(LifecycleComponentAwake); ok {
+			generic.CastAction0(cb.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 		}
 
 		ec.UnsafeComponent(comp).SetState(ec.ComponentState_Start)
@@ -230,8 +230,8 @@ func (rt *RuntimeBehavior) addComponents(entity ec.Entity, components []ec.Compo
 			continue
 		}
 
-		if compStart, ok := comp.(LifecycleComponentStart); ok {
-			generic.CastAction0(compStart.Start).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+		if cb, ok := comp.(LifecycleComponentStart); ok {
+			generic.CastAction0(cb.Start).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 		}
 
 		ec.UnsafeComponent(comp).SetState(ec.ComponentState_Alive)
@@ -243,14 +243,14 @@ func (rt *RuntimeBehavior) removeComponent(component ec.Component) {
 		return
 	}
 
-	if compShut, ok := component.(LifecycleComponentShut); ok {
-		generic.CastAction0(compShut.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+	if cb, ok := component.(LifecycleComponentShut); ok {
+		generic.CastAction0(cb.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
 
 	ec.UnsafeComponent(component).SetState(ec.ComponentState_Death)
 
-	if compDispose, ok := component.(LifecycleComponentDispose); ok {
-		generic.CastAction0(compDispose.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+	if cb, ok := component.(LifecycleComponentDispose); ok {
+		generic.CastAction0(cb.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
 
 	ec.UnsafeComponent(component).CleanManagedHooks()
@@ -263,11 +263,11 @@ func (rt *RuntimeBehavior) activateEntity(entity ec.Entity) {
 
 	var hooks [3]event.Hook
 
-	if entityUpdate, ok := entity.(LifecycleEntityUpdate); ok {
-		hooks[0] = event.Bind[LifecycleEntityUpdate](&rt.eventUpdate, entityUpdate)
+	if cb, ok := entity.(LifecycleEntityUpdate); ok {
+		hooks[0] = event.Bind[LifecycleEntityUpdate](&rt.eventUpdate, cb)
 	}
-	if entityLateUpdate, ok := entity.(LifecycleEntityLateUpdate); ok {
-		hooks[1] = event.Bind[LifecycleEntityLateUpdate](&rt.eventLateUpdate, entityLateUpdate)
+	if cb, ok := entity.(LifecycleEntityLateUpdate); ok {
+		hooks[1] = event.Bind[LifecycleEntityLateUpdate](&rt.eventLateUpdate, cb)
 	}
 	hooks[2] = ec.BindEventEntityDestroySelf(entity, rt.handleEventEntityDestroySelf)
 
@@ -306,12 +306,12 @@ func (rt *RuntimeBehavior) activateComponent(comp ec.Component) {
 	var hooks [3]event.Hook
 	bound := false
 
-	if compUpdate, ok := comp.(LifecycleComponentUpdate); ok {
-		hooks[0] = event.Bind[LifecycleComponentUpdate](&rt.eventUpdate, compUpdate)
+	if cb, ok := comp.(LifecycleComponentUpdate); ok {
+		hooks[0] = event.Bind[LifecycleComponentUpdate](&rt.eventUpdate, cb)
 		bound = true
 	}
-	if compLateUpdate, ok := comp.(LifecycleComponentLateUpdate); ok {
-		hooks[1] = event.Bind[LifecycleComponentLateUpdate](&rt.eventLateUpdate, compLateUpdate)
+	if cb, ok := comp.(LifecycleComponentLateUpdate); ok {
+		hooks[1] = event.Bind[LifecycleComponentLateUpdate](&rt.eventLateUpdate, cb)
 		bound = true
 	}
 	if !comp.GetNonRemovable() {
@@ -343,8 +343,8 @@ func (rt *RuntimeBehavior) initEntity(entity ec.Entity) {
 		return
 	}
 
-	if entityAwake, ok := entity.(LifecycleEntityAwake); ok {
-		generic.CastAction0(entityAwake.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+	if cb, ok := entity.(LifecycleEntityAwake); ok {
+		generic.CastAction0(cb.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
 
 	if entity.GetState() != ec.EntityState_Awake {
@@ -356,8 +356,8 @@ func (rt *RuntimeBehavior) initEntity(entity ec.Entity) {
 			return true
 		}
 
-		if compAwake, ok := comp.(LifecycleComponentAwake); ok {
-			generic.CastAction0(compAwake.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+		if cb, ok := comp.(LifecycleComponentAwake); ok {
+			generic.CastAction0(cb.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 		}
 
 		ec.UnsafeComponent(comp).SetState(ec.ComponentState_Start)
@@ -374,8 +374,8 @@ func (rt *RuntimeBehavior) initEntity(entity ec.Entity) {
 			return true
 		}
 
-		if compStart, ok := comp.(LifecycleComponentStart); ok {
-			generic.CastAction0(compStart.Start).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+		if cb, ok := comp.(LifecycleComponentStart); ok {
+			generic.CastAction0(cb.Start).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 		}
 
 		ec.UnsafeComponent(comp).SetState(ec.ComponentState_Alive)
@@ -389,8 +389,8 @@ func (rt *RuntimeBehavior) initEntity(entity ec.Entity) {
 
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Start)
 
-	if entityStart, ok := entity.(LifecycleEntityStart); ok {
-		generic.CastAction0(entityStart.Start).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+	if cb, ok := entity.(LifecycleEntityStart); ok {
+		generic.CastAction0(cb.Start).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
 
 	if entity.GetState() != ec.EntityState_Start {
@@ -405,8 +405,8 @@ func (rt *RuntimeBehavior) shutEntity(entity ec.Entity) {
 		return
 	}
 
-	if entityShut, ok := entity.(LifecycleEntityShut); ok {
-		generic.CastAction0(entityShut.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+	if cb, ok := entity.(LifecycleEntityShut); ok {
+		generic.CastAction0(cb.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
 
 	entity.RangeComponents(func(comp ec.Component) bool {
@@ -414,14 +414,22 @@ func (rt *RuntimeBehavior) shutEntity(entity ec.Entity) {
 			return true
 		}
 
-		if compShut, ok := comp.(LifecycleComponentShut); ok {
-			generic.CastAction0(compShut.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+		if cb, ok := comp.(LifecycleComponentShut); ok {
+			generic.CastAction0(cb.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 		}
 
 		ec.UnsafeComponent(comp).SetState(ec.ComponentState_Death)
 
-		if compDispose, ok := comp.(LifecycleComponentDispose); ok {
-			generic.CastAction0(compDispose.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+		return true
+	})
+
+	entity.RangeComponents(func(comp ec.Component) bool {
+		if comp.GetState() != ec.ComponentState_Death {
+			return true
+		}
+
+		if cb, ok := comp.(LifecycleComponentDispose); ok {
+			generic.CastAction0(cb.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 		}
 
 		ec.UnsafeComponent(comp).CleanManagedHooks()
@@ -431,8 +439,8 @@ func (rt *RuntimeBehavior) shutEntity(entity ec.Entity) {
 
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Death)
 
-	if entityDispose, ok := entity.(LifecycleEntityDispose); ok {
-		generic.CastAction0(entityDispose.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+	if cb, ok := entity.(LifecycleEntityDispose); ok {
+		generic.CastAction0(cb.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 	}
 
 	ec.UnsafeEntity(entity).CleanManagedHooks()

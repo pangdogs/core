@@ -182,8 +182,8 @@ func (svc *ServiceBehavior) activateAddIn(addInStatus extension.AddInStatus) {
 		svc.changeRunningStatus(service.RunningStatus_AddInActivating, addInStatus)
 		defer svc.changeRunningStatus(service.RunningStatus_AddInActivated, addInStatus)
 
-		if addInInit, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInInit); ok {
-			generic.CastAction2(addInInit.Init).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
+		if cb, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInInit); ok {
+			generic.CastAction2(cb.Init).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
 		}
 
 		return extension.UnsafeAddInStatus(addInStatus).SetState(extension.AddInState_Active, extension.AddInState_Loaded)
@@ -191,8 +191,7 @@ func (svc *ServiceBehavior) activateAddIn(addInStatus extension.AddInStatus) {
 		return
 	}
 
-	addInOnServiceRunningStatusChanged, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInOnServiceRunningStatusChanged)
-	if ok {
+	if cb, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInOnServiceRunningStatusChanged); ok {
 		go func() {
 			for {
 				if !func() bool {
@@ -208,7 +207,7 @@ func (svc *ServiceBehavior) activateAddIn(addInStatus extension.AddInStatus) {
 						return false
 					}
 
-					addInOnServiceRunningStatusChanged.OnServiceRunningStatusChanged(svc.ctx, statusChanges.status, statusChanges.args...)
+					cb.OnServiceRunningStatusChanged(svc.ctx, statusChanges.status, statusChanges.args...)
 					return true
 				}() {
 					return
@@ -230,7 +229,7 @@ func (svc *ServiceBehavior) deactivateAddIn(addInStatus extension.AddInStatus) {
 		return
 	}
 
-	if addInShut, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInShut); ok {
-		generic.CastAction2(addInShut.Shut).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
+	if cb, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInShut); ok {
+		generic.CastAction2(cb.Shut).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
 	}
 }
