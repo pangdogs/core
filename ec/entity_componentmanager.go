@@ -220,18 +220,22 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 			return false
 		}
 
-		if comp.GetNonRemovable() {
+		if !comp.GetRemovable() {
 			return true
 		}
 
 		if comp.GetState() > ComponentState_Alive {
 			return true
 		}
+
 		comp.setState(ComponentState_Detach)
 
 		_EmitEventComponentManagerRemoveComponent(entity, entity.opts.InstanceFace.Iface, comp)
 
-		node.Escape()
+		if comp.GetState() >= ComponentState_Destroyed {
+			node.Escape()
+		}
+
 		return true
 	}, compNode)
 }
@@ -245,18 +249,21 @@ func (entity *EntityBehavior) RemoveComponentById(id uid.Id) {
 
 	comp := compNode.V
 
-	if comp.GetNonRemovable() {
+	if !comp.GetRemovable() {
 		return
 	}
 
 	if comp.GetState() > ComponentState_Alive {
 		return
 	}
+
 	comp.setState(ComponentState_Detach)
 
 	_EmitEventComponentManagerRemoveComponent(entity, entity.opts.InstanceFace.Iface, comp)
 
-	compNode.Escape()
+	if comp.GetState() >= ComponentState_Destroyed {
+		compNode.Escape()
+	}
 }
 
 // EventComponentManagerAddComponents 事件：实体的组件管理器添加组件
@@ -280,18 +287,21 @@ func (entity *EntityBehavior) removeComponentByRef(comp Component) {
 		return
 	}
 
-	if comp.GetNonRemovable() {
+	if !comp.GetRemovable() {
 		return
 	}
 
 	if comp.GetState() > ComponentState_Alive {
 		return
 	}
+
 	comp.setState(ComponentState_Detach)
 
 	_EmitEventComponentManagerRemoveComponent(entity, entity.opts.InstanceFace.Iface, comp)
 
-	compNode.Escape()
+	if comp.GetState() >= ComponentState_Destroyed {
+		compNode.Escape()
+	}
 }
 
 func (entity *EntityBehavior) addComponent(name string, component Component) {
@@ -373,13 +383,10 @@ func (entity *EntityBehavior) getComponentNodeByRef(comp Component) (*generic.No
 
 func (entity *EntityBehavior) touchComponent(comp Component) Component {
 	if entity.opts.ComponentAwakeOnFirstTouch && comp.GetState() == ComponentState_Attach {
-		switch entity.GetState() {
-		case EntityState_Awake, EntityState_Start, EntityState_Alive:
-			_EmitEventComponentManagerFirstTouchComponent(entity, entity.opts.InstanceFace.Iface, comp)
-		}
+		_EmitEventComponentManagerFirstTouchComponent(entity, entity.opts.InstanceFace.Iface, comp)
 	}
 
-	if comp.GetState() >= ComponentState_Death {
+	if comp.GetState() >= ComponentState_Destroyed {
 		return nil
 	}
 

@@ -97,7 +97,7 @@ func (entity *EntityBehavior) leaveParentNode() {
 	}
 
 	_EmitEventTreeNodeRemoveChildWithInterrupt(entity.treeNodeParent, func(parent, child Entity) bool {
-		return parent.GetState() >= EntityState_Death || child.GetState() >= EntityState_Death
+		return parent.GetState() >= EntityState_Destroyed || child.GetState() >= EntityState_Destroyed
 	}, entity.treeNodeParent, entity.opts.InstanceFace.Iface)
 
 	if entity.treeNodeParent == nil {
@@ -105,6 +105,6 @@ func (entity *EntityBehavior) leaveParentNode() {
 	}
 
 	_EmitEventTreeNodeLeaveParentWithInterrupt(entity, func(child, parent Entity) bool {
-		return child.GetState() >= EntityState_Death || parent.GetState() >= EntityState_Death
+		return child.GetState() >= EntityState_Destroyed || parent.GetState() >= EntityState_Destroyed
 	}, entity.opts.InstanceFace.Iface, entity.treeNodeParent)
 }

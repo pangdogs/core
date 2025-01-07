@@ -33,11 +33,11 @@ type EntityPT interface {
 
 // BuiltinComponent 实体原型中的组件信息
 type BuiltinComponent struct {
-	PT           ComponentPT                   // 组件原型
-	Offset       int                           // 组件位置
-	Name         string                        // 组件名称
-	NonRemovable bool                          // 不可删除
-	Extra        generic.SliceMap[string, any] // 自定义原型属性
+	PT        ComponentPT                   // 组件原型
+	Offset    int                           // 组件位置
+	Name      string                        // 组件名称
+	Removable bool                          // 可以删除
+	Extra     generic.SliceMap[string, any] // 自定义原型属性
 }
 
 // ComponentPT 组件原型接口

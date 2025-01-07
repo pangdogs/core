@@ -182,7 +182,7 @@ func (rt *RuntimeBehavior) deactivateAddIn(addInStatus extension.AddInStatus) {
 	}
 }
 
-func (rt *RuntimeBehavior) loopStart() (hooks [5]event.Hook) {
+func (rt *RuntimeBehavior) loopStart() []event.Hook {
 	ctx := rt.ctx
 	frame := rt.opts.Frame
 
@@ -190,19 +190,19 @@ func (rt *RuntimeBehavior) loopStart() (hooks [5]event.Hook) {
 		runtime.UnsafeFrame(frame).RunningBegin()
 	}
 
-	hooks[0] = runtime.BindEventEntityManagerAddEntity(ctx.GetEntityManager(), rt.handleEntityManagerAddEntity)
-	hooks[1] = runtime.BindEventEntityManagerRemoveEntity(ctx.GetEntityManager(), rt.handleEntityManagerRemoveEntity)
-	hooks[2] = runtime.BindEventEntityManagerEntityAddComponents(ctx.GetEntityManager(), rt.handleEntityManagerEntityAddComponents)
-	hooks[3] = runtime.BindEventEntityManagerEntityRemoveComponent(ctx.GetEntityManager(), rt.handleEntityManagerEntityRemoveComponent)
-	hooks[4] = runtime.BindEventEntityManagerEntityFirstTouchComponent(ctx.GetEntityManager(), rt.handleEntityManagerEntityFirstTouchComponent)
-
-	return
+	return []event.Hook{
+		runtime.BindEventEntityManagerAddEntity(ctx.GetEntityManager(), rt.handleEventEntityManagerAddEntity),
+		runtime.BindEventEntityManagerRemoveEntity(ctx.GetEntityManager(), rt.handleEventEntityManagerRemoveEntity),
+		runtime.BindEventEntityManagerEntityAddComponents(ctx.GetEntityManager(), rt.handleEventEntityManagerEntityAddComponents),
+		runtime.BindEventEntityManagerEntityRemoveComponent(ctx.GetEntityManager(), rt.handleEventEntityManagerEntityRemoveComponent),
+		runtime.BindEventEntityManagerEntityFirstTouchComponent(ctx.GetEntityManager(), rt.handleEventEntityManagerEntityFirstTouchComponent),
+	}
 }
 
-func (rt *RuntimeBehavior) loopStop(hooks [5]event.Hook) {
+func (rt *RuntimeBehavior) loopStop(hooks []event.Hook) {
 	frame := rt.opts.Frame
 
-	event.Clean(hooks[:])
+	event.Clean(hooks)
 
 	if frame != nil {
 		runtime.UnsafeFrame(frame).RunningEnd()

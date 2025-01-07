@@ -24,7 +24,9 @@ import (
 	"fmt"
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/internal/ictx"
+	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
+	"git.golaxy.org/core/utils/types"
 	"git.golaxy.org/core/utils/uid"
 	"reflect"
 )
@@ -48,8 +50,20 @@ type Component interface {
 	GetState() ComponentState
 	// GetReflected 获取反射值
 	GetReflected() reflect.Value
-	// GetNonRemovable 是否不可删除
-	GetNonRemovable() bool
+	// GetRemovable 是否可以删除
+	GetRemovable() bool
+	// GetEnable 获取组件是否启用
+	GetEnable() bool
+	// SetEnable 设置组件是否启用
+	SetEnable(b bool)
+	// ManagedAddHooks 托管事件钩子（event.Hook），在组件销毁时自动解绑定
+	ManagedAddHooks(hooks ...event.Hook)
+	// ManagedAddTagHooks 根据标签托管事件钩子（event.Hook），在组件销毁时自动解绑定
+	ManagedAddTagHooks(tag string, hooks ...event.Hook)
+	// ManagedGetTagHooks 根据标签获取托管事件钩子（event.Hook）
+	ManagedGetTagHooks(tag string) []event.Hook
+	// ManagedCleanTagHooks 清理根据标签托管的事件钩子（event.Hook）
+	ManagedCleanTagHooks(tag string)
 	// DestroySelf 销毁自身
 	DestroySelf()
 
@@ -63,24 +77,30 @@ type iComponent interface {
 	setBuiltin(builtin *BuiltinComponent)
 	setState(state ComponentState)
 	setReflected(v reflect.Value)
-	setNonRemovable(b bool)
-	cleanManagedHooks()
+	setRemovable(b bool)
+	getCallingStateBits() *types.Bits16
+	getProcessedStateBits() *types.Bits16
+	managedCleanAllHooks()
 }
 
 // ComponentBehavior 组件行为，需要在开发新组件时，匿名嵌入至组件结构体中
 type ComponentBehavior struct {
 	context.Context
-	terminate    context.CancelFunc
-	terminated   chan struct{}
-	id           uid.Id
-	builtin      *BuiltinComponent
-	name         string
-	entity       Entity
-	instance     Component
-	state        ComponentState
-	reflected    reflect.Value
-	nonRemovable bool
-	managedHooks []event.Hook
+	terminate          context.CancelFunc
+	terminated         chan struct{}
+	id                 uid.Id
+	builtin            *BuiltinComponent
+	name               string
+	entity             Entity
+	instance           Component
+	state              ComponentState
+	reflected          reflect.Value
+	removable          bool
+	enable             bool
+	callingStateBits   types.Bits16
+	processedStateBits types.Bits16
+	managedHooks       []event.Hook
+	managedTagHooks    generic.SliceMap[string, []event.Hook]
 
 	componentEventTab componentEventTab
 }
@@ -122,17 +142,35 @@ func (comp *ComponentBehavior) GetReflected() reflect.Value {
 	return comp.reflected
 }
 
-// GetNonRemovable 是否不可删除
-func (comp *ComponentBehavior) GetNonRemovable() bool {
-	return comp.nonRemovable
+// GetRemovable 是否可以删除
+func (comp *ComponentBehavior) GetRemovable() bool {
+	return comp.removable
+}
+
+// GetEnable 获取组件是否启用
+func (comp *ComponentBehavior) GetEnable() bool {
+	return comp.enable
+}
+
+// SetEnable 设置组件是否启用
+func (comp *ComponentBehavior) SetEnable(b bool) {
+	if comp.enable == b {
+		return
+	}
+
+	comp.enable = b
+
+	_EmitEventComponentEnableChanged(comp, comp.instance, b)
 }
 
 // DestroySelf 销毁自身
 func (comp *ComponentBehavior) DestroySelf() {
-	switch comp.GetState() {
-	case ComponentState_Awake, ComponentState_Start, ComponentState_Alive:
-		_EmitEventComponentDestroySelf(comp, comp.instance)
-	}
+	_EmitEventComponentDestroySelf(comp, comp.instance)
+}
+
+// EventComponentEnableChanged 事件：组件启用状态改变
+func (comp *ComponentBehavior) EventComponentEnableChanged() event.IEvent {
+	return comp.componentEventTab.EventComponentEnableChanged()
 }
 
 // EventComponentDestroySelf 事件：组件销毁自身
@@ -165,6 +203,7 @@ func (comp *ComponentBehavior) init(name string, entity Entity, instance Compone
 	comp.entity = entity
 	comp.instance = instance
 	comp.componentEventTab.Init(false, nil, event.EventRecursion_Allow)
+	comp.setState(ComponentState_Birth)
 }
 
 func (comp *ComponentBehavior) withContext(ctx context.Context) {
@@ -181,17 +220,24 @@ func (comp *ComponentBehavior) setBuiltin(builtin *BuiltinComponent) {
 }
 
 func (comp *ComponentBehavior) setState(state ComponentState) {
-	if state <= comp.state {
-		return
+	switch state {
+	case ComponentState_Idle, ComponentState_Alive:
+		break
+	default:
+		if comp.processedStateBits.Is(int8(state)) {
+			return
+		}
 	}
 
 	comp.state = state
+	comp.processedStateBits.Set(int8(state), true)
 
 	switch comp.state {
-	case ComponentState_Detach:
+	case ComponentState_Death:
 		comp.terminate()
 		comp.componentEventTab.Close()
-	case ComponentState_Death:
+	case ComponentState_Destroyed:
+		comp.managedCleanAllHooks()
 		close(comp.terminated)
 	}
 }
@@ -200,6 +246,14 @@ func (comp *ComponentBehavior) setReflected(v reflect.Value) {
 	comp.reflected = v
 }
 
-func (comp *ComponentBehavior) setNonRemovable(b bool) {
-	comp.nonRemovable = b
+func (comp *ComponentBehavior) setRemovable(b bool) {
+	comp.removable = b
+}
+
+func (comp *ComponentBehavior) getCallingStateBits() *types.Bits16 {
+	return &comp.callingStateBits
+}
+
+func (comp *ComponentBehavior) getProcessedStateBits() *types.Bits16 {
+	return &comp.processedStateBits
 }

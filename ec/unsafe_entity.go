@@ -22,6 +22,7 @@ package ec
 import (
 	"context"
 	"git.golaxy.org/core/utils/iface"
+	"git.golaxy.org/core/utils/types"
 	"git.golaxy.org/core/utils/uid"
 	"reflect"
 )
@@ -81,6 +82,11 @@ func (u _UnsafeEntity) SetState(state EntityState) {
 func (u _UnsafeEntity) SetReflected(v reflect.Value) {
 	u.setReflected(v)
 }
+ 
+// GetProcessedStateBits 获取已处理状态标志位
+func (u _UnsafeEntity) GetProcessedStateBits() *types.Bits16 {
+	return u.getProcessedStateBits()
+}
 
 // RemoveComponentByRef 使用组件引用删除组件
 func (u _UnsafeEntity) RemoveComponentByRef(comp Component) {
@@ -105,9 +111,4 @@ func (u _UnsafeEntity) EnterParentNode() {
 // LeaveParentNode 离开父节点
 func (u _UnsafeEntity) LeaveParentNode() {
 	u.leaveParentNode()
-}
-
-// CleanManagedHooks 清理所有的托管hook
-func (u _UnsafeEntity) CleanManagedHooks() {
-	u.cleanManagedHooks()
 }

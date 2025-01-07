@@ -64,7 +64,7 @@
 		c.hook.Unbind()
 	}
 
-	4.如果不想写代码记录 hook，可以使用 ec.ComponentBehavior、ec.EntityBehavior 或 runtime.Context 的 ManagedHooks() 来记录 hook，在它们生命周期结束时，将会自动解除绑定
+	4.如果不想写代码记录 hook，可以使用 ec.Component、ec.Entity 或 runtime.Context 的 ManagedAddHooks() 来记录 hook，在它们生命周期结束时，将会自动解除绑定
 
 定义事件表：
 	1.在定义事件的源码文件（.go）头部添加以下注释，在编译前自动化生成代码：

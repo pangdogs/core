@@ -24,7 +24,7 @@ import (
 	"git.golaxy.org/core/utils/iface"
 )
 
-// Hook 事件钩子，主要用于重新绑定或解除绑定事件，由BindEvent()创建并返回，请勿自己创建
+// Hook 事件钩子，由BindEvent()创建并返回的绑定句柄，请勿自己创建
 type Hook struct {
 	subscriberFace iface.FaceAny
 	priority       int32
@@ -45,7 +45,7 @@ func (hook *Hook) IsBound() bool {
 	return hook.at != nil && !hook.at.Escaped()
 }
 
-// Clean 清理Hooks
+// Clean 清理事件钩子（Hook）
 func Clean(hooks []Hook) {
 	for i := range hooks {
 		hooks[i].Unbind()

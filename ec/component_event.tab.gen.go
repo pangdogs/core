@@ -26,18 +26,21 @@ import (
 )
 
 type IComponentEventTab interface {
+	EventComponentEnableChanged() event.IEvent
 	EventComponentDestroySelf() event.IEvent
 }
 
 var (
 	_componentEventTabId = event.DeclareEventTabIdT[componentEventTab]()
-	EventComponentDestroySelfId = _componentEventTabId + 0
+	EventComponentEnableChangedId = _componentEventTabId + 0
+	EventComponentDestroySelfId = _componentEventTabId + 1
 )
 
-type componentEventTab [1]event.Event
+type componentEventTab [2]event.Event
 
 func (eventTab *componentEventTab) Init(autoRecover bool, reportError chan error, recursion event.EventRecursion) {
-	(*eventTab)[0].Init(autoRecover, reportError, event.EventRecursion_Discard)
+	(*eventTab)[0].Init(autoRecover, reportError, event.EventRecursion_Deepest)
+	(*eventTab)[1].Init(autoRecover, reportError, event.EventRecursion_Discard)
 }
 
 func (eventTab *componentEventTab) Open() {
@@ -73,6 +76,10 @@ func (eventTab *componentEventTab) Event(id uint64) event.IEvent {
 	return &(*eventTab)[pos]
 }
 
-func (eventTab *componentEventTab) EventComponentDestroySelf() event.IEvent {
+func (eventTab *componentEventTab) EventComponentEnableChanged() event.IEvent {
 	return &(*eventTab)[0]
+}
+
+func (eventTab *componentEventTab) EventComponentDestroySelf() event.IEvent {
+	return &(*eventTab)[1]
 }

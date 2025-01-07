@@ -27,6 +27,7 @@ import (
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/exception"
+	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/option"
 	"git.golaxy.org/core/utils/reinterpret"
@@ -78,8 +79,14 @@ type Context interface {
 	GetEntityTree() EntityTree
 	// ActivateEvent 启用事件
 	ActivateEvent(event event.IEventCtrl, recursion event.EventRecursion)
-	// ManagedHooks 托管hook，在运行时停止时自动解绑定
-	ManagedHooks(hooks ...event.Hook)
+	// ManagedAddHooks 托管事件钩子（event.Hook），在运行时停止时自动解绑定
+	ManagedAddHooks(hooks ...event.Hook)
+	// ManagedAddTagHooks 根据标签托管事件钩子（event.Hook），在运行时停止时自动解绑定
+	ManagedAddTagHooks(tag string, hooks ...event.Hook)
+	// ManagedGetTagHooks 根据标签获取托管事件钩子（event.Hook）
+	ManagedGetTagHooks(tag string) []event.Hook
+	// ManagedCleanTagHooks 清理根据标签托管的事件钩子（event.Hook）
+	ManagedCleanTagHooks(tag string)
 }
 
 type iContext interface {
@@ -95,14 +102,15 @@ type iContext interface {
 // ContextBehavior 运行时上下文行为，在扩展运行时上下文能力时，匿名嵌入至运行时上下文结构体中
 type ContextBehavior struct {
 	ictx.ContextBehavior
-	svcCtx        service.Context
-	opts          ContextOptions
-	reflected     reflect.Value
-	frame         Frame
-	entityManager _EntityManagerBehavior
-	callee        async.Callee
-	managedHooks  []event.Hook
-	gcList        []GC
+	svcCtx          service.Context
+	opts            ContextOptions
+	reflected       reflect.Value
+	frame           Frame
+	entityManager   _EntityManagerBehavior
+	callee          async.Callee
+	managedHooks    []event.Hook
+	managedTagHooks generic.SliceMap[string, []event.Hook]
+	gcList          []GC
 }
 
 // GetName 获取名称
@@ -220,6 +228,6 @@ func (ctx *ContextBehavior) changeRunningStatus(status RunningStatus, args ...an
 
 	switch status {
 	case RunningStatus_Terminated:
-		ctx.cleanManagedHooks()
+		ctx.managedCleanAllHooks()
 	}
 }

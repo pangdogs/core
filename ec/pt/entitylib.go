@@ -216,21 +216,21 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) ec.EntityPT
 
 	for i, comp := range comps {
 		builtin := ec.BuiltinComponent{
-			Offset:       i,
-			NonRemovable: true,
+			Offset:    i,
+			Removable: false,
 		}
 
 	retry:
 		switch v := comp.(type) {
 		case ComponentAttribute:
 			builtin.Name = v.Name
-			builtin.NonRemovable = v.NonRemovable
+			builtin.Removable = v.removable
 			builtin.Extra = v.Extra
 			comp = v.Instance
 			goto retry
 		case *ComponentAttribute:
 			builtin.Name = v.Name
-			builtin.NonRemovable = v.NonRemovable
+			builtin.Removable = v.removable
 			builtin.Extra = v.Extra
 			comp = v.Instance
 			goto retry

@@ -49,18 +49,18 @@ func EntityWith(prototype string, inst any, scope *ec.Scope, componentAwakeOnFir
 
 // ComponentAttribute 组件原型属性
 type ComponentAttribute struct {
-	Instance     any                           // 组件实例（必填）
-	Name         string                        // 组件名称
-	NonRemovable bool                          // 是否不可删除
-	Extra        generic.SliceMap[string, any] // 自定义属性
+	Instance  any                           // 组件实例（必填）
+	Name      string                        // 组件名称
+	removable bool                          // 是否可以删除
+	Extra     generic.SliceMap[string, any] // 自定义属性
 }
 
 // ComponentWith 创建组件原型属性，用于注册实体原型时自定义相关属性
-func ComponentWith(inst any, name string, nonRemovable bool, extra ...map[string]any) ComponentAttribute {
+func ComponentWith(inst any, name string, removable bool, extra ...map[string]any) ComponentAttribute {
 	return ComponentAttribute{
-		Instance:     inst,
-		Name:         name,
-		NonRemovable: nonRemovable,
-		Extra:        generic.MakeSliceMapFromGoMap(pie.First(extra)),
+		Instance:  inst,
+		Name:      name,
+		removable: removable,
+		Extra:     generic.MakeSliceMapFromGoMap(pie.First(extra)),
 	}
 }

@@ -29,6 +29,7 @@ import (
 	"git.golaxy.org/core/utils/meta"
 	"git.golaxy.org/core/utils/option"
 	"git.golaxy.org/core/utils/reinterpret"
+	"git.golaxy.org/core/utils/types"
 	"git.golaxy.org/core/utils/uid"
 	"reflect"
 )
@@ -74,6 +75,14 @@ type Entity interface {
 	GetReflected() reflect.Value
 	// GetMeta 获取Meta信息
 	GetMeta() meta.Meta
+	// ManagedAddHooks 托管事件钩子（event.Hook），在实体销毁时自动解绑定
+	ManagedAddHooks(hooks ...event.Hook)
+	// ManagedAddTagHooks 根据标签托管事件钩子（event.Hook），在实体销毁时自动解绑定
+	ManagedAddTagHooks(tag string, hooks ...event.Hook)
+	// ManagedGetTagHooks 根据标签获取托管事件钩子（event.Hook）
+	ManagedGetTagHooks(tag string) []event.Hook
+	// ManagedCleanTagHooks 清理根据标签托管的事件钩子（event.Hook）
+	ManagedCleanTagHooks(tag string)
 	// DestroySelf 销毁自身
 	DestroySelf()
 
@@ -90,23 +99,27 @@ type iEntity interface {
 	getVersion() int64
 	setState(state EntityState)
 	setReflected(v reflect.Value)
-	cleanManagedHooks()
+	getProcessedStateBits() *types.Bits16
+	managedCleanAllHooks()
 }
 
 // EntityBehavior 实体行为，在扩展实体能力时，匿名嵌入至实体结构体中
 type EntityBehavior struct {
 	context.Context
-	terminate      context.CancelFunc
-	terminated     chan struct{}
-	opts           EntityOptions
-	prototype      EntityPT
-	context        iface.Cache
-	components     generic.List[Component]
-	state          EntityState
-	reflected      reflect.Value
-	treeNodeState  TreeNodeState
-	treeNodeParent Entity
-	managedHooks   []event.Hook
+	terminate          context.CancelFunc
+	terminated         chan struct{}
+	opts               EntityOptions
+	prototype          EntityPT
+	context            iface.Cache
+	components         generic.List[Component]
+	state              EntityState
+	reflected          reflect.Value
+	treeNodeState      TreeNodeState
+	treeNodeParent     Entity
+	callingStateBits   types.Bits16
+	processedStateBits types.Bits16
+	managedHooks       []event.Hook
+	managedTagHooks    generic.SliceMap[string, []event.Hook]
 
 	entityEventTab                 entityEventTab
 	entityComponentManagerEventTab entityComponentManagerEventTab
@@ -152,10 +165,7 @@ func (entity *EntityBehavior) GetMeta() meta.Meta {
 
 // DestroySelf 销毁自身
 func (entity *EntityBehavior) DestroySelf() {
-	switch entity.GetState() {
-	case EntityState_Awake, EntityState_Start, EntityState_Alive:
-		_EmitEventEntityDestroySelf(entity, entity.opts.InstanceFace.Iface)
-	}
+	_EmitEventEntityDestroySelf(entity, entity.opts.InstanceFace.Iface)
 }
 
 // EventEntityDestroySelf 事件：实体销毁自身
@@ -193,6 +203,8 @@ func (entity *EntityBehavior) init(opts EntityOptions) {
 	entity.entityEventTab.Init(false, nil, event.EventRecursion_Allow)
 	entity.entityComponentManagerEventTab.Init(false, nil, event.EventRecursion_Allow)
 	entity.entityTreeNodeEventTab.Init(false, nil, event.EventRecursion_Allow)
+
+	entity.setState(EntityState_Birth)
 }
 
 func (entity *EntityBehavior) withContext(ctx context.Context) {
@@ -221,24 +233,29 @@ func (entity *EntityBehavior) getVersion() int64 {
 }
 
 func (entity *EntityBehavior) setState(state EntityState) {
-	if state <= entity.state {
+	if entity.processedStateBits.Is(int8(state)) {
 		return
 	}
 
 	entity.state = state
+	entity.processedStateBits.Set(int8(state), true)
 
 	switch entity.state {
-	case EntityState_Leave:
+	case EntityState_Death:
 		entity.terminate()
 		entity.entityEventTab.Close()
 		entity.entityComponentManagerEventTab.Close()
-	case EntityState_Shut:
 		entity.entityTreeNodeEventTab.Close()
-	case EntityState_Death:
+	case EntityState_Destroyed:
+		entity.managedCleanAllHooks()
 		close(entity.terminated)
 	}
 }
 
 func (entity *EntityBehavior) setReflected(v reflect.Value) {
 	entity.reflected = v
+}
+
+func (entity *EntityBehavior) getProcessedStateBits() *types.Bits16 {
+	return &entity.processedStateBits
 }

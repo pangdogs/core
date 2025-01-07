@@ -21,6 +21,7 @@ package ec
 
 import (
 	"context"
+	"git.golaxy.org/core/utils/types"
 	"git.golaxy.org/core/utils/uid"
 	"reflect"
 )
@@ -66,12 +67,17 @@ func (u _UnsafeComponent) SetReflected(v reflect.Value) {
 	u.setReflected(v)
 }
 
-// SetNonRemovable 设置是否不可删除
-func (u _UnsafeComponent) SetNonRemovable(b bool) {
-	u.setNonRemovable(b)
+// SetRemovable 设置是否可以删除
+func (u _UnsafeComponent) SetRemovable(b bool) {
+	u.setRemovable(b)
 }
 
-// CleanManagedHooks 清理所有的托管hook
-func (u _UnsafeComponent) CleanManagedHooks() {
-	u.cleanManagedHooks()
+// GetCallingStateBits 获取调用状态标志位
+func (u _UnsafeComponent) GetCallingStateBits() *types.Bits16 {
+	return u.getCallingStateBits()
+}
+
+// GetProcessedStateBits 获取已处理状态标志位
+func (u _UnsafeComponent) GetProcessedStateBits() *types.Bits16 {
+	return u.getProcessedStateBits()
 }

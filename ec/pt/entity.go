@@ -119,7 +119,7 @@ func (pt *_Entity) assemble(entity ec.Entity) ec.Entity {
 
 		comp := builtin.PT.Construct()
 		ec.UnsafeComponent(comp).SetBuiltin(builtin)
-		ec.UnsafeComponent(comp).SetNonRemovable(builtin.NonRemovable)
+		ec.UnsafeComponent(comp).SetRemovable(builtin.Removable)
 
 		if err := entity.AddComponent(builtin.Name, comp); err != nil {
 			exception.Panicf("%w: %w", ErrPt, err)

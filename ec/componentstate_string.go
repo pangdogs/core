@@ -11,16 +11,20 @@ func _() {
 	_ = x[ComponentState_Birth-0]
 	_ = x[ComponentState_Attach-1]
 	_ = x[ComponentState_Awake-2]
-	_ = x[ComponentState_Start-3]
-	_ = x[ComponentState_Alive-4]
-	_ = x[ComponentState_Detach-5]
-	_ = x[ComponentState_Shut-6]
-	_ = x[ComponentState_Death-7]
+	_ = x[ComponentState_Enable-3]
+	_ = x[ComponentState_Idle-4]
+	_ = x[ComponentState_Start-5]
+	_ = x[ComponentState_Alive-6]
+	_ = x[ComponentState_Detach-7]
+	_ = x[ComponentState_Shut-8]
+	_ = x[ComponentState_Disable-9]
+	_ = x[ComponentState_Death-10]
+	_ = x[ComponentState_Destroyed-11]
 }
 
-const _ComponentState_name = "ComponentState_BirthComponentState_AttachComponentState_AwakeComponentState_StartComponentState_AliveComponentState_DetachComponentState_ShutComponentState_Death"
+const _ComponentState_name = "ComponentState_BirthComponentState_AttachComponentState_AwakeComponentState_EnableComponentState_IdleComponentState_StartComponentState_AliveComponentState_DetachComponentState_ShutComponentState_DisableComponentState_DeathComponentState_Destroyed"
 
-var _ComponentState_index = [...]uint8{0, 20, 41, 61, 81, 101, 122, 141, 161}
+var _ComponentState_index = [...]uint8{0, 20, 41, 61, 82, 101, 121, 141, 162, 181, 203, 223, 247}
 
 func (i ComponentState) String() string {
 	if i < 0 || i >= ComponentState(len(_ComponentState_index)-1) {

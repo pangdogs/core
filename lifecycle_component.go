@@ -24,7 +24,12 @@ type LifecycleComponentAwake interface {
 	Awake()
 }
 
-// LifecycleComponentStart 组件的生命周期进入开始（Start）时的回调，组件实现此接口即可使用
+// LifecycleComponentOnEnable 组件的生命周期进入启用（OnEnable）时的回调，与关闭（OnDisable）成对，组件实现此接口即可使用
+type LifecycleComponentOnEnable interface {
+	OnEnable()
+}
+
+// LifecycleComponentStart 组件的生命周期进入开始（Start）时的回调，只会调用一次，与结束（Shut）成对，组件实现此接口即可使用
 type LifecycleComponentStart interface {
 	Start()
 }
@@ -35,9 +40,14 @@ type LifecycleComponentUpdate = eventUpdate
 // LifecycleComponentLateUpdate 如果开启运行时的帧更新特性，那么组件状态为活跃（Alive）时，将会收到这个帧迟滞更新（Late Update）回调，组件实现此接口即可使用
 type LifecycleComponentLateUpdate = eventLateUpdate
 
-// LifecycleComponentShut 组件的生命周期进入结束（Shut）时的回调，组件实现此接口即可使用
+// LifecycleComponentShut 组件的生命周期进入结束（Shut）时的回调，只会调用一次，与结束（Start）成对，组件实现此接口即可使用
 type LifecycleComponentShut interface {
 	Shut()
+}
+
+// LifecycleComponentOnDisable 组件的生命周期进入关闭（OnDisable）时的回调，与启用（OnEnable）成对，组件实现此接口即可使用
+type LifecycleComponentOnDisable interface {
+	OnDisable()
 }
 
 // LifecycleComponentDispose 组件的生命周期进入死亡（Death）时的回调，组件实现此接口即可使用

@@ -17,20 +17,60 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-//go:generate go run git.golaxy.org/core/event/eventc event
-//go:generate go run git.golaxy.org/core/event/eventc eventtab --name=componentEventTab
-package ec
+package types
 
-// EventComponentEnableChanged 事件：组件启用状态改变
-// +event-gen:export=0
-// +event-tab-gen:recursion=deepest
-type EventComponentEnableChanged interface {
-	OnComponentEnableChanged(comp Component, enable bool)
+type Bits8 uint8
+
+func (bits *Bits8) Is(bit int8) bool {
+	return (*bits)&(1<<bit) != 0
 }
 
-// EventComponentDestroySelf 事件：组件销毁自身
-// +event-gen:export=0
-// +event-tab-gen:recursion=discard
-type EventComponentDestroySelf interface {
-	OnComponentDestroySelf(comp Component)
+func (bits *Bits8) Set(bit int8, b bool) {
+	if b {
+		*bits |= 1 << bit
+	} else {
+		*bits &= ^(1 << bit)
+	}
+}
+
+type Bits16 uint16
+
+func (bits *Bits16) Is(bit int8) bool {
+	return (*bits)&(1<<bit) != 0
+}
+
+func (bits *Bits16) Set(bit int8, b bool) {
+	if b {
+		*bits |= 1 << bit
+	} else {
+		*bits &= ^(1 << bit)
+	}
+}
+
+type Bits32 uint8
+
+func (bits *Bits32) Is(bit int8) bool {
+	return (*bits)&(1<<bit) != 0
+}
+
+func (bits *Bits32) Set(bit int8, b bool) {
+	if b {
+		*bits |= 1 << bit
+	} else {
+		*bits &= ^(1 << bit)
+	}
+}
+
+type Bits64 uint8
+
+func (bits *Bits64) Is(bit int8) bool {
+	return (*bits)&(1<<bit) != 0
+}
+
+func (bits *Bits64) Set(bit int8, b bool) {
+	if b {
+		*bits |= 1 << bit
+	} else {
+		*bits &= ^(1 << bit)
+	}
 }

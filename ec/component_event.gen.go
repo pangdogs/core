@@ -25,6 +25,52 @@ import (
 	event "git.golaxy.org/core/event"
 )
 
+type iAutoEventComponentEnableChanged interface {
+	EventComponentEnableChanged() event.IEvent
+}
+
+func BindEventComponentEnableChanged(auto iAutoEventComponentEnableChanged, subscriber EventComponentEnableChanged, priority ...int32) event.Hook {
+	if auto == nil {
+		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
+	}
+	return event.Bind[EventComponentEnableChanged](auto.EventComponentEnableChanged(), subscriber, priority...)
+}
+
+func _EmitEventComponentEnableChanged(auto iAutoEventComponentEnableChanged, comp Component, enable bool) {
+	if auto == nil {
+		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
+	}
+	event.UnsafeEvent(auto.EventComponentEnableChanged()).Emit(func(subscriber event.Cache) bool {
+		event.Cache2Iface[EventComponentEnableChanged](subscriber).OnComponentEnableChanged(comp, enable)
+		return true
+	})
+}
+
+func _EmitEventComponentEnableChangedWithInterrupt(auto iAutoEventComponentEnableChanged, interrupt func(comp Component, enable bool) bool, comp Component, enable bool) {
+	if auto == nil {
+		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
+	}
+	event.UnsafeEvent(auto.EventComponentEnableChanged()).Emit(func(subscriber event.Cache) bool {
+		if interrupt != nil {
+			if interrupt(comp, enable) {
+				return false
+			}
+		}
+		event.Cache2Iface[EventComponentEnableChanged](subscriber).OnComponentEnableChanged(comp, enable)
+		return true
+	})
+}
+
+func HandleEventComponentEnableChanged(fun func(comp Component, enable bool)) EventComponentEnableChangedHandler {
+	return EventComponentEnableChangedHandler(fun)
+}
+
+type EventComponentEnableChangedHandler func(comp Component, enable bool)
+
+func (h EventComponentEnableChangedHandler) OnComponentEnableChanged(comp Component, enable bool) {
+	h(comp, enable)
+}
+
 type iAutoEventComponentDestroySelf interface {
 	EventComponentDestroySelf() event.IEvent
 }

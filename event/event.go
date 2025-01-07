@@ -91,8 +91,8 @@ func (event *Event) Close() {
 
 // Clean 清除全部订阅者
 func (event *Event) Clean() {
-	event.subscribers.Traversal(func(n *generic.Node[Hook]) bool {
-		n.V.Unbind()
+	event.subscribers.Traversal(func(node *generic.Node[Hook]) bool {
+		node.V.Unbind()
 		return true
 	})
 }
@@ -122,12 +122,12 @@ func (event *Event) emit(fun generic.Func1[iface.Cache, bool]) {
 	event.emitDepth = event.emitted
 	ver := event.subscribers.Version()
 
-	event.subscribers.Traversal(func(n *generic.Node[Hook]) bool {
+	event.subscribers.Traversal(func(node *generic.Node[Hook]) bool {
 		if !event.opened {
 			return false
 		}
 
-		if n.V.subscriberFace.IsNil() || n.Version() > ver {
+		if node.V.subscriberFace.IsNil() || node.Version() > ver {
 			return true
 		}
 
@@ -135,26 +135,26 @@ func (event *Event) emit(fun generic.Func1[iface.Cache, bool]) {
 		case EventRecursion_Allow:
 			break
 		case EventRecursion_Disallow:
-			if n.V.received > 0 {
+			if node.V.received > 0 {
 				exception.Panicf("%w: recursive event disallowed", ErrEvent)
 			}
 		case EventRecursion_Truncate:
-			if n.V.received > 0 {
+			if node.V.received > 0 {
 				return true
 			}
 		case EventRecursion_Deepest:
 			if event.emitDepth != event.emitted {
 				return false
 			}
-			if n.V.received > 0 {
+			if node.V.received > 0 {
 				return true
 			}
 		}
 
-		n.V.received++
-		defer func() { n.V.received-- }()
+		node.V.received++
+		defer func() { node.V.received-- }()
 
-		ret, panicErr := fun.Call(event.autoRecover, event.reportError, n.V.subscriberFace.Cache)
+		ret, panicErr := fun.Call(event.autoRecover, event.reportError, node.V.subscriberFace.Cache)
 		if panicErr != nil {
 			return true
 		}
