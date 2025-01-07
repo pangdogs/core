@@ -66,8 +66,8 @@ type iRuntime interface {
 }
 
 const (
-	tagForRuntimeEnableHooks = "runtime_enable"
-	tagForRuntimeUpdateHooks = "runtime_update"
+	tagForRuntimeObserveComponentEnableChanged = "runtime_observe_component_enable_changed"
+	tagForRuntimeObserveComponentUpdate        = "runtime_observe_component_update"
 )
 
 func makeEntityLifecycleCaller(entity ec.Entity) _EntityLifecycleCaller {
@@ -395,11 +395,11 @@ func (rt *RuntimeBehavior) observeComponentDestroySelf(comp ec.Component) {
 }
 
 func (rt *RuntimeBehavior) observeComponentEnableChanged(comp ec.Component) {
-	comp.ManagedAddTagHooks(tagForRuntimeEnableHooks, ec.BindEventComponentEnableChanged(comp, rt.handleEventComponentEnableChanged))
+	comp.ManagedAddTagHooks(tagForRuntimeObserveComponentEnableChanged, ec.BindEventComponentEnableChanged(comp, rt.handleEventComponentEnableChanged))
 }
 
 func (rt *RuntimeBehavior) unobserveComponentEnableChanged(comp ec.Component) {
-	comp.ManagedCleanTagHooks(tagForRuntimeEnableHooks)
+	comp.ManagedCleanTagHooks(tagForRuntimeObserveComponentEnableChanged)
 }
 
 func (rt *RuntimeBehavior) observeComponentUpdate(comp ec.Component) {
@@ -413,11 +413,11 @@ func (rt *RuntimeBehavior) observeComponentUpdate(comp ec.Component) {
 		hooks = append(hooks, event.Bind[LifecycleComponentLateUpdate](&rt.eventLateUpdate, cb))
 	}
 
-	comp.ManagedAddTagHooks(tagForRuntimeUpdateHooks, hooks...)
+	comp.ManagedAddTagHooks(tagForRuntimeObserveComponentUpdate, hooks...)
 }
 
 func (rt *RuntimeBehavior) unobserveComponentUpdate(comp ec.Component) {
-	comp.ManagedCleanTagHooks(tagForRuntimeUpdateHooks)
+	comp.ManagedCleanTagHooks(tagForRuntimeObserveComponentUpdate)
 }
 
 func (rt *RuntimeBehavior) activateEntity(entity ec.Entity) {
