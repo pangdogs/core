@@ -21,8 +21,8 @@ package pt
 
 import (
 	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
-	"github.com/elliotchance/pie/v2"
 )
 
 // EntityAttribute 实体原型属性
@@ -35,15 +35,54 @@ type EntityAttribute struct {
 	Extra                      generic.SliceMap[string, any] // 自定义属性
 }
 
-// EntityWith 创建实体原型属性，用于注册实体原型时自定义相关属性
-func EntityWith(prototype string, inst any, scope *ec.Scope, componentAwakeOnFirstTouch, componentUniqueID *bool, extra ...map[string]any) EntityAttribute {
+func (atti EntityAttribute) SetInstance(instance any) EntityAttribute {
+	atti.Instance = instance
+	return atti
+}
+
+func (atti EntityAttribute) SetScope(scope ec.Scope) EntityAttribute {
+	atti.Scope = &scope
+	return atti
+}
+
+func (atti EntityAttribute) SetComponentAwakeOnFirstTouch(componentAwakeOnFirstTouch bool) EntityAttribute {
+	atti.ComponentAwakeOnFirstTouch = &componentAwakeOnFirstTouch
+	return atti
+}
+
+func (atti EntityAttribute) SetComponentUniqueID(componentUniqueID bool) EntityAttribute {
+	atti.ComponentUniqueID = &componentUniqueID
+	return atti
+}
+
+func (atti EntityAttribute) SetExtra(extra map[string]any) EntityAttribute {
+	atti.Extra = generic.MakeSliceMapFromGoMap(extra)
+	return atti
+}
+
+func (atti EntityAttribute) OverrideExtra(extra map[string]any) EntityAttribute {
+	atti.Extra = atti.Extra.Clone()
+	for k, v := range extra {
+		atti.Extra.Add(k, v)
+	}
+	return atti
+}
+
+func (atti EntityAttribute) CombineExtra(extra map[string]any) EntityAttribute {
+	atti.Extra = atti.Extra.Clone()
+	for k, v := range extra {
+		atti.Extra.TryAdd(k, v)
+	}
+	return atti
+}
+
+// Entity 创建实体原型属性，用于注册实体原型时自定义相关属性
+func Entity(prototype string) EntityAttribute {
+	if prototype == "" {
+		exception.Panicf("%w: %w: prototype is empty", ErrPt, exception.ErrArgs)
+	}
 	return EntityAttribute{
-		Prototype:                  prototype,
-		Instance:                   inst,
-		Scope:                      scope,
-		ComponentAwakeOnFirstTouch: componentAwakeOnFirstTouch,
-		ComponentUniqueID:          componentUniqueID,
-		Extra:                      generic.MakeSliceMapFromGoMap(pie.First(extra)),
+		Prototype: prototype,
 	}
 }
 
@@ -51,16 +90,47 @@ func EntityWith(prototype string, inst any, scope *ec.Scope, componentAwakeOnFir
 type ComponentAttribute struct {
 	Instance  any                           // 组件实例（必填）
 	Name      string                        // 组件名称
-	removable bool                          // 是否可以删除
+	Removable bool                          // 是否可以删除
 	Extra     generic.SliceMap[string, any] // 自定义属性
 }
 
-// ComponentWith 创建组件原型属性，用于注册实体原型时自定义相关属性
-func ComponentWith(inst any, name string, removable bool, extra ...map[string]any) ComponentAttribute {
+func (atti ComponentAttribute) SetName(name string) ComponentAttribute {
+	atti.Name = name
+	return atti
+}
+
+func (atti ComponentAttribute) SetRemovable(b bool) ComponentAttribute {
+	atti.Removable = b
+	return atti
+}
+
+func (atti ComponentAttribute) SetExtra(extra map[string]any) ComponentAttribute {
+	atti.Extra = generic.MakeSliceMapFromGoMap(extra)
+	return atti
+}
+
+func (atti ComponentAttribute) OverrideExtra(extra map[string]any) ComponentAttribute {
+	atti.Extra = atti.Extra.Clone()
+	for k, v := range extra {
+		atti.Extra.Add(k, v)
+	}
+	return atti
+}
+
+func (atti ComponentAttribute) CombineExtra(extra map[string]any) ComponentAttribute {
+	atti.Extra = atti.Extra.Clone()
+	for k, v := range extra {
+		atti.Extra.TryAdd(k, v)
+	}
+	return atti
+}
+
+// Component 创建组件原型属性，用于注册实体原型时自定义相关属性
+func Component(instance any) ComponentAttribute {
+	if instance == nil {
+		exception.Panicf("%w: %w: instance is nil", ErrPt, exception.ErrArgs)
+	}
 	return ComponentAttribute{
-		Instance:  inst,
-		Name:      name,
-		removable: removable,
-		Extra:     generic.MakeSliceMapFromGoMap(pie.First(extra)),
+		Instance: instance,
 	}
 }

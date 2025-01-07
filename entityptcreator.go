@@ -84,7 +84,7 @@ func (c EntityPTCreator) AddComponent(comp any, name ...string) EntityPTCreator 
 	case pt.ComponentAttribute, *pt.ComponentAttribute:
 		c.comps = append(c.comps, v)
 	default:
-		c.comps = append(c.comps, pt.ComponentWith(comp, pie.First(name), false))
+		c.comps = append(c.comps, pt.Component(comp).SetName(pie.First(name)))
 	}
 	return c
 }

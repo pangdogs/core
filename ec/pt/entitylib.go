@@ -216,31 +216,30 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) ec.EntityPT
 
 	for i, comp := range comps {
 		builtin := ec.BuiltinComponent{
-			Offset:    i,
-			Removable: false,
+			Offset: i,
 		}
 
 	retry:
 		switch v := comp.(type) {
 		case ComponentAttribute:
 			builtin.Name = v.Name
-			builtin.Removable = v.removable
+			builtin.Removable = v.Removable
 			builtin.Extra = v.Extra
 			comp = v.Instance
 			goto retry
 		case *ComponentAttribute:
-			builtin.Name = v.Name
-			builtin.Removable = v.removable
-			builtin.Extra = v.Extra
-			comp = v.Instance
+			comp = *v
 			goto retry
 		case string:
 			compPT, ok := lib.compLib.Get(v)
 			if !ok {
-				exception.Panicf("%w: entity %q component %q was not declared", ErrPt, prototype, v)
+				exception.Panicf("%w: entity %q builtin component %q was not declared", ErrPt, prototype, v)
 			}
 			builtin.PT = compPT
 		default:
+			if v == nil {
+				exception.Panicf("%w: entity %q builtin component is nil", ErrPt, prototype)
+			}
 			builtin.PT = lib.compLib.Declare(v)
 		}
 
