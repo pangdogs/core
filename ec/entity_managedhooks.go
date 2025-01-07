@@ -62,8 +62,8 @@ func (entity *EntityBehavior) ManagedGetTagHooks(tag string) []event.Hook {
 
 // ManagedCleanTagHooks 清理根据标签托管的事件钩子（event.Hook）
 func (entity *EntityBehavior) ManagedCleanTagHooks(tag string) {
-	idx := entity.managedTagHooks.Index(tag)
-	if idx < 0 {
+	idx, ok := entity.managedTagHooks.Index(tag)
+	if !ok {
 		return
 	}
 	event.Clean(entity.managedTagHooks[idx].V)

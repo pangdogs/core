@@ -62,8 +62,8 @@ func (ctx *ContextBehavior) ManagedGetTagHooks(tag string) []event.Hook {
 
 // ManagedCleanTagHooks 清理根据标签托管的事件钩子（event.Hook）
 func (ctx *ContextBehavior) ManagedCleanTagHooks(tag string) {
-	idx := ctx.managedTagHooks.Index(tag)
-	if idx < 0 {
+	idx, ok := ctx.managedTagHooks.Index(tag)
+	if !ok {
 		return
 	}
 	event.Clean(ctx.managedTagHooks[idx].V)

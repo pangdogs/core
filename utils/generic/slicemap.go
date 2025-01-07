@@ -97,11 +97,10 @@ func (m *SliceMap[K, V]) Delete(k K) bool {
 	return ok
 }
 
-func (m SliceMap[K, V]) Index(k K) int {
-	idx, _ := slices.BinarySearchFunc(m, KV[K, V]{K: k}, func(a, b KV[K, V]) int {
+func (m SliceMap[K, V]) Index(k K) (int, bool) {
+	return slices.BinarySearchFunc(m, KV[K, V]{K: k}, func(a, b KV[K, V]) int {
 		return cmp.Compare(a.K, b.K)
 	})
-	return idx
 }
 
 func (m SliceMap[K, V]) Get(k K) (V, bool) {

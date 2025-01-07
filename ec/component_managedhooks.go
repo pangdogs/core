@@ -62,8 +62,8 @@ func (comp *ComponentBehavior) ManagedGetTagHooks(tag string) []event.Hook {
 
 // ManagedCleanTagHooks 清理根据标签托管的事件钩子（event.Hook）
 func (comp *ComponentBehavior) ManagedCleanTagHooks(tag string) {
-	idx := comp.managedTagHooks.Index(tag)
-	if idx < 0 {
+	idx, ok := comp.managedTagHooks.Index(tag)
+	if !ok {
 		return
 	}
 	event.Clean(comp.managedTagHooks[idx].V)
