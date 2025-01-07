@@ -202,6 +202,7 @@ func (comp *ComponentBehavior) init(name string, entity Entity, instance Compone
 	comp.name = name
 	comp.entity = entity
 	comp.instance = instance
+	comp.removable = true
 	comp.enable = true
 	comp.componentEventTab.Init(false, nil, event.EventRecursion_Allow)
 	comp.setState(ComponentState_Birth)
