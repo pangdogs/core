@@ -188,6 +188,7 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) ec.EntityPT
 	entityPT := &_Entity{
 		prototype:                  entityAtti.Prototype,
 		scope:                      entityAtti.Scope,
+		componentNameIndexing:      entityAtti.ComponentNameIndexing,
 		componentAwakeOnFirstTouch: entityAtti.ComponentAwakeOnFirstTouch,
 		componentUniqueID:          entityAtti.ComponentUniqueID,
 		extra:                      entityAtti.Extra,
