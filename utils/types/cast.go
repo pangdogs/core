@@ -22,13 +22,24 @@ package types
 import (
 	"errors"
 	"fmt"
-	"golang.org/x/exp/constraints"
 	"reflect"
 	"unsafe"
 )
 
+type Signed interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64
+}
+
+type Unsigned interface {
+	~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr
+}
+
+type Integer interface {
+	Signed | Unsigned
+}
+
 // Bool2Int bool转int
-func Bool2Int[T constraints.Integer](b bool) T {
+func Bool2Int[T Integer](b bool) T {
 	if b {
 		return 1
 	}
@@ -36,7 +47,7 @@ func Bool2Int[T constraints.Integer](b bool) T {
 }
 
 // Int2Bool int转bool
-func Int2Bool[T constraints.Integer](v T) bool {
+func Int2Bool[T Integer](v T) bool {
 	if v != 0 {
 		return true
 	}
