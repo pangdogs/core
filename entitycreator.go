@@ -75,6 +75,12 @@ func (c EntityCreator) PersistId(id uid.Id) EntityCreator {
 	return c
 }
 
+// ComponentNameIndexing 是否开启组件名称索引
+func (c EntityCreator) ComponentNameIndexing(b bool) EntityCreator {
+	c.settings = append(c.settings, ec.With.ComponentNameIndexing(b))
+	return c
+}
+
 // ComponentAwakeOnFirstTouch 当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
 func (c EntityCreator) ComponentAwakeOnFirstTouch(b bool) EntityCreator {
 	c.settings = append(c.settings, ec.With.ComponentAwakeOnFirstTouch(b))

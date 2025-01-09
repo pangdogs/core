@@ -53,14 +53,14 @@ func DefaultComponentLib() ComponentLib {
 // NewComponentLib 创建组件原型库
 func NewComponentLib() ComponentLib {
 	return &_ComponentLib{
-		compIdx: map[string]*_Component{},
+		compIndex: map[string]*_Component{},
 	}
 }
 
 type _ComponentLib struct {
 	sync.RWMutex
-	compIdx  map[string]*_Component
-	compList []*_Component
+	compIndex map[string]*_Component
+	compList  []*_Component
 }
 
 // Declare 声明组件原型（可以重复声明）
@@ -73,7 +73,7 @@ func (lib *_ComponentLib) Undeclare(prototype string) {
 	lib.Lock()
 	defer lib.Unlock()
 
-	delete(lib.compIdx, prototype)
+	delete(lib.compIndex, prototype)
 
 	lib.compList = slices.DeleteFunc(lib.compList, func(pt *_Component) bool {
 		return pt.Prototype() == prototype
@@ -85,12 +85,12 @@ func (lib *_ComponentLib) Get(prototype string) (ec.ComponentPT, bool) {
 	lib.RLock()
 	defer lib.RUnlock()
 
-	comp, ok := lib.compIdx[prototype]
+	compPT, ok := lib.compIndex[prototype]
 	if !ok {
 		return nil, false
 	}
 
-	return comp, ok
+	return compPT, ok
 }
 
 // Range 遍历所有已注册的组件原型
@@ -146,7 +146,7 @@ func (lib *_ComponentLib) declare(comp any) ec.ComponentPT {
 		exception.Panicf("%w: component %q not implement ec.Component", ErrPt, prototype)
 	}
 
-	compPT, ok := lib.compIdx[prototype]
+	compPT, ok := lib.compIndex[prototype]
 	if ok {
 		return compPT
 	}
@@ -157,7 +157,7 @@ func (lib *_ComponentLib) declare(comp any) ec.ComponentPT {
 	}
 	compPT.builtin = &ec.BuiltinComponent{PT: compPT, Offset: -1}
 
-	lib.compIdx[prototype] = compPT
+	lib.compIndex[prototype] = compPT
 	lib.compList = append(lib.compList, compPT)
 
 	return compPT

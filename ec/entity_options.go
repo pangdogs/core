@@ -31,6 +31,7 @@ type EntityOptions struct {
 	InstanceFace               iface.Face[Entity] // 实例，用于扩展实体能力
 	Scope                      Scope              // 可访问作用域
 	PersistId                  uid.Id             // 实体持久化Id
+	ComponentNameIndexing      bool               // 是否开启组件名称索引
 	ComponentAwakeOnFirstTouch bool               // 当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
 	ComponentUniqueID          bool               // 是否为实体组件分配唯一Id
 	Meta                       meta.Meta          // Meta信息
@@ -46,6 +47,7 @@ func (_Option) Default() option.Setting[EntityOptions] {
 		With.InstanceFace(iface.Face[Entity]{})(o)
 		With.Scope(Scope_Global)(o)
 		With.PersistId(uid.Nil)(o)
+		With.ComponentNameIndexing(true)(o)
 		With.ComponentAwakeOnFirstTouch(false)(o)
 		With.ComponentUniqueID(false)(o)
 		With.Meta(nil)(o)
@@ -70,6 +72,13 @@ func (_Option) Scope(scope Scope) option.Setting[EntityOptions] {
 func (_Option) PersistId(id uid.Id) option.Setting[EntityOptions] {
 	return func(o *EntityOptions) {
 		o.PersistId = id
+	}
+}
+
+// ComponentNameIndexing 是否开启组件名称索引
+func (_Option) ComponentNameIndexing(b bool) option.Setting[EntityOptions] {
+	return func(o *EntityOptions) {
+		o.ComponentNameIndexing = b
 	}
 }
 

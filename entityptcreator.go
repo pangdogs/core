@@ -58,6 +58,12 @@ func (c EntityPTCreator) Scope(scope ec.Scope) EntityPTCreator {
 	return c
 }
 
+// ComponentNameIndexing 是否开启组件名称索引
+func (c EntityPTCreator) ComponentNameIndexing(b bool) EntityPTCreator {
+	c.atti.ComponentNameIndexing = &b
+	return c
+}
+
 // ComponentAwakeOnFirstTouch 当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
 func (c EntityPTCreator) ComponentAwakeOnFirstTouch(b bool) EntityPTCreator {
 	c.atti.ComponentAwakeOnFirstTouch = &b

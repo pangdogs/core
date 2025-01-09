@@ -111,6 +111,7 @@ type EntityBehavior struct {
 	opts               EntityOptions
 	prototype          EntityPT
 	context            iface.Cache
+	componentNameIndex generic.SliceMap[string, *generic.Node[Component]]
 	components         generic.List[Component]
 	state              EntityState
 	reflected          reflect.Value

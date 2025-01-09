@@ -54,13 +54,13 @@ type iAddInManager interface {
 // NewAddInManager 创建插件管理器
 func NewAddInManager() AddInManager {
 	return &_AddInManager{
-		addInIdx: map[string]*_AddInStatus{},
+		addInIndex: map[string]*_AddInStatus{},
 	}
 }
 
 type _AddInManager struct {
 	sync.RWMutex
-	addInIdx               map[string]*_AddInStatus
+	addInIndex             map[string]*_AddInStatus
 	addInList              []*_AddInStatus
 	installCB, uninstallCB generic.Action1[AddInStatus]
 }
@@ -89,7 +89,7 @@ func (mgr *_AddInManager) Get(name string) (AddInStatus, bool) {
 	mgr.RLock()
 	defer mgr.RUnlock()
 
-	status, ok := mgr.addInIdx[name]
+	status, ok := mgr.addInIndex[name]
 	if !ok {
 		return nil, false
 	}
@@ -144,7 +144,7 @@ func (mgr *_AddInManager) install(addInFace iface.FaceAny, name ...string) *_Add
 		addInName = types.FullName(addInFace.Iface)
 	}
 
-	if _, ok := mgr.addInIdx[addInName]; ok {
+	if _, ok := mgr.addInIndex[addInName]; ok {
 		exception.Panicf("%w: addIn %q is already installed", ErrExtension, addInName)
 	}
 
@@ -156,7 +156,7 @@ func (mgr *_AddInManager) install(addInFace iface.FaceAny, name ...string) *_Add
 	status.state.Store(int32(AddInState_Loaded))
 
 	mgr.addInList = append(mgr.addInList, status)
-	mgr.addInIdx[addInName] = status
+	mgr.addInIndex[addInName] = status
 
 	return status
 }
@@ -165,12 +165,12 @@ func (mgr *_AddInManager) uninstall(name string) (*_AddInStatus, bool) {
 	mgr.Lock()
 	defer mgr.Unlock()
 
-	status, ok := mgr.addInIdx[name]
+	status, ok := mgr.addInIndex[name]
 	if !ok {
 		return nil, false
 	}
 
-	delete(mgr.addInIdx, name)
+	delete(mgr.addInIndex, name)
 
 	mgr.addInList = slices.DeleteFunc(mgr.addInList, func(status *_AddInStatus) bool {
 		return status.name == name

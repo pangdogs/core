@@ -58,7 +58,7 @@ type EntityManager interface {
 }
 
 type (
-	_EntityAt = *generic.Node[iface.FaceAny]
+	_EntityNode = *generic.Node[iface.FaceAny]
 
 	_TreeNode struct {
 		parentAt *generic.Node[iface.FaceAny]
@@ -67,10 +67,10 @@ type (
 )
 
 type _EntityManagerBehavior struct {
-	ctx        Context
-	entityIdx  map[uid.Id]_EntityAt
-	entityList generic.List[iface.FaceAny]
-	treeNodes  map[uid.Id]*_TreeNode
+	ctx         Context
+	entityIndex map[uid.Id]_EntityNode
+	entityList  generic.List[iface.FaceAny]
+	treeNodes   map[uid.Id]*_TreeNode
 
 	entityManagerEventTab
 	entityTreeEventTab
@@ -82,7 +82,7 @@ func (mgr *_EntityManagerBehavior) init(ctx Context) {
 	}
 
 	mgr.ctx = ctx
-	mgr.entityIdx = map[uid.Id]_EntityAt{}
+	mgr.entityIndex = map[uid.Id]_EntityNode{}
 	mgr.treeNodes = map[uid.Id]*_TreeNode{}
 
 	ctx.ActivateEvent(&mgr.entityManagerEventTab, event.EventRecursion_Allow)
@@ -131,35 +131,35 @@ func (mgr *_EntityManagerBehavior) RemoveEntity(id uid.Id) {
 
 // GetEntity 查询实体
 func (mgr *_EntityManagerBehavior) GetEntity(id uid.Id) (ec.Entity, bool) {
-	entityAt, ok := mgr.entityIdx[id]
+	entityNode, ok := mgr.entityIndex[id]
 	if !ok {
 		return nil, false
 	}
 
-	if entityAt.Escaped() {
+	if entityNode.Escaped() {
 		return nil, false
 	}
 
-	return iface.Cache2Iface[ec.Entity](entityAt.V.Cache), true
+	return iface.Cache2Iface[ec.Entity](entityNode.V.Cache), true
 }
 
 // ContainsEntity 实体是否存在
 func (mgr *_EntityManagerBehavior) ContainsEntity(id uid.Id) bool {
-	_, ok := mgr.entityIdx[id]
+	_, ok := mgr.entityIndex[id]
 	return ok
 }
 
 // RangeEntities 遍历所有实体
 func (mgr *_EntityManagerBehavior) RangeEntities(fun generic.Func1[ec.Entity, bool]) {
-	mgr.entityList.Traversal(func(node *generic.Node[iface.FaceAny]) bool {
-		return fun.Exec(iface.Cache2Iface[ec.Entity](node.V.Cache))
+	mgr.entityList.Traversal(func(entityNode *generic.Node[iface.FaceAny]) bool {
+		return fun.Exec(iface.Cache2Iface[ec.Entity](entityNode.V.Cache))
 	})
 }
 
 // ReversedRangeEntities 反向遍历所有实体
 func (mgr *_EntityManagerBehavior) ReversedRangeEntities(fun generic.Func1[ec.Entity, bool]) {
-	mgr.entityList.ReversedTraversal(func(node *generic.Node[iface.FaceAny]) bool {
-		return fun.Exec(iface.Cache2Iface[ec.Entity](node.V.Cache))
+	mgr.entityList.ReversedTraversal(func(entityNode *generic.Node[iface.FaceAny]) bool {
+		return fun.Exec(iface.Cache2Iface[ec.Entity](entityNode.V.Cache))
 	})
 }
 
@@ -167,8 +167,8 @@ func (mgr *_EntityManagerBehavior) ReversedRangeEntities(fun generic.Func1[ec.En
 func (mgr *_EntityManagerBehavior) FilterEntities(fun generic.Func1[ec.Entity, bool]) []ec.Entity {
 	var entities []ec.Entity
 
-	mgr.entityList.Traversal(func(node *generic.Node[iface.FaceAny]) bool {
-		entity := iface.Cache2Iface[ec.Entity](node.V.Cache)
+	mgr.entityList.Traversal(func(entityNode *generic.Node[iface.FaceAny]) bool {
+		entity := iface.Cache2Iface[ec.Entity](entityNode.V.Cache)
 
 		if fun.Exec(entity) {
 			entities = append(entities, entity)
@@ -184,8 +184,8 @@ func (mgr *_EntityManagerBehavior) FilterEntities(fun generic.Func1[ec.Entity, b
 func (mgr *_EntityManagerBehavior) GetEntities() []ec.Entity {
 	entities := make([]ec.Entity, 0, mgr.entityList.Len())
 
-	mgr.entityList.Traversal(func(node *generic.Node[iface.FaceAny]) bool {
-		entities = append(entities, iface.Cache2Iface[ec.Entity](node.V.Cache))
+	mgr.entityList.Traversal(func(entityNode *generic.Node[iface.FaceAny]) bool {
+		entities = append(entities, iface.Cache2Iface[ec.Entity](entityNode.V.Cache))
 		return true
 	})
 
@@ -236,7 +236,7 @@ func (mgr *_EntityManagerBehavior) addEntity(entity ec.Entity, parentId uid.Id) 
 		return err
 	}
 
-	if _, ok := mgr.entityIdx[entity.GetId()]; ok {
+	if _, ok := mgr.entityIndex[entity.GetId()]; ok {
 		return fmt.Errorf("%w: entity %q already exists in entity-manager", ErrEntityManager, entity.GetId())
 	}
 
@@ -256,7 +256,7 @@ func (mgr *_EntityManagerBehavior) addEntity(entity ec.Entity, parentId uid.Id) 
 		}
 	}
 
-	mgr.entityIdx[entity.GetId()] = mgr.entityList.PushBack(iface.MakeFaceAny(entity))
+	mgr.entityIndex[entity.GetId()] = mgr.entityList.PushBack(iface.MakeFaceAny(entity))
 
 	mgr.observeEntity(entity)
 
@@ -285,12 +285,12 @@ func (mgr *_EntityManagerBehavior) addEntity(entity ec.Entity, parentId uid.Id) 
 }
 
 func (mgr *_EntityManagerBehavior) removeEntity(id uid.Id) {
-	entityAt, ok := mgr.entityIdx[id]
+	entityNode, ok := mgr.entityIndex[id]
 	if !ok {
 		return
 	}
 
-	entity := iface.Cache2Iface[ec.Entity](entityAt.V.Cache)
+	entity := iface.Cache2Iface[ec.Entity](entityNode.V.Cache)
 
 	if entity.GetState() > ec.EntityState_Alive {
 		return
@@ -313,8 +313,8 @@ func (mgr *_EntityManagerBehavior) removeEntity(id uid.Id) {
 
 	mgr.removeFromParentNode(entity)
 
-	delete(mgr.entityIdx, id)
-	entityAt.Escape()
+	delete(mgr.entityIndex, id)
+	entityNode.Escape()
 
 	if entity.GetScope() == ec.Scope_Global {
 		service.Current(mgr).GetEntityManager().RemoveEntity(entity.GetId())

@@ -33,6 +33,7 @@ type _Entity struct {
 	prototype                  string
 	instanceRT                 reflect.Type
 	scope                      *ec.Scope
+	componentNameIndexing      *bool
 	componentAwakeOnFirstTouch *bool
 	componentUniqueID          *bool
 	extra                      generic.SliceMap[string, any]
@@ -52,6 +53,11 @@ func (pt *_Entity) InstanceRT() reflect.Type {
 // Scope 可访问作用域
 func (pt *_Entity) Scope() *ec.Scope {
 	return pt.scope
+}
+
+// ComponentNameIndexing 是否开启组件名称索引
+func (pt *_Entity) ComponentNameIndexing() *bool {
+	return pt.componentNameIndexing
 }
 
 // ComponentAwakeOnFirstTouch 当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
@@ -95,6 +101,9 @@ func (pt *_Entity) Construct(settings ...option.Setting[ec.EntityOptions]) ec.En
 	}
 	if pt.scope != nil {
 		options.Scope = *pt.scope
+	}
+	if pt.componentNameIndexing != nil {
+		options.ComponentNameIndexing = *pt.componentNameIndexing
 	}
 	if pt.componentAwakeOnFirstTouch != nil {
 		options.ComponentAwakeOnFirstTouch = *pt.componentAwakeOnFirstTouch

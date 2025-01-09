@@ -30,6 +30,7 @@ type EntityAttribute struct {
 	Prototype                  string                        // 实体原型名称（必填）
 	Instance                   any                           // 实体实例
 	Scope                      *ec.Scope                     // 可访问作用域
+	ComponentNameIndexing      *bool                         // 是否开启组件名称索引
 	ComponentAwakeOnFirstTouch *bool                         // 当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
 	ComponentUniqueID          *bool                         // 是否为实体组件分配唯一Id
 	Extra                      generic.SliceMap[string, any] // 自定义属性
@@ -45,13 +46,18 @@ func (atti EntityAttribute) SetScope(scope ec.Scope) EntityAttribute {
 	return atti
 }
 
-func (atti EntityAttribute) SetComponentAwakeOnFirstTouch(componentAwakeOnFirstTouch bool) EntityAttribute {
-	atti.ComponentAwakeOnFirstTouch = &componentAwakeOnFirstTouch
+func (atti EntityAttribute) SetComponentNameIndexing(b bool) EntityAttribute {
+	atti.ComponentNameIndexing = &b
 	return atti
 }
 
-func (atti EntityAttribute) SetComponentUniqueID(componentUniqueID bool) EntityAttribute {
-	atti.ComponentUniqueID = &componentUniqueID
+func (atti EntityAttribute) SetComponentAwakeOnFirstTouch(b bool) EntityAttribute {
+	atti.ComponentAwakeOnFirstTouch = &b
+	return atti
+}
+
+func (atti EntityAttribute) SetComponentUniqueID(b bool) EntityAttribute {
+	atti.ComponentUniqueID = &b
 	return atti
 }
 

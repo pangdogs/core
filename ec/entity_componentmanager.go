@@ -66,24 +66,24 @@ type iComponentManager interface {
 
 // GetComponent 使用名称查询组件，组件同名时，返回首个组件
 func (entity *EntityBehavior) GetComponent(name string) Component {
-	if node, ok := entity.getComponentNode(name); ok {
-		return entity.touchComponent(node.V)
+	if compNode, ok := entity.getComponentNode(name); ok {
+		return entity.touchComponent(compNode.V)
 	}
 	return nil
 }
 
 // GetComponentById 使用组件Id查询组件（需要开启为实体组件分配唯一Id特性）
 func (entity *EntityBehavior) GetComponentById(id uid.Id) Component {
-	if node, ok := entity.getComponentNodeById(id); ok {
-		return entity.touchComponent(node.V)
+	if compNode, ok := entity.getComponentNodeById(id); ok {
+		return entity.touchComponent(compNode.V)
 	}
 	return nil
 }
 
 // GetComponentByPT 使用组件原型查询组件
 func (entity *EntityBehavior) GetComponentByPT(prototype string) Component {
-	if node, ok := entity.getComponentNodeByPT(prototype); ok {
-		return entity.touchComponent(node.V)
+	if compNode, ok := entity.getComponentNodeByPT(prototype); ok {
+		return entity.touchComponent(compNode.V)
 	}
 	return nil
 }
@@ -108,8 +108,8 @@ func (entity *EntityBehavior) ContainsComponentByPT(prototype string) bool {
 
 // RangeComponents 遍历所有组件
 func (entity *EntityBehavior) RangeComponents(fun generic.Func1[Component, bool]) {
-	entity.components.Traversal(func(node *generic.Node[Component]) bool {
-		comp := entity.touchComponent(node.V)
+	entity.components.Traversal(func(compNode *generic.Node[Component]) bool {
+		comp := entity.touchComponent(compNode.V)
 		if comp == nil {
 			return true
 		}
@@ -119,8 +119,8 @@ func (entity *EntityBehavior) RangeComponents(fun generic.Func1[Component, bool]
 
 // ReversedRangeComponents 反向遍历所有组件
 func (entity *EntityBehavior) ReversedRangeComponents(fun generic.Func1[Component, bool]) {
-	entity.components.ReversedTraversal(func(node *generic.Node[Component]) bool {
-		comp := entity.touchComponent(node.V)
+	entity.components.ReversedTraversal(func(compNode *generic.Node[Component]) bool {
+		comp := entity.touchComponent(compNode.V)
 		if comp == nil {
 			return true
 		}
@@ -132,8 +132,8 @@ func (entity *EntityBehavior) ReversedRangeComponents(fun generic.Func1[Componen
 func (entity *EntityBehavior) FilterComponents(fun generic.Func1[Component, bool]) []Component {
 	var components []Component
 
-	entity.components.Traversal(func(node *generic.Node[Component]) bool {
-		comp := node.V
+	entity.components.Traversal(func(compNode *generic.Node[Component]) bool {
+		comp := compNode.V
 		if fun.Exec(comp) {
 			components = append(components, comp)
 		}
@@ -157,8 +157,8 @@ func (entity *EntityBehavior) FilterComponents(fun generic.Func1[Component, bool
 func (entity *EntityBehavior) GetComponents() []Component {
 	components := make([]Component, 0, entity.components.Len())
 
-	entity.components.Traversal(func(node *generic.Node[Component]) bool {
-		components = append(components, node.V)
+	entity.components.Traversal(func(compNode *generic.Node[Component]) bool {
+		components = append(components, compNode.V)
 		return true
 	})
 
@@ -213,8 +213,8 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 		return
 	}
 
-	entity.components.TraversalAt(func(node *generic.Node[Component]) bool {
-		comp := node.V
+	entity.components.TraversalAt(func(compNode *generic.Node[Component]) bool {
+		comp := compNode.V
 
 		if comp.GetName() != name {
 			return false
@@ -233,7 +233,8 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 		_EmitEventComponentManagerRemoveComponent(entity, entity.opts.InstanceFace.Iface, comp)
 
 		if comp.GetState() >= ComponentState_Destroyed {
-			node.Escape()
+			compNode.Escape()
+			entity.updateComponentNameIndex(comp.GetName())
 		}
 
 		return true
@@ -263,6 +264,7 @@ func (entity *EntityBehavior) RemoveComponentById(id uid.Id) {
 
 	if comp.GetState() >= ComponentState_Destroyed {
 		compNode.Escape()
+		entity.updateComponentNameIndex(comp.GetName())
 	}
 }
 
@@ -301,6 +303,7 @@ func (entity *EntityBehavior) removeComponentByRef(comp Component) {
 
 	if comp.GetState() >= ComponentState_Destroyed {
 		compNode.Escape()
+		entity.updateComponentNameIndex(comp.GetName())
 	}
 }
 
@@ -308,9 +311,9 @@ func (entity *EntityBehavior) addComponent(name string, component Component) {
 	component.init(name, entity.opts.InstanceFace.Iface, component)
 
 	if at, ok := entity.getComponentNode(name); ok {
-		entity.components.TraversalAt(func(node *generic.Node[Component]) bool {
-			if node.V.GetName() == name {
-				at = node
+		entity.components.TraversalAt(func(compNode *generic.Node[Component]) bool {
+			if compNode.V.GetName() == name {
+				at = compNode
 				return true
 			}
 			return false
@@ -319,13 +322,21 @@ func (entity *EntityBehavior) addComponent(name string, component Component) {
 		entity.components.InsertAfter(component, at)
 
 	} else {
-		entity.components.PushBack(component)
+		compNode := entity.components.PushBack(component)
+
+		if entity.opts.ComponentNameIndexing {
+			entity.componentNameIndex.Add(name, compNode)
+		}
 	}
 
 	component.setState(ComponentState_Attach)
 }
 
 func (entity *EntityBehavior) getComponentNode(name string) (*generic.Node[Component], bool) {
+	if entity.opts.ComponentNameIndexing {
+		return entity.componentNameIndex.Get(name)
+	}
+
 	var compNode *generic.Node[Component]
 
 	entity.components.Traversal(func(node *generic.Node[Component]) bool {
@@ -391,4 +402,16 @@ func (entity *EntityBehavior) touchComponent(comp Component) Component {
 	}
 
 	return comp
+}
+
+func (entity *EntityBehavior) updateComponentNameIndex(name string) {
+	if !entity.opts.ComponentNameIndexing {
+		return
+	}
+
+	if compNode, ok := entity.getComponentNode(name); ok {
+		entity.componentNameIndex.Add(name, compNode)
+	} else {
+		entity.componentNameIndex.Delete(name)
+	}
 }

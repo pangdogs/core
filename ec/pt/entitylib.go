@@ -62,15 +62,15 @@ func NewEntityLib(compLib ComponentLib) EntityLib {
 	}
 
 	return &_EntityLib{
-		compLib:   compLib,
-		entityIdx: map[string]*_Entity{},
+		compLib:     compLib,
+		entityIndex: map[string]*_Entity{},
 	}
 }
 
 type _EntityLib struct {
 	sync.RWMutex
 	compLib                             ComponentLib
-	entityIdx                           map[string]*_Entity
+	entityIndex                         map[string]*_Entity
 	entityList                          []*_Entity
 	declareCB, redeclareCB, undeclareCB generic.Action1[ec.EntityPT]
 }
@@ -113,12 +113,12 @@ func (lib *_EntityLib) Get(prototype string) (ec.EntityPT, bool) {
 	lib.RLock()
 	defer lib.RUnlock()
 
-	entity, ok := lib.entityIdx[prototype]
+	entityPT, ok := lib.entityIndex[prototype]
 	if !ok {
 		return nil, false
 	}
 
-	return entity, ok
+	return entityPT, ok
 }
 
 // Range 遍历所有已注册的实体原型
@@ -250,7 +250,7 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) ec.EntityPT
 		entityPT.components = append(entityPT.components, builtin)
 	}
 
-	if _, ok := lib.entityIdx[entityAtti.Prototype]; ok {
+	if _, ok := lib.entityIndex[entityAtti.Prototype]; ok {
 		if re {
 			lib.entityList = slices.DeleteFunc(lib.entityList, func(pt *_Entity) bool {
 				return pt.prototype == prototype
@@ -260,7 +260,7 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) ec.EntityPT
 		}
 	}
 
-	lib.entityIdx[entityAtti.Prototype] = entityPT
+	lib.entityIndex[entityAtti.Prototype] = entityPT
 	lib.entityList = append(lib.entityList, entityPT)
 
 	return entityPT
@@ -270,12 +270,12 @@ func (lib *_EntityLib) undeclare(prototype string) (ec.EntityPT, bool) {
 	lib.Lock()
 	defer lib.Unlock()
 
-	entityPT, ok := lib.entityIdx[prototype]
+	entityPT, ok := lib.entityIndex[prototype]
 	if !ok {
 		return nil, false
 	}
 
-	delete(lib.entityIdx, prototype)
+	delete(lib.entityIndex, prototype)
 
 	lib.entityList = slices.DeleteFunc(lib.entityList, func(pt *_Entity) bool {
 		return pt.prototype == prototype
