@@ -75,6 +75,11 @@ func (_NoneEntityPT) Scope() *Scope {
 	return nil
 }
 
+// ComponentNameIndexing 是否开启组件名称索引
+func (_NoneEntityPT) ComponentNameIndexing() *bool {
+	return nil
+}
+
 // ComponentAwakeOnFirstTouch 当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
 func (_NoneEntityPT) ComponentAwakeOnFirstTouch() *bool {
 	return nil
