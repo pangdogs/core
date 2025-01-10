@@ -184,9 +184,9 @@ func (m UnorderedSliceMap[K, V]) Clone() UnorderedSliceMap[K, V] {
 }
 
 func (m UnorderedSliceMap[K, V]) ToGoMap() map[K]V {
-	gm := make(map[K]V, len(m))
+	rv := make(map[K]V, len(m))
 	for _, kv := range m {
-		gm[kv.K] = kv.V
+		rv[kv.K] = kv.V
 	}
-	return gm
+	return rv
 }
