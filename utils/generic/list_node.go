@@ -61,10 +61,10 @@ func (n *Node[T]) Prev() *Node[T] {
 
 // Escape 从链表中删除
 func (n *Node[T]) Escape() {
-	if n.list == nil || !n.list.check(n) {
+	if n.list == nil {
 		return
 	}
-	n.list.remove(n)
+	n.list.Remove(n)
 }
 
 // Escaped 是否已从链表中删除

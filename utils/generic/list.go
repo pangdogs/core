@@ -59,9 +59,10 @@ func (l *List[T]) Back() *Node[T] {
 
 // Remove 删除节点
 func (l *List[T]) Remove(n *Node[T]) {
-	if n != nil {
-		n.Escape()
+	if !l.check(n) {
+		return
 	}
+	n.list.remove(n)
 }
 
 // PushFront 在链表头部插入数据
