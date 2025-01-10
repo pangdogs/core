@@ -24,7 +24,6 @@ import (
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/types"
-	"github.com/elliotchance/pie/v2"
 	"reflect"
 	"slices"
 	"sync"
@@ -161,7 +160,7 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) ec.EntityPT
 		exception.Panicf("%w: %w: prototype is nil", ErrPt, exception.ErrArgs)
 	}
 
-	if pie.Contains(comps, nil) {
+	if slices.Contains(comps, nil) {
 		exception.Panicf("%w: %w: comps contains nil", ErrPt, exception.ErrArgs)
 	}
 
