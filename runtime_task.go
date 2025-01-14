@@ -32,13 +32,13 @@ const (
 )
 
 type _Task struct {
-	typ            _TaskType
-	fun            generic.FuncVar0[any, async.Ret]
-	delegateFun    generic.DelegateVar0[any, async.Ret]
-	action         generic.ActionVar0[any]
-	delegateAction generic.DelegateVoidVar0[any]
-	args           []any
-	asyncRet       chan async.Ret
+	typ          _TaskType
+	fun          generic.FuncVar0[any, async.Ret]
+	action       generic.ActionVar0[any]
+	delegate     generic.DelegateVar0[any, async.Ret]
+	delegateVoid generic.DelegateVoidVar0[any]
+	args         []any
+	asyncRet     chan async.Ret
 }
 
 func (task _Task) run(autoRecover bool, reportError chan error) {
@@ -47,12 +47,12 @@ func (task _Task) run(autoRecover bool, reportError chan error) {
 
 	if task.fun != nil {
 		ret, panicErr = task.fun.Call(autoRecover, reportError, task.args...)
-	} else if task.delegateFun != nil {
-		ret, panicErr = task.delegateFun.Call(autoRecover, reportError, nil, task.args...)
 	} else if task.action != nil {
 		panicErr = task.action.Call(autoRecover, reportError, task.args...)
-	} else if task.delegateAction != nil {
-		panicErr = task.delegateAction.Call(autoRecover, reportError, nil, task.args...)
+	} else if task.delegate != nil {
+		ret, panicErr = task.delegate.Call(autoRecover, reportError, nil, task.args...)
+	} else if task.delegateVoid != nil {
+		panicErr = task.delegateVoid.Call(autoRecover, reportError, nil, task.args...)
 	}
 
 	if panicErr != nil {
