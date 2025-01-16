@@ -30,32 +30,32 @@ var (
 	ErrProcessQueueFull   = fmt.Errorf("%w: process queue is full", ErrRuntime)   // 任务处理流水线已满
 )
 
-// PushCall 将调用函数压入接受者的任务处理流水线，返回AsyncRet。
-func (rt *RuntimeBehavior) PushCall(fun generic.FuncVar0[any, async.Ret], args ...any) async.AsyncRet {
+// PushCallAsync 将调用函数压入接受者的任务处理流水线，返回AsyncRet。
+func (rt *RuntimeBehavior) PushCallAsync(fun generic.FuncVar0[any, async.Ret], args ...any) async.AsyncRet {
 	return rt.pushCallTask(_Task{
 		fun:  fun,
 		args: args,
 	})
 }
 
-// PushCallDelegate 将调用委托压入接受者的任务处理流水线，返回AsyncRet。
-func (rt *RuntimeBehavior) PushCallDelegate(fun generic.DelegateVar0[any, async.Ret], args ...any) async.AsyncRet {
+// PushCallDelegateAsync 将调用委托压入接受者的任务处理流水线，返回AsyncRet。
+func (rt *RuntimeBehavior) PushCallDelegateAsync(fun generic.DelegateVar0[any, async.Ret], args ...any) async.AsyncRet {
 	return rt.pushCallTask(_Task{
 		delegate: fun,
 		args:     args,
 	})
 }
 
-// PushCallVoid 将调用函数压入接受者的任务处理流水线，返回AsyncRet。
-func (rt *RuntimeBehavior) PushCallVoid(fun generic.ActionVar0[any], args ...any) async.AsyncRet {
+// PushCallVoidAsync 将调用函数压入接受者的任务处理流水线，返回AsyncRet。
+func (rt *RuntimeBehavior) PushCallVoidAsync(fun generic.ActionVar0[any], args ...any) async.AsyncRet {
 	return rt.pushCallTask(_Task{
 		action: fun,
 		args:   args,
 	})
 }
 
-// PushCallDelegateVoid 将调用委托压入接受者的任务处理流水线，返回AsyncRet。
-func (rt *RuntimeBehavior) PushCallDelegateVoid(fun generic.DelegateVoidVar0[any], args ...any) async.AsyncRet {
+// PushCallDelegateVoidAsync 将调用委托压入接受者的任务处理流水线，返回AsyncRet。
+func (rt *RuntimeBehavior) PushCallDelegateVoidAsync(fun generic.DelegateVoidVar0[any], args ...any) async.AsyncRet {
 	return rt.pushCallTask(_Task{
 		delegateVoid: fun,
 		args:         args,

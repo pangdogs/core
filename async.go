@@ -32,17 +32,17 @@ import (
 // Async 异步执行代码，有返回值
 func Async(provider ictx.ConcurrentContextProvider, fun generic.FuncVar1[runtime.Context, any, async.Ret], args ...any) async.AsyncRet {
 	ctx := runtime.UnsafeConcurrentContext(runtime.Concurrent(provider)).GetContext()
-	return ctx.Call(func(...any) async.Ret { return fun.Exec(ctx, args...) })
+	return ctx.CallAsync(func(...any) async.Ret { return fun.Exec(ctx, args...) })
 }
 
-// AsyncVoid 异步执行代码，无返回值
-func AsyncVoid(provider ictx.ConcurrentContextProvider, fun generic.ActionVar1[runtime.Context, any], args ...any) async.AsyncRet {
+// VoidAsync 异步执行代码，无返回值
+func VoidAsync(provider ictx.ConcurrentContextProvider, fun generic.ActionVar1[runtime.Context, any], args ...any) async.AsyncRet {
 	ctx := runtime.UnsafeConcurrentContext(runtime.Concurrent(provider)).GetContext()
-	return ctx.CallVoid(func(...any) { fun.Exec(ctx, args...) })
+	return ctx.CallVoidAsync(func(...any) { fun.Exec(ctx, args...) })
 }
 
-// Go 使用新线程执行代码，有返回值
-func Go(ctx context.Context, fun generic.FuncVar1[context.Context, any, async.Ret], args ...any) async.AsyncRet {
+// GoAsync 使用新线程执行代码，有返回值
+func GoAsync(ctx context.Context, fun generic.FuncVar1[context.Context, any, async.Ret], args ...any) async.AsyncRet {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -61,8 +61,8 @@ func Go(ctx context.Context, fun generic.FuncVar1[context.Context, any, async.Re
 	return asyncRet
 }
 
-// GoVoid 使用新线程执行代码，无返回值
-func GoVoid(ctx context.Context, fun generic.ActionVar1[context.Context, any], args ...any) async.AsyncRet {
+// GoVoidAsync 使用新线程执行代码，无返回值
+func GoVoidAsync(ctx context.Context, fun generic.ActionVar1[context.Context, any], args ...any) async.AsyncRet {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -77,8 +77,8 @@ func GoVoid(ctx context.Context, fun generic.ActionVar1[context.Context, any], a
 	return asyncRet
 }
 
-// TimeAfter 定时器，指定时长
-func TimeAfter(ctx context.Context, dur time.Duration) async.AsyncRet {
+// TimeAfterAsync 定时器，指定时长
+func TimeAfterAsync(ctx context.Context, dur time.Duration) async.AsyncRet {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -102,8 +102,8 @@ func TimeAfter(ctx context.Context, dur time.Duration) async.AsyncRet {
 	return asyncRet
 }
 
-// TimeAt 定时器，指定时间点
-func TimeAt(ctx context.Context, at time.Time) async.AsyncRet {
+// TimeAtAsync 定时器，指定时间点
+func TimeAtAsync(ctx context.Context, at time.Time) async.AsyncRet {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -127,8 +127,8 @@ func TimeAt(ctx context.Context, at time.Time) async.AsyncRet {
 	return asyncRet
 }
 
-// TimeTick 心跳器
-func TimeTick(ctx context.Context, dur time.Duration) async.AsyncRet {
+// TimeTickAsync 心跳器
+func TimeTickAsync(ctx context.Context, dur time.Duration) async.AsyncRet {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -159,8 +159,8 @@ func TimeTick(ctx context.Context, dur time.Duration) async.AsyncRet {
 	return asyncRet
 }
 
-// ReadChan 读取channel转换为AsyncRet
-func ReadChan[T any](ctx context.Context, ch <-chan T) async.AsyncRet {
+// ReadChanAsync 读取channel转换为AsyncRet
+func ReadChanAsync[T any](ctx context.Context, ch <-chan T) async.AsyncRet {
 	if ctx == nil {
 		ctx = context.Background()
 	}
