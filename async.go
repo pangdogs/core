@@ -160,7 +160,12 @@ func TimeTickAsync(ctx context.Context, dur time.Duration) async.AsyncRet {
 }
 
 // ReadChanAsync 读取channel转换为AsyncRet
-func ReadChanAsync[T any](ctx context.Context, ch <-chan T) async.AsyncRet {
+func ReadChanAsync(ctx context.Context, ch <-chan any) async.AsyncRet {
+	return ReadChanAsyncT[any](ctx, ch)
+}
+
+// ReadChanAsyncT 读取channel转换为AsyncRet
+func ReadChanAsyncT[T any](ctx context.Context, ch <-chan T) async.AsyncRet {
 	if ctx == nil {
 		ctx = context.Background()
 	}
