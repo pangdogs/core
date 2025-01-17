@@ -24,10 +24,21 @@ import (
 	"reflect"
 )
 
-// Face 用于存储接口与Cache，接口可用于断言转换类型，存储器可用于转换为接口
+// FaceAny face with any
+type FaceAny = Face[any]
+
+// MakeFaceAny 创建 FaceAny
+func MakeFaceAny[C any](cache C) FaceAny {
+	return Face[any]{
+		Iface: cache,
+		Cache: Iface2Cache[C](cache),
+	}
+}
+
+// Face 面，用于存储接口与接口存储器，接口用于断言转换类型，接口存储器用于重解释接口
 type Face[T any] struct {
-	Iface T
-	Cache Cache
+	Iface T     // 接口
+	Cache Cache // 接口存储器
 }
 
 // IsNil 是否为空
@@ -35,10 +46,7 @@ func (f *Face[T]) IsNil() bool {
 	return Iface2Cache[T](f.Iface) == NilCache || f.Cache == NilCache
 }
 
-// FaceAny any face
-type FaceAny = Face[any]
-
-// MakeFaceT 创建Face，不使用Cache
+// MakeFaceT 创建面（Face），接口存储器重解释接口与接口类型相同
 func MakeFaceT[T any](iface T) Face[T] {
 	return Face[T]{
 		Iface: iface,
@@ -46,15 +54,7 @@ func MakeFaceT[T any](iface T) Face[T] {
 	}
 }
 
-// MakeFaceAny 创建FaceAny，使用Cache，不使用接口
-func MakeFaceAny[C any](iface C) FaceAny {
-	return Face[any]{
-		Iface: iface,
-		Cache: Iface2Cache[C](iface),
-	}
-}
-
-// MakeFaceTC 创建Face，使用Cache，传入接口与Cache
+// MakeFaceTC 创建面（Face），接口存储器重解释接口与接口类型可以不同
 func MakeFaceTC[T, C any](iface T, cache C) Face[T] {
 	if Iface2Cache(iface)[1] != Iface2Cache(cache)[1] {
 		exception.Panicf("%w: incorrect face pointer", exception.ErrCore)
@@ -65,7 +65,7 @@ func MakeFaceTC[T, C any](iface T, cache C) Face[T] {
 	}
 }
 
-// MakeFaceTReflectC 创建Face，使用Cache，自动反射Cache类型
+// MakeFaceTReflectC 创建面（Face），自动反射获取接口存储器
 func MakeFaceTReflectC[T, C any](iface T) Face[T] {
 	return Face[T]{
 		Iface: iface,
