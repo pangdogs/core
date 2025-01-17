@@ -113,7 +113,7 @@ func (entity *EntityBehavior) RangeComponents(fun generic.Func1[Component, bool]
 		if comp == nil {
 			return true
 		}
-		return fun.Exec(comp)
+		return fun.UnsafeCall(comp)
 	})
 }
 
@@ -124,7 +124,7 @@ func (entity *EntityBehavior) ReversedRangeComponents(fun generic.Func1[Componen
 		if comp == nil {
 			return true
 		}
-		return fun.Exec(comp)
+		return fun.UnsafeCall(comp)
 	})
 }
 
@@ -134,7 +134,7 @@ func (entity *EntityBehavior) FilterComponents(fun generic.Func1[Component, bool
 
 	entity.components.Traversal(func(compNode *generic.Node[Component]) bool {
 		comp := compNode.V
-		if fun.Exec(comp) {
+		if fun.UnsafeCall(comp) {
 			components = append(components, comp)
 		}
 		return true

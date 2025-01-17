@@ -135,7 +135,7 @@ func (m UnorderedSliceMap[K, V]) Len() int {
 
 func (m UnorderedSliceMap[K, V]) Range(fun Func2[K, V, bool]) {
 	for _, kv := range m {
-		if !fun.Exec(kv.K, kv.V) {
+		if !fun.UnsafeCall(kv.K, kv.V) {
 			return
 		}
 	}
@@ -143,14 +143,14 @@ func (m UnorderedSliceMap[K, V]) Range(fun Func2[K, V, bool]) {
 
 func (m UnorderedSliceMap[K, V]) Each(fun Action2[K, V]) {
 	for _, kv := range m {
-		fun.Exec(kv.K, kv.V)
+		fun.UnsafeCall(kv.K, kv.V)
 	}
 }
 
 func (m UnorderedSliceMap[K, V]) ReversedRange(fun Func2[K, V, bool]) {
 	for i := len(m) - 1; i >= 0; i-- {
 		kv := m[i]
-		if !fun.Exec(kv.K, kv.V) {
+		if !fun.UnsafeCall(kv.K, kv.V) {
 			return
 		}
 	}
@@ -159,7 +159,7 @@ func (m UnorderedSliceMap[K, V]) ReversedRange(fun Func2[K, V, bool]) {
 func (m UnorderedSliceMap[K, V]) ReversedEach(fun Action2[K, V]) {
 	for i := len(m) - 1; i >= 0; i-- {
 		kv := m[i]
-		fun.Exec(kv.K, kv.V)
+		fun.UnsafeCall(kv.K, kv.V)
 	}
 }
 

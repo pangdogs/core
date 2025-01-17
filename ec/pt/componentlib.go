@@ -100,7 +100,7 @@ func (lib *_ComponentLib) Range(fun generic.Func1[ec.ComponentPT, bool]) {
 	lib.RUnlock()
 
 	for i := range copied {
-		if !fun.Exec(copied[i]) {
+		if !fun.UnsafeCall(copied[i]) {
 			return
 		}
 	}
@@ -113,7 +113,7 @@ func (lib *_ComponentLib) ReversedRange(fun generic.Func1[ec.ComponentPT, bool])
 	lib.RUnlock()
 
 	for i := len(copied) - 1; i >= 0; i-- {
-		if !fun.Exec(copied[i]) {
+		if !fun.UnsafeCall(copied[i]) {
 			return
 		}
 	}

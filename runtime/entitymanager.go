@@ -152,14 +152,14 @@ func (mgr *_EntityManagerBehavior) ContainsEntity(id uid.Id) bool {
 // RangeEntities 遍历所有实体
 func (mgr *_EntityManagerBehavior) RangeEntities(fun generic.Func1[ec.Entity, bool]) {
 	mgr.entityList.Traversal(func(entityNode *generic.Node[iface.FaceAny]) bool {
-		return fun.Exec(iface.Cache2Iface[ec.Entity](entityNode.V.Cache))
+		return fun.UnsafeCall(iface.Cache2Iface[ec.Entity](entityNode.V.Cache))
 	})
 }
 
 // ReversedRangeEntities 反向遍历所有实体
 func (mgr *_EntityManagerBehavior) ReversedRangeEntities(fun generic.Func1[ec.Entity, bool]) {
 	mgr.entityList.ReversedTraversal(func(entityNode *generic.Node[iface.FaceAny]) bool {
-		return fun.Exec(iface.Cache2Iface[ec.Entity](entityNode.V.Cache))
+		return fun.UnsafeCall(iface.Cache2Iface[ec.Entity](entityNode.V.Cache))
 	})
 }
 
@@ -170,7 +170,7 @@ func (mgr *_EntityManagerBehavior) FilterEntities(fun generic.Func1[ec.Entity, b
 	mgr.entityList.Traversal(func(entityNode *generic.Node[iface.FaceAny]) bool {
 		entity := iface.Cache2Iface[ec.Entity](entityNode.V.Cache)
 
-		if fun.Exec(entity) {
+		if fun.UnsafeCall(entity) {
 			entities = append(entities, entity)
 		}
 

@@ -94,7 +94,7 @@ func (mgr *_EntityManagerBehavior) RangeChildren(entityId uid.Id, fun generic.Fu
 	}
 
 	entityNode.children.Traversal(func(childNode *generic.Node[iface.FaceAny]) bool {
-		return fun.Exec(iface.Cache2Iface[ec.Entity](childNode.V.Cache))
+		return fun.UnsafeCall(iface.Cache2Iface[ec.Entity](childNode.V.Cache))
 	})
 }
 
@@ -106,7 +106,7 @@ func (mgr *_EntityManagerBehavior) ReversedRangeChildren(entityId uid.Id, fun ge
 	}
 
 	entityNode.children.ReversedTraversal(func(childNode *generic.Node[iface.FaceAny]) bool {
-		return fun.Exec(iface.Cache2Iface[ec.Entity](childNode.V.Cache))
+		return fun.UnsafeCall(iface.Cache2Iface[ec.Entity](childNode.V.Cache))
 	})
 }
 
@@ -122,7 +122,7 @@ func (mgr *_EntityManagerBehavior) FilterChildren(entityId uid.Id, fun generic.F
 	entityNode.children.Traversal(func(childNode *generic.Node[iface.FaceAny]) bool {
 		entity := iface.Cache2Iface[ec.Entity](childNode.V.Cache)
 
-		if fun.Exec(entity) {
+		if fun.UnsafeCall(entity) {
 			entities = append(entities, entity)
 		}
 

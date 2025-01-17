@@ -78,7 +78,7 @@ func (ad AwaitDirector) Any(fun generic.ActionVar2[runtime.Context, async.Ret, a
 			cancel()
 
 			ad.rtCtx.CallVoidAsync(func(...any) {
-				fun.Exec(ad.rtCtx, ret, args...)
+				fun.UnsafeCall(ad.rtCtx, ret, args...)
 			})
 		}()
 	}
@@ -120,7 +120,7 @@ func (ad AwaitDirector) AnyOK(fun generic.ActionVar2[runtime.Context, async.Ret,
 			cancel()
 
 			ad.rtCtx.CallVoidAsync(func(...any) {
-				fun.Exec(ad.rtCtx, ret, args...)
+				fun.UnsafeCall(ad.rtCtx, ret, args...)
 			})
 		}()
 	}
@@ -133,7 +133,7 @@ func (ad AwaitDirector) AnyOK(fun generic.ActionVar2[runtime.Context, async.Ret,
 		}
 
 		ad.rtCtx.CallVoidAsync(func(...any) {
-			fun.Exec(ad.rtCtx, async.MakeRet(nil, ErrAllFailures), args...)
+			fun.UnsafeCall(ad.rtCtx, async.MakeRet(nil, ErrAllFailures), args...)
 		})
 	}()
 }
@@ -167,7 +167,7 @@ func (ad AwaitDirector) All(fun generic.ActionVar2[runtime.Context, []async.Ret,
 	go func() {
 		wg.Wait()
 		ad.rtCtx.CallVoidAsync(func(...any) {
-			fun.Exec(ad.rtCtx, rets, args...)
+			fun.UnsafeCall(ad.rtCtx, rets, args...)
 		})
 	}()
 }
@@ -200,7 +200,7 @@ func (ad AwaitDirector) Pipe(ctx context.Context, fun generic.ActionVar2[runtime
 						return
 					}
 					ad.rtCtx.CallVoidAsync(func(...any) {
-						fun.Exec(ad.rtCtx, ret, args...)
+						fun.UnsafeCall(ad.rtCtx, ret, args...)
 					})
 				case <-ctx.Done():
 					return

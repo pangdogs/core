@@ -29,16 +29,16 @@ import (
 	"time"
 )
 
-// Async 异步执行代码，有返回值
-func Async(provider ictx.ConcurrentContextProvider, fun generic.FuncVar1[runtime.Context, any, async.Ret], args ...any) async.AsyncRet {
+// CallAsync 异步执行代码，有返回值
+func CallAsync(provider ictx.ConcurrentContextProvider, fun generic.FuncVar1[runtime.Context, any, async.Ret], args ...any) async.AsyncRet {
 	ctx := runtime.UnsafeConcurrentContext(runtime.Concurrent(provider)).GetContext()
-	return ctx.CallAsync(func(...any) async.Ret { return fun.Exec(ctx, args...) })
+	return ctx.CallAsync(func(...any) async.Ret { return fun.UnsafeCall(ctx, args...) })
 }
 
-// VoidAsync 异步执行代码，无返回值
-func VoidAsync(provider ictx.ConcurrentContextProvider, fun generic.ActionVar1[runtime.Context, any], args ...any) async.AsyncRet {
+// CallVoidAsync 异步执行代码，无返回值
+func CallVoidAsync(provider ictx.ConcurrentContextProvider, fun generic.ActionVar1[runtime.Context, any], args ...any) async.AsyncRet {
 	ctx := runtime.UnsafeConcurrentContext(runtime.Concurrent(provider)).GetContext()
-	return ctx.CallVoidAsync(func(...any) { fun.Exec(ctx, args...) })
+	return ctx.CallVoidAsync(func(...any) { fun.UnsafeCall(ctx, args...) })
 }
 
 // GoAsync 使用新线程执行代码，有返回值
@@ -50,7 +50,7 @@ func GoAsync(ctx context.Context, fun generic.FuncVar1[context.Context, any, asy
 	asyncRet := async.MakeAsyncRet()
 
 	go func() {
-		ret, panicErr := fun.Invoke(ctx, args...)
+		ret, panicErr := fun.SafeCall(ctx, args...)
 		if panicErr != nil {
 			ret.Error = panicErr
 		}
@@ -70,7 +70,7 @@ func GoVoidAsync(ctx context.Context, fun generic.ActionVar1[context.Context, an
 	asyncRet := async.MakeAsyncRet()
 
 	go func() {
-		asyncRet <- async.MakeRet(nil, fun.Invoke(ctx, args...))
+		asyncRet <- async.MakeRet(nil, fun.SafeCall(ctx, args...))
 		close(asyncRet)
 	}()
 

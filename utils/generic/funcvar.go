@@ -27,12 +27,12 @@ import (
 
 type FuncVar0[VA, R any] func(...VA) R
 
-func (f FuncVar0[VA, R]) Exec(args ...VA) (r R) {
+func (f FuncVar0[VA, R]) UnsafeCall(args ...VA) (r R) {
 	r, _ = f.Call(false, nil, args...)
 	return
 }
 
-func (f FuncVar0[VA, R]) Invoke(args ...VA) (r R, panicErr error) {
+func (f FuncVar0[VA, R]) SafeCall(args ...VA) (r R, panicErr error) {
 	return f.Call(true, nil, args...)
 }
 
@@ -65,12 +65,12 @@ func (f FuncVar0[VA, R]) ToDelegate() DelegateVar0[VA, R] {
 
 type FuncVar1[A1, VA, R any] func(A1, ...VA) R
 
-func (f FuncVar1[A1, VA, R]) Exec(a1 A1, args ...VA) (r R) {
+func (f FuncVar1[A1, VA, R]) UnsafeCall(a1 A1, args ...VA) (r R) {
 	r, _ = f.Call(false, nil, a1, args...)
 	return
 }
 
-func (f FuncVar1[A1, VA, R]) Invoke(a1 A1, args ...VA) (r R, panicErr error) {
+func (f FuncVar1[A1, VA, R]) SafeCall(a1 A1, args ...VA) (r R, panicErr error) {
 	return f.Call(true, nil, a1, args...)
 }
 
@@ -103,12 +103,12 @@ func (f FuncVar1[A1, VA, R]) ToDelegate() DelegateVar1[A1, VA, R] {
 
 type FuncVar2[A1, A2, VA, R any] func(A1, A2, ...VA) R
 
-func (f FuncVar2[A1, A2, VA, R]) Exec(a1 A1, a2 A2, args ...VA) (r R) {
+func (f FuncVar2[A1, A2, VA, R]) UnsafeCall(a1 A1, a2 A2, args ...VA) (r R) {
 	r, _ = f.Call(false, nil, a1, a2, args...)
 	return
 }
 
-func (f FuncVar2[A1, A2, VA, R]) Invoke(a1 A1, a2 A2, args ...VA) (r R, panicErr error) {
+func (f FuncVar2[A1, A2, VA, R]) SafeCall(a1 A1, a2 A2, args ...VA) (r R, panicErr error) {
 	return f.Call(true, nil, a1, a2, args...)
 }
 
@@ -141,12 +141,12 @@ func (f FuncVar2[A1, A2, VA, R]) ToDelegate() DelegateVar2[A1, A2, VA, R] {
 
 type FuncVar3[A1, A2, A3, VA, R any] func(A1, A2, A3, ...VA) R
 
-func (f FuncVar3[A1, A2, A3, VA, R]) Exec(a1 A1, a2 A2, a3 A3, args ...VA) (r R) {
+func (f FuncVar3[A1, A2, A3, VA, R]) UnsafeCall(a1 A1, a2 A2, a3 A3, args ...VA) (r R) {
 	r, _ = f.Call(false, nil, a1, a2, a3, args...)
 	return
 }
 
-func (f FuncVar3[A1, A2, A3, VA, R]) Invoke(a1 A1, a2 A2, a3 A3, args ...VA) (r R, panicErr error) {
+func (f FuncVar3[A1, A2, A3, VA, R]) SafeCall(a1 A1, a2 A2, a3 A3, args ...VA) (r R, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, args...)
 }
 
@@ -179,12 +179,12 @@ func (f FuncVar3[A1, A2, A3, VA, R]) ToDelegate() DelegateVar3[A1, A2, A3, VA, R
 
 type FuncVar4[A1, A2, A3, A4, VA, R any] func(A1, A2, A3, A4, ...VA) R
 
-func (f FuncVar4[A1, A2, A3, A4, VA, R]) Exec(a1 A1, a2 A2, a3 A3, a4 A4, args ...VA) (r R) {
+func (f FuncVar4[A1, A2, A3, A4, VA, R]) UnsafeCall(a1 A1, a2 A2, a3 A3, a4 A4, args ...VA) (r R) {
 	r, _ = f.Call(false, nil, a1, a2, a3, a4, args...)
 	return
 }
 
-func (f FuncVar4[A1, A2, A3, A4, VA, R]) Invoke(a1 A1, a2 A2, a3 A3, a4 A4, args ...VA) (r R, panicErr error) {
+func (f FuncVar4[A1, A2, A3, A4, VA, R]) SafeCall(a1 A1, a2 A2, a3 A3, a4 A4, args ...VA) (r R, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, args...)
 }
 
@@ -219,14 +219,14 @@ type FuncVar5[A1, A2, A3, A4, A5, VA, R any] func(
 	A1, A2, A3, A4, A5, ...VA,
 ) R
 
-func (f FuncVar5[A1, A2, A3, A4, A5, VA, R]) Exec(
+func (f FuncVar5[A1, A2, A3, A4, A5, VA, R]) UnsafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, args ...VA,
 ) (r R) {
 	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, args...)
 	return
 }
 
-func (f FuncVar5[A1, A2, A3, A4, A5, VA, R]) Invoke(
+func (f FuncVar5[A1, A2, A3, A4, A5, VA, R]) SafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, args ...VA,
 ) (r R, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, args...)
@@ -266,14 +266,14 @@ type FuncVar6[A1, A2, A3, A4, A5, A6, VA, R any] func(
 	A1, A2, A3, A4, A5, A6, ...VA,
 ) R
 
-func (f FuncVar6[A1, A2, A3, A4, A5, A6, VA, R]) Exec(
+func (f FuncVar6[A1, A2, A3, A4, A5, A6, VA, R]) UnsafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, args ...VA,
 ) (r R) {
 	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, args...)
 	return
 }
 
-func (f FuncVar6[A1, A2, A3, A4, A5, A6, VA, R]) Invoke(
+func (f FuncVar6[A1, A2, A3, A4, A5, A6, VA, R]) SafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, args ...VA,
 ) (r R, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, args...)
@@ -313,14 +313,14 @@ type FuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R any] func(
 	A1, A2, A3, A4, A5, A6, A7, ...VA,
 ) R
 
-func (f FuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R]) Exec(
+func (f FuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R]) UnsafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, args ...VA,
 ) (r R) {
 	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, args...)
 	return
 }
 
-func (f FuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R]) Invoke(
+func (f FuncVar7[A1, A2, A3, A4, A5, A6, A7, VA, R]) SafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, args ...VA,
 ) (r R, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, args...)
@@ -360,14 +360,14 @@ type FuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R any] func(
 	A1, A2, A3, A4, A5, A6, A7, A8, ...VA,
 ) R
 
-func (f FuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R]) Exec(
+func (f FuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R]) UnsafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, args ...VA,
 ) (r R) {
 	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, args...)
 	return
 }
 
-func (f FuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R]) Invoke(
+func (f FuncVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R]) SafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, args ...VA,
 ) (r R, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, args...)
@@ -407,14 +407,14 @@ type FuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R any] func(
 	A1, A2, A3, A4, A5, A6, A7, A8, A9, ...VA,
 ) R
 
-func (f FuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R]) Exec(
+func (f FuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R]) UnsafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, args ...VA,
 ) (r R) {
 	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, args...)
 	return
 }
 
-func (f FuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R]) Invoke(
+func (f FuncVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R]) SafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, args ...VA,
 ) (r R, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, args...)
@@ -454,14 +454,14 @@ type FuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R any] func(
 	A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, ...VA,
 ) R
 
-func (f FuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R]) Exec(
+func (f FuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R]) UnsafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, args ...VA,
 ) (r R) {
 	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, args...)
 	return
 }
 
-func (f FuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R]) Invoke(
+func (f FuncVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R]) SafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, args ...VA,
 ) (r R, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, args...)
@@ -501,14 +501,14 @@ type FuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R any] func(
 	A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, ...VA,
 ) R
 
-func (f FuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R]) Exec(
+func (f FuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R]) UnsafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, args ...VA,
 ) (r R) {
 	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, args...)
 	return
 }
 
-func (f FuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R]) Invoke(
+func (f FuncVar11[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, VA, R]) SafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, args ...VA,
 ) (r R, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, args...)
@@ -548,14 +548,14 @@ type FuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R any] fun
 	A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, ...VA,
 ) R
 
-func (f FuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R]) Exec(
+func (f FuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R]) UnsafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, args ...VA,
 ) (r R) {
 	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, args...)
 	return
 }
 
-func (f FuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R]) Invoke(
+func (f FuncVar12[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, VA, R]) SafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, args ...VA,
 ) (r R, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, args...)
@@ -595,14 +595,14 @@ type FuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R any
 	A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, ...VA,
 ) R
 
-func (f FuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R]) Exec(
+func (f FuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R]) UnsafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, args ...VA,
 ) (r R) {
 	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, args...)
 	return
 }
 
-func (f FuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R]) Invoke(
+func (f FuncVar13[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, VA, R]) SafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, args ...VA,
 ) (r R, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, args...)
@@ -642,14 +642,14 @@ type FuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, 
 	A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, ...VA,
 ) R
 
-func (f FuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R]) Exec(
+func (f FuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R]) UnsafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, args ...VA,
 ) (r R) {
 	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, args...)
 	return
 }
 
-func (f FuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R]) Invoke(
+func (f FuncVar14[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, VA, R]) SafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, args ...VA,
 ) (r R, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, args...)
@@ -689,14 +689,14 @@ type FuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15,
 	A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, ...VA,
 ) R
 
-func (f FuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R]) Exec(
+func (f FuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R]) UnsafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, args ...VA,
 ) (r R) {
 	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, args...)
 	return
 }
 
-func (f FuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R]) Invoke(
+func (f FuncVar15[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, VA, R]) SafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, args ...VA,
 ) (r R, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, args...)
@@ -736,14 +736,14 @@ type FuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15,
 	A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, ...VA,
 ) R
 
-func (f FuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R]) Exec(
+func (f FuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R]) UnsafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, a16 A16, args ...VA,
 ) (r R) {
 	r, _ = f.Call(false, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, args...)
 	return
 }
 
-func (f FuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R]) Invoke(
+func (f FuncVar16[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, VA, R]) SafeCall(
 	a1 A1, a2 A2, a3 A3, a4 A4, a5 A5, a6 A6, a7 A7, a8 A8, a9 A9, a10 A10, a11 A11, a12 A12, a13 A13, a14 A14, a15 A15, a16 A16, args ...VA,
 ) (r R, panicErr error) {
 	return f.Call(true, nil, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, args...)

@@ -35,28 +35,28 @@ type Caller interface {
 	//
 	//	注意：
 	//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-	//  - 调用过程中的panic信息，均会转换为error返回。
+	//	- 调用过程中的panic信息，均会转换为error返回。
 	CallAsync(entityId uid.Id, fun generic.FuncVar1[ec.Entity, any, async.Ret], args ...any) async.AsyncRet
 
 	// CallDelegateAsync 查找实体并异步调用委托，有返回值。不会阻塞当前线程，会返回AsyncRet。
 	//
 	//	注意：
 	//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-	//  - 调用过程中的panic信息，均会转换为error返回。
+	//	- 调用过程中的panic信息，均会转换为error返回。
 	CallDelegateAsync(entityId uid.Id, fun generic.DelegateVar1[ec.Entity, any, async.Ret], args ...any) async.AsyncRet
 
 	// CallVoidAsync 查找实体并异步调用函数，无返回值。在运行时中。不会阻塞当前线程，会返回AsyncRet。
 	//
 	//	注意：
 	//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-	//  - 调用过程中的panic信息，均会转换为error返回。
+	//	- 调用过程中的panic信息，均会转换为error返回。
 	CallVoidAsync(entityId uid.Id, fun generic.ActionVar1[ec.Entity, any], args ...any) async.AsyncRet
 
 	// CallDelegateVoidAsync 查找实体并异步调用委托，无返回值。在运行时中。不会阻塞当前线程，会返回AsyncRet。
 	//
 	//	注意：
 	//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-	//  - 调用过程中的panic信息，均会转换为error返回。
+	//	- 调用过程中的panic信息，均会转换为error返回。
 	CallDelegateVoidAsync(entityId uid.Id, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) async.AsyncRet
 }
 
@@ -79,9 +79,9 @@ func checkEntity(entity ec.Entity) error {
 
 // CallAsync 查找实体并异步调用函数，有返回值。不会阻塞当前线程，会返回AsyncRet。
 //
-//		注意：
-//		- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-//	 - 调用过程中的panic信息，均会转换为error返回。
+//	注意：
+//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
+//	- 调用过程中的panic信息，均会转换为error返回。
 func (ctx *ContextBehavior) CallAsync(entityId uid.Id, fun generic.FuncVar1[ec.Entity, any, async.Ret], args ...any) async.AsyncRet {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
@@ -92,15 +92,15 @@ func (ctx *ContextBehavior) CallAsync(entityId uid.Id, fun generic.FuncVar1[ec.E
 		if err := checkEntity(entity); err != nil {
 			return async.MakeRet(nil, err)
 		}
-		return fun.Exec(entity, args...)
+		return fun.UnsafeCall(entity, args...)
 	})
 }
 
 // CallDelegateAsync 查找实体并异步调用委托，有返回值。不会阻塞当前线程，会返回AsyncRet。
 //
-//		注意：
-//		- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-//	 - 调用过程中的panic信息，均会转换为error返回。
+//	注意：
+//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
+//	- 调用过程中的panic信息，均会转换为error返回。
 func (ctx *ContextBehavior) CallDelegateAsync(entityId uid.Id, fun generic.DelegateVar1[ec.Entity, any, async.Ret], args ...any) async.AsyncRet {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
@@ -111,15 +111,15 @@ func (ctx *ContextBehavior) CallDelegateAsync(entityId uid.Id, fun generic.Deleg
 		if err := checkEntity(entity); err != nil {
 			return async.MakeRet(nil, err)
 		}
-		return fun.Exec(nil, entity, args...)
+		return fun.UnsafeCall(nil, entity, args...)
 	})
 }
 
 // CallVoidAsync 查找实体并异步调用函数，无返回值。在运行时中。不会阻塞当前线程，会返回AsyncRet。
 //
-//		注意：
-//		- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-//	 - 调用过程中的panic信息，均会转换为error返回。
+//	注意：
+//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
+//	- 调用过程中的panic信息，均会转换为error返回。
 func (ctx *ContextBehavior) CallVoidAsync(entityId uid.Id, fun generic.ActionVar1[ec.Entity, any], args ...any) async.AsyncRet {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
@@ -130,16 +130,16 @@ func (ctx *ContextBehavior) CallVoidAsync(entityId uid.Id, fun generic.ActionVar
 		if err := checkEntity(entity); err != nil {
 			return async.MakeRet(nil, err)
 		}
-		fun.Exec(entity, args...)
+		fun.UnsafeCall(entity, args...)
 		return async.VoidRet
 	})
 }
 
 // CallDelegateVoidAsync 查找实体并异步调用委托，无返回值。在运行时中。不会阻塞当前线程，会返回AsyncRet。
 //
-//		注意：
-//		- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-//	 - 调用过程中的panic信息，均会转换为error返回。
+//	注意：
+//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
+//	- 调用过程中的panic信息，均会转换为error返回。
 func (ctx *ContextBehavior) CallDelegateVoidAsync(entityId uid.Id, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) async.AsyncRet {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
@@ -150,7 +150,7 @@ func (ctx *ContextBehavior) CallDelegateVoidAsync(entityId uid.Id, fun generic.D
 		if err := checkEntity(entity); err != nil {
 			return async.MakeRet(nil, err)
 		}
-		fun.Exec(nil, entity, args...)
+		fun.UnsafeCall(nil, entity, args...)
 		return async.VoidRet
 	})
 }

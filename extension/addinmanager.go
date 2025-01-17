@@ -72,7 +72,7 @@ func (mgr *_AddInManager) GetAddInManager() AddInManager {
 
 // Install 安装插件，不设置插件名称时，将会使用插件实例名称作为插件名称
 func (mgr *_AddInManager) Install(addInFace iface.FaceAny, name ...string) {
-	mgr.installCB.Exec(mgr.install(addInFace, name...))
+	mgr.installCB.UnsafeCall(mgr.install(addInFace, name...))
 }
 
 // Uninstall 卸载插件
@@ -81,7 +81,7 @@ func (mgr *_AddInManager) Uninstall(name string) {
 	if !ok {
 		return
 	}
-	mgr.uninstallCB.Exec(status)
+	mgr.uninstallCB.UnsafeCall(status)
 }
 
 // Get 获取插件
@@ -104,7 +104,7 @@ func (mgr *_AddInManager) Range(fun generic.Func1[AddInStatus, bool]) {
 	mgr.RUnlock()
 
 	for i := range copied {
-		if !fun.Exec(copied[i]) {
+		if !fun.UnsafeCall(copied[i]) {
 			return
 		}
 	}
@@ -117,7 +117,7 @@ func (mgr *_AddInManager) ReversedRange(fun generic.Func1[AddInStatus, bool]) {
 	mgr.RUnlock()
 
 	for i := len(copied) - 1; i >= 0; i-- {
-		if !fun.Exec(copied[i]) {
+		if !fun.UnsafeCall(copied[i]) {
 			return
 		}
 	}

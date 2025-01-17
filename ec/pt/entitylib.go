@@ -87,14 +87,14 @@ func (lib *_EntityLib) GetComponentLib() ComponentLib {
 // Declare 声明实体原型
 func (lib *_EntityLib) Declare(prototype any, comps ...any) ec.EntityPT {
 	entityPT := lib.declare(false, prototype, comps...)
-	lib.declareCB.Exec(entityPT)
+	lib.declareCB.UnsafeCall(entityPT)
 	return entityPT
 }
 
 // Redeclare 重声明实体原型
 func (lib *_EntityLib) Redeclare(prototype any, comps ...any) ec.EntityPT {
 	entityPT := lib.declare(true, prototype, comps...)
-	lib.redeclareCB.Exec(entityPT)
+	lib.redeclareCB.UnsafeCall(entityPT)
 	return entityPT
 }
 
@@ -104,7 +104,7 @@ func (lib *_EntityLib) Undeclare(prototype string) {
 	if !ok {
 		return
 	}
-	lib.undeclareCB.Exec(entityPT)
+	lib.undeclareCB.UnsafeCall(entityPT)
 }
 
 // Get 获取实体原型
@@ -127,7 +127,7 @@ func (lib *_EntityLib) Range(fun generic.Func1[ec.EntityPT, bool]) {
 	lib.RUnlock()
 
 	for i := range copied {
-		if !fun.Exec(copied[i]) {
+		if !fun.UnsafeCall(copied[i]) {
 			return
 		}
 	}
@@ -140,7 +140,7 @@ func (lib *_EntityLib) ReversedRange(fun generic.Func1[ec.EntityPT, bool]) {
 	lib.RUnlock()
 
 	for i := len(copied) - 1; i >= 0; i-- {
-		if !fun.Exec(copied[i]) {
+		if !fun.UnsafeCall(copied[i]) {
 			return
 		}
 	}
