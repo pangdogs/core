@@ -24,13 +24,13 @@ import (
 	"git.golaxy.org/core/utils/types"
 )
 
-type (
-	AsyncRet = AsyncRetT[any]
-)
+// AsyncRet 异步调用结果
+type AsyncRet = AsyncRetT[any]
 
-var (
-	MakeAsyncRet = MakeAsyncRetT[any]
-)
+// MakeAsyncRet 创建异步调用结果
+func MakeAsyncRet() chan Ret {
+	return MakeAsyncRetT[any]()
+}
 
 // MakeAsyncRetT 创建异步调用结果
 func MakeAsyncRetT[T any]() chan RetT[T] {

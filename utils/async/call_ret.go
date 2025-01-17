@@ -21,14 +21,17 @@ package async
 
 import "fmt"
 
-type (
-	Ret = RetT[any]
+var (
+	VoidRet = MakeRet(nil, nil) // 空返回值
 )
 
-var (
-	MakeRet = MakeRetT[any]
-	VoidRet = MakeRet(nil, nil)
-)
+// Ret 调用结果
+type Ret = RetT[any]
+
+// MakeRet 创建调用结果
+func MakeRet(val any, err error) Ret {
+	return MakeRetT(val, err)
+}
 
 // MakeRetT 创建调用结果
 func MakeRetT[T any](val T, err error) RetT[T] {
