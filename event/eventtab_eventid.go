@@ -43,7 +43,7 @@ func MakeEventTabId(eventTab any) uint64 {
 	}
 
 	if eventTabRT.PkgPath() == "" || eventTabRT.Name() == "" || !reflect.PointerTo(eventTabRT).Implements(reflect.TypeFor[IEventTab]()) {
-		exception.Panicf("unsupported type")
+		exception.Panicf("%w: unsupported type", ErrEvent)
 	}
 
 	hash := fnv.New32a()
@@ -75,7 +75,7 @@ var (
 func DeclareEventTabId(eventTab any) uint64 {
 	id := MakeEventTabId(eventTab)
 	if name, loaded := declareEventTabs.LoadOrStore(id, types.FullNameRT(reflect.TypeOf(eventTab).Elem())); loaded {
-		exception.Panicf("event_tab(%d) has already been declared by %q", id, name)
+		exception.Panicf("%w: event_tab(%d) has already been declared by %q", ErrEvent, id, name)
 	}
 	return id
 }
@@ -89,7 +89,7 @@ func DeclareEventTabIdT[T any]() uint64 {
 func DeclareEventId(eventTab any, pos int32) uint64 {
 	id := MakeEventTabId(eventTab) + uint64(pos)
 	if name, loaded := declareEvents.LoadOrStore(id, types.FullNameRT(reflect.TypeOf(eventTab).Elem())); loaded {
-		exception.Panicf("event(%d) has already been declared by %q", id, name)
+		exception.Panicf("%w: event(%d) has already been declared by %q", ErrEvent, id, name)
 	}
 	return id
 }
