@@ -33,7 +33,10 @@ func MakeEventTabId(eventTab any) uint64 {
 		exception.Panicf("%w: %w: eventTab is nil", ErrEvent, exception.ErrArgs)
 	}
 
-	eventTabRT := reflect.ValueOf(eventTab).Type()
+	eventTabRT, ok := eventTab.(reflect.Type)
+	if !ok {
+		eventTabRT = reflect.ValueOf(eventTab).Type()
+	}
 
 	for eventTabRT.Kind() == reflect.Pointer {
 		eventTabRT = eventTabRT.Elem()
