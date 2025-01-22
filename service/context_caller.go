@@ -63,13 +63,6 @@ type Caller interface {
 //go:linkname getCaller git.golaxy.org/core/runtime.getCaller
 func getCaller(provider ictx.ConcurrentContextProvider) async.Caller
 
-func makeAsyncErr(err error) async.AsyncRet {
-	asyncRet := async.MakeAsyncRet()
-	asyncRet <- async.MakeRet(nil, err)
-	close(asyncRet)
-	return asyncRet
-}
-
 func checkEntity(entity ec.Entity) error {
 	if entity.GetState() > ec.EntityState_Alive {
 		return fmt.Errorf("%w: entity not alive", ErrContext)
@@ -85,7 +78,7 @@ func checkEntity(entity ec.Entity) error {
 func (ctx *ContextBehavior) CallAsync(entityId uid.Id, fun generic.FuncVar1[ec.Entity, any, async.Ret], args ...any) async.AsyncRet {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
-		return makeAsyncErr(err)
+		return async.Return(async.MakeAsyncRet(), async.MakeRet(nil, err))
 	}
 
 	return getCaller(entity).CallAsync(func(...any) async.Ret {
@@ -104,7 +97,7 @@ func (ctx *ContextBehavior) CallAsync(entityId uid.Id, fun generic.FuncVar1[ec.E
 func (ctx *ContextBehavior) CallDelegateAsync(entityId uid.Id, fun generic.DelegateVar1[ec.Entity, any, async.Ret], args ...any) async.AsyncRet {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
-		return makeAsyncErr(err)
+		return async.Return(async.MakeAsyncRet(), async.MakeRet(nil, err))
 	}
 
 	return getCaller(entity).CallAsync(func(...any) async.Ret {
@@ -123,7 +116,7 @@ func (ctx *ContextBehavior) CallDelegateAsync(entityId uid.Id, fun generic.Deleg
 func (ctx *ContextBehavior) CallVoidAsync(entityId uid.Id, fun generic.ActionVar1[ec.Entity, any], args ...any) async.AsyncRet {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
-		return makeAsyncErr(err)
+		return async.Return(async.MakeAsyncRet(), async.MakeRet(nil, err))
 	}
 
 	return getCaller(entity).CallAsync(func(...any) async.Ret {
@@ -143,7 +136,7 @@ func (ctx *ContextBehavior) CallVoidAsync(entityId uid.Id, fun generic.ActionVar
 func (ctx *ContextBehavior) CallDelegateVoidAsync(entityId uid.Id, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) async.AsyncRet {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
-		return makeAsyncErr(err)
+		return async.Return(async.MakeAsyncRet(), async.MakeRet(nil, err))
 	}
 
 	return getCaller(entity).CallAsync(func(...any) async.Ret {

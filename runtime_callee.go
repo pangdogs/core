@@ -62,28 +62,20 @@ func (rt *RuntimeBehavior) PushCallDelegateVoidAsync(fun generic.DelegateVoidVar
 	})
 }
 
-func (rt *RuntimeBehavior) pushCallTask(task _Task) (asyncRet chan async.Ret) {
+func (rt *RuntimeBehavior) pushCallTask(task _Task) async.AsyncRet {
 	task.typ = _TaskType_Call
 	task.asyncRet = async.MakeAsyncRet()
 
-	asyncRet = task.asyncRet
-
 	defer func() {
 		if panicInfo := recover(); panicInfo != nil {
-			asyncRet <- async.MakeRet(nil, ErrProcessQueueClosed)
-			close(asyncRet)
+			async.Return(task.asyncRet, async.MakeRet(nil, ErrProcessQueueClosed))
 		}
 	}()
 
 	select {
 	case rt.processQueue <- task:
-		return
+		return task.asyncRet
 	default:
-		break
+		return async.Return(task.asyncRet, async.MakeRet(nil, ErrProcessQueueFull))
 	}
-
-	asyncRet <- async.MakeRet(nil, ErrProcessQueueFull)
-	close(asyncRet)
-
-	return
 }

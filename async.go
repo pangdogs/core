@@ -54,8 +54,7 @@ func GoAsync(ctx context.Context, fun generic.FuncVar1[context.Context, any, asy
 		if panicErr != nil {
 			ret.Error = panicErr
 		}
-		asyncRet <- ret
-		close(asyncRet)
+		async.Return(asyncRet, ret)
 	}()
 
 	return asyncRet
@@ -70,8 +69,7 @@ func GoVoidAsync(ctx context.Context, fun generic.ActionVar1[context.Context, an
 	asyncRet := async.MakeAsyncRet()
 
 	go func() {
-		asyncRet <- async.MakeRet(nil, fun.SafeCall(ctx, args...))
-		close(asyncRet)
+		async.Return(asyncRet, async.MakeRet(nil, fun.SafeCall(ctx, args...)))
 	}()
 
 	return asyncRet
@@ -91,12 +89,12 @@ func TimeAfterAsync(ctx context.Context, dur time.Duration) async.AsyncRet {
 
 		select {
 		case <-timer.C:
-			asyncRet <- async.VoidRet
+			async.Yield(ctx, asyncRet, async.VoidRet)
 		case <-ctx.Done():
 			break
 		}
 
-		close(asyncRet)
+		async.End(asyncRet)
 	}()
 
 	return asyncRet
@@ -116,12 +114,12 @@ func TimeAtAsync(ctx context.Context, at time.Time) async.AsyncRet {
 
 		select {
 		case <-timer.C:
-			asyncRet <- async.VoidRet
+			async.Yield(ctx, asyncRet, async.VoidRet)
 		case <-ctx.Done():
 			break
 		}
 
-		close(asyncRet)
+		async.End(asyncRet)
 	}()
 
 	return asyncRet
@@ -143,9 +141,7 @@ func TimeTickAsync(ctx context.Context, dur time.Duration) async.AsyncRet {
 		for {
 			select {
 			case <-tick.C:
-				select {
-				case asyncRet <- async.VoidRet:
-				case <-ctx.Done():
+				if !async.Yield(ctx, asyncRet, async.VoidRet) {
 					break loop
 				}
 			case <-ctx.Done():
@@ -153,7 +149,7 @@ func TimeTickAsync(ctx context.Context, dur time.Duration) async.AsyncRet {
 			}
 		}
 
-		close(asyncRet)
+		async.End(asyncRet)
 	}()
 
 	return asyncRet
@@ -184,16 +180,14 @@ func ReadChanAsyncT[T any](ctx context.Context, ch <-chan T) async.AsyncRet {
 				if !ok {
 					break loop
 				}
-				select {
-				case asyncRet <- async.MakeRet(v, nil):
-				case <-ctx.Done():
+				if !async.Yield(ctx, asyncRet, async.MakeRet(v, nil)) {
 					break loop
 				}
 			case <-ctx.Done():
 				break loop
 			}
 		}
-		close(asyncRet)
+		async.End(asyncRet)
 	}()
 
 	return asyncRet

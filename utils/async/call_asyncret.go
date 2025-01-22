@@ -24,9 +24,6 @@ import (
 	"git.golaxy.org/core/utils/types"
 )
 
-// AsyncRet 异步调用结果
-type AsyncRet = AsyncRetT[any]
-
 // MakeAsyncRet 创建异步调用结果
 func MakeAsyncRet() chan Ret {
 	return MakeAsyncRetT[any]()
@@ -36,6 +33,50 @@ func MakeAsyncRet() chan Ret {
 func MakeAsyncRetT[T any]() chan RetT[T] {
 	return make(chan RetT[T], 1)
 }
+
+// Return 返回异步调用结果
+func Return(asyncRet chan Ret, ret Ret) chan Ret {
+	return ReturnT(asyncRet, ret)
+}
+
+// ReturnT 返回异步调用结果
+func ReturnT[T any](asyncRet chan RetT[T], ret RetT[T]) chan RetT[T] {
+	asyncRet <- ret
+	close(asyncRet)
+	return asyncRet
+}
+
+// Yield 产出异步调用结果
+func Yield(ctx context.Context, asyncRet chan Ret, ret Ret) bool {
+	return YieldT(ctx, asyncRet, ret)
+}
+
+// YieldT 产出异步调用结果
+func YieldT[T any](ctx context.Context, asyncRet chan RetT[T], ret RetT[T]) bool {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	select {
+	case asyncRet <- ret:
+		return true
+	case <-ctx.Done():
+		return false
+	}
+}
+
+// End 结束产出异步调用结果
+func End(asyncRet chan Ret) {
+	EndT(asyncRet)
+}
+
+// EndT 结束产出异步调用结果
+func EndT[T any](asyncRet chan RetT[T]) {
+	close(asyncRet)
+}
+
+// AsyncRet 异步调用结果
+type AsyncRet = AsyncRetT[any]
 
 // AsyncRetT 异步调用结果
 type AsyncRetT[T any] <-chan RetT[T]

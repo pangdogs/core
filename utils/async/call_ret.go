@@ -25,9 +25,6 @@ var (
 	VoidRet = MakeRet(nil, nil) // 空返回值
 )
 
-// Ret 调用结果
-type Ret = RetT[any]
-
 // MakeRet 创建调用结果
 func MakeRet(val any, err error) Ret {
 	return MakeRetT(val, err)
@@ -70,6 +67,9 @@ func AsRetT[T any](ret Ret) (RetT[T], bool) {
 		Error: ret.Error,
 	}, true
 }
+
+// Ret 调用结果
+type Ret = RetT[any]
 
 // RetT 调用结果
 type RetT[T any] struct {
