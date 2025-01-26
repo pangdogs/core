@@ -32,8 +32,8 @@ import (
 	"git.golaxy.org/core/utils/uid"
 )
 
-// CreateEntity 创建实体
-func CreateEntity(provider ictx.CurrentContextProvider, prototype string) EntityCreator {
+// BuildEntity 创建实体
+func BuildEntity(provider ictx.CurrentContextProvider, prototype string) EntityCreator {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrCore, ErrArgs)
 	}
@@ -51,62 +51,62 @@ type EntityCreator struct {
 	settings  []option.Setting[ec.EntityOptions]
 }
 
-// InstanceFace 设置实例，用于扩展实体能力
-func (c EntityCreator) InstanceFace(face iface.Face[ec.Entity]) EntityCreator {
+// SetInstanceFace 设置实例，用于扩展实体能力
+func (c EntityCreator) SetInstanceFace(face iface.Face[ec.Entity]) EntityCreator {
 	c.settings = append(c.settings, ec.With.InstanceFace(face))
 	return c
 }
 
-// Instance 设置实例，用于扩展实体能力
-func (c EntityCreator) Instance(instance ec.Entity) EntityCreator {
+// SetInstance 设置实例，用于扩展实体能力
+func (c EntityCreator) SetInstance(instance ec.Entity) EntityCreator {
 	c.settings = append(c.settings, ec.With.InstanceFace(iface.MakeFaceT(instance)))
 	return c
 }
 
-// Scope 设置实体的可访问作用域
-func (c EntityCreator) Scope(scope ec.Scope) EntityCreator {
+// SetScope 设置实体的可访问作用域
+func (c EntityCreator) SetScope(scope ec.Scope) EntityCreator {
 	c.settings = append(c.settings, ec.With.Scope(scope))
 	return c
 }
 
-// PersistId 设置实体持久化Id
-func (c EntityCreator) PersistId(id uid.Id) EntityCreator {
+// SetPersistId 设置实体持久化Id
+func (c EntityCreator) SetPersistId(id uid.Id) EntityCreator {
 	c.settings = append(c.settings, ec.With.PersistId(id))
 	return c
 }
 
-// ComponentNameIndexing 是否开启组件名称索引
-func (c EntityCreator) ComponentNameIndexing(b bool) EntityCreator {
+// SetComponentNameIndexing 设置是否开启组件名称索引
+func (c EntityCreator) SetComponentNameIndexing(b bool) EntityCreator {
 	c.settings = append(c.settings, ec.With.ComponentNameIndexing(b))
 	return c
 }
 
-// ComponentAwakeOnFirstTouch 当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
-func (c EntityCreator) ComponentAwakeOnFirstTouch(b bool) EntityCreator {
+// SetComponentAwakeOnFirstTouch 设置当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
+func (c EntityCreator) SetComponentAwakeOnFirstTouch(b bool) EntityCreator {
 	c.settings = append(c.settings, ec.With.ComponentAwakeOnFirstTouch(b))
 	return c
 }
 
-// ComponentUniqueID 是否为实体组件分配唯一Id
-func (c EntityCreator) ComponentUniqueID(b bool) EntityCreator {
+// SetComponentUniqueID 设置是否为实体组件分配唯一Id
+func (c EntityCreator) SetComponentUniqueID(b bool) EntityCreator {
 	c.settings = append(c.settings, ec.With.ComponentUniqueID(b))
 	return c
 }
 
-// Meta 设置Meta信息
-func (c EntityCreator) Meta(m meta.Meta) EntityCreator {
+// SetMeta 设置Meta信息
+func (c EntityCreator) SetMeta(m meta.Meta) EntityCreator {
 	c.settings = append(c.settings, ec.With.Meta(m))
 	return c
 }
 
-// ParentId 设置父实体Id
-func (c EntityCreator) ParentId(id uid.Id) EntityCreator {
+// SetParentId 设置父实体Id
+func (c EntityCreator) SetParentId(id uid.Id) EntityCreator {
 	c.parentId = id
 	return c
 }
 
-// Spawn 创建实体
-func (c EntityCreator) Spawn() (ec.Entity, error) {
+// New 创建实体
+func (c EntityCreator) New() (ec.Entity, error) {
 	if c.rtCtx == nil {
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}

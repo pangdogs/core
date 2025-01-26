@@ -21,7 +21,6 @@ package pt
 
 import (
 	"git.golaxy.org/core/ec"
-	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 )
 
@@ -66,7 +65,7 @@ func (atti EntityAttribute) SetExtra(extra map[string]any) EntityAttribute {
 	return atti
 }
 
-func (atti EntityAttribute) OverrideExtra(extra map[string]any) EntityAttribute {
+func (atti EntityAttribute) OverrideMergeExtra(extra map[string]any) EntityAttribute {
 	atti.Extra = atti.Extra.Clone()
 	for k, v := range extra {
 		atti.Extra.Add(k, v)
@@ -74,69 +73,10 @@ func (atti EntityAttribute) OverrideExtra(extra map[string]any) EntityAttribute 
 	return atti
 }
 
-func (atti EntityAttribute) CombineExtra(extra map[string]any) EntityAttribute {
+func (atti EntityAttribute) IncrementalMergeExtra(extra map[string]any) EntityAttribute {
 	atti.Extra = atti.Extra.Clone()
 	for k, v := range extra {
 		atti.Extra.TryAdd(k, v)
 	}
 	return atti
-}
-
-// Entity 创建实体原型属性，用于注册实体原型时自定义相关属性
-func Entity(prototype string) EntityAttribute {
-	if prototype == "" {
-		exception.Panicf("%w: %w: prototype is empty", ErrPt, exception.ErrArgs)
-	}
-	return EntityAttribute{
-		Prototype: prototype,
-	}
-}
-
-// ComponentAttribute 组件原型属性
-type ComponentAttribute struct {
-	Instance  any                           // 组件实例（必填）
-	Name      string                        // 组件名称
-	Removable bool                          // 是否可以删除
-	Extra     generic.SliceMap[string, any] // 自定义属性
-}
-
-func (atti ComponentAttribute) SetName(name string) ComponentAttribute {
-	atti.Name = name
-	return atti
-}
-
-func (atti ComponentAttribute) SetRemovable(b bool) ComponentAttribute {
-	atti.Removable = b
-	return atti
-}
-
-func (atti ComponentAttribute) SetExtra(extra map[string]any) ComponentAttribute {
-	atti.Extra = generic.MakeSliceMapFromGoMap(extra)
-	return atti
-}
-
-func (atti ComponentAttribute) OverrideExtra(extra map[string]any) ComponentAttribute {
-	atti.Extra = atti.Extra.Clone()
-	for k, v := range extra {
-		atti.Extra.Add(k, v)
-	}
-	return atti
-}
-
-func (atti ComponentAttribute) CombineExtra(extra map[string]any) ComponentAttribute {
-	atti.Extra = atti.Extra.Clone()
-	for k, v := range extra {
-		atti.Extra.TryAdd(k, v)
-	}
-	return atti
-}
-
-// Component 创建组件原型属性，用于注册实体原型时自定义相关属性
-func Component(instance any) ComponentAttribute {
-	if instance == nil {
-		exception.Panicf("%w: %w: instance is nil", ErrPt, exception.ErrArgs)
-	}
-	return ComponentAttribute{
-		Instance: instance,
-	}
 }

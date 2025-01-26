@@ -27,8 +27,8 @@ import (
 	"github.com/elliotchance/pie/v2"
 )
 
-// CreateEntityPT 创建实体原型
-func CreateEntityPT(svcCtx service.Context, prototype string) EntityPTCreator {
+// BuildEntityPT 创建实体原型
+func BuildEntityPT(svcCtx service.Context, prototype string) EntityPTCreator {
 	if svcCtx == nil {
 		exception.Panicf("%w: %w: svcCtx is nil", ErrCore, ErrArgs)
 	}
@@ -46,38 +46,38 @@ type EntityPTCreator struct {
 	comps  []any
 }
 
-// Instance 设置实例，用于扩展实体能力
-func (c EntityPTCreator) Instance(instance any) EntityPTCreator {
+// SetInstance 设置实例，用于扩展实体能力
+func (c EntityPTCreator) SetInstance(instance any) EntityPTCreator {
 	c.atti.Instance = instance
 	return c
 }
 
-// Scope 设置实体的可访问作用域
-func (c EntityPTCreator) Scope(scope ec.Scope) EntityPTCreator {
+// SetScope 设置实体的可访问作用域
+func (c EntityPTCreator) SetScope(scope ec.Scope) EntityPTCreator {
 	c.atti.Scope = &scope
 	return c
 }
 
-// ComponentNameIndexing 是否开启组件名称索引
-func (c EntityPTCreator) ComponentNameIndexing(b bool) EntityPTCreator {
+// SetComponentNameIndexing 设置是否开启组件名称索引
+func (c EntityPTCreator) SetComponentNameIndexing(b bool) EntityPTCreator {
 	c.atti.ComponentNameIndexing = &b
 	return c
 }
 
-// ComponentAwakeOnFirstTouch 当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
-func (c EntityPTCreator) ComponentAwakeOnFirstTouch(b bool) EntityPTCreator {
+// SetComponentAwakeOnFirstTouch 设置当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
+func (c EntityPTCreator) SetComponentAwakeOnFirstTouch(b bool) EntityPTCreator {
 	c.atti.ComponentAwakeOnFirstTouch = &b
 	return c
 }
 
-// ComponentUniqueID 是否为实体组件分配唯一Id
-func (c EntityPTCreator) ComponentUniqueID(b bool) EntityPTCreator {
+// SetComponentUniqueID 设置是否为实体组件分配唯一Id
+func (c EntityPTCreator) SetComponentUniqueID(b bool) EntityPTCreator {
 	c.atti.ComponentUniqueID = &b
 	return c
 }
 
-// Extra 自定义属性
-func (c EntityPTCreator) Extra(extra map[string]any) EntityPTCreator {
+// SetExtra 设置自定义属性
+func (c EntityPTCreator) SetExtra(extra map[string]any) EntityPTCreator {
 	for k, v := range extra {
 		c.atti.Extra.Add(k, v)
 	}
@@ -90,7 +90,7 @@ func (c EntityPTCreator) AddComponent(comp any, name ...string) EntityPTCreator 
 	case pt.ComponentAttribute, *pt.ComponentAttribute:
 		c.comps = append(c.comps, v)
 	default:
-		c.comps = append(c.comps, pt.Component(comp).SetName(pie.First(name)))
+		c.comps = append(c.comps, pt.BuildComponentAttribute(comp).SetName(pie.First(name)))
 	}
 	return c
 }
