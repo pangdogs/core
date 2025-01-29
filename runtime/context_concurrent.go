@@ -21,7 +21,7 @@ package runtime
 
 import (
 	"fmt"
-	"git.golaxy.org/core/internal/ictx"
+	"git.golaxy.org/core/ec/ectx"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/exception"
@@ -30,13 +30,13 @@ import (
 )
 
 // ConcurrentContextProvider 多线程安全的上下文提供者
-type ConcurrentContextProvider = ictx.ConcurrentContextProvider
+type ConcurrentContextProvider = ectx.ConcurrentContextProvider
 
 // ConcurrentContext 多线程安全的运行时上下文接口
 type ConcurrentContext interface {
 	iConcurrentContext
-	ictx.Context
-	ictx.ConcurrentContextProvider
+	ectx.Context
+	ectx.ConcurrentContextProvider
 	async.Caller
 	fmt.Stringer
 
@@ -55,14 +55,14 @@ func (ctx *ContextBehavior) getContext() Context {
 }
 
 // Concurrent 获取多线程安全的运行时上下文
-func Concurrent(provider ictx.ConcurrentContextProvider) ConcurrentContext {
+func Concurrent(provider ectx.ConcurrentContextProvider) ConcurrentContext {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrContext, exception.ErrArgs)
 	}
 	return iface.Cache2Iface[Context](provider.GetConcurrentContext())
 }
 
-func getServiceContext(provider ictx.ConcurrentContextProvider) service.Context {
+func getServiceContext(provider ectx.ConcurrentContextProvider) service.Context {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrContext, exception.ErrArgs)
 	}
@@ -73,7 +73,7 @@ func getServiceContext(provider ictx.ConcurrentContextProvider) service.Context 
 	return ctx.getServiceCtx()
 }
 
-func getCaller(provider ictx.ConcurrentContextProvider) async.Caller {
+func getCaller(provider ectx.ConcurrentContextProvider) async.Caller {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrContext, exception.ErrArgs)
 	}

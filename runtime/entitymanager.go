@@ -22,8 +22,8 @@ package runtime
 import (
 	"fmt"
 	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/ec/ectx"
 	"git.golaxy.org/core/event"
-	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
@@ -33,7 +33,7 @@ import (
 
 // EntityManager 实体管理器接口
 type EntityManager interface {
-	ictx.CurrentContextProvider
+	ectx.CurrentContextProvider
 
 	// AddEntity 添加实体
 	AddEntity(entity ec.Entity) error

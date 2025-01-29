@@ -21,9 +21,9 @@ package runtime
 
 import (
 	"fmt"
+	"git.golaxy.org/core/ec/ectx"
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/extension"
-	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/exception"
@@ -57,8 +57,8 @@ func UnsafeNewContext(svcCtx service.Context, options ContextOptions) Context {
 type Context interface {
 	iContext
 	iConcurrentContext
-	ictx.Context
-	ictx.CurrentContextProvider
+	ectx.Context
+	ectx.CurrentContextProvider
 	reinterpret.InstanceProvider
 	extension.AddInProvider
 	async.Caller
@@ -101,7 +101,7 @@ type iContext interface {
 
 // ContextBehavior 运行时上下文行为，在扩展运行时上下文能力时，匿名嵌入至运行时上下文结构体中
 type ContextBehavior struct {
-	ictx.ContextBehavior
+	ectx.ContextBehavior
 	svcCtx          service.Context
 	opts            ContextOptions
 	reflected       reflect.Value
@@ -199,7 +199,7 @@ func (ctx *ContextBehavior) init(svcCtx service.Context, opts ContextOptions) {
 		ctx.opts.PersistId = uid.New()
 	}
 
-	ictx.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
+	ectx.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
 	ctx.svcCtx = svcCtx
 	ctx.reflected = reflect.ValueOf(ctx.opts.InstanceFace.Iface)
 	ctx.entityManager.init(ctx.opts.InstanceFace.Iface)

@@ -21,9 +21,9 @@ package core
 
 import (
 	"context"
+	"git.golaxy.org/core/ec/ectx"
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/extension"
-	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/exception"
@@ -42,13 +42,13 @@ func (rt *RuntimeBehavior) Run() <-chan struct{} {
 	default:
 	}
 
-	if parentCtx, ok := ctx.GetParentContext().(ictx.Context); ok {
+	if parentCtx, ok := ctx.GetParentContext().(ectx.Context); ok {
 		parentCtx.GetWaitGroup().Add(1)
 	}
 
 	go rt.running()
 
-	return ictx.UnsafeContext(ctx).GetTerminatedChan()
+	return ectx.UnsafeContext(ctx).GetTerminatedChan()
 }
 
 // Terminate 停止
@@ -79,11 +79,11 @@ func (rt *RuntimeBehavior) running() {
 
 	rt.changeRunningStatus(runtime.RunningStatus_Terminated)
 
-	if parentCtx, ok := ctx.GetParentContext().(ictx.Context); ok {
+	if parentCtx, ok := ctx.GetParentContext().(ectx.Context); ok {
 		parentCtx.GetWaitGroup().Done()
 	}
 
-	close(ictx.UnsafeContext(ctx).GetTerminatedChan())
+	close(ectx.UnsafeContext(ctx).GetTerminatedChan())
 }
 
 func (rt *RuntimeBehavior) changeRunningStatus(status runtime.RunningStatus, args ...any) {

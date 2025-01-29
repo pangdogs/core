@@ -22,9 +22,9 @@ package core
 import (
 	"context"
 	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/ec/ectx"
 	"git.golaxy.org/core/ec/pt"
 	"git.golaxy.org/core/extension"
-	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
@@ -43,13 +43,13 @@ func (svc *ServiceBehavior) Run() <-chan struct{} {
 	default:
 	}
 
-	if parentCtx, ok := svc.ctx.GetParentContext().(ictx.Context); ok {
+	if parentCtx, ok := svc.ctx.GetParentContext().(ectx.Context); ok {
 		parentCtx.GetWaitGroup().Add(1)
 	}
 
 	go svc.running()
 
-	return ictx.UnsafeContext(ctx).GetTerminatedChan()
+	return ectx.UnsafeContext(ctx).GetTerminatedChan()
 }
 
 // Terminate 停止
@@ -84,11 +84,11 @@ loop:
 
 	svc.changeRunningStatus(service.RunningStatus_Terminated)
 
-	if parentCtx, ok := ctx.GetParentContext().(ictx.Context); ok {
+	if parentCtx, ok := ctx.GetParentContext().(ectx.Context); ok {
 		parentCtx.GetWaitGroup().Done()
 	}
 
-	close(ictx.UnsafeContext(ctx).GetTerminatedChan())
+	close(ectx.UnsafeContext(ctx).GetTerminatedChan())
 }
 
 func (svc *ServiceBehavior) changeRunningStatus(status service.RunningStatus, args ...any) {

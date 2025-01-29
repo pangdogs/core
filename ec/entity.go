@@ -22,8 +22,8 @@ package ec
 import (
 	"context"
 	"fmt"
+	"git.golaxy.org/core/ec/ectx"
 	"git.golaxy.org/core/event"
-	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/meta"
@@ -59,7 +59,7 @@ type Entity interface {
 	iContext
 	iComponentManager
 	iTreeNode
-	ictx.CurrentContextProvider
+	ectx.CurrentContextProvider
 	reinterpret.InstanceProvider
 	fmt.Stringer
 

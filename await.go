@@ -22,7 +22,7 @@ package core
 import (
 	"context"
 	"fmt"
-	"git.golaxy.org/core/internal/ictx"
+	"git.golaxy.org/core/ec/ectx"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/exception"
@@ -36,7 +36,7 @@ var (
 )
 
 // Await 异步等待结果返回
-func Await(provider ictx.CurrentContextProvider, asyncRet ...async.AsyncRet) AwaitDirector {
+func Await(provider ectx.CurrentContextProvider, asyncRet ...async.AsyncRet) AwaitDirector {
 	return AwaitDirector{
 		rtCtx:     runtime.Current(provider),
 		asyncRets: asyncRet,

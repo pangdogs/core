@@ -21,8 +21,8 @@ package core
 
 import (
 	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/ec/ectx"
 	"git.golaxy.org/core/event"
-	"git.golaxy.org/core/internal/ictx"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/exception"
@@ -54,8 +54,8 @@ func UnsafeNewRuntime(rtCtx runtime.Context, options RuntimeOptions) Runtime {
 type Runtime interface {
 	iRuntime
 	iRunning
-	ictx.CurrentContextProvider
-	ictx.ConcurrentContextProvider
+	ectx.CurrentContextProvider
+	ectx.ConcurrentContextProvider
 	reinterpret.InstanceProvider
 	async.Callee
 }
@@ -156,7 +156,7 @@ func (rt *RuntimeBehavior) init(rtCtx runtime.Context, opts RuntimeOptions) {
 		exception.Panicf("%w: %w: rtCtx is nil", ErrRuntime, ErrArgs)
 	}
 
-	if !ictx.UnsafeContext(rtCtx).SetPaired(true) {
+	if !ectx.UnsafeContext(rtCtx).SetPaired(true) {
 		exception.Panicf("%w: context already paired", ErrRuntime)
 	}
 
