@@ -58,7 +58,7 @@ func (c MetaCreator) Clean() MetaCreator {
 	return c
 }
 
-func (c MetaCreator) New() Meta {
+func (c MetaCreator) Get() Meta {
 	return c.meta
 }
 
