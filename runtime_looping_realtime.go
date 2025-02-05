@@ -21,6 +21,7 @@ package core
 
 import (
 	"git.golaxy.org/core/runtime"
+	"sync"
 	"time"
 )
 
@@ -28,16 +29,16 @@ func (rt *RuntimeBehavior) loopingRealTime() {
 	gcTicker := time.NewTicker(rt.opts.GCInterval)
 	defer gcTicker.Stop()
 
-	frame := runtime.UnsafeFrame(rt.opts.Frame)
-	go rt.makeFrameTasks(frame.GetCurFrames()+1, frame.GetTotalFrames(), frame.GetTargetFPS())
+	wg := &sync.WaitGroup{}
+	frame := rt.opts.Frame
+
+	wg.Add(1)
+	go rt.makeFrameTasks(wg, frame.GetCurFrames()+1, frame.GetTotalFrames(), frame.GetTargetFPS())
 
 loop:
 	for rt.frameLoopBegin(); ; {
 		select {
-		case task, ok := <-rt.processQueue:
-			if !ok {
-				break loop
-			}
+		case task := <-rt.processQueue:
 			rt.runTask(task)
 
 		case <-gcTicker.C:
@@ -48,6 +49,7 @@ loop:
 		}
 	}
 
+	wg.Wait()
 	close(rt.processQueue)
 
 loopEnding:
@@ -68,9 +70,13 @@ loopEnding:
 	rt.frameLoopEnd()
 }
 
-func (rt *RuntimeBehavior) makeFrameTasks(curFrames, totalFrames int64, targetFPS float32) {
+func (rt *RuntimeBehavior) makeFrameTasks(wg *sync.WaitGroup, curFrames, totalFrames int64, targetFPS float32) {
+	defer wg.Done()
+
 	updateTicker := time.NewTicker(time.Duration(float64(time.Second) / float64(targetFPS)))
 	defer updateTicker.Stop()
+
+	done := make(chan struct{}, 1)
 
 	for {
 		if totalFrames > 0 && curFrames >= totalFrames {
@@ -80,16 +86,18 @@ func (rt *RuntimeBehavior) makeFrameTasks(curFrames, totalFrames int64, targetFP
 
 		select {
 		case <-updateTicker.C:
-			func() {
-				defer func() {
-					recover()
-				}()
+			select {
+			case rt.processQueue <- _Task{typ: _TaskType_Frame, action: rt.frameLoop, done: done}:
 				select {
-				case rt.processQueue <- _Task{typ: _TaskType_Frame, action: rt.frameLoop}:
+				case <-done:
 					curFrames++
+					continue
 				case <-rt.ctx.Done():
+					return
 				}
-			}()
+			case <-rt.ctx.Done():
+				return
+			}
 		case <-rt.ctx.Done():
 			return
 		}

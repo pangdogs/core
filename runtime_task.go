@@ -39,6 +39,7 @@ type _Task struct {
 	delegateVoid generic.DelegateVoidVar0[any]
 	args         []any
 	asyncRet     chan async.Ret
+	done         chan struct{}
 }
 
 func (task _Task) run(autoRecover bool, reportError chan error) {
@@ -61,7 +62,13 @@ func (task _Task) run(autoRecover bool, reportError chan error) {
 	}
 
 	if task.asyncRet != nil {
-		task.asyncRet <- ret
-		close(task.asyncRet)
+		async.Return(task.asyncRet, ret)
+	}
+
+	if task.done != nil {
+		select {
+		case task.done <- struct{}{}:
+		default:
+		}
 	}
 }
