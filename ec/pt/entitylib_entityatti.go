@@ -20,6 +20,7 @@
 package pt
 
 import (
+	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 )
@@ -34,30 +35,48 @@ func BuildEntityAttribute(prototype string) EntityAttribute {
 	}
 }
 
-// ComponentAttribute 组件原型属性
-type ComponentAttribute struct {
-	Instance  any                           // 组件实例（必填）
-	Name      string                        // 组件名称
-	Removable bool                          // 是否可以删除
-	Extra     generic.SliceMap[string, any] // 自定义属性
+// EntityAttribute 实体原型属性
+type EntityAttribute struct {
+	Prototype                  string                        // 实体原型名称（必填）
+	Instance                   any                           // 实体实例
+	Scope                      *ec.Scope                     // 可访问作用域
+	ComponentNameIndexing      *bool                         // 是否开启组件名称索引
+	ComponentAwakeOnFirstTouch *bool                         // 当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
+	ComponentUniqueID          *bool                         // 是否为实体组件分配唯一Id
+	Extra                      generic.SliceMap[string, any] // 自定义属性
 }
 
-func (atti ComponentAttribute) SetName(name string) ComponentAttribute {
-	atti.Name = name
+func (atti EntityAttribute) SetInstance(instance any) EntityAttribute {
+	atti.Instance = instance
 	return atti
 }
 
-func (atti ComponentAttribute) SetRemovable(b bool) ComponentAttribute {
-	atti.Removable = b
+func (atti EntityAttribute) SetScope(scope ec.Scope) EntityAttribute {
+	atti.Scope = &scope
 	return atti
 }
 
-func (atti ComponentAttribute) SetExtra(extra map[string]any) ComponentAttribute {
+func (atti EntityAttribute) SetComponentNameIndexing(b bool) EntityAttribute {
+	atti.ComponentNameIndexing = &b
+	return atti
+}
+
+func (atti EntityAttribute) SetComponentAwakeOnFirstTouch(b bool) EntityAttribute {
+	atti.ComponentAwakeOnFirstTouch = &b
+	return atti
+}
+
+func (atti EntityAttribute) SetComponentUniqueID(b bool) EntityAttribute {
+	atti.ComponentUniqueID = &b
+	return atti
+}
+
+func (atti EntityAttribute) SetExtra(extra map[string]any) EntityAttribute {
 	atti.Extra = generic.MakeSliceMapFromGoMap(extra)
 	return atti
 }
 
-func (atti ComponentAttribute) OverrideMergeExtra(extra map[string]any) ComponentAttribute {
+func (atti EntityAttribute) OverrideMergeExtra(extra map[string]any) EntityAttribute {
 	atti.Extra = atti.Extra.Clone()
 	for k, v := range extra {
 		atti.Extra.Add(k, v)
@@ -65,20 +84,10 @@ func (atti ComponentAttribute) OverrideMergeExtra(extra map[string]any) Componen
 	return atti
 }
 
-func (atti ComponentAttribute) IncrementalMergeExtra(extra map[string]any) ComponentAttribute {
+func (atti EntityAttribute) IncrementalMergeExtra(extra map[string]any) EntityAttribute {
 	atti.Extra = atti.Extra.Clone()
 	for k, v := range extra {
 		atti.Extra.TryAdd(k, v)
 	}
 	return atti
-}
-
-// BuildComponentAttribute 创建组件原型属性，用于注册实体原型时自定义相关属性
-func BuildComponentAttribute(instance any) ComponentAttribute {
-	if instance == nil {
-		exception.Panicf("%w: %w: instance is nil", ErrPt, exception.ErrArgs)
-	}
-	return ComponentAttribute{
-		Instance: instance,
-	}
 }
