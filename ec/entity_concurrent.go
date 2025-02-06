@@ -23,6 +23,7 @@ import (
 	"context"
 	"fmt"
 	"git.golaxy.org/core/ec/ectx"
+	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/uid"
 )
 
@@ -43,7 +44,7 @@ type iContext interface {
 	context.Context
 
 	// Terminated 已停止
-	Terminated() <-chan struct{}
+	Terminated() async.AsyncRet
 }
 
 type iConcurrentEntity interface {
@@ -51,7 +52,7 @@ type iConcurrentEntity interface {
 }
 
 // Terminated 已停止
-func (entity *EntityBehavior) Terminated() <-chan struct{} {
+func (entity *EntityBehavior) Terminated() async.AsyncRet {
 	return entity.terminated
 }
 

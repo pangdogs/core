@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"git.golaxy.org/core/ec/ectx"
 	"git.golaxy.org/core/event"
+	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/types"
@@ -87,7 +88,7 @@ type iComponent interface {
 type ComponentBehavior struct {
 	context.Context
 	terminate          context.CancelFunc
-	terminated         chan struct{}
+	terminated         chan async.Ret
 	id                 uid.Id
 	builtin            *BuiltinComponent
 	name               string
@@ -179,7 +180,7 @@ func (comp *ComponentBehavior) EventComponentDestroySelf() event.IEvent {
 }
 
 // Terminated 已停止
-func (comp *ComponentBehavior) Terminated() <-chan struct{} {
+func (comp *ComponentBehavior) Terminated() async.AsyncRet {
 	return comp.terminated
 }
 
@@ -210,7 +211,7 @@ func (comp *ComponentBehavior) init(name string, entity Entity, instance Compone
 
 func (comp *ComponentBehavior) withContext(ctx context.Context) {
 	comp.Context, comp.terminate = context.WithCancel(ctx)
-	comp.terminated = make(chan struct{})
+	comp.terminated = async.MakeAsyncRet()
 }
 
 func (comp *ComponentBehavior) setId(id uid.Id) {
@@ -240,7 +241,7 @@ func (comp *ComponentBehavior) setState(state ComponentState) {
 		comp.componentEventTab.Close()
 	case ComponentState_Destroyed:
 		comp.managedCleanAllHooks()
-		close(comp.terminated)
+		async.Return(comp.terminated, async.VoidRet)
 	}
 }
 

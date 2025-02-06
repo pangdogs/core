@@ -21,6 +21,7 @@ package ectx
 
 import (
 	"context"
+	"git.golaxy.org/core/utils/async"
 	"sync"
 	"sync/atomic"
 )
@@ -39,28 +40,28 @@ type Context interface {
 	// GetWaitGroup 获取等待组
 	GetWaitGroup() *sync.WaitGroup
 	// Terminate 停止
-	Terminate() <-chan struct{}
+	Terminate() async.AsyncRet
 	// Terminated 已停止
-	Terminated() <-chan struct{}
+	Terminated() async.AsyncRet
 }
 
 type iContext interface {
 	init(parentCtx context.Context, autoRecover bool, reportError chan error)
 	setPaired(v bool) bool
 	getPaired() bool
-	getTerminatedChan() chan struct{}
+	returnTerminated()
 }
 
 // ContextBehavior 上下文行为
 type ContextBehavior struct {
 	context.Context
-	parentCtx      context.Context
-	autoRecover    bool
-	reportError    chan error
-	terminate      context.CancelFunc
-	terminatedChan chan struct{}
-	wg             sync.WaitGroup
-	paired         atomic.Bool
+	parentCtx   context.Context
+	autoRecover bool
+	reportError chan error
+	terminate   context.CancelFunc
+	terminated  chan async.Ret
+	wg          sync.WaitGroup
+	paired      atomic.Bool
 }
 
 // GetParentContext 获取父上下文
@@ -84,14 +85,14 @@ func (ctx *ContextBehavior) GetWaitGroup() *sync.WaitGroup {
 }
 
 // Terminate 停止
-func (ctx *ContextBehavior) Terminate() <-chan struct{} {
+func (ctx *ContextBehavior) Terminate() async.AsyncRet {
 	ctx.terminate()
-	return ctx.terminatedChan
+	return ctx.terminated
 }
 
 // Terminated 已停止
-func (ctx *ContextBehavior) Terminated() <-chan struct{} {
-	return ctx.terminatedChan
+func (ctx *ContextBehavior) Terminated() async.AsyncRet {
+	return ctx.terminated
 }
 
 func (ctx *ContextBehavior) init(parentCtx context.Context, autoRecover bool, reportError chan error) {
@@ -103,7 +104,7 @@ func (ctx *ContextBehavior) init(parentCtx context.Context, autoRecover bool, re
 	ctx.autoRecover = autoRecover
 	ctx.reportError = reportError
 	ctx.Context, ctx.terminate = context.WithCancel(ctx.parentCtx)
-	ctx.terminatedChan = make(chan struct{})
+	ctx.terminated = async.MakeAsyncRet()
 }
 
 func (ctx *ContextBehavior) setPaired(v bool) bool {
@@ -114,6 +115,6 @@ func (ctx *ContextBehavior) getPaired() bool {
 	return ctx.paired.Load()
 }
 
-func (ctx *ContextBehavior) getTerminatedChan() chan struct{} {
-	return ctx.terminatedChan
+func (ctx *ContextBehavior) returnTerminated() {
+	async.Return(ctx.terminated, async.VoidRet)
 }

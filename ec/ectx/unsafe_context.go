@@ -49,6 +49,7 @@ func (u _UnsafeContext) GetPaired() bool {
 	return u.getPaired()
 }
 
-func (u _UnsafeContext) GetTerminatedChan() chan struct{} {
-	return u.getTerminatedChan()
+// ReturnTerminated 返回已停止
+func (u _UnsafeContext) ReturnTerminated() {
+	u.returnTerminated()
 }

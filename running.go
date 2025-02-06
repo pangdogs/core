@@ -19,12 +19,14 @@
 
 package core
 
+import "git.golaxy.org/core/utils/async"
+
 // iRunning 运行接口
 type iRunning interface {
 	// Run 运行
-	Run() <-chan struct{}
+	Run() async.AsyncRet
 	// Terminate 停止
-	Terminate() <-chan struct{}
+	Terminate() async.AsyncRet
 	// Terminated 已停止
-	Terminated() <-chan struct{}
+	Terminated() async.AsyncRet
 }

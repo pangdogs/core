@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"git.golaxy.org/core/ec/ectx"
 	"git.golaxy.org/core/event"
+	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/meta"
@@ -107,7 +108,7 @@ type iEntity interface {
 type EntityBehavior struct {
 	context.Context
 	terminate          context.CancelFunc
-	terminated         chan struct{}
+	terminated         chan async.Ret
 	opts               EntityOptions
 	prototype          EntityPT
 	context            iface.Cache
@@ -210,7 +211,7 @@ func (entity *EntityBehavior) init(opts EntityOptions) {
 
 func (entity *EntityBehavior) withContext(ctx context.Context) {
 	entity.Context, entity.terminate = context.WithCancel(ctx)
-	entity.terminated = make(chan struct{})
+	entity.terminated = async.MakeAsyncRet()
 }
 
 func (entity *EntityBehavior) getOptions() *EntityOptions {
@@ -249,7 +250,7 @@ func (entity *EntityBehavior) setState(state EntityState) {
 		entity.entityTreeNodeEventTab.Close()
 	case EntityState_Destroyed:
 		entity.managedCleanAllHooks()
-		close(entity.terminated)
+		async.Return(entity.terminated, async.VoidRet)
 	}
 }
 

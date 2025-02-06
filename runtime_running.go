@@ -26,12 +26,13 @@ import (
 	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
+	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 )
 
 // Run 运行
-func (rt *RuntimeBehavior) Run() <-chan struct{} {
+func (rt *RuntimeBehavior) Run() async.AsyncRet {
 	ctx := rt.ctx
 
 	select {
@@ -48,16 +49,16 @@ func (rt *RuntimeBehavior) Run() <-chan struct{} {
 
 	go rt.running()
 
-	return ectx.UnsafeContext(ctx).GetTerminatedChan()
+	return ctx.Terminated()
 }
 
 // Terminate 停止
-func (rt *RuntimeBehavior) Terminate() <-chan struct{} {
+func (rt *RuntimeBehavior) Terminate() async.AsyncRet {
 	return rt.ctx.Terminate()
 }
 
 // Terminated 已停止
-func (rt *RuntimeBehavior) Terminated() <-chan struct{} {
+func (rt *RuntimeBehavior) Terminated() async.AsyncRet {
 	return rt.ctx.Terminated()
 }
 
@@ -83,7 +84,7 @@ func (rt *RuntimeBehavior) running() {
 		parentCtx.GetWaitGroup().Done()
 	}
 
-	close(ectx.UnsafeContext(ctx).GetTerminatedChan())
+	ectx.UnsafeContext(ctx).ReturnTerminated()
 }
 
 func (rt *RuntimeBehavior) changeRunningStatus(status runtime.RunningStatus, args ...any) {
