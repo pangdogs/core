@@ -403,7 +403,7 @@ func (ad AwaitDirector) Transform(fun generic.FuncVar2[runtime.Context, async.Re
 	awaitRet := async.MakeAsyncRet()
 
 	if len(ad.asyncRets) <= 0 {
-		async.End(awaitRet)
+		async.YieldBreak(awaitRet)
 		return awaitRet
 	}
 
@@ -420,14 +420,14 @@ func (ad AwaitDirector) Transform(fun generic.FuncVar2[runtime.Context, async.Re
 					return fun.UnsafeCall(ad.rtCtx, ret, args...)
 				}, args...)
 
-				async.Yield(nil, awaitRet, callRet.Wait(ad.rtCtx))
+				async.YieldReturn(nil, awaitRet, callRet.Wait(ad.rtCtx))
 			}
 		}(ad.asyncRets[i])
 	}
 
 	go func() {
 		wg.Wait()
-		async.End(awaitRet)
+		async.YieldBreak(awaitRet)
 	}()
 
 	return awaitRet

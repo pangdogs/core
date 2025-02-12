@@ -89,12 +89,12 @@ func TimeAfterAsync(ctx context.Context, dur time.Duration) async.AsyncRet {
 
 		select {
 		case <-timer.C:
-			async.Yield(ctx, asyncRet, async.VoidRet)
+			async.YieldReturn(ctx, asyncRet, async.VoidRet)
 		case <-ctx.Done():
 			break
 		}
 
-		async.End(asyncRet)
+		async.YieldBreak(asyncRet)
 	}()
 
 	return asyncRet
@@ -114,12 +114,12 @@ func TimeAtAsync(ctx context.Context, at time.Time) async.AsyncRet {
 
 		select {
 		case <-timer.C:
-			async.Yield(ctx, asyncRet, async.VoidRet)
+			async.YieldReturn(ctx, asyncRet, async.VoidRet)
 		case <-ctx.Done():
 			break
 		}
 
-		async.End(asyncRet)
+		async.YieldBreak(asyncRet)
 	}()
 
 	return asyncRet
@@ -141,7 +141,7 @@ func TimeTickAsync(ctx context.Context, dur time.Duration) async.AsyncRet {
 		for {
 			select {
 			case <-tick.C:
-				if !async.Yield(ctx, asyncRet, async.VoidRet) {
+				if !async.YieldReturn(ctx, asyncRet, async.VoidRet) {
 					break loop
 				}
 			case <-ctx.Done():
@@ -149,7 +149,7 @@ func TimeTickAsync(ctx context.Context, dur time.Duration) async.AsyncRet {
 			}
 		}
 
-		async.End(asyncRet)
+		async.YieldBreak(asyncRet)
 	}()
 
 	return asyncRet
@@ -180,14 +180,14 @@ func ReadChanAsyncT[T any](ctx context.Context, ch <-chan T) async.AsyncRet {
 				if !ok {
 					break loop
 				}
-				if !async.Yield(ctx, asyncRet, async.MakeRet(v, nil)) {
+				if !async.YieldReturn(ctx, asyncRet, async.MakeRet(v, nil)) {
 					break loop
 				}
 			case <-ctx.Done():
 				break loop
 			}
 		}
-		async.End(asyncRet)
+		async.YieldBreak(asyncRet)
 	}()
 
 	return asyncRet

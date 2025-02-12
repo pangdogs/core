@@ -46,13 +46,13 @@ func ReturnT[T any](asyncRet chan RetT[T], ret RetT[T]) chan RetT[T] {
 	return asyncRet
 }
 
-// Yield 产出异步调用结果
-func Yield(ctx context.Context, asyncRet chan Ret, ret Ret) bool {
-	return YieldT(ctx, asyncRet, ret)
+// YieldReturn 产出异步调用结果
+func YieldReturn(ctx context.Context, asyncRet chan Ret, ret Ret) bool {
+	return YieldReturnT(ctx, asyncRet, ret)
 }
 
-// YieldT 产出异步调用结果
-func YieldT[T any](ctx context.Context, asyncRet chan RetT[T], ret RetT[T]) bool {
+// YieldReturnT 产出异步调用结果
+func YieldReturnT[T any](ctx context.Context, asyncRet chan RetT[T], ret RetT[T]) bool {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -65,13 +65,13 @@ func YieldT[T any](ctx context.Context, asyncRet chan RetT[T], ret RetT[T]) bool
 	}
 }
 
-// End 结束产出异步调用结果
-func End(asyncRet chan Ret) {
-	EndT(asyncRet)
+// YieldBreak 结束产出异步调用结果
+func YieldBreak(asyncRet chan Ret) {
+	YieldBreakT(asyncRet)
 }
 
-// EndT 结束产出异步调用结果
-func EndT[T any](asyncRet chan RetT[T]) {
+// YieldBreakT 结束产出异步调用结果
+func YieldBreakT[T any](asyncRet chan RetT[T]) {
 	close(asyncRet)
 }
 
