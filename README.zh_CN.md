@@ -37,3 +37,7 @@
 ```
 go get -u git.golaxy.org/core
 ```
+
+## 相关项目
+- [Golaxy分布式服务开发框架](https://github.com/pangdogs/framework)
+- [Golaxy游戏服务器的脚手架](https://github.com/pangdogs/scaffold)

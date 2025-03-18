@@ -37,3 +37,7 @@ For more details, see: [Examples](https://github.com/pangdogs/examples)
 ```
 go get -u git.golaxy.org/core
 ```
+
+## Associated Repositories
+- [Golaxy Distributed Service Development Framework](https://github.com/pangdogs/framework)
+- [Golaxy Developing a Game Server Scaffold](https://github.com/pangdogs/scaffold)
