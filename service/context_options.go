@@ -30,20 +30,20 @@ import (
 )
 
 type (
-	RunningHandler = generic.ActionVar2[Context, RunningStatus, any] // 运行状态变化处理器
+	RunningStatusChangedCB = generic.ActionVar2[Context, RunningStatus, any] // 运行状态变化回调
 )
 
 // ContextOptions 创建服务上下文的所有选项
 type ContextOptions struct {
-	InstanceFace   iface.Face[Context]    // 实例，用于扩展服务上下文能力
-	Context        context.Context        // 父Context
-	AutoRecover    bool                   // 是否开启panic时自动恢复
-	ReportError    chan error             // panic时错误写入的error channel
-	Name           string                 // 服务名称
-	PersistId      uid.Id                 // 服务持久化Id
-	EntityLib      pt.EntityLib           // 实体原型库
-	AddInManager   extension.AddInManager // 插件管理器
-	RunningHandler RunningHandler         // 运行状态变化处理器
+	InstanceFace           iface.Face[Context]    // 实例，用于扩展服务上下文能力
+	Context                context.Context        // 父Context
+	AutoRecover            bool                   // 是否开启panic时自动恢复
+	ReportError            chan error             // panic时错误写入的error channel
+	Name                   string                 // 服务名称
+	PersistId              uid.Id                 // 服务持久化Id
+	EntityLib              pt.EntityLib           // 实体原型库
+	AddInManager           extension.AddInManager // 插件管理器
+	RunningStatusChangedCB RunningStatusChangedCB // 运行状态变化回调
 }
 
 var With _Option
@@ -60,7 +60,7 @@ func (_Option) Default() option.Setting[ContextOptions] {
 		With.PersistId(uid.Nil)(o)
 		With.EntityLib(pt.NewEntityLib(pt.DefaultComponentLib()))(o)
 		With.AddInManager(extension.NewAddInManager())(o)
-		With.RunningHandler(nil)(o)
+		With.RunningStatusChangedCB(nil)(o)
 	}
 }
 
@@ -114,9 +114,9 @@ func (_Option) AddInManager(mgr extension.AddInManager) option.Setting[ContextOp
 	}
 }
 
-// RunningHandler 运行状态变化处理器
-func (_Option) RunningHandler(handler RunningHandler) option.Setting[ContextOptions] {
+// RunningStatusChangedCB 运行状态变化回调
+func (_Option) RunningStatusChangedCB(cb RunningStatusChangedCB) option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
-		o.RunningHandler = handler
+		o.RunningStatusChangedCB = cb
 	}
 }

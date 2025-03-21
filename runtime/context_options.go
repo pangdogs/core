@@ -29,19 +29,19 @@ import (
 )
 
 type (
-	RunningHandler = generic.ActionVar2[Context, RunningStatus, any] // 运行状态变化处理器
+	RunningStatusChangedCB = generic.ActionVar2[Context, RunningStatus, any] // 运行状态变化回调
 )
 
 // ContextOptions 创建运行时上下文的所有选项
 type ContextOptions struct {
-	InstanceFace   iface.Face[Context]    // 实例，用于扩展运行时上下文能力
-	Context        context.Context        // 父Context
-	AutoRecover    bool                   // 是否开启panic时自动恢复
-	ReportError    chan error             // panic时错误写入的error channel
-	Name           string                 // 运行时名称
-	PersistId      uid.Id                 // 运行时持久化Id
-	AddInManager   extension.AddInManager // 插件管理器
-	RunningHandler RunningHandler         // 运行状态变化处理器
+	InstanceFace           iface.Face[Context]    // 实例，用于扩展运行时上下文能力
+	Context                context.Context        // 父Context
+	AutoRecover            bool                   // 是否开启panic时自动恢复
+	ReportError            chan error             // panic时错误写入的error channel
+	Name                   string                 // 运行时名称
+	PersistId              uid.Id                 // 运行时持久化Id
+	AddInManager           extension.AddInManager // 插件管理器
+	RunningStatusChangedCB RunningStatusChangedCB // 运行状态变化回调
 }
 
 type _ContextOption struct{}
@@ -55,7 +55,7 @@ func (_ContextOption) Default() option.Setting[ContextOptions] {
 		With.Context.Name("")(o)
 		With.Context.PersistId(uid.Nil)(o)
 		With.Context.AddInManager(extension.NewAddInManager())(o)
-		With.Context.RunningHandler(nil)(o)
+		With.Context.RunningStatusChangedCB(nil)(o)
 	}
 }
 
@@ -102,9 +102,9 @@ func (_ContextOption) AddInManager(mgr extension.AddInManager) option.Setting[Co
 	}
 }
 
-// RunningHandler 运行状态变化处理器
-func (_ContextOption) RunningHandler(handler RunningHandler) option.Setting[ContextOptions] {
+// RunningStatusChangedCB 运行状态变化回调
+func (_ContextOption) RunningStatusChangedCB(cb RunningStatusChangedCB) option.Setting[ContextOptions] {
 	return func(o *ContextOptions) {
-		o.RunningHandler = handler
+		o.RunningStatusChangedCB = cb
 	}
 }

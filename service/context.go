@@ -139,5 +139,5 @@ func (ctx *ContextBehavior) getOptions() *ContextOptions {
 }
 
 func (ctx *ContextBehavior) changeRunningStatus(status RunningStatus, args ...any) {
-	ctx.opts.RunningHandler.Call(ctx.GetAutoRecover(), ctx.GetReportError(), ctx.opts.InstanceFace.Iface, status, args...)
+	ctx.opts.RunningStatusChangedCB.Call(ctx.GetAutoRecover(), ctx.GetReportError(), ctx.opts.InstanceFace.Iface, status, args...)
 }

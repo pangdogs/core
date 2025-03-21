@@ -224,7 +224,7 @@ func (ctx *ContextBehavior) getServiceCtx() service.Context {
 func (ctx *ContextBehavior) changeRunningStatus(status RunningStatus, args ...any) {
 	ctx.entityManager.changeRunningStatus(status, args...)
 
-	ctx.opts.RunningHandler.Call(ctx.GetAutoRecover(), ctx.GetReportError(), ctx.opts.InstanceFace.Iface, status, args...)
+	ctx.opts.RunningStatusChangedCB.Call(ctx.GetAutoRecover(), ctx.GetReportError(), ctx.opts.InstanceFace.Iface, status, args...)
 
 	switch status {
 	case RunningStatus_Terminated:
