@@ -29,7 +29,7 @@ import (
 )
 
 type (
-	RunningHandler = generic.DelegateVoidVar2[Context, RunningStatus, any] // 运行状态变化处理器
+	RunningHandler = generic.ActionVar2[Context, RunningStatus, any] // 运行状态变化处理器
 )
 
 // ContextOptions 创建运行时上下文的所有选项
