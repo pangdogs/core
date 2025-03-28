@@ -20,6 +20,7 @@
 package pt
 
 import (
+	"fmt"
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/types"
@@ -60,14 +61,13 @@ import (
 	5.提取失败会返回false。
 */
 func As[T any](entity ec.Entity) (*T, bool) {
-	comps := types.NewT[T]()
-	compsRV := reflect.ValueOf(comps).Elem()
+	target := types.NewT[T]()
 
-	if !as(entity, compsRV) {
+	if err := InjectRV(entity, reflect.ValueOf(target)); err != nil {
 		return nil, false
 	}
 
-	return comps, true
+	return target, true
 }
 
 // Cast 从实体中提取一些需要的组件，复合在一起直接使用，提取失败会panic。
@@ -100,11 +100,13 @@ func As[T any](entity ec.Entity) (*T, bool) {
 	5.提取失败会panic。
 */
 func Cast[T any](entity ec.Entity) *T {
-	comps, ok := As[T](entity)
-	if !ok {
-		exception.Panicf("%w: incorrect cast", ErrPt)
+	target := types.NewT[T]()
+
+	if err := InjectRV(entity, reflect.ValueOf(target)); err != nil {
+		exception.Panicf("%w: incorrect cast, %w", ErrPt, err)
 	}
-	return comps
+
+	return target
 }
 
 // Compose 创建组件复合器
@@ -145,9 +147,10 @@ func Compose[T any](entity ec.Entity) *Composite[T] {
 	cx.Cast().MethodB()
 */
 type Composite[T any] struct {
-	entity  ec.Entity
-	version int64
-	comps   T
+	entity   ec.Entity
+	version  int64
+	target   T
+	targetRV reflect.Value
 }
 
 // Entity 实体
@@ -166,49 +169,81 @@ func (c *Composite[T]) Changed() bool {
 	return c.version != ec.UnsafeEntity(c.entity).GetVersion()
 }
 
-// As 从实体提取一些需要的组件接口，复合在一起直接使用（实体更新组件后，会自动重新提取）
+// As 从实体中提取一些需要的组件，复合在一起直接使用（实体更新组件后，会自动重新提取）。
 func (c *Composite[T]) As() (*T, bool) {
 	if c.entity == nil {
 		exception.Panicf("%w: entity is nil", ErrPt)
 	}
 
 	if !c.Changed() {
-		return &c.comps, true
+		return &c.target, true
 	}
 
-	if !as(c.entity, reflect.ValueOf(c.comps)) {
+	if !c.targetRV.IsValid() {
+		c.targetRV = reflect.ValueOf(&c.target)
+	}
+
+	if err := InjectRV(c.entity, c.targetRV); err != nil {
 		return nil, false
 	}
 
 	c.version = ec.UnsafeEntity(c.entity).GetVersion()
 
-	return &c.comps, true
+	return &c.target, true
 }
 
-// Cast 从实体提取一些需要的组件接口，复合在一起直接使用，提取失败会panic（实体更新组件后，会自动重新提取）
+// Cast 从实体中提取一些需要的组件，复合在一起直接使用，提取失败会panic（实体更新组件后，会自动重新提取）。
 func (c *Composite[T]) Cast() *T {
-	comps, ok := c.As()
-	if !ok {
-		exception.Panicf("%w: incorrect cast", ErrPt)
+	if c.entity == nil {
+		exception.Panicf("%w: entity is nil", ErrPt)
 	}
-	return comps
+
+	if !c.Changed() {
+		return &c.target
+	}
+
+	if !c.targetRV.IsValid() {
+		c.targetRV = reflect.ValueOf(&c.target)
+	}
+
+	if err := InjectRV(c.entity, c.targetRV); err != nil {
+		exception.Panicf("%w: incorrect cast, %w", ErrPt, err)
+	}
+
+	c.version = ec.UnsafeEntity(c.entity).GetVersion()
+
+	return &c.target
 }
 
-func as(entity ec.Entity, compsRV reflect.Value) bool {
+// Inject 向目标注入组件
+func Inject(entity ec.Entity, target any) error {
+	return InjectRV(entity, reflect.ValueOf(target))
+}
+
+// InjectRV 向目标注入组件
+func InjectRV(entity ec.Entity, target reflect.Value) error {
 	if entity == nil {
-		return false
+		return fmt.Errorf("%w: %w: entity is nil", ErrPt, exception.ErrArgs)
 	}
 
-	compsRT := compsRV.Type()
-	if compsRT.Kind() != reflect.Struct {
-		return false
-	}
+	targetRT := target.Type()
 
-	switch compsRV.Kind() {
+retry:
+	switch target.Kind() {
 	case reflect.Struct:
-		for i := range compsRV.NumField() {
-			field := compsRT.Field(i)
-			fieldRV := compsRV.Field(i)
+		for i := range target.NumField() {
+			field := targetRT.Field(i)
+
+			switch field.Type.Kind() {
+			case reflect.Pointer:
+				if field.Type.Elem().Kind() != reflect.Struct {
+					continue
+				}
+			case reflect.Interface:
+				break
+			default:
+				continue
+			}
 
 			tag := strings.TrimSpace(field.Tag.Get("ec"))
 			if tag == "-" {
@@ -219,34 +254,46 @@ func as(entity ec.Entity, compsRV reflect.Value) bool {
 			name = strings.TrimSpace(name)
 			prototype = strings.TrimSpace(prototype)
 
+			if name == "" && prototype == "" {
+				switch field.Type.Kind() {
+				case reflect.Pointer:
+					name = field.Type.Elem().Name()
+					prototype = name
+				default:
+					continue
+				}
+			}
+
 			if name != "" {
 				comp := entity.GetComponent(name)
-				if comp == nil {
-					return false
+				if comp != nil && comp.GetReflected().Type().AssignableTo(field.Type) {
+					target.Field(i).Set(comp.GetReflected())
+					continue
 				}
-				fieldRV.Set(comp.GetReflected())
-				continue
 			}
 
 			if prototype != "" {
 				comp := entity.GetComponentByPT(prototype)
-				if comp == nil {
-					return false
+				if comp != nil && comp.GetReflected().Type().AssignableTo(field.Type) {
+					target.Field(i).Set(comp.GetReflected())
+					continue
 				}
-				fieldRV.Set(comp.GetReflected())
-				continue
 			}
-
-			comp := entity.GetComponent(field.Name)
-			if comp == nil {
-				return false
-			}
-			fieldRV.Set(comp.GetReflected())
 		}
 
-		return true
+		return nil
+
+	case reflect.Pointer, reflect.Interface:
+		if target.IsNil() {
+			return fmt.Errorf("%w: target is nil", ErrPt)
+		}
+
+		target = target.Elem()
+		targetRT = target.Type()
+
+		goto retry
 
 	default:
-		return false
+		return fmt.Errorf("%w: invalid taget %s", ErrPt, targetRT.Kind())
 	}
 }
