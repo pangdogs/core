@@ -90,12 +90,12 @@ func (u _UnsafeEntity) GetProcessedStateBits() *types.Bits16 {
 }
 
 // GetComponentNameIndex 获取组件名称索引
-func (u _UnsafeEntity) GetComponentNameIndex() generic.SliceMap[string, *generic.Node[Component]] {
+func (u _UnsafeEntity) GetComponentNameIndex() *generic.SliceMap[string, *generic.Node[Component]] {
 	return u.getComponentNameIndex()
 }
 
 // GetComponentList 获取组件列表
-func (u _UnsafeEntity) GetComponentList() generic.List[Component] {
+func (u _UnsafeEntity) GetComponentList() *generic.List[Component] {
 	return u.getComponentList()
 }
 

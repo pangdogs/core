@@ -59,8 +59,8 @@ type iComponentManager interface {
 	// RemoveComponentById 使用组件Id删除组件（需要开启为实体组件分配唯一Id特性）
 	RemoveComponentById(id uid.Id)
 
-	getComponentNameIndex() generic.SliceMap[string, *generic.Node[Component]]
-	getComponentList() generic.List[Component]
+	getComponentNameIndex() *generic.SliceMap[string, *generic.Node[Component]]
+	getComponentList() *generic.List[Component]
 	removeComponentByRef(comp Component)
 
 	IEntityComponentManagerEventTab
@@ -285,12 +285,12 @@ func (entity *EntityBehavior) EventComponentManagerFirstTouchComponent() event.I
 	return entity.entityComponentManagerEventTab.EventComponentManagerFirstTouchComponent()
 }
 
-func (entity *EntityBehavior) getComponentNameIndex() generic.SliceMap[string, *generic.Node[Component]] {
-	return entity.componentNameIndex
+func (entity *EntityBehavior) getComponentNameIndex() *generic.SliceMap[string, *generic.Node[Component]] {
+	return &entity.componentNameIndex
 }
 
-func (entity *EntityBehavior) getComponentList() generic.List[Component] {
-	return entity.components
+func (entity *EntityBehavior) getComponentList() *generic.List[Component] {
+	return &entity.components
 }
 
 func (entity *EntityBehavior) removeComponentByRef(comp Component) {
