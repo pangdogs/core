@@ -22,7 +22,7 @@ package core
 import (
 	"context"
 	"fmt"
-	"git.golaxy.org/core/ec/ectx"
+	"git.golaxy.org/core/ec/ictx"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/exception"
@@ -37,7 +37,7 @@ var (
 )
 
 // Await 异步等待结果返回
-func Await(provider ectx.CurrentContextProvider, asyncRets ...async.AsyncRet) AwaitDirector {
+func Await(provider ictx.CurrentContextProvider, asyncRets ...async.AsyncRet) AwaitDirector {
 	return AwaitDirector{
 		rtCtx:     runtime.Current(provider),
 		asyncRets: slices.DeleteFunc(asyncRets, func(asyncRet async.AsyncRet) bool { return asyncRet == nil }),

@@ -21,7 +21,7 @@ package core
 
 import (
 	"git.golaxy.org/core/ec"
-	"git.golaxy.org/core/ec/ectx"
+	"git.golaxy.org/core/ec/ictx"
 	"git.golaxy.org/core/ec/pt"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
@@ -33,7 +33,7 @@ import (
 )
 
 // BuildEntity 创建实体
-func BuildEntity(provider ectx.CurrentContextProvider, prototype string) EntityCreator {
+func BuildEntity(provider ictx.CurrentContextProvider, prototype string) EntityCreator {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrCore, ErrArgs)
 	}

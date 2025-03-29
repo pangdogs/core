@@ -22,7 +22,7 @@ package ec
 import (
 	"context"
 	"fmt"
-	"git.golaxy.org/core/ec/ectx"
+	"git.golaxy.org/core/ec/ictx"
 	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/uid"
 )
@@ -31,7 +31,7 @@ import (
 type ConcurrentEntity interface {
 	iConcurrentEntity
 	iContext
-	ectx.ConcurrentContextProvider
+	ictx.ConcurrentContextProvider
 	fmt.Stringer
 
 	// GetId 获取实体Id

@@ -21,6 +21,7 @@ package ec
 
 import (
 	"context"
+	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/types"
 	"git.golaxy.org/core/utils/uid"
@@ -82,10 +83,20 @@ func (u _UnsafeEntity) SetState(state EntityState) {
 func (u _UnsafeEntity) SetReflected(v reflect.Value) {
 	u.setReflected(v)
 }
- 
+
 // GetProcessedStateBits 获取已处理状态标志位
 func (u _UnsafeEntity) GetProcessedStateBits() *types.Bits16 {
 	return u.getProcessedStateBits()
+}
+
+// GetComponentNameIndex 获取组件名称索引
+func (u _UnsafeEntity) GetComponentNameIndex() generic.SliceMap[string, *generic.Node[Component]] {
+	return u.getComponentNameIndex()
+}
+
+// GetComponentList 获取组件列表
+func (u _UnsafeEntity) GetComponentList() generic.List[Component] {
+	return u.getComponentList()
 }
 
 // RemoveComponentByRef 使用组件引用删除组件

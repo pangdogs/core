@@ -22,7 +22,7 @@ package service
 import (
 	"fmt"
 	"git.golaxy.org/core/ec"
-	"git.golaxy.org/core/ec/ectx"
+	"git.golaxy.org/core/ec/ictx"
 	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/uid"
@@ -61,7 +61,7 @@ type Caller interface {
 }
 
 //go:linkname getCaller git.golaxy.org/core/runtime.getCaller
-func getCaller(provider ectx.ConcurrentContextProvider) async.Caller
+func getCaller(provider ictx.ConcurrentContextProvider) async.Caller
 
 func checkEntity(entity ec.Entity) error {
 	if entity.GetState() > ec.EntityState_Alive {

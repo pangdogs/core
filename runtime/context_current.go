@@ -20,23 +20,23 @@
 package runtime
 
 import (
-	"git.golaxy.org/core/ec/ectx"
+	"git.golaxy.org/core/ec/ictx"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/iface"
 )
 
 // CurrentContextProvider 当前上下文提供者
-type CurrentContextProvider = ectx.CurrentContextProvider
+type CurrentContextProvider = ictx.CurrentContextProvider
 
 // Current 获取当前运行时上下文
-func Current(provider ectx.CurrentContextProvider) Context {
+func Current(provider ictx.CurrentContextProvider) Context {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrContext, exception.ErrArgs)
 	}
 	return iface.Cache2Iface[Context](provider.GetCurrentContext())
 }
 
-func getRuntimeContext(provider ectx.CurrentContextProvider) Context {
+func getRuntimeContext(provider ictx.CurrentContextProvider) Context {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrContext, exception.ErrArgs)
 	}

@@ -22,7 +22,7 @@ package ec
 import (
 	"context"
 	"fmt"
-	"git.golaxy.org/core/ec/ectx"
+	"git.golaxy.org/core/ec/ictx"
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/generic"
@@ -36,7 +36,7 @@ import (
 type Component interface {
 	iComponent
 	iContext
-	ectx.CurrentContextProvider
+	ictx.CurrentContextProvider
 	fmt.Stringer
 
 	// GetId 获取组件Id

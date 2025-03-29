@@ -17,7 +17,7 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package ectx
+package ictx
 
 import (
 	"git.golaxy.org/core/utils/iface"

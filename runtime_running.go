@@ -21,7 +21,7 @@ package core
 
 import (
 	"context"
-	"git.golaxy.org/core/ec/ectx"
+	"git.golaxy.org/core/ec/ictx"
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/runtime"
@@ -43,7 +43,7 @@ func (rt *RuntimeBehavior) Run() async.AsyncRet {
 	default:
 	}
 
-	if parentCtx, ok := ctx.GetParentContext().(ectx.Context); ok {
+	if parentCtx, ok := ctx.GetParentContext().(ictx.Context); ok {
 		parentCtx.GetWaitGroup().Add(1)
 	}
 
@@ -80,11 +80,11 @@ func (rt *RuntimeBehavior) running() {
 
 	rt.changeRunningStatus(runtime.RunningStatus_Terminated)
 
-	if parentCtx, ok := ctx.GetParentContext().(ectx.Context); ok {
+	if parentCtx, ok := ctx.GetParentContext().(ictx.Context); ok {
 		parentCtx.GetWaitGroup().Done()
 	}
 
-	ectx.UnsafeContext(ctx).ReturnTerminated()
+	ictx.UnsafeContext(ctx).ReturnTerminated()
 }
 
 func (rt *RuntimeBehavior) changeRunningStatus(status runtime.RunningStatus, args ...any) {
@@ -150,6 +150,8 @@ func (rt *RuntimeBehavior) activateAddIn(addInStatus extension.AddInStatus) {
 
 		if cb, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInInit); ok {
 			generic.CastAction2(cb.Init).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), service.Current(rt), rt.ctx)
+		} else if cb, ok := addInStatus.InstanceFace().Iface.(LifecycleRuntimeAddInInit); ok {
+			generic.CastAction1(cb.Init).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
 		}
 
 		return extension.UnsafeAddInStatus(addInStatus).SetState(extension.AddInState_Active, extension.AddInState_Loaded)
@@ -180,6 +182,8 @@ func (rt *RuntimeBehavior) deactivateAddIn(addInStatus extension.AddInStatus) {
 
 	if cb, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInShut); ok {
 		generic.CastAction2(cb.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), service.Current(rt), rt.ctx)
+	} else if cb, ok := addInStatus.InstanceFace().Iface.(LifecycleRuntimeAddInShut); ok {
+		generic.CastAction1(cb.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
 	}
 }
 

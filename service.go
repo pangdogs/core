@@ -20,7 +20,7 @@
 package core
 
 import (
-	"git.golaxy.org/core/ec/ectx"
+	"git.golaxy.org/core/ec/ictx"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/iface"
@@ -89,7 +89,7 @@ func (svc *ServiceBehavior) init(svcCtx service.Context, opts ServiceOptions) {
 		exception.Panicf("%w: %w: svcCtx is nil", ErrService, ErrArgs)
 	}
 
-	if !ectx.UnsafeContext(svcCtx).SetPaired(true) {
+	if !ictx.UnsafeContext(svcCtx).SetPaired(true) {
 		exception.Panicf("%w: context already paired", ErrService)
 	}
 

@@ -22,7 +22,7 @@ package core
 import (
 	"context"
 	"git.golaxy.org/core/ec"
-	"git.golaxy.org/core/ec/ectx"
+	"git.golaxy.org/core/ec/ictx"
 	"git.golaxy.org/core/ec/pt"
 	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/service"
@@ -44,7 +44,7 @@ func (svc *ServiceBehavior) Run() async.AsyncRet {
 	default:
 	}
 
-	if parentCtx, ok := svc.ctx.GetParentContext().(ectx.Context); ok {
+	if parentCtx, ok := svc.ctx.GetParentContext().(ictx.Context); ok {
 		parentCtx.GetWaitGroup().Add(1)
 	}
 
@@ -85,11 +85,11 @@ loop:
 
 	svc.changeRunningStatus(service.RunningStatus_Terminated)
 
-	if parentCtx, ok := ctx.GetParentContext().(ectx.Context); ok {
+	if parentCtx, ok := ctx.GetParentContext().(ictx.Context); ok {
 		parentCtx.GetWaitGroup().Done()
 	}
 
-	ectx.UnsafeContext(ctx).ReturnTerminated()
+	ictx.UnsafeContext(ctx).ReturnTerminated()
 }
 
 func (svc *ServiceBehavior) changeRunningStatus(status service.RunningStatus, args ...any) {
@@ -185,6 +185,8 @@ func (svc *ServiceBehavior) activateAddIn(addInStatus extension.AddInStatus) {
 
 		if cb, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInInit); ok {
 			generic.CastAction2(cb.Init).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
+		} else if cb, ok := addInStatus.InstanceFace().Iface.(LifecycleServiceAddInInit); ok {
+			generic.CastAction1(cb.Init).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx)
 		}
 
 		return extension.UnsafeAddInStatus(addInStatus).SetState(extension.AddInState_Active, extension.AddInState_Loaded)
@@ -232,5 +234,7 @@ func (svc *ServiceBehavior) deactivateAddIn(addInStatus extension.AddInStatus) {
 
 	if cb, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInShut); ok {
 		generic.CastAction2(cb.Shut).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
+	} else if cb, ok := addInStatus.InstanceFace().Iface.(LifecycleServiceAddInShut); ok {
+		generic.CastAction1(cb.Shut).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx)
 	}
 }
