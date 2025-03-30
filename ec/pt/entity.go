@@ -47,6 +47,9 @@ func (pt *_Entity) Prototype() string {
 
 // InstanceRT 实体实例反射类型
 func (pt *_Entity) InstanceRT() reflect.Type {
+	if pt.instanceRT == nil {
+		return nil
+	}
 	return reflect.PointerTo(pt.instanceRT)
 }
 
