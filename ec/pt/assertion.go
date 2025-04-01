@@ -26,6 +26,7 @@ import (
 	"git.golaxy.org/core/utils/types"
 	"reflect"
 	"strings"
+	"unsafe"
 )
 
 // As 从实体中提取一些需要的组件，复合在一起直接使用。
@@ -267,7 +268,13 @@ retry:
 			if name != "" {
 				comp := entity.GetComponent(name)
 				if comp != nil && comp.GetReflected().Type().AssignableTo(field.Type) {
-					target.Field(i).Set(comp.GetReflected())
+					if field.IsExported() {
+						target.Field(i).Set(comp.GetReflected())
+					} else {
+						ptr := unsafe.Pointer(target.Field(i).UnsafeAddr())
+						fieldPtr := reflect.NewAt(field.Type, ptr).Elem()
+						fieldPtr.Set(comp.GetReflected())
+					}
 					continue
 				}
 			}
@@ -275,7 +282,13 @@ retry:
 			if prototype != "" {
 				comp := entity.GetComponentByPT(prototype)
 				if comp != nil && comp.GetReflected().Type().AssignableTo(field.Type) {
-					target.Field(i).Set(comp.GetReflected())
+					if field.IsExported() {
+						target.Field(i).Set(comp.GetReflected())
+					} else {
+						ptr := unsafe.Pointer(target.Field(i).UnsafeAddr())
+						fieldPtr := reflect.NewAt(field.Type, ptr).Elem()
+						fieldPtr.Set(comp.GetReflected())
+					}
 					continue
 				}
 			}
