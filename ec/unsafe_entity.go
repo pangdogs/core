@@ -99,6 +99,26 @@ func (u _UnsafeEntity) GetComponentList() *generic.List[Component] {
 	return u.getComponentList()
 }
 
+// GetComponentNode 使用名称查询组件节点，组件同名时，返回首个组件
+func (u _UnsafeEntity) GetComponentNode(name string) (*generic.Node[Component], bool) {
+	return u.getComponentNode(name)
+}
+
+// GetComponentNodeById 使用组件Id查询组件节点（需要开启为实体组件分配唯一Id特性）
+func (u _UnsafeEntity) GetComponentNodeById(id uid.Id) (*generic.Node[Component], bool) {
+	return u.getComponentNodeById(id)
+}
+
+// GetComponentNodeByPT 使用组件原型查询组件节点
+func (u _UnsafeEntity) GetComponentNodeByPT(prototype string) (*generic.Node[Component], bool) {
+	return u.getComponentNodeByPT(prototype)
+}
+
+// GetComponentNodeByRef 使用组件引用查询组件节点
+func (u _UnsafeEntity) GetComponentNodeByRef(comp Component) (*generic.Node[Component], bool) {
+	return u.getComponentNodeByRef(comp)
+}
+
 // RemoveComponentByRef 使用组件引用删除组件
 func (u _UnsafeEntity) RemoveComponentByRef(comp Component) {
 	u.removeComponentByRef(comp)

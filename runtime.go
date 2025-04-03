@@ -237,6 +237,8 @@ func (rt *RuntimeBehavior) onEntityManagerEntityAddComponents(entityManager runt
 		rt.observeComponentDestroySelf(components[i])
 	}
 
+	rt.changeRunningStatus(runtime.RunningStatus_EntityAddComponentsActivating, entity, components)
+
 	{
 		caller := makeEntityLifecycleCaller(entity)
 
@@ -273,6 +275,8 @@ func (rt *RuntimeBehavior) onEntityManagerEntityAddComponents(entityManager runt
 			return
 		}
 	}
+
+	rt.changeRunningStatus(runtime.RunningStatus_EntityAddComponentsActivated, entity, components)
 }
 
 // onEntityManagerEntityRemoveComponent 事件处理器：实体管理器中的实体删除组件
@@ -296,6 +300,8 @@ func (rt *RuntimeBehavior) onEntityManagerEntityRemoveComponent(entityManager ru
 		ec.UnsafeComponent(component).SetState(ec.ComponentState_Disable)
 	}
 
+	rt.changeRunningStatus(runtime.RunningStatus_EntityRemoveComponentDeactivating, entity, component)
+
 	{
 		caller := makeEntityLifecycleCaller(entity)
 
@@ -317,6 +323,8 @@ func (rt *RuntimeBehavior) onEntityManagerEntityRemoveComponent(entityManager ru
 			return
 		}
 	}
+
+	rt.changeRunningStatus(runtime.RunningStatus_EntityRemoveComponentDeactivated, entity, component)
 }
 
 // onEntityDestroySelf 事件处理器：实体销毁自身
@@ -425,6 +433,8 @@ func (rt *RuntimeBehavior) activateEntity(entity ec.Entity) {
 		return
 	}
 
+	rt.changeRunningStatus(runtime.RunningStatus_EntityActivating, entity)
+
 	{
 		caller := makeEntityLifecycleCaller(entity)
 
@@ -479,12 +489,16 @@ func (rt *RuntimeBehavior) activateEntity(entity ec.Entity) {
 	}
 
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Alive)
+
+	rt.changeRunningStatus(runtime.RunningStatus_EntityActivated, entity)
 }
 
 func (rt *RuntimeBehavior) deactivateEntity(entity ec.Entity) {
 	if entity.GetState() != ec.EntityState_Shut {
 		return
 	}
+
+	rt.changeRunningStatus(runtime.RunningStatus_EntityDeactivating, entity)
 
 	{
 		if cb, ok := entity.(LifecycleEntityShut); ok {
@@ -527,6 +541,8 @@ func (rt *RuntimeBehavior) deactivateEntity(entity ec.Entity) {
 	}
 
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Destroyed)
+
+	rt.changeRunningStatus(runtime.RunningStatus_EntityDeactivated, entity)
 }
 
 func (rt *RuntimeBehavior) awakeComponent(comp ec.Component) {

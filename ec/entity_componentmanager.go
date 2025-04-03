@@ -61,6 +61,10 @@ type iComponentManager interface {
 
 	getComponentNameIndex() *generic.SliceMap[string, *generic.Node[Component]]
 	getComponentList() *generic.List[Component]
+	getComponentNode(name string) (*generic.Node[Component], bool)
+	getComponentNodeById(id uid.Id) (*generic.Node[Component], bool)
+	getComponentNodeByPT(prototype string) (*generic.Node[Component], bool)
+	getComponentNodeByRef(comp Component) (*generic.Node[Component], bool)
 	removeComponentByRef(comp Component)
 
 	IEntityComponentManagerEventTab
@@ -293,55 +297,6 @@ func (entity *EntityBehavior) getComponentList() *generic.List[Component] {
 	return &entity.components
 }
 
-func (entity *EntityBehavior) removeComponentByRef(comp Component) {
-	compNode, ok := entity.getComponentNodeByRef(comp)
-	if !ok {
-		return
-	}
-
-	if !comp.GetRemovable() {
-		return
-	}
-
-	if comp.GetState() > ComponentState_Alive {
-		return
-	}
-
-	comp.setState(ComponentState_Detach)
-
-	_EmitEventComponentManagerRemoveComponent(entity, entity.opts.InstanceFace.Iface, comp)
-
-	if comp.GetState() >= ComponentState_Destroyed {
-		compNode.Escape()
-		entity.updateComponentNameIndex(comp.GetName())
-	}
-}
-
-func (entity *EntityBehavior) addComponent(name string, component Component) {
-	component.init(name, entity.opts.InstanceFace.Iface, component)
-
-	if at, ok := entity.getComponentNode(name); ok {
-		entity.components.TraversalAt(func(compNode *generic.Node[Component]) bool {
-			if compNode.V.GetName() == name {
-				at = compNode
-				return true
-			}
-			return false
-		}, at)
-
-		entity.components.InsertAfter(component, at)
-
-	} else {
-		compNode := entity.components.PushBack(component)
-
-		if entity.opts.ComponentNameIndexing {
-			entity.componentNameIndex.Add(name, compNode)
-		}
-	}
-
-	component.setState(ComponentState_Attach)
-}
-
 func (entity *EntityBehavior) getComponentNode(name string) (*generic.Node[Component], bool) {
 	if entity.opts.ComponentNameIndexing {
 		return entity.componentNameIndex.Get(name)
@@ -400,6 +355,55 @@ func (entity *EntityBehavior) getComponentNodeByRef(comp Component) (*generic.No
 	})
 
 	return compNode, compNode != nil
+}
+
+func (entity *EntityBehavior) removeComponentByRef(comp Component) {
+	compNode, ok := entity.getComponentNodeByRef(comp)
+	if !ok {
+		return
+	}
+
+	if !comp.GetRemovable() {
+		return
+	}
+
+	if comp.GetState() > ComponentState_Alive {
+		return
+	}
+
+	comp.setState(ComponentState_Detach)
+
+	_EmitEventComponentManagerRemoveComponent(entity, entity.opts.InstanceFace.Iface, comp)
+
+	if comp.GetState() >= ComponentState_Destroyed {
+		compNode.Escape()
+		entity.updateComponentNameIndex(comp.GetName())
+	}
+}
+
+func (entity *EntityBehavior) addComponent(name string, component Component) {
+	component.init(name, entity.opts.InstanceFace.Iface, component)
+
+	if at, ok := entity.getComponentNode(name); ok {
+		entity.components.TraversalAt(func(compNode *generic.Node[Component]) bool {
+			if compNode.V.GetName() == name {
+				at = compNode
+				return true
+			}
+			return false
+		}, at)
+
+		entity.components.InsertAfter(component, at)
+
+	} else {
+		compNode := entity.components.PushBack(component)
+
+		if entity.opts.ComponentNameIndexing {
+			entity.componentNameIndex.Add(name, compNode)
+		}
+	}
+
+	component.setState(ComponentState_Attach)
 }
 
 func (entity *EntityBehavior) touchComponent(comp Component) Component {

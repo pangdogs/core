@@ -25,11 +25,19 @@ func _() {
 	_ = x[RunningStatus_AddInActivated-14]
 	_ = x[RunningStatus_AddInDeactivating-15]
 	_ = x[RunningStatus_AddInDeactivated-16]
+	_ = x[RunningStatus_EntityActivating-17]
+	_ = x[RunningStatus_EntityActivated-18]
+	_ = x[RunningStatus_EntityDeactivating-19]
+	_ = x[RunningStatus_EntityDeactivated-20]
+	_ = x[RunningStatus_EntityAddComponentsActivating-21]
+	_ = x[RunningStatus_EntityAddComponentsActivated-22]
+	_ = x[RunningStatus_EntityRemoveComponentDeactivating-23]
+	_ = x[RunningStatus_EntityRemoveComponentDeactivated-24]
 }
 
-const _RunningStatus_name = "RunningStatus_BirthRunningStatus_StartingRunningStatus_StartedRunningStatus_FrameLoopBeginRunningStatus_FrameUpdateBeginRunningStatus_FrameUpdateEndRunningStatus_FrameLoopEndRunningStatus_RunCallBeginRunningStatus_RunCallEndRunningStatus_RunGCBeginRunningStatus_RunGCEndRunningStatus_TerminatingRunningStatus_TerminatedRunningStatus_AddInActivatingRunningStatus_AddInActivatedRunningStatus_AddInDeactivatingRunningStatus_AddInDeactivated"
+const _RunningStatus_name = "RunningStatus_BirthRunningStatus_StartingRunningStatus_StartedRunningStatus_FrameLoopBeginRunningStatus_FrameUpdateBeginRunningStatus_FrameUpdateEndRunningStatus_FrameLoopEndRunningStatus_RunCallBeginRunningStatus_RunCallEndRunningStatus_RunGCBeginRunningStatus_RunGCEndRunningStatus_TerminatingRunningStatus_TerminatedRunningStatus_AddInActivatingRunningStatus_AddInActivatedRunningStatus_AddInDeactivatingRunningStatus_AddInDeactivatedRunningStatus_EntityActivatingRunningStatus_EntityActivatedRunningStatus_EntityDeactivatingRunningStatus_EntityDeactivatedRunningStatus_EntityAddComponentsActivatingRunningStatus_EntityAddComponentsActivatedRunningStatus_EntityRemoveComponentDeactivatingRunningStatus_EntityRemoveComponentDeactivated"
 
-var _RunningStatus_index = [...]uint16{0, 19, 41, 62, 90, 120, 148, 174, 200, 224, 248, 270, 295, 319, 348, 376, 407, 437}
+var _RunningStatus_index = [...]uint16{0, 19, 41, 62, 90, 120, 148, 174, 200, 224, 248, 270, 295, 319, 348, 376, 407, 437, 467, 496, 528, 559, 602, 644, 691, 737}
 
 func (i RunningStatus) String() string {
 	if i < 0 || i >= RunningStatus(len(_RunningStatus_index)-1) {

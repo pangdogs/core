@@ -24,21 +24,29 @@ package runtime
 type RunningStatus int32
 
 const (
-	RunningStatus_Birth             RunningStatus = iota // 出生
-	RunningStatus_Starting                               // 开始启动
-	RunningStatus_Started                                // 已启动
-	RunningStatus_FrameLoopBegin                         // 帧循环开始
-	RunningStatus_FrameUpdateBegin                       // 帧更新开始
-	RunningStatus_FrameUpdateEnd                         // 帧更新结束
-	RunningStatus_FrameLoopEnd                           // 帧循环结束
-	RunningStatus_RunCallBegin                           // Call开始执行
-	RunningStatus_RunCallEnd                             // Call结束执行
-	RunningStatus_RunGCBegin                             // GC开始执行
-	RunningStatus_RunGCEnd                               // GC结束执行
-	RunningStatus_Terminating                            // 开始停止
-	RunningStatus_Terminated                             // 已停止
-	RunningStatus_AddInActivating                        // 开始激活插件
-	RunningStatus_AddInActivated                         // 插件已激活
-	RunningStatus_AddInDeactivating                      // 开始去激活插件
-	RunningStatus_AddInDeactivated                       // 插件已去激活
+	RunningStatus_Birth                             RunningStatus = iota // 出生
+	RunningStatus_Starting                                               // 开始启动
+	RunningStatus_Started                                                // 已启动
+	RunningStatus_FrameLoopBegin                                         // 帧循环开始
+	RunningStatus_FrameUpdateBegin                                       // 帧更新开始
+	RunningStatus_FrameUpdateEnd                                         // 帧更新结束
+	RunningStatus_FrameLoopEnd                                           // 帧循环结束
+	RunningStatus_RunCallBegin                                           // Call开始执行
+	RunningStatus_RunCallEnd                                             // Call结束执行
+	RunningStatus_RunGCBegin                                             // GC开始执行
+	RunningStatus_RunGCEnd                                               // GC结束执行
+	RunningStatus_Terminating                                            // 开始停止
+	RunningStatus_Terminated                                             // 已停止
+	RunningStatus_AddInActivating                                        // 开始激活插件
+	RunningStatus_AddInActivated                                         // 插件已激活
+	RunningStatus_AddInDeactivating                                      // 开始去激活插件
+	RunningStatus_AddInDeactivated                                       // 插件已去激活
+	RunningStatus_EntityActivating                                       // 开始激活实体
+	RunningStatus_EntityActivated                                        // 实体已激活
+	RunningStatus_EntityDeactivating                                     // 开始去激活实体
+	RunningStatus_EntityDeactivated                                      // 实体已去激活
+	RunningStatus_EntityAddComponentsActivating                          // 实体增加组件并开始激活
+	RunningStatus_EntityAddComponentsActivated                           // 实体增加组件并已激活
+	RunningStatus_EntityRemoveComponentDeactivating                      // 实体移除组件并开始去激活
+	RunningStatus_EntityRemoveComponentDeactivated                       // 实体移除组件并已去激活
 )
