@@ -180,7 +180,7 @@ func (svc *ServiceBehavior) activateAddIn(addInStatus extension.AddInStatus) {
 	}
 
 	if !func() bool {
-		svc.changeRunningStatus(service.RunningStatus_AddInActivating, addInStatus)
+		svc.changeRunningStatus(service.RunningStatus_ActivatingAddIn, addInStatus)
 		defer svc.changeRunningStatus(service.RunningStatus_AddInActivated, addInStatus)
 
 		if cb, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInInit); ok {
@@ -203,7 +203,7 @@ func (svc *ServiceBehavior) activateAddIn(addInStatus extension.AddInStatus) {
 					statusChanges := svc.statusChanges
 					svc.statusChangesCond.L.Unlock()
 
-					if statusChanges.status == service.RunningStatus_AddInDeactivating && statusChanges.args[0].(extension.AddInStatus) == addInStatus {
+					if statusChanges.status == service.RunningStatus_DeactivatingAddIn && statusChanges.args[0].(extension.AddInStatus) == addInStatus {
 						return false
 					}
 					if addInStatus.State() != extension.AddInState_Active {
@@ -225,7 +225,7 @@ func (svc *ServiceBehavior) deactivateAddIn(addInStatus extension.AddInStatus) {
 		return
 	}
 
-	svc.changeRunningStatus(service.RunningStatus_AddInDeactivating, addInStatus)
+	svc.changeRunningStatus(service.RunningStatus_DeactivatingAddIn, addInStatus)
 	defer svc.changeRunningStatus(service.RunningStatus_AddInDeactivated, addInStatus)
 
 	if !extension.UnsafeAddInStatus(addInStatus).SetState(extension.AddInState_Inactive, extension.AddInState_Active) {

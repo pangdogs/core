@@ -13,16 +13,16 @@ func _() {
 	_ = x[RunningStatus_Started-2]
 	_ = x[RunningStatus_Terminating-3]
 	_ = x[RunningStatus_Terminated-4]
-	_ = x[RunningStatus_AddInActivating-5]
+	_ = x[RunningStatus_ActivatingAddIn-5]
 	_ = x[RunningStatus_AddInActivated-6]
-	_ = x[RunningStatus_AddInDeactivating-7]
+	_ = x[RunningStatus_DeactivatingAddIn-7]
 	_ = x[RunningStatus_AddInDeactivated-8]
 	_ = x[RunningStatus_EntityPTDeclared-9]
 	_ = x[RunningStatus_EntityPTRedeclared-10]
 	_ = x[RunningStatus_EntityPTUndeclared-11]
 }
 
-const _RunningStatus_name = "RunningStatus_BirthRunningStatus_StartingRunningStatus_StartedRunningStatus_TerminatingRunningStatus_TerminatedRunningStatus_AddInActivatingRunningStatus_AddInActivatedRunningStatus_AddInDeactivatingRunningStatus_AddInDeactivatedRunningStatus_EntityPTDeclaredRunningStatus_EntityPTRedeclaredRunningStatus_EntityPTUndeclared"
+const _RunningStatus_name = "RunningStatus_BirthRunningStatus_StartingRunningStatus_StartedRunningStatus_TerminatingRunningStatus_TerminatedRunningStatus_ActivatingAddInRunningStatus_AddInActivatedRunningStatus_DeactivatingAddInRunningStatus_AddInDeactivatedRunningStatus_EntityPTDeclaredRunningStatus_EntityPTRedeclaredRunningStatus_EntityPTUndeclared"
 
 var _RunningStatus_index = [...]uint16{0, 19, 41, 62, 87, 111, 140, 168, 199, 229, 259, 291, 323}
 

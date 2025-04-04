@@ -29,9 +29,9 @@ const (
 	RunningStatus_Started                                 // 已启动
 	RunningStatus_Terminating                             // 开始停止
 	RunningStatus_Terminated                              // 已停止
-	RunningStatus_AddInActivating                         // 开始激活插件
+	RunningStatus_ActivatingAddIn                         // 开始激活插件
 	RunningStatus_AddInActivated                          // 插件已激活
-	RunningStatus_AddInDeactivating                       // 开始去激活插件
+	RunningStatus_DeactivatingAddIn                       // 开始去激活插件
 	RunningStatus_AddInDeactivated                        // 插件已去激活
 	RunningStatus_EntityPTDeclared                        // 实体原型已声明
 	RunningStatus_EntityPTRedeclared                      // 实体原型已重声明

@@ -237,7 +237,7 @@ func (rt *RuntimeBehavior) onEntityManagerEntityAddComponents(entityManager runt
 		rt.observeComponentDestroySelf(components[i])
 	}
 
-	rt.changeRunningStatus(runtime.RunningStatus_EntityAddComponentsActivating, entity, components)
+	rt.changeRunningStatus(runtime.RunningStatus_EntityAddComponents, entity, components)
 
 	{
 		caller := makeEntityLifecycleCaller(entity)
@@ -275,8 +275,6 @@ func (rt *RuntimeBehavior) onEntityManagerEntityAddComponents(entityManager runt
 			return
 		}
 	}
-
-	rt.changeRunningStatus(runtime.RunningStatus_EntityAddComponentsActivated, entity, components)
 }
 
 // onEntityManagerEntityRemoveComponent 事件处理器：实体管理器中的实体删除组件
@@ -300,8 +298,6 @@ func (rt *RuntimeBehavior) onEntityManagerEntityRemoveComponent(entityManager ru
 		ec.UnsafeComponent(component).SetState(ec.ComponentState_Disable)
 	}
 
-	rt.changeRunningStatus(runtime.RunningStatus_EntityRemoveComponentDeactivating, entity, component)
-
 	{
 		caller := makeEntityLifecycleCaller(entity)
 
@@ -323,8 +319,6 @@ func (rt *RuntimeBehavior) onEntityManagerEntityRemoveComponent(entityManager ru
 			return
 		}
 	}
-
-	rt.changeRunningStatus(runtime.RunningStatus_EntityRemoveComponentDeactivated, entity, component)
 }
 
 // onEntityDestroySelf 事件处理器：实体销毁自身
@@ -433,7 +427,7 @@ func (rt *RuntimeBehavior) activateEntity(entity ec.Entity) {
 		return
 	}
 
-	rt.changeRunningStatus(runtime.RunningStatus_EntityActivating, entity)
+	rt.changeRunningStatus(runtime.RunningStatus_ActivatingEntity, entity)
 
 	{
 		caller := makeEntityLifecycleCaller(entity)
@@ -445,6 +439,8 @@ func (rt *RuntimeBehavior) activateEntity(entity ec.Entity) {
 		}) {
 			return
 		}
+
+		rt.changeRunningStatus(runtime.RunningStatus_EntityInitComponents, entity)
 
 		if !caller.Call(func(state ec.EntityState) {
 			entity.RangeComponents(func(comp ec.Component) bool {
@@ -498,7 +494,7 @@ func (rt *RuntimeBehavior) deactivateEntity(entity ec.Entity) {
 		return
 	}
 
-	rt.changeRunningStatus(runtime.RunningStatus_EntityDeactivating, entity)
+	rt.changeRunningStatus(runtime.RunningStatus_DeactivatingEntity, entity)
 
 	{
 		if cb, ok := entity.(LifecycleEntityShut); ok {
