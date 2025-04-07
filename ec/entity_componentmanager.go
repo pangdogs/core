@@ -276,7 +276,7 @@ func (entity *EntityBehavior) RemoveComponentById(id uid.Id) {
 
 // EventComponentManagerAddComponents 事件：实体的组件管理器添加组件
 func (entity *EntityBehavior) EventComponentManagerAddComponents() event.IEvent {
-	return entity.entityComponentManagerEventTab.EventComponentManagerRemoveComponent()
+	return entity.entityComponentManagerEventTab.EventComponentManagerAddComponents()
 }
 
 // EventComponentManagerRemoveComponent 事件：实体的组件管理器删除组件
