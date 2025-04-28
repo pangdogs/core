@@ -128,7 +128,7 @@ func (c *EntityCreator) MergeMetaIfAbsent(dict map[string]any) *EntityCreator {
 // AssignMeta 赋值Meta信息
 func (c *EntityCreator) AssignMeta(m meta.Meta) *EntityCreator {
 	if m == nil {
-		m = meta.Make(nil)
+		m = meta.M(nil)
 	}
 	if c.meta == nil {
 		c.settings = append(c.settings, ec.With.Meta(c.meta))
