@@ -23,10 +23,10 @@ package event
 type IEventCtrl interface {
 	// Init 初始化事件
 	Init(autoRecover bool, reportError chan error, recursion EventRecursion)
-	// Open 打开事件
-	Open()
-	// Close 关闭事件
-	Close()
-	// Clean 清除全部订阅者
-	Clean()
+	// Enable 启用事件
+	Enable()
+	// Disable 关闭事件
+	Disable()
+	// UnbindAll 解绑定所有订阅者
+	UnbindAll()
 }

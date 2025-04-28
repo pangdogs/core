@@ -104,8 +104,8 @@ func (mgr *_EntityManagerBehavior) changeRunningStatus(status RunningStatus, arg
 			return true
 		})
 	case RunningStatus_Terminated:
-		mgr.entityManagerEventTab.Close()
-		mgr.entityTreeEventTab.Close()
+		mgr.entityManagerEventTab.Disable()
+		mgr.entityTreeEventTab.Disable()
 	}
 }
 

@@ -45,8 +45,8 @@ func (hook *Hook) IsBound() bool {
 	return hook.at != nil && !hook.at.Escaped()
 }
 
-// Clean 清理事件钩子（Hook）
-func Clean(hooks []Hook) {
+// UnbindHooks 解绑定事件钩子（Hook）
+func UnbindHooks(hooks []Hook) {
 	for i := range hooks {
 		hooks[i].Unbind()
 	}

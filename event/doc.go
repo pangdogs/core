@@ -38,7 +38,7 @@
 		runtime.Current(c).ActivateEvent(&c.event{事件名}, event.EventRecursion_Discard)
 	}
 	func (c *Comp) Dispose() {
-		c.event{事件名}.Close()
+		c.event{事件名}.Disable()
 	}
 
 订阅事件：

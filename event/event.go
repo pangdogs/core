@@ -57,8 +57,8 @@ type Event struct {
 	eventRecursion EventRecursion
 	emitted        int32
 	emitDepth      int32
-	opened         bool
 	inited         bool
+	enabled        bool
 }
 
 // Init 初始化事件
@@ -72,25 +72,25 @@ func (event *Event) Init(autoRecover bool, reportError chan error, eventRecursio
 	event.eventRecursion = eventRecursion
 	event.inited = true
 
-	event.Open()
+	event.Enable()
 }
 
-// Open 打开事件
-func (event *Event) Open() {
+// Enable 启用事件
+func (event *Event) Enable() {
 	if !event.inited {
 		exception.Panicf("%w: event not initialized", ErrEvent)
 	}
-	event.opened = true
+	event.enabled = true
 }
 
-// Close 关闭事件
-func (event *Event) Close() {
-	event.Clean()
-	event.opened = false
+// Disable 关闭事件
+func (event *Event) Disable() {
+	event.UnbindAll()
+	event.enabled = false
 }
 
-// Clean 清除全部订阅者
-func (event *Event) Clean() {
+// UnbindAll 解绑定所有订阅者
+func (event *Event) UnbindAll() {
 	event.subscribers.Traversal(func(node *generic.Node[Hook]) bool {
 		node.V.Unbind()
 		return true
@@ -102,7 +102,7 @@ func (event *Event) ctrl() IEventCtrl {
 }
 
 func (event *Event) emit(fun generic.Func1[iface.Cache, bool]) {
-	if !event.opened {
+	if !event.enabled {
 		return
 	}
 
@@ -123,7 +123,7 @@ func (event *Event) emit(fun generic.Func1[iface.Cache, bool]) {
 	ver := event.subscribers.Version()
 
 	event.subscribers.Traversal(func(node *generic.Node[Hook]) bool {
-		if !event.opened {
+		if !event.enabled {
 			return false
 		}
 
@@ -164,8 +164,8 @@ func (event *Event) emit(fun generic.Func1[iface.Cache, bool]) {
 }
 
 func (event *Event) newHook(subscriberFace iface.FaceAny, priority int32) Hook {
-	if !event.opened {
-		exception.Panicf("%w: event closed", ErrEvent)
+	if !event.enabled {
+		exception.Panicf("%w: event disabled", ErrEvent)
 	}
 
 	if subscriberFace.IsNil() {

@@ -207,7 +207,7 @@ func (rt *RuntimeBehavior) loopStart() []event.Hook {
 func (rt *RuntimeBehavior) loopStop(hooks []event.Hook) {
 	frame := rt.opts.Frame
 
-	event.Clean(hooks)
+	event.UnbindHooks(hooks)
 
 	if frame != nil {
 		runtime.UnsafeFrame(frame).RunningEnd()

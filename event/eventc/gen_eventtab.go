@@ -142,21 +142,21 @@ type %[1]s [%[2]d]%[4]sEvent
 func (eventTab *%[1]s) Init(autoRecover bool, reportError chan error, recursion %[4]sEventRecursion) {
 %[3]s}
 
-func (eventTab *%[1]s) Open() {
+func (eventTab *%[1]s) Enable() {
 	for i := range *eventTab {
-		(*eventTab)[i].Open()
+		(*eventTab)[i].Enable()
 	}
 }
 
-func (eventTab *%[1]s) Close() {
+func (eventTab *%[1]s) Disable() {
 	for i := range *eventTab {
-		(*eventTab)[i].Close()
+		(*eventTab)[i].Disable()
 	}
 }
 
-func (eventTab *%[1]s) Clean() {
+func (eventTab *%[1]s) UnbindAll() {
 	for i := range *eventTab {
-		(*eventTab)[i].Clean()
+		(*eventTab)[i].UnbindAll()
 	}
 }
 

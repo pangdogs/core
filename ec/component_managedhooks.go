@@ -60,20 +60,20 @@ func (comp *ComponentBehavior) ManagedGetTagHooks(tag string) []event.Hook {
 	return hooks
 }
 
-// ManagedCleanTagHooks 清理根据标签托管的事件钩子（event.Hook）
-func (comp *ComponentBehavior) ManagedCleanTagHooks(tag string) {
+// ManagedUnbindTagHooks 根据标签解绑定托管的事件钩子（event.Hook）
+func (comp *ComponentBehavior) ManagedUnbindTagHooks(tag string) {
 	idx, ok := comp.managedTagHooks.Index(tag)
 	if !ok {
 		return
 	}
-	event.Clean(comp.managedTagHooks[idx].V)
+	event.UnbindHooks(comp.managedTagHooks[idx].V)
 	comp.managedTagHooks = slices.Delete(comp.managedTagHooks, idx, idx+1)
 }
 
-func (comp *ComponentBehavior) managedCleanAllHooks() {
-	event.Clean(comp.managedHooks)
+func (comp *ComponentBehavior) managedUnbindAllHooks() {
+	event.UnbindHooks(comp.managedHooks)
 	comp.managedHooks = nil
 
-	comp.managedTagHooks.Each(func(tag string, hooks []event.Hook) { event.Clean(hooks) })
+	comp.managedTagHooks.Each(func(tag string, hooks []event.Hook) { event.UnbindHooks(hooks) })
 	comp.managedTagHooks = nil
 }

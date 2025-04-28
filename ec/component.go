@@ -63,8 +63,8 @@ type Component interface {
 	ManagedAddTagHooks(tag string, hooks ...event.Hook)
 	// ManagedGetTagHooks 根据标签获取托管事件钩子（event.Hook）
 	ManagedGetTagHooks(tag string) []event.Hook
-	// ManagedCleanTagHooks 清理根据标签托管的事件钩子（event.Hook）
-	ManagedCleanTagHooks(tag string)
+	// ManagedUnbindTagHooks 根据标签解绑定托管的事件钩子（event.Hook）
+	ManagedUnbindTagHooks(tag string)
 	// DestroySelf 销毁自身
 	DestroySelf()
 
@@ -81,7 +81,7 @@ type iComponent interface {
 	setRemovable(b bool)
 	getCallingStateBits() *types.Bits16
 	getProcessedStateBits() *types.Bits16
-	managedCleanAllHooks()
+	managedUnbindAllHooks()
 }
 
 // ComponentBehavior 组件行为，需要在开发新组件时，匿名嵌入至组件结构体中
@@ -238,9 +238,9 @@ func (comp *ComponentBehavior) setState(state ComponentState) {
 	switch comp.state {
 	case ComponentState_Death:
 		comp.terminate()
-		comp.componentEventTab.Close()
+		comp.componentEventTab.Disable()
 	case ComponentState_Destroyed:
-		comp.managedCleanAllHooks()
+		comp.managedUnbindAllHooks()
 		async.Return(comp.terminated, async.VoidRet)
 	}
 }

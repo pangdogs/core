@@ -46,21 +46,21 @@ func (eventTab *entityComponentManagerEventTab) Init(autoRecover bool, reportErr
 	(*eventTab)[2].Init(autoRecover, reportError, recursion)
 }
 
-func (eventTab *entityComponentManagerEventTab) Open() {
+func (eventTab *entityComponentManagerEventTab) Enable() {
 	for i := range *eventTab {
-		(*eventTab)[i].Open()
+		(*eventTab)[i].Enable()
 	}
 }
 
-func (eventTab *entityComponentManagerEventTab) Close() {
+func (eventTab *entityComponentManagerEventTab) Disable() {
 	for i := range *eventTab {
-		(*eventTab)[i].Close()
+		(*eventTab)[i].Disable()
 	}
 }
 
-func (eventTab *entityComponentManagerEventTab) Clean() {
+func (eventTab *entityComponentManagerEventTab) UnbindAll() {
 	for i := range *eventTab {
-		(*eventTab)[i].Clean()
+		(*eventTab)[i].UnbindAll()
 	}
 }
 

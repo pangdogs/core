@@ -82,8 +82,8 @@ type Entity interface {
 	ManagedAddTagHooks(tag string, hooks ...event.Hook)
 	// ManagedGetTagHooks 根据标签获取托管事件钩子（event.Hook）
 	ManagedGetTagHooks(tag string) []event.Hook
-	// ManagedCleanTagHooks 清理根据标签托管的事件钩子（event.Hook）
-	ManagedCleanTagHooks(tag string)
+	// ManagedUnbindTagHooks 根据标签解绑定托管的事件钩子（event.Hook）
+	ManagedUnbindTagHooks(tag string)
 	// DestroySelf 销毁自身
 	DestroySelf()
 
@@ -101,7 +101,7 @@ type iEntity interface {
 	setState(state EntityState)
 	setReflected(v reflect.Value)
 	getProcessedStateBits() *types.Bits16
-	managedCleanAllHooks()
+	managedUnbindAllHooks()
 }
 
 // EntityBehavior 实体行为，在扩展实体能力时，匿名嵌入至实体结构体中
@@ -245,11 +245,11 @@ func (entity *EntityBehavior) setState(state EntityState) {
 	switch entity.state {
 	case EntityState_Death:
 		entity.terminate()
-		entity.entityEventTab.Close()
-		entity.entityComponentManagerEventTab.Close()
-		entity.entityTreeNodeEventTab.Close()
+		entity.entityEventTab.Disable()
+		entity.entityComponentManagerEventTab.Disable()
+		entity.entityTreeNodeEventTab.Disable()
 	case EntityState_Destroyed:
-		entity.managedCleanAllHooks()
+		entity.managedUnbindAllHooks()
 		async.Return(entity.terminated, async.VoidRet)
 	}
 }

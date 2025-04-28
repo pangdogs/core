@@ -401,7 +401,7 @@ func (rt *RuntimeBehavior) observeComponentEnableChanged(comp ec.Component) {
 }
 
 func (rt *RuntimeBehavior) unobserveComponentEnableChanged(comp ec.Component) {
-	comp.ManagedCleanTagHooks(tagForRuntimeObserveComponentEnableChanged)
+	comp.ManagedUnbindTagHooks(tagForRuntimeObserveComponentEnableChanged)
 }
 
 func (rt *RuntimeBehavior) observeComponentUpdate(comp ec.Component) {
@@ -419,7 +419,7 @@ func (rt *RuntimeBehavior) observeComponentUpdate(comp ec.Component) {
 }
 
 func (rt *RuntimeBehavior) unobserveComponentUpdate(comp ec.Component) {
-	comp.ManagedCleanTagHooks(tagForRuntimeObserveComponentUpdate)
+	comp.ManagedUnbindTagHooks(tagForRuntimeObserveComponentUpdate)
 }
 
 func (rt *RuntimeBehavior) activateEntity(entity ec.Entity) {

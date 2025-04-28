@@ -85,8 +85,8 @@ type Context interface {
 	ManagedAddTagHooks(tag string, hooks ...event.Hook)
 	// ManagedGetTagHooks 根据标签获取托管事件钩子（event.Hook）
 	ManagedGetTagHooks(tag string) []event.Hook
-	// ManagedCleanTagHooks 清理根据标签托管的事件钩子（event.Hook）
-	ManagedCleanTagHooks(tag string)
+	// ManagedUnbindTagHooks 根据标签解绑定托管的事件钩子（event.Hook）
+	ManagedUnbindTagHooks(tag string)
 }
 
 type iContext interface {
@@ -228,6 +228,6 @@ func (ctx *ContextBehavior) changeRunningStatus(status RunningStatus, args ...an
 
 	switch status {
 	case RunningStatus_Terminated:
-		ctx.managedCleanAllHooks()
+		ctx.managedUnbindAllHooks()
 	}
 }

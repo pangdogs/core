@@ -60,20 +60,20 @@ func (entity *EntityBehavior) ManagedGetTagHooks(tag string) []event.Hook {
 	return hooks
 }
 
-// ManagedCleanTagHooks 清理根据标签托管的事件钩子（event.Hook）
-func (entity *EntityBehavior) ManagedCleanTagHooks(tag string) {
+// ManagedUnbindTagHooks 根据标签解绑定托管的事件钩子（event.Hook）
+func (entity *EntityBehavior) ManagedUnbindTagHooks(tag string) {
 	idx, ok := entity.managedTagHooks.Index(tag)
 	if !ok {
 		return
 	}
-	event.Clean(entity.managedTagHooks[idx].V)
+	event.UnbindHooks(entity.managedTagHooks[idx].V)
 	entity.managedTagHooks = slices.Delete(entity.managedTagHooks, idx, idx+1)
 }
 
-func (entity *EntityBehavior) managedCleanAllHooks() {
-	event.Clean(entity.managedHooks)
+func (entity *EntityBehavior) managedUnbindAllHooks() {
+	event.UnbindHooks(entity.managedHooks)
 	entity.managedHooks = nil
 
-	entity.managedTagHooks.Each(func(tag string, hooks []event.Hook) { event.Clean(hooks) })
+	entity.managedTagHooks.Each(func(tag string, hooks []event.Hook) { event.UnbindHooks(hooks) })
 	entity.managedTagHooks = nil
 }

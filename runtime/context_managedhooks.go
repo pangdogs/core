@@ -60,20 +60,20 @@ func (ctx *ContextBehavior) ManagedGetTagHooks(tag string) []event.Hook {
 	return hooks
 }
 
-// ManagedCleanTagHooks 清理根据标签托管的事件钩子（event.Hook）
-func (ctx *ContextBehavior) ManagedCleanTagHooks(tag string) {
+// ManagedUnbindTagHooks 根据标签解绑定托管的事件钩子（event.Hook）
+func (ctx *ContextBehavior) ManagedUnbindTagHooks(tag string) {
 	idx, ok := ctx.managedTagHooks.Index(tag)
 	if !ok {
 		return
 	}
-	event.Clean(ctx.managedTagHooks[idx].V)
+	event.UnbindHooks(ctx.managedTagHooks[idx].V)
 	ctx.managedTagHooks = slices.Delete(ctx.managedTagHooks, idx, idx+1)
 }
 
-func (ctx *ContextBehavior) managedCleanAllHooks() {
-	event.Clean(ctx.managedHooks)
+func (ctx *ContextBehavior) managedUnbindAllHooks() {
+	event.UnbindHooks(ctx.managedHooks)
 	ctx.managedHooks = nil
 
-	ctx.managedTagHooks.Each(func(tag string, hooks []event.Hook) { event.Clean(hooks) })
+	ctx.managedTagHooks.Each(func(tag string, hooks []event.Hook) { event.UnbindHooks(hooks) })
 	ctx.managedTagHooks = nil
 }

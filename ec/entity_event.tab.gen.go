@@ -40,21 +40,21 @@ func (eventTab *entityEventTab) Init(autoRecover bool, reportError chan error, r
 	(*eventTab)[0].Init(autoRecover, reportError, event.EventRecursion_Discard)
 }
 
-func (eventTab *entityEventTab) Open() {
+func (eventTab *entityEventTab) Enable() {
 	for i := range *eventTab {
-		(*eventTab)[i].Open()
+		(*eventTab)[i].Enable()
 	}
 }
 
-func (eventTab *entityEventTab) Close() {
+func (eventTab *entityEventTab) Disable() {
 	for i := range *eventTab {
-		(*eventTab)[i].Close()
+		(*eventTab)[i].Disable()
 	}
 }
 
-func (eventTab *entityEventTab) Clean() {
+func (eventTab *entityEventTab) UnbindAll() {
 	for i := range *eventTab {
-		(*eventTab)[i].Clean()
+		(*eventTab)[i].UnbindAll()
 	}
 }
 

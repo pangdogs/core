@@ -29,24 +29,24 @@ func (c *CombineEventTab) Init(autoRecover bool, reportError chan error, recursi
 	}
 }
 
-// Open 打开事件
-func (c *CombineEventTab) Open() {
+// Enable 启用事件
+func (c *CombineEventTab) Enable() {
 	for _, tab := range *c {
-		tab.Ctrl().Open()
+		tab.Ctrl().Enable()
 	}
 }
 
-// Close 关闭事件
-func (c *CombineEventTab) Close() {
+// Disable 关闭事件
+func (c *CombineEventTab) Disable() {
 	for _, tab := range *c {
-		tab.Ctrl().Close()
+		tab.Ctrl().Disable()
 	}
 }
 
-// Clean 清除全部订阅者
-func (c *CombineEventTab) Clean() {
+// UnbindAll 解绑定所有订阅者
+func (c *CombineEventTab) UnbindAll() {
 	for _, tab := range *c {
-		tab.Ctrl().Clean()
+		tab.Ctrl().UnbindAll()
 	}
 }
 
