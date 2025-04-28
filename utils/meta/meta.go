@@ -86,6 +86,6 @@ func (c *MetaCreator) Get() Meta {
 	return c.meta
 }
 
-func (c *MetaCreator) New() Meta {
+func (c *MetaCreator) Make() Meta {
 	return c.meta.Clone()
 }
