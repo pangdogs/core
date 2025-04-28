@@ -21,45 +21,71 @@ package meta
 
 import "git.golaxy.org/core/utils/generic"
 
-func BuildMeta() MetaCreator {
-	return MetaCreator{}
+type Meta = generic.SliceMap[string, any]
+
+func Make(dict map[string]any) Meta {
+	return generic.MakeSliceMapFromGoMap(dict)
+}
+
+func M(dict map[string]any) Meta {
+	return Make(dict)
+}
+
+func Build() *MetaCreator {
+	return &MetaCreator{}
+}
+
+func B() *MetaCreator {
+	return Build()
 }
 
 type MetaCreator struct {
 	meta Meta
 }
 
-func (c MetaCreator) Add(k string, v any) MetaCreator {
+func (c *MetaCreator) Add(k string, v any) *MetaCreator {
 	c.meta.Add(k, v)
 	return c
 }
 
-func (c MetaCreator) Delete(k string) MetaCreator {
-	c.meta.Delete(k)
+func (c *MetaCreator) TryAdd(k string, v any) *MetaCreator {
+	c.meta.TryAdd(k, v)
 	return c
 }
 
-func (c MetaCreator) IncrementalMerge(m map[string]any) MetaCreator {
-	for k, v := range m {
-		c.meta.TryAdd(k, v)
-	}
-	return c
-}
-
-func (c MetaCreator) OverwriteMerge(m map[string]any) MetaCreator {
-	for k, v := range m {
+func (c *MetaCreator) Merge(dict map[string]any) *MetaCreator {
+	for k, v := range dict {
 		c.meta.Add(k, v)
 	}
 	return c
 }
 
-func (c MetaCreator) Clean() MetaCreator {
+func (c *MetaCreator) MergeIfAbsent(dict map[string]any) *MetaCreator {
+	for k, v := range dict {
+		c.meta.TryAdd(k, v)
+	}
+	return c
+}
+
+func (c *MetaCreator) Assign(m Meta) *MetaCreator {
+	c.meta = m
+	return c
+}
+
+func (c *MetaCreator) Delete(k string) *MetaCreator {
+	c.meta.Delete(k)
+	return c
+}
+
+func (c *MetaCreator) Clear() *MetaCreator {
 	c.meta = Meta{}
 	return c
 }
 
-func (c MetaCreator) Get() Meta {
+func (c *MetaCreator) Get() Meta {
 	return c.meta
 }
 
-type Meta = generic.SliceMap[string, any]
+func (c *MetaCreator) New() Meta {
+	return c.meta.Clone()
+}

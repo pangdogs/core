@@ -24,15 +24,16 @@ import (
 	"git.golaxy.org/core/ec/pt"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/exception"
+	"git.golaxy.org/core/utils/meta"
 	"github.com/elliotchance/pie/v2"
 )
 
 // BuildEntityPT 创建实体原型
-func BuildEntityPT(svcCtx service.Context, prototype string) EntityPTCreator {
+func BuildEntityPT(svcCtx service.Context, prototype string) *EntityPTCreator {
 	if svcCtx == nil {
 		exception.Panicf("%w: %w: svcCtx is nil", ErrCore, ErrArgs)
 	}
-	c := EntityPTCreator{
+	c := &EntityPTCreator{
 		svcCtx: svcCtx,
 	}
 	c.atti.Prototype = prototype
@@ -47,45 +48,61 @@ type EntityPTCreator struct {
 }
 
 // SetInstance 设置实例，用于扩展实体能力
-func (c EntityPTCreator) SetInstance(instance any) EntityPTCreator {
-	c.atti.Instance = instance
+func (c *EntityPTCreator) SetInstance(instance any) *EntityPTCreator {
+	c.atti.SetInstance(instance)
 	return c
 }
 
 // SetScope 设置实体的可访问作用域
-func (c EntityPTCreator) SetScope(scope ec.Scope) EntityPTCreator {
-	c.atti.Scope = &scope
+func (c *EntityPTCreator) SetScope(scope ec.Scope) *EntityPTCreator {
+	c.atti.SetScope(scope)
 	return c
 }
 
 // SetComponentNameIndexing 设置是否开启组件名称索引
-func (c EntityPTCreator) SetComponentNameIndexing(b bool) EntityPTCreator {
-	c.atti.ComponentNameIndexing = &b
+func (c *EntityPTCreator) SetComponentNameIndexing(b bool) *EntityPTCreator {
+	c.atti.SetComponentNameIndexing(b)
 	return c
 }
 
 // SetComponentAwakeOnFirstTouch 设置当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
-func (c EntityPTCreator) SetComponentAwakeOnFirstTouch(b bool) EntityPTCreator {
-	c.atti.ComponentAwakeOnFirstTouch = &b
+func (c *EntityPTCreator) SetComponentAwakeOnFirstTouch(b bool) *EntityPTCreator {
+	c.atti.SetComponentAwakeOnFirstTouch(b)
 	return c
 }
 
 // SetComponentUniqueID 设置是否为实体组件分配唯一Id
-func (c EntityPTCreator) SetComponentUniqueID(b bool) EntityPTCreator {
-	c.atti.ComponentUniqueID = &b
+func (c *EntityPTCreator) SetComponentUniqueID(b bool) *EntityPTCreator {
+	c.atti.SetComponentUniqueID(b)
 	return c
 }
 
 // SetExtra 设置自定义属性
-func (c EntityPTCreator) SetExtra(extra map[string]any) EntityPTCreator {
-	for k, v := range extra {
-		c.atti.Extra.Add(k, v)
-	}
+func (c *EntityPTCreator) SetExtra(dict map[string]any) *EntityPTCreator {
+	c.atti.SetExtra(dict)
+	return c
+}
+
+// MergeExtra 合并自定义属性，如果存在则覆盖
+func (c *EntityPTCreator) MergeExtra(dict map[string]any) *EntityPTCreator {
+	c.atti.MergeExtra(dict)
+	return c
+}
+
+// MergeExtraIfAbsent 合并自定义属性，如果存在则跳过
+func (c *EntityPTCreator) MergeExtraIfAbsent(dict map[string]any) *EntityPTCreator {
+	c.atti.MergeIfAbsent(dict)
+	return c
+}
+
+// AssignExtra 赋值自定义属性
+func (c *EntityPTCreator) AssignExtra(m meta.Meta) *EntityPTCreator {
+	c.atti.AssignExtra(m)
 	return c
 }
 
 // AddComponent 添加组件
-func (c EntityPTCreator) AddComponent(comp any, name ...string) EntityPTCreator {
+func (c *EntityPTCreator) AddComponent(comp any, name ...string) *EntityPTCreator {
 	switch v := comp.(type) {
 	case pt.ComponentAttribute, *pt.ComponentAttribute:
 		c.comps = append(c.comps, v)
@@ -96,7 +113,7 @@ func (c EntityPTCreator) AddComponent(comp any, name ...string) EntityPTCreator 
 }
 
 // Declare 声明实体原型
-func (c EntityPTCreator) Declare() {
+func (c *EntityPTCreator) Declare() {
 	if c.svcCtx == nil {
 		exception.Panicf("%w: svcCtx is nil", ErrCore)
 	}
@@ -104,7 +121,7 @@ func (c EntityPTCreator) Declare() {
 }
 
 // Redeclare 重新声明实体原型
-func (c EntityPTCreator) Redeclare() {
+func (c *EntityPTCreator) Redeclare() {
 	if c.svcCtx == nil {
 		exception.Panicf("%w: svcCtx is nil", ErrCore)
 	}

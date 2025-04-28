@@ -3,6 +3,7 @@ package ec
 import (
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
+	"git.golaxy.org/core/utils/meta"
 	"git.golaxy.org/core/utils/option"
 	"reflect"
 )
@@ -35,11 +36,11 @@ type EntityPT interface {
 
 // BuiltinComponent 实体原型中的组件信息
 type BuiltinComponent struct {
-	PT        ComponentPT                   // 组件原型
-	Offset    int                           // 组件位置
-	Name      string                        // 组件名称
-	Removable bool                          // 可以删除
-	Extra     generic.SliceMap[string, any] // 自定义原型属性
+	PT        ComponentPT // 组件原型
+	Offset    int         // 组件位置
+	Name      string      // 组件名称
+	Removable bool        // 可以删除
+	Extra     meta.Meta   // 自定义原型属性
 }
 
 // ComponentPT 组件原型接口
@@ -91,7 +92,7 @@ func (_NoneEntityPT) ComponentUniqueID() *bool {
 }
 
 // Extra 自定义原型属性
-func (_NoneEntityPT) Extra() generic.SliceMap[string, any] {
+func (_NoneEntityPT) Extra() meta.Meta {
 	return nil
 }
 

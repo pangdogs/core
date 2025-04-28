@@ -42,20 +42,20 @@ func NewUnorderedSliceMap[K comparable, V any](kvs ...UnorderedKV[K, V]) *Unorde
 	return &m
 }
 
-func MakeUnorderedSliceMapFromGoMap[K comparable, V any](m map[K]V) UnorderedSliceMap[K, V] {
-	sm := make(UnorderedSliceMap[K, V], 0, len(m))
-	for k, v := range m {
-		sm.Add(k, v)
+func MakeUnorderedSliceMapFromGoMap[K comparable, V any](dict map[K]V) UnorderedSliceMap[K, V] {
+	m := make(UnorderedSliceMap[K, V], 0, len(dict))
+	for k, v := range dict {
+		m.Add(k, v)
 	}
-	return sm
+	return m
 }
 
-func NewUnorderedSliceMapFromGoMap[K comparable, V any](m map[K]V) *UnorderedSliceMap[K, V] {
-	sm := make(UnorderedSliceMap[K, V], 0, len(m))
-	for k, v := range m {
-		sm.Add(k, v)
+func NewUnorderedSliceMapFromGoMap[K comparable, V any](dict map[K]V) *UnorderedSliceMap[K, V] {
+	m := make(UnorderedSliceMap[K, V], 0, len(dict))
+	for k, v := range dict {
+		m.Add(k, v)
 	}
-	return &sm
+	return &m
 }
 
 type UnorderedKV[K comparable, V any] struct {

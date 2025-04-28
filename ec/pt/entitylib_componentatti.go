@@ -21,54 +21,57 @@ package pt
 
 import (
 	"git.golaxy.org/core/utils/exception"
-	"git.golaxy.org/core/utils/generic"
+	"git.golaxy.org/core/utils/meta"
 )
 
 // BuildComponentAttribute 创建组件原型属性，用于注册实体原型时自定义相关属性
-func BuildComponentAttribute(instance any) ComponentAttribute {
+func BuildComponentAttribute(instance any) *ComponentAttribute {
 	if instance == nil {
 		exception.Panicf("%w: %w: instance is nil", ErrPt, exception.ErrArgs)
 	}
-	return ComponentAttribute{
+	return &ComponentAttribute{
 		Instance: instance,
 	}
 }
 
 // ComponentAttribute 组件原型属性
 type ComponentAttribute struct {
-	Instance  any                           // 组件实例（必填）
-	Name      string                        // 组件名称
-	Removable bool                          // 是否可以删除
-	Extra     generic.SliceMap[string, any] // 自定义属性
+	Instance  any       // 组件实例（必填）
+	Name      string    // 组件名称
+	Removable bool      // 是否可以删除
+	Extra     meta.Meta // 自定义属性
 }
 
-func (atti ComponentAttribute) SetName(name string) ComponentAttribute {
+func (atti *ComponentAttribute) SetName(name string) *ComponentAttribute {
 	atti.Name = name
 	return atti
 }
 
-func (atti ComponentAttribute) SetRemovable(b bool) ComponentAttribute {
+func (atti *ComponentAttribute) SetRemovable(b bool) *ComponentAttribute {
 	atti.Removable = b
 	return atti
 }
 
-func (atti ComponentAttribute) SetExtra(extra map[string]any) ComponentAttribute {
-	atti.Extra = generic.MakeSliceMapFromGoMap(extra)
+func (atti *ComponentAttribute) SetExtra(dict map[string]any) *ComponentAttribute {
+	atti.Extra = meta.M(dict)
 	return atti
 }
 
-func (atti ComponentAttribute) OverrideMergeExtra(extra map[string]any) ComponentAttribute {
-	atti.Extra = atti.Extra.Clone()
-	for k, v := range extra {
+func (atti *ComponentAttribute) MergeExtra(dict map[string]any) *ComponentAttribute {
+	for k, v := range dict {
 		atti.Extra.Add(k, v)
 	}
 	return atti
 }
 
-func (atti ComponentAttribute) IncrementalMergeExtra(extra map[string]any) ComponentAttribute {
-	atti.Extra = atti.Extra.Clone()
-	for k, v := range extra {
+func (atti *ComponentAttribute) MergeExtraIfAbsent(dict map[string]any) *ComponentAttribute {
+	for k, v := range dict {
 		atti.Extra.TryAdd(k, v)
 	}
+	return atti
+}
+
+func (atti *ComponentAttribute) AssignExtra(m meta.Meta) *ComponentAttribute {
+	atti.Extra = m
 	return atti
 }

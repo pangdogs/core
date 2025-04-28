@@ -22,8 +22,8 @@ package pt
 import (
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/utils/exception"
-	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
+	"git.golaxy.org/core/utils/meta"
 	"git.golaxy.org/core/utils/option"
 	"reflect"
 	"slices"
@@ -36,7 +36,7 @@ type _Entity struct {
 	componentNameIndexing      *bool
 	componentAwakeOnFirstTouch *bool
 	componentUniqueID          *bool
-	extra                      generic.SliceMap[string, any]
+	extra                      meta.Meta
 	components                 []ec.BuiltinComponent
 }
 
@@ -79,7 +79,7 @@ func (pt *_Entity) CountComponents() int {
 }
 
 // Extra 自定义原型属性
-func (pt *_Entity) Extra() generic.SliceMap[string, any] {
+func (pt *_Entity) Extra() meta.Meta {
 	return pt.extra
 }
 

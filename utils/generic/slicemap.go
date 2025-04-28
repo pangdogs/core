@@ -43,20 +43,20 @@ func NewSliceMap[K cmp.Ordered, V any](kvs ...KV[K, V]) *SliceMap[K, V] {
 	return &m
 }
 
-func MakeSliceMapFromGoMap[K cmp.Ordered, V any](m map[K]V) SliceMap[K, V] {
-	sm := make(SliceMap[K, V], 0, len(m))
-	for k, v := range m {
-		sm.Add(k, v)
+func MakeSliceMapFromGoMap[K cmp.Ordered, V any](dict map[K]V) SliceMap[K, V] {
+	m := make(SliceMap[K, V], 0, len(dict))
+	for k, v := range dict {
+		m.Add(k, v)
 	}
-	return sm
+	return m
 }
 
-func NewSliceMapFromGoMap[K cmp.Ordered, V any](m map[K]V) *SliceMap[K, V] {
-	sm := make(SliceMap[K, V], 0, len(m))
-	for k, v := range m {
-		sm.Add(k, v)
+func NewSliceMapFromGoMap[K cmp.Ordered, V any](dict map[K]V) *SliceMap[K, V] {
+	m := make(SliceMap[K, V], 0, len(dict))
+	for k, v := range dict {
+		m.Add(k, v)
 	}
-	return &sm
+	return &m
 }
 
 type KV[K cmp.Ordered, V any] struct {
