@@ -25,16 +25,6 @@ import (
 	"git.golaxy.org/core/utils/meta"
 )
 
-// BuildEntityAttribute 创建实体原型属性，用于注册实体原型时自定义相关属性
-func BuildEntityAttribute(prototype string) *EntityAttribute {
-	if prototype == "" {
-		exception.Panicf("%w: %w: prototype is empty", ErrPt, exception.ErrArgs)
-	}
-	return &EntityAttribute{
-		Prototype: prototype,
-	}
-}
-
 // EntityAttribute 实体原型属性
 type EntityAttribute struct {
 	Prototype                  string    // 实体原型名称（必填）
@@ -46,51 +36,71 @@ type EntityAttribute struct {
 	Extra                      meta.Meta // 自定义属性
 }
 
-func (atti *EntityAttribute) SetInstance(instance any) *EntityAttribute {
-	atti.Instance = instance
-	return atti
-}
-
-func (atti *EntityAttribute) SetScope(scope ec.Scope) *EntityAttribute {
-	atti.Scope = &scope
-	return atti
-}
-
-func (atti *EntityAttribute) SetComponentNameIndexing(b bool) *EntityAttribute {
-	atti.ComponentNameIndexing = &b
-	return atti
-}
-
-func (atti *EntityAttribute) SetComponentAwakeOnFirstTouch(b bool) *EntityAttribute {
-	atti.ComponentAwakeOnFirstTouch = &b
-	return atti
-}
-
-func (atti *EntityAttribute) SetComponentUniqueID(b bool) *EntityAttribute {
-	atti.ComponentUniqueID = &b
-	return atti
-}
-
-func (atti *EntityAttribute) SetExtra(dict map[string]any) *EntityAttribute {
-	atti.Extra = meta.M(dict)
-	return atti
-}
-
-func (atti *EntityAttribute) MergeExtra(dict map[string]any) *EntityAttribute {
-	for k, v := range dict {
-		atti.Extra.Add(k, v)
+// BuildEntityAttribute 创建实体原型属性，用于注册实体原型时自定义相关属性
+func BuildEntityAttribute(prototype string) *EntityAttributeCreator {
+	if prototype == "" {
+		exception.Panicf("%w: %w: prototype is empty", ErrPt, exception.ErrArgs)
 	}
-	return atti
-}
-
-func (atti *EntityAttribute) MergeIfAbsent(dict map[string]any) *EntityAttribute {
-	for k, v := range dict {
-		atti.Extra.TryAdd(k, v)
+	return &EntityAttributeCreator{
+		atti: EntityAttribute{
+			Prototype: prototype,
+		},
 	}
-	return atti
 }
 
-func (atti *EntityAttribute) AssignExtra(m meta.Meta) *EntityAttribute {
-	atti.Extra = m
-	return atti
+type EntityAttributeCreator struct {
+	atti EntityAttribute
+}
+
+func (c *EntityAttributeCreator) SetInstance(instance any) *EntityAttributeCreator {
+	c.atti.Instance = instance
+	return c
+}
+
+func (c *EntityAttributeCreator) SetScope(scope ec.Scope) *EntityAttributeCreator {
+	c.atti.Scope = &scope
+	return c
+}
+
+func (c *EntityAttributeCreator) SetComponentNameIndexing(b bool) *EntityAttributeCreator {
+	c.atti.ComponentNameIndexing = &b
+	return c
+}
+
+func (c *EntityAttributeCreator) SetComponentAwakeOnFirstTouch(b bool) *EntityAttributeCreator {
+	c.atti.ComponentAwakeOnFirstTouch = &b
+	return c
+}
+
+func (c *EntityAttributeCreator) SetComponentUniqueID(b bool) *EntityAttributeCreator {
+	c.atti.ComponentUniqueID = &b
+	return c
+}
+
+func (c *EntityAttributeCreator) SetExtra(dict map[string]any) *EntityAttributeCreator {
+	c.atti.Extra = meta.M(dict)
+	return c
+}
+
+func (c *EntityAttributeCreator) MergeExtra(dict map[string]any) *EntityAttributeCreator {
+	for k, v := range dict {
+		c.atti.Extra.Add(k, v)
+	}
+	return c
+}
+
+func (c *EntityAttributeCreator) MergeIfAbsent(dict map[string]any) *EntityAttributeCreator {
+	for k, v := range dict {
+		c.atti.Extra.TryAdd(k, v)
+	}
+	return c
+}
+
+func (c *EntityAttributeCreator) AssignExtra(m meta.Meta) *EntityAttributeCreator {
+	c.atti.Extra = m
+	return c
+}
+
+func (c *EntityAttributeCreator) Get() *EntityAttribute {
+	return &c.atti
 }
