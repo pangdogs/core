@@ -101,6 +101,7 @@ func (c *EntityAttributeCreator) AssignExtra(m meta.Meta) *EntityAttributeCreato
 	return c
 }
 
-func (c *EntityAttributeCreator) Get() *EntityAttribute {
-	return &c.atti
+func (c *EntityAttributeCreator) New() *EntityAttribute {
+	atti := c.atti
+	return &atti
 }

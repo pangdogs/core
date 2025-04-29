@@ -82,6 +82,7 @@ func (c *ComponentAttributeCreator) AssignExtra(m meta.Meta) *ComponentAttribute
 	return c
 }
 
-func (c *ComponentAttributeCreator) Get() *ComponentAttribute {
-	return &c.atti
+func (c *ComponentAttributeCreator) New() *ComponentAttribute {
+	atti := c.atti
+	return &atti
 }

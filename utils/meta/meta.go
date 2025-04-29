@@ -82,10 +82,6 @@ func (c *MetaCreator) Clear() *MetaCreator {
 	return c
 }
 
-func (c *MetaCreator) Get() Meta {
-	return c.meta
-}
-
 func (c *MetaCreator) Make() Meta {
 	return c.meta.Clone()
 }
