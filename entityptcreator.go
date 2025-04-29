@@ -133,7 +133,7 @@ func (c *EntityPTCreator) AddComponent(comp any, name ...string) *EntityPTCreato
 	case pt.ComponentAttribute, *pt.ComponentAttribute:
 		c.comps = append(c.comps, v)
 	default:
-		c.comps = append(c.comps, pt.BuildComponentAttribute(comp).SetName(pie.First(name)).Get())
+		c.comps = append(c.comps, pt.BuildComponentAttribute(comp).SetName(pie.First(name)).New())
 	}
 	return c
 }
@@ -146,7 +146,7 @@ func (c *EntityPTCreator) Declare() {
 	if c.attiCreator == nil {
 		exception.Panicf("%w: attiCreator is nil", ErrCore)
 	}
-	c.svcCtx.GetEntityLib().Declare(c.attiCreator.Get(), c.comps...)
+	c.svcCtx.GetEntityLib().Declare(c.attiCreator.New(), c.comps...)
 }
 
 // Redeclare 重新声明实体原型
@@ -157,5 +157,5 @@ func (c *EntityPTCreator) Redeclare() {
 	if c.attiCreator == nil {
 		exception.Panicf("%w: attiCreator is nil", ErrCore)
 	}
-	c.svcCtx.GetEntityLib().Redeclare(c.attiCreator.Get(), c.comps...)
+	c.svcCtx.GetEntityLib().Redeclare(c.attiCreator.New(), c.comps...)
 }
