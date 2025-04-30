@@ -31,6 +31,14 @@ func M(dict map[string]any) Meta {
 	return Make(dict)
 }
 
+func New(dict map[string]any) *Meta {
+	return generic.NewSliceMapFromGoMap(dict)
+}
+
+func N(dict map[string]any) *Meta {
+	return New(dict)
+}
+
 func Build() *MetaCreator {
 	return &MetaCreator{}
 }
@@ -84,4 +92,9 @@ func (c *MetaCreator) Clear() *MetaCreator {
 
 func (c *MetaCreator) Make() Meta {
 	return c.meta.Clone()
+}
+
+func (c *MetaCreator) New() *Meta {
+	m := c.meta.Clone()
+	return &m
 }
