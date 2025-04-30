@@ -24,6 +24,16 @@ import (
 	"git.golaxy.org/core/utils/meta"
 )
 
+// NewComponentAttribute 创建组件原型属性，用于注册实体原型时自定义相关属性
+func NewComponentAttribute(instance any) *ComponentAttribute {
+	if instance == nil {
+		exception.Panicf("%w: %w: instance is nil", ErrPt, exception.ErrArgs)
+	}
+	return &ComponentAttribute{
+		Instance: instance,
+	}
+}
+
 // ComponentAttribute 组件原型属性
 type ComponentAttribute struct {
 	Instance  any       // 组件实例（必填）
@@ -32,57 +42,36 @@ type ComponentAttribute struct {
 	Extra     meta.Meta // 自定义属性
 }
 
-// BuildComponentAttribute 创建组件原型属性，用于注册实体原型时自定义相关属性
-func BuildComponentAttribute(instance any) *ComponentAttributeCreator {
-	if instance == nil {
-		exception.Panicf("%w: %w: instance is nil", ErrPt, exception.ErrArgs)
-	}
-	return &ComponentAttributeCreator{
-		atti: ComponentAttribute{
-			Instance: instance,
-		},
-	}
+func (atti *ComponentAttribute) SetName(name string) *ComponentAttribute {
+	atti.Name = name
+	return atti
 }
 
-type ComponentAttributeCreator struct {
-	atti ComponentAttribute
+func (atti *ComponentAttribute) SetRemovable(b bool) *ComponentAttribute {
+	atti.Removable = b
+	return atti
 }
 
-func (c *ComponentAttributeCreator) SetName(name string) *ComponentAttributeCreator {
-	c.atti.Name = name
-	return c
+func (atti *ComponentAttribute) SetExtra(dict map[string]any) *ComponentAttribute {
+	atti.Extra = meta.M(dict)
+	return atti
 }
 
-func (c *ComponentAttributeCreator) SetRemovable(b bool) *ComponentAttributeCreator {
-	c.atti.Removable = b
-	return c
-}
-
-func (c *ComponentAttributeCreator) SetExtra(dict map[string]any) *ComponentAttributeCreator {
-	c.atti.Extra = meta.M(dict)
-	return c
-}
-
-func (c *ComponentAttributeCreator) MergeExtra(dict map[string]any) *ComponentAttributeCreator {
+func (atti *ComponentAttribute) MergeExtra(dict map[string]any) *ComponentAttribute {
 	for k, v := range dict {
-		c.atti.Extra.Add(k, v)
+		atti.Extra.Add(k, v)
 	}
-	return c
+	return atti
 }
 
-func (c *ComponentAttributeCreator) MergeExtraIfAbsent(dict map[string]any) *ComponentAttributeCreator {
+func (atti *ComponentAttribute) MergeExtraIfAbsent(dict map[string]any) *ComponentAttribute {
 	for k, v := range dict {
-		c.atti.Extra.TryAdd(k, v)
+		atti.Extra.TryAdd(k, v)
 	}
-	return c
+	return atti
 }
 
-func (c *ComponentAttributeCreator) AssignExtra(m meta.Meta) *ComponentAttributeCreator {
-	c.atti.Extra = m
-	return c
-}
-
-func (c *ComponentAttributeCreator) New() *ComponentAttribute {
-	atti := c.atti
-	return &atti
+func (atti *ComponentAttribute) AssignExtra(m meta.Meta) *ComponentAttribute {
+	atti.Extra = m
+	return atti
 }

@@ -25,6 +25,16 @@ import (
 	"git.golaxy.org/core/utils/meta"
 )
 
+// NewEntityAttribute 创建实体原型属性，用于注册实体原型时自定义相关属性
+func NewEntityAttribute(prototype string) *EntityAttribute {
+	if prototype == "" {
+		exception.Panicf("%w: %w: prototype is empty", ErrPt, exception.ErrArgs)
+	}
+	return &EntityAttribute{
+		Prototype: prototype,
+	}
+}
+
 // EntityAttribute 实体原型属性
 type EntityAttribute struct {
 	Prototype                  string    // 实体原型名称（必填）
@@ -36,72 +46,51 @@ type EntityAttribute struct {
 	Extra                      meta.Meta // 自定义属性
 }
 
-// BuildEntityAttribute 创建实体原型属性，用于注册实体原型时自定义相关属性
-func BuildEntityAttribute(prototype string) *EntityAttributeCreator {
-	if prototype == "" {
-		exception.Panicf("%w: %w: prototype is empty", ErrPt, exception.ErrArgs)
-	}
-	return &EntityAttributeCreator{
-		atti: EntityAttribute{
-			Prototype: prototype,
-		},
-	}
+func (atti *EntityAttribute) SetInstance(instance any) *EntityAttribute {
+	atti.Instance = instance
+	return atti
 }
 
-type EntityAttributeCreator struct {
-	atti EntityAttribute
+func (atti *EntityAttribute) SetScope(scope ec.Scope) *EntityAttribute {
+	atti.Scope = &scope
+	return atti
 }
 
-func (c *EntityAttributeCreator) SetInstance(instance any) *EntityAttributeCreator {
-	c.atti.Instance = instance
-	return c
+func (atti *EntityAttribute) SetComponentNameIndexing(b bool) *EntityAttribute {
+	atti.ComponentNameIndexing = &b
+	return atti
 }
 
-func (c *EntityAttributeCreator) SetScope(scope ec.Scope) *EntityAttributeCreator {
-	c.atti.Scope = &scope
-	return c
+func (atti *EntityAttribute) SetComponentAwakeOnFirstTouch(b bool) *EntityAttribute {
+	atti.ComponentAwakeOnFirstTouch = &b
+	return atti
 }
 
-func (c *EntityAttributeCreator) SetComponentNameIndexing(b bool) *EntityAttributeCreator {
-	c.atti.ComponentNameIndexing = &b
-	return c
+func (atti *EntityAttribute) SetComponentUniqueID(b bool) *EntityAttribute {
+	atti.ComponentUniqueID = &b
+	return atti
 }
 
-func (c *EntityAttributeCreator) SetComponentAwakeOnFirstTouch(b bool) *EntityAttributeCreator {
-	c.atti.ComponentAwakeOnFirstTouch = &b
-	return c
+func (atti *EntityAttribute) SetExtra(dict map[string]any) *EntityAttribute {
+	atti.Extra = meta.M(dict)
+	return atti
 }
 
-func (c *EntityAttributeCreator) SetComponentUniqueID(b bool) *EntityAttributeCreator {
-	c.atti.ComponentUniqueID = &b
-	return c
-}
-
-func (c *EntityAttributeCreator) SetExtra(dict map[string]any) *EntityAttributeCreator {
-	c.atti.Extra = meta.M(dict)
-	return c
-}
-
-func (c *EntityAttributeCreator) MergeExtra(dict map[string]any) *EntityAttributeCreator {
+func (atti *EntityAttribute) MergeExtra(dict map[string]any) *EntityAttribute {
 	for k, v := range dict {
-		c.atti.Extra.Add(k, v)
+		atti.Extra.Add(k, v)
 	}
-	return c
+	return atti
 }
 
-func (c *EntityAttributeCreator) MergeIfAbsent(dict map[string]any) *EntityAttributeCreator {
+func (atti *EntityAttribute) MergeIfAbsent(dict map[string]any) *EntityAttribute {
 	for k, v := range dict {
-		c.atti.Extra.TryAdd(k, v)
+		atti.Extra.TryAdd(k, v)
 	}
-	return c
+	return atti
 }
 
-func (c *EntityAttributeCreator) AssignExtra(m meta.Meta) *EntityAttributeCreator {
-	c.atti.Extra = m
-	return c
-}
-
-func (c *EntityAttributeCreator) New() *EntityAttribute {
-	atti := c.atti
-	return &atti
+func (atti *EntityAttribute) AssignExtra(m meta.Meta) *EntityAttribute {
+	atti.Extra = m
+	return atti
 }
