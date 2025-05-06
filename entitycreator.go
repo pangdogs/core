@@ -97,7 +97,7 @@ func (c *EntityCreator) SetComponentUniqueID(b bool) *EntityCreator {
 // SetMeta 设置Meta信息
 func (c *EntityCreator) SetMeta(dict map[string]any) *EntityCreator {
 	if c.meta == nil {
-		c.settings = append(c.settings, ec.With.Meta(c.meta))
+		c.settings = append(c.settings, c.withMeta())
 	}
 	c.meta = meta.M(dict)
 	return c
@@ -107,7 +107,7 @@ func (c *EntityCreator) SetMeta(dict map[string]any) *EntityCreator {
 func (c *EntityCreator) MergeMeta(dict map[string]any) *EntityCreator {
 	for k, v := range dict {
 		if c.meta == nil {
-			c.settings = append(c.settings, ec.With.Meta(c.meta))
+			c.settings = append(c.settings, c.withMeta())
 		}
 		c.meta.Add(k, v)
 	}
@@ -118,7 +118,7 @@ func (c *EntityCreator) MergeMeta(dict map[string]any) *EntityCreator {
 func (c *EntityCreator) MergeMetaIfAbsent(dict map[string]any) *EntityCreator {
 	for k, v := range dict {
 		if c.meta == nil {
-			c.settings = append(c.settings, ec.With.Meta(c.meta))
+			c.settings = append(c.settings, c.withMeta())
 		}
 		c.meta.TryAdd(k, v)
 	}
@@ -131,7 +131,7 @@ func (c *EntityCreator) AssignMeta(m meta.Meta) *EntityCreator {
 		m = meta.M(nil)
 	}
 	if c.meta == nil {
-		c.settings = append(c.settings, ec.With.Meta(c.meta))
+		c.settings = append(c.settings, c.withMeta())
 	}
 	c.meta = m
 	return c
@@ -162,4 +162,10 @@ func (c *EntityCreator) New() (ec.Entity, error) {
 	}
 
 	return entity, nil
+}
+
+func (c *EntityCreator) withMeta() option.Setting[ec.EntityOptions] {
+	return func(o *ec.EntityOptions) {
+		o.Meta = c.meta
+	}
 }
