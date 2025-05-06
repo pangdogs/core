@@ -27,28 +27,28 @@ import (
 )
 
 // AddIn 定义通用插件，支持运行时和服务上下文
-func AddIn[ADDIN_IFACE, OPTION any](creator generic.FuncVar0[OPTION, ADDIN_IFACE]) AddInDefinition[ADDIN_IFACE, OPTION] {
-	return defineAddIn[ADDIN_IFACE, OPTION](creator)
+func AddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADDIN_IFACE]) AddInDefinition[ADDIN_IFACE, SETTING] {
+	return defineAddIn[ADDIN_IFACE, SETTING](creator)
 }
 
 // AddInDefinition 通用插件定义
-type AddInDefinition[ADDIN_IFACE, OPTION any] struct {
-	Name      string                                              // 插件名称
-	Install   generic.ActionVar1[extension.AddInProvider, OPTION] // 向插件管理器安装
-	Uninstall generic.Action1[extension.AddInProvider]            // 从插件管理器卸载
-	Using     generic.Func1[extension.AddInProvider, ADDIN_IFACE] // 使用插件
+type AddInDefinition[ADDIN_IFACE, SETTING any] struct {
+	Name      string                                               // 插件名称
+	Install   generic.ActionVar1[extension.AddInProvider, SETTING] // 向插件管理器安装
+	Uninstall generic.Action1[extension.AddInProvider]             // 从插件管理器卸载
+	Using     generic.Func1[extension.AddInProvider, ADDIN_IFACE]  // 使用插件
 }
 
-func defineAddIn[ADDIN_IFACE, OPTION any](creator generic.FuncVar0[OPTION, ADDIN_IFACE]) AddInDefinition[ADDIN_IFACE, OPTION] {
+func defineAddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADDIN_IFACE]) AddInDefinition[ADDIN_IFACE, SETTING] {
 	if creator == nil {
 		exception.Panicf("%w: %w: creator is nil", exception.ErrCore, exception.ErrArgs)
 	}
 
 	name := types.FullNameT[ADDIN_IFACE]()
 
-	return AddInDefinition[ADDIN_IFACE, OPTION]{
+	return AddInDefinition[ADDIN_IFACE, SETTING]{
 		Name: name,
-		Install: func(provider extension.AddInProvider, options ...OPTION) {
+		Install: func(provider extension.AddInProvider, options ...SETTING) {
 			extension.Install[ADDIN_IFACE](provider, creator(options...), name)
 		},
 		Uninstall: func(provider extension.AddInProvider) {

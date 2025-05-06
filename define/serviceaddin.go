@@ -26,10 +26,10 @@ import (
 )
 
 // ServiceAddIn 定义服务插件，支持服务上下文
-func ServiceAddIn[ADDIN_IFACE, OPTION any](creator generic.FuncVar0[OPTION, ADDIN_IFACE]) ServiceAddInDefinition[ADDIN_IFACE, OPTION] {
-	plug := defineAddIn[ADDIN_IFACE, OPTION](creator)
+func ServiceAddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADDIN_IFACE]) ServiceAddInDefinition[ADDIN_IFACE, SETTING] {
+	plug := defineAddIn[ADDIN_IFACE, SETTING](creator)
 
-	return ServiceAddInDefinition[ADDIN_IFACE, OPTION]{
+	return ServiceAddInDefinition[ADDIN_IFACE, SETTING]{
 		Name:      plug.Name,
 		Install:   plug.Install,
 		Uninstall: plug.Uninstall,
@@ -38,9 +38,9 @@ func ServiceAddIn[ADDIN_IFACE, OPTION any](creator generic.FuncVar0[OPTION, ADDI
 }
 
 // ServiceAddInDefinition 服务插件定义
-type ServiceAddInDefinition[ADDIN_IFACE, OPTION any] struct {
-	Name      string                                              // 插件名称
-	Install   generic.ActionVar1[extension.AddInProvider, OPTION] // 向插件管理器安装
-	Uninstall generic.Action1[extension.AddInProvider]            // 从插件管理器卸载
-	Using     generic.Func1[service.Context, ADDIN_IFACE]         // 使用插件
+type ServiceAddInDefinition[ADDIN_IFACE, SETTING any] struct {
+	Name      string                                               // 插件名称
+	Install   generic.ActionVar1[extension.AddInProvider, SETTING] // 向插件管理器安装
+	Uninstall generic.Action1[extension.AddInProvider]             // 从插件管理器卸载
+	Using     generic.Func1[service.Context, ADDIN_IFACE]          // 使用插件
 }
