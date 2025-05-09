@@ -26,45 +26,45 @@ import (
 
 type Setting[T any] generic.Action1[*T]
 
-func (s Setting[T]) Apply(opts *T) {
-	generic.CastAction1(s).UnsafeCall(opts)
+func (s Setting[T]) Apply(options *T) {
+	generic.CastAction1(s).UnsafeCall(options)
 }
 
-func Make[T any](defaults Setting[T], settings ...Setting[T]) (opts T) {
-	defaults.Apply(&opts)
+func Make[T any](defaults Setting[T], settings ...Setting[T]) (options T) {
+	defaults.Apply(&options)
 
 	for i := range settings {
-		settings[i].Apply(&opts)
+		settings[i].Apply(&options)
 	}
 
 	return
 }
 
 func New[T any](defaults Setting[T], settings ...Setting[T]) *T {
-	var opts T
+	var options T
 
-	defaults.Apply(&opts)
+	defaults.Apply(&options)
 
 	for i := range settings {
-		settings[i].Apply(&opts)
+		settings[i].Apply(&options)
 	}
 
-	return &opts
+	return &options
 }
 
-func Append[T any](opts T, settings ...Setting[T]) T {
+func Append[T any](options T, settings ...Setting[T]) T {
 	for i := range settings {
-		settings[i].Apply(&opts)
+		settings[i].Apply(&options)
 	}
-	return opts
+	return options
 }
 
-func Change[T any](opts *T, settings ...Setting[T]) *T {
-	if opts == nil {
-		exception.Panicf("%w: %w: opts is nil", exception.ErrCore, exception.ErrArgs)
+func Change[T any](options *T, settings ...Setting[T]) *T {
+	if options == nil {
+		exception.Panicf("%w: %w: options is nil", exception.ErrCore, exception.ErrArgs)
 	}
 	for i := range settings {
-		settings[i].Apply(opts)
+		settings[i].Apply(options)
 	}
-	return opts
+	return options
 }

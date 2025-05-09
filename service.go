@@ -44,7 +44,7 @@ func UnsafeNewService(svcCtx service.Context, options ServiceOptions) Service {
 	service := &ServiceBehavior{}
 	service.init(svcCtx, options)
 
-	return service.opts.InstanceFace.Iface
+	return service.options.InstanceFace.Iface
 }
 
 // Service 服务
@@ -58,7 +58,7 @@ type Service interface {
 }
 
 type iService interface {
-	init(svcCtx service.Context, opts ServiceOptions)
+	init(svcCtx service.Context, options ServiceOptions)
 	getOptions() *ServiceOptions
 }
 
@@ -69,7 +69,7 @@ type _StatusChanges struct {
 
 type ServiceBehavior struct {
 	ctx               service.Context
-	opts              ServiceOptions
+	options           ServiceOptions
 	statusChangesCond *sync.Cond
 	statusChanges     *_StatusChanges
 }
@@ -81,10 +81,10 @@ func (svc *ServiceBehavior) GetContext() service.Context {
 
 // GetInstanceFaceCache 支持重新解释类型
 func (svc *ServiceBehavior) GetInstanceFaceCache() iface.Cache {
-	return svc.opts.InstanceFace.Cache
+	return svc.options.InstanceFace.Cache
 }
 
-func (svc *ServiceBehavior) init(svcCtx service.Context, opts ServiceOptions) {
+func (svc *ServiceBehavior) init(svcCtx service.Context, options ServiceOptions) {
 	if svcCtx == nil {
 		exception.Panicf("%w: %w: svcCtx is nil", ErrService, ErrArgs)
 	}
@@ -94,16 +94,16 @@ func (svc *ServiceBehavior) init(svcCtx service.Context, opts ServiceOptions) {
 	}
 
 	svc.ctx = svcCtx
-	svc.opts = opts
+	svc.options = options
 	svc.statusChangesCond = sync.NewCond(&sync.Mutex{})
 
-	if svc.opts.InstanceFace.IsNil() {
-		svc.opts.InstanceFace = iface.MakeFaceT[Service](svc)
+	if svc.options.InstanceFace.IsNil() {
+		svc.options.InstanceFace = iface.MakeFaceT[Service](svc)
 	}
 
 	svc.changeRunningStatus(service.RunningStatus_Birth)
 }
 
 func (svc *ServiceBehavior) getOptions() *ServiceOptions {
-	return &svc.opts
+	return &svc.options
 }

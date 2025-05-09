@@ -26,11 +26,11 @@ import (
 )
 
 func (rt *RuntimeBehavior) loopingRealTime() {
-	gcTicker := time.NewTicker(rt.opts.GCInterval)
+	gcTicker := time.NewTicker(rt.options.GCInterval)
 	defer gcTicker.Stop()
 
 	wg := &sync.WaitGroup{}
-	frame := rt.opts.Frame
+	frame := rt.options.Frame
 
 	wg.Add(1)
 	go rt.makeFrameTasks(wg, frame.GetCurFrames()+1, frame.GetTotalFrames(), frame.GetTargetFPS())
@@ -122,6 +122,6 @@ func (rt *RuntimeBehavior) frameLoopBegin() {
 func (rt *RuntimeBehavior) frameLoopEnd() {
 	rt.changeRunningStatus(runtime.RunningStatus_FrameLoopEnd)
 
-	frame := runtime.UnsafeFrame(rt.opts.Frame)
+	frame := runtime.UnsafeFrame(rt.options.Frame)
 	frame.SetCurFrames(frame.GetCurFrames() + 1)
 }

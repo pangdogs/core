@@ -208,7 +208,7 @@ func (entity *EntityBehavior) AddComponent(name string, components ...Component)
 		entity.addComponent(name, components[i])
 	}
 
-	_EmitEventComponentManagerAddComponents(entity, entity.opts.InstanceFace.Iface, components)
+	_EmitEventComponentManagerAddComponents(entity, entity.options.InstanceFace.Iface, components)
 	return nil
 }
 
@@ -236,7 +236,7 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 
 		comp.setState(ComponentState_Detach)
 
-		_EmitEventComponentManagerRemoveComponent(entity, entity.opts.InstanceFace.Iface, comp)
+		_EmitEventComponentManagerRemoveComponent(entity, entity.options.InstanceFace.Iface, comp)
 
 		if comp.GetState() >= ComponentState_Destroyed {
 			compNode.Escape()
@@ -266,7 +266,7 @@ func (entity *EntityBehavior) RemoveComponentById(id uid.Id) {
 
 	comp.setState(ComponentState_Detach)
 
-	_EmitEventComponentManagerRemoveComponent(entity, entity.opts.InstanceFace.Iface, comp)
+	_EmitEventComponentManagerRemoveComponent(entity, entity.options.InstanceFace.Iface, comp)
 
 	if comp.GetState() >= ComponentState_Destroyed {
 		compNode.Escape()
@@ -298,7 +298,7 @@ func (entity *EntityBehavior) getComponentList() *generic.List[Component] {
 }
 
 func (entity *EntityBehavior) getComponentNode(name string) (*generic.Node[Component], bool) {
-	if entity.opts.ComponentNameIndexing {
+	if entity.options.ComponentNameIndexing {
 		return entity.componentNameIndex.Get(name)
 	}
 
@@ -373,7 +373,7 @@ func (entity *EntityBehavior) removeComponentByRef(comp Component) {
 
 	comp.setState(ComponentState_Detach)
 
-	_EmitEventComponentManagerRemoveComponent(entity, entity.opts.InstanceFace.Iface, comp)
+	_EmitEventComponentManagerRemoveComponent(entity, entity.options.InstanceFace.Iface, comp)
 
 	if comp.GetState() >= ComponentState_Destroyed {
 		compNode.Escape()
@@ -382,7 +382,7 @@ func (entity *EntityBehavior) removeComponentByRef(comp Component) {
 }
 
 func (entity *EntityBehavior) addComponent(name string, component Component) {
-	component.init(name, entity.opts.InstanceFace.Iface, component)
+	component.init(name, entity.options.InstanceFace.Iface, component)
 
 	if at, ok := entity.getComponentNode(name); ok {
 		entity.components.TraversalAt(func(compNode *generic.Node[Component]) bool {
@@ -398,7 +398,7 @@ func (entity *EntityBehavior) addComponent(name string, component Component) {
 	} else {
 		compNode := entity.components.PushBack(component)
 
-		if entity.opts.ComponentNameIndexing {
+		if entity.options.ComponentNameIndexing {
 			entity.componentNameIndex.Add(name, compNode)
 		}
 	}
@@ -407,8 +407,8 @@ func (entity *EntityBehavior) addComponent(name string, component Component) {
 }
 
 func (entity *EntityBehavior) touchComponent(comp Component) Component {
-	if entity.opts.ComponentAwakeOnFirstTouch && comp.GetState() == ComponentState_Attach {
-		_EmitEventComponentManagerFirstTouchComponent(entity, entity.opts.InstanceFace.Iface, comp)
+	if entity.options.ComponentAwakeOnFirstTouch && comp.GetState() == ComponentState_Attach {
+		_EmitEventComponentManagerFirstTouchComponent(entity, entity.options.InstanceFace.Iface, comp)
 	}
 
 	if comp.GetState() >= ComponentState_Destroyed {
@@ -419,7 +419,7 @@ func (entity *EntityBehavior) touchComponent(comp Component) Component {
 }
 
 func (entity *EntityBehavior) updateComponentNameIndex(name string) {
-	if !entity.opts.ComponentNameIndexing {
+	if !entity.options.ComponentNameIndexing {
 		return
 	}
 

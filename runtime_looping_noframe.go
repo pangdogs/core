@@ -24,7 +24,7 @@ import (
 )
 
 func (rt *RuntimeBehavior) loopingNoFrame() {
-	gcTicker := time.NewTicker(rt.opts.GCInterval)
+	gcTicker := time.NewTicker(rt.options.GCInterval)
 	defer gcTicker.Stop()
 
 loop:

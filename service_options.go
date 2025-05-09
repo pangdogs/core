@@ -33,14 +33,14 @@ type _ServiceOption struct{}
 
 // Default 默认值
 func (_ServiceOption) Default() option.Setting[ServiceOptions] {
-	return func(o *ServiceOptions) {
-		With.Service.InstanceFace(iface.Face[Service]{})(o)
+	return func(options *ServiceOptions) {
+		With.Service.InstanceFace(iface.Face[Service]{}).Apply(options)
 	}
 }
 
 // InstanceFace 实例，用于扩展服务能力
 func (_ServiceOption) InstanceFace(face iface.Face[Service]) option.Setting[ServiceOptions] {
-	return func(o *ServiceOptions) {
-		o.InstanceFace = face
+	return func(options *ServiceOptions) {
+		options.InstanceFace = face
 	}
 }

@@ -50,7 +50,7 @@ func UnsafeNewContext(svcCtx service.Context, options ContextOptions) Context {
 	ctx := &ContextBehavior{}
 	ctx.init(svcCtx, options)
 
-	return ctx.opts.InstanceFace.Iface
+	return ctx.options.InstanceFace.Iface
 }
 
 // Context 运行时上下文接口
@@ -90,7 +90,7 @@ type Context interface {
 }
 
 type iContext interface {
-	init(svcCtx service.Context, opts ContextOptions)
+	init(svcCtx service.Context, options ContextOptions)
 	getOptions() *ContextOptions
 	setFrame(frame Frame)
 	setCallee(callee async.Callee)
@@ -103,7 +103,7 @@ type iContext interface {
 type ContextBehavior struct {
 	ictx.ContextBehavior
 	svcCtx          service.Context
-	opts            ContextOptions
+	options         ContextOptions
 	reflected       reflect.Value
 	frame           Frame
 	entityManager   _EntityManagerBehavior
@@ -115,12 +115,12 @@ type ContextBehavior struct {
 
 // GetName 获取名称
 func (ctx *ContextBehavior) GetName() string {
-	return ctx.opts.Name
+	return ctx.options.Name
 }
 
 // GetId 获取运行时Id
 func (ctx *ContextBehavior) GetId() uid.Id {
-	return ctx.opts.PersistId
+	return ctx.options.PersistId
 }
 
 // GetReflected 获取反射值
@@ -153,17 +153,17 @@ func (ctx *ContextBehavior) ActivateEvent(event event.IEventCtrl, recursion even
 
 // GetCurrentContext 获取当前上下文
 func (ctx *ContextBehavior) GetCurrentContext() iface.Cache {
-	return iface.Iface2Cache[Context](ctx.opts.InstanceFace.Iface)
+	return iface.Iface2Cache[Context](ctx.options.InstanceFace.Iface)
 }
 
 // GetConcurrentContext 获取多线程安全的上下文
 func (ctx *ContextBehavior) GetConcurrentContext() iface.Cache {
-	return iface.Iface2Cache[Context](ctx.opts.InstanceFace.Iface)
+	return iface.Iface2Cache[Context](ctx.options.InstanceFace.Iface)
 }
 
 // GetInstanceFaceCache 支持重新解释类型
 func (ctx *ContextBehavior) GetInstanceFaceCache() iface.Cache {
-	return ctx.opts.InstanceFace.Cache
+	return ctx.options.InstanceFace.Cache
 }
 
 // CollectGC 收集GC
@@ -180,33 +180,33 @@ func (ctx *ContextBehavior) String() string {
 	return fmt.Sprintf(`{"id":%q, "name":%q}`, ctx.GetId(), ctx.GetName())
 }
 
-func (ctx *ContextBehavior) init(svcCtx service.Context, opts ContextOptions) {
+func (ctx *ContextBehavior) init(svcCtx service.Context, options ContextOptions) {
 	if svcCtx == nil {
 		exception.Panicf("%w: %w: svcCtx is nil", ErrContext, exception.ErrArgs)
 	}
 
-	ctx.opts = opts
+	ctx.options = options
 
-	if ctx.opts.InstanceFace.IsNil() {
-		ctx.opts.InstanceFace = iface.MakeFaceT[Context](ctx)
+	if ctx.options.InstanceFace.IsNil() {
+		ctx.options.InstanceFace = iface.MakeFaceT[Context](ctx)
 	}
 
-	if ctx.opts.Context == nil {
-		ctx.opts.Context = svcCtx
+	if ctx.options.Context == nil {
+		ctx.options.Context = svcCtx
 	}
 
-	if ctx.opts.PersistId.IsNil() {
-		ctx.opts.PersistId = uid.New()
+	if ctx.options.PersistId.IsNil() {
+		ctx.options.PersistId = uid.New()
 	}
 
-	ictx.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
+	ictx.UnsafeContext(&ctx.ContextBehavior).Init(ctx.options.Context, ctx.options.AutoRecover, ctx.options.ReportError)
 	ctx.svcCtx = svcCtx
-	ctx.reflected = reflect.ValueOf(ctx.opts.InstanceFace.Iface)
-	ctx.entityManager.init(ctx.opts.InstanceFace.Iface)
+	ctx.reflected = reflect.ValueOf(ctx.options.InstanceFace.Iface)
+	ctx.entityManager.init(ctx.options.InstanceFace.Iface)
 }
 
 func (ctx *ContextBehavior) getOptions() *ContextOptions {
-	return &ctx.opts
+	return &ctx.options
 }
 
 func (ctx *ContextBehavior) setFrame(frame Frame) {
@@ -224,7 +224,7 @@ func (ctx *ContextBehavior) getServiceCtx() service.Context {
 func (ctx *ContextBehavior) changeRunningStatus(status RunningStatus, args ...any) {
 	ctx.entityManager.changeRunningStatus(status, args...)
 
-	ctx.opts.RunningStatusChangedCB.Call(ctx.GetAutoRecover(), ctx.GetReportError(), ctx.opts.InstanceFace.Iface, status, args...)
+	ctx.options.RunningStatusChangedCB.Call(ctx.GetAutoRecover(), ctx.GetReportError(), ctx.options.InstanceFace.Iface, status, args...)
 
 	switch status {
 	case RunningStatus_Terminated:

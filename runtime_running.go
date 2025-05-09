@@ -90,13 +90,13 @@ func (rt *RuntimeBehavior) running() {
 func (rt *RuntimeBehavior) changeRunningStatus(status runtime.RunningStatus, args ...any) {
 	switch status {
 	case runtime.RunningStatus_FrameLoopBegin:
-		runtime.UnsafeFrame(rt.opts.Frame).LoopBegin()
+		runtime.UnsafeFrame(rt.options.Frame).LoopBegin()
 	case runtime.RunningStatus_FrameUpdateBegin:
-		runtime.UnsafeFrame(rt.opts.Frame).UpdateBegin()
+		runtime.UnsafeFrame(rt.options.Frame).UpdateBegin()
 	case runtime.RunningStatus_FrameUpdateEnd:
-		runtime.UnsafeFrame(rt.opts.Frame).UpdateEnd()
+		runtime.UnsafeFrame(rt.options.Frame).UpdateEnd()
 	case runtime.RunningStatus_FrameLoopEnd:
-		runtime.UnsafeFrame(rt.opts.Frame).LoopEnd()
+		runtime.UnsafeFrame(rt.options.Frame).LoopEnd()
 	}
 
 	runtime.UnsafeContext(rt.ctx).ChangeRunningStatus(status, args...)
@@ -189,7 +189,7 @@ func (rt *RuntimeBehavior) deactivateAddIn(addInStatus extension.AddInStatus) {
 
 func (rt *RuntimeBehavior) loopStart() []event.Hook {
 	ctx := rt.ctx
-	frame := rt.opts.Frame
+	frame := rt.options.Frame
 
 	if frame != nil {
 		runtime.UnsafeFrame(frame).RunningBegin()
@@ -205,7 +205,7 @@ func (rt *RuntimeBehavior) loopStart() []event.Hook {
 }
 
 func (rt *RuntimeBehavior) loopStop(hooks []event.Hook) {
-	frame := rt.opts.Frame
+	frame := rt.options.Frame
 
 	event.UnbindHooks(hooks)
 
@@ -215,7 +215,7 @@ func (rt *RuntimeBehavior) loopStop(hooks []event.Hook) {
 }
 
 func (rt *RuntimeBehavior) mainLoop() {
-	frame := rt.opts.Frame
+	frame := rt.options.Frame
 
 	if frame == nil {
 		rt.loopingNoFrame()

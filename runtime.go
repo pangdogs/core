@@ -47,7 +47,7 @@ func UnsafeNewRuntime(rtCtx runtime.Context, options RuntimeOptions) Runtime {
 	runtime := &RuntimeBehavior{}
 	runtime.init(rtCtx, options)
 
-	return runtime.opts.InstanceFace.Iface
+	return runtime.options.InstanceFace.Iface
 }
 
 // Runtime 运行时接口
@@ -61,7 +61,7 @@ type Runtime interface {
 }
 
 type iRuntime interface {
-	init(rtCtx runtime.Context, opts RuntimeOptions)
+	init(rtCtx runtime.Context, options RuntimeOptions)
 	getOptions() *RuntimeOptions
 }
 
@@ -121,7 +121,7 @@ func (c _ComponentLifecycleCaller) Call(fun func(state ec.ComponentState)) bool 
 // RuntimeBehavior 运行时行为，在扩展运行时能力时，匿名嵌入至运行时结构体中
 type RuntimeBehavior struct {
 	ctx                                               runtime.Context
-	opts                                              RuntimeOptions
+	options                                           RuntimeOptions
 	processQueue                                      chan _Task
 	eventUpdate                                       event.Event
 	eventLateUpdate                                   event.Event
@@ -148,10 +148,10 @@ func (rt *RuntimeBehavior) GetConcurrentContext() iface.Cache {
 
 // GetInstanceFaceCache 支持重新解释类型
 func (rt *RuntimeBehavior) GetInstanceFaceCache() iface.Cache {
-	return rt.opts.InstanceFace.Cache
+	return rt.options.InstanceFace.Cache
 }
 
-func (rt *RuntimeBehavior) init(rtCtx runtime.Context, opts RuntimeOptions) {
+func (rt *RuntimeBehavior) init(rtCtx runtime.Context, options RuntimeOptions) {
 	if rtCtx == nil {
 		exception.Panicf("%w: %w: rtCtx is nil", ErrRuntime, ErrArgs)
 	}
@@ -161,16 +161,16 @@ func (rt *RuntimeBehavior) init(rtCtx runtime.Context, opts RuntimeOptions) {
 	}
 
 	rt.ctx = rtCtx
-	rt.opts = opts
+	rt.options = options
 
-	if rt.opts.InstanceFace.IsNil() {
-		rt.opts.InstanceFace = iface.MakeFaceT[Runtime](rt)
+	if rt.options.InstanceFace.IsNil() {
+		rt.options.InstanceFace = iface.MakeFaceT[Runtime](rt)
 	}
 
-	rt.processQueue = make(chan _Task, rt.opts.ProcessQueueCapacity)
+	rt.processQueue = make(chan _Task, rt.options.ProcessQueueCapacity)
 
-	runtime.UnsafeContext(rtCtx).SetFrame(rt.opts.Frame)
-	runtime.UnsafeContext(rtCtx).SetCallee(rt.opts.InstanceFace.Iface)
+	runtime.UnsafeContext(rtCtx).SetFrame(rt.options.Frame)
+	runtime.UnsafeContext(rtCtx).SetCallee(rt.options.InstanceFace.Iface)
 
 	rtCtx.ActivateEvent(&rt.eventUpdate, event.EventRecursion_Disallow)
 	rtCtx.ActivateEvent(&rt.eventLateUpdate, event.EventRecursion_Disallow)
@@ -187,13 +187,13 @@ func (rt *RuntimeBehavior) init(rtCtx runtime.Context, opts RuntimeOptions) {
 
 	rt.changeRunningStatus(runtime.RunningStatus_Birth)
 
-	if rt.opts.AutoRun {
-		rt.opts.InstanceFace.Iface.Run()
+	if rt.options.AutoRun {
+		rt.options.InstanceFace.Iface.Run()
 	}
 }
 
 func (rt *RuntimeBehavior) getOptions() *RuntimeOptions {
-	return &rt.opts
+	return &rt.options
 }
 
 // onEntityManagerAddEntity 事件处理器：实体管理器添加实体

@@ -25,5 +25,5 @@ import (
 
 // GetAddInManager 获取插件管理器
 func (ctx *ContextBehavior) GetAddInManager() extension.AddInManager {
-	return ctx.opts.AddInManager
+	return ctx.options.AddInManager
 }

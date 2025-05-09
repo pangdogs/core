@@ -47,7 +47,7 @@ func UnsafeNewContext(options ContextOptions) Context {
 	ctx := &ContextBehavior{}
 	ctx.init(options)
 
-	return ctx.opts.InstanceFace.Iface
+	return ctx.options.InstanceFace.Iface
 }
 
 // Context 服务上下文
@@ -71,7 +71,7 @@ type Context interface {
 }
 
 type iContext interface {
-	init(opts ContextOptions)
+	init(options ContextOptions)
 	getOptions() *ContextOptions
 	changeRunningStatus(status RunningStatus, args ...any)
 }
@@ -79,19 +79,19 @@ type iContext interface {
 // ContextBehavior 服务上下文行为，在扩展服务上下文能力时，匿名嵌入至服务上下文结构体中
 type ContextBehavior struct {
 	ictx.ContextBehavior
-	opts          ContextOptions
+	options       ContextOptions
 	reflected     reflect.Value
 	entityManager _EntityManagerBehavior
 }
 
 // GetName 获取名称
 func (ctx *ContextBehavior) GetName() string {
-	return ctx.opts.Name
+	return ctx.options.Name
 }
 
 // GetId 获取服务Id
 func (ctx *ContextBehavior) GetId() uid.Id {
-	return ctx.opts.PersistId
+	return ctx.options.PersistId
 }
 
 // GetReflected 获取反射值
@@ -106,7 +106,7 @@ func (ctx *ContextBehavior) GetEntityManager() EntityManager {
 
 // GetInstanceFaceCache 支持重新解释类型
 func (ctx *ContextBehavior) GetInstanceFaceCache() iface.Cache {
-	return ctx.opts.InstanceFace.Cache
+	return ctx.options.InstanceFace.Cache
 }
 
 // String implements fmt.Stringer
@@ -114,30 +114,30 @@ func (ctx *ContextBehavior) String() string {
 	return fmt.Sprintf(`{"id":%q, "name":%q}`, ctx.GetId(), ctx.GetName())
 }
 
-func (ctx *ContextBehavior) init(opts ContextOptions) {
-	ctx.opts = opts
+func (ctx *ContextBehavior) init(options ContextOptions) {
+	ctx.options = options
 
-	if ctx.opts.InstanceFace.IsNil() {
-		ctx.opts.InstanceFace = iface.MakeFaceT[Context](ctx)
+	if ctx.options.InstanceFace.IsNil() {
+		ctx.options.InstanceFace = iface.MakeFaceT[Context](ctx)
 	}
 
-	if ctx.opts.Context == nil {
-		ctx.opts.Context = context.Background()
+	if ctx.options.Context == nil {
+		ctx.options.Context = context.Background()
 	}
 
-	if ctx.opts.PersistId.IsNil() {
-		ctx.opts.PersistId = uid.New()
+	if ctx.options.PersistId.IsNil() {
+		ctx.options.PersistId = uid.New()
 	}
 
-	ictx.UnsafeContext(&ctx.ContextBehavior).Init(ctx.opts.Context, ctx.opts.AutoRecover, ctx.opts.ReportError)
-	ctx.reflected = reflect.ValueOf(ctx.opts.InstanceFace.Iface)
-	ctx.entityManager.init(ctx.opts.InstanceFace.Iface)
+	ictx.UnsafeContext(&ctx.ContextBehavior).Init(ctx.options.Context, ctx.options.AutoRecover, ctx.options.ReportError)
+	ctx.reflected = reflect.ValueOf(ctx.options.InstanceFace.Iface)
+	ctx.entityManager.init(ctx.options.InstanceFace.Iface)
 }
 
 func (ctx *ContextBehavior) getOptions() *ContextOptions {
-	return &ctx.opts
+	return &ctx.options
 }
 
 func (ctx *ContextBehavior) changeRunningStatus(status RunningStatus, args ...any) {
-	ctx.opts.RunningStatusChangedCB.Call(ctx.GetAutoRecover(), ctx.GetReportError(), ctx.opts.InstanceFace.Iface, status, args...)
+	ctx.options.RunningStatusChangedCB.Call(ctx.GetAutoRecover(), ctx.GetReportError(), ctx.options.InstanceFace.Iface, status, args...)
 }

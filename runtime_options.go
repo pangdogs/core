@@ -46,60 +46,60 @@ type _RuntimeOption struct{}
 
 // Default 运行时的默认值
 func (_RuntimeOption) Default() option.Setting[RuntimeOptions] {
-	return func(o *RuntimeOptions) {
-		With.Runtime.InstanceFace(iface.Face[Runtime]{})(o)
-		With.Runtime.AutoRun(false)(o)
-		With.Runtime.ProcessQueueCapacity(128)(o)
-		With.Runtime.Frame(nil)(o)
-		With.Runtime.GCInterval(10 * time.Second)(o)
-		With.Runtime.CustomGC(nil)(o)
+	return func(options *RuntimeOptions) {
+		With.Runtime.InstanceFace(iface.Face[Runtime]{}).Apply(options)
+		With.Runtime.AutoRun(false).Apply(options)
+		With.Runtime.ProcessQueueCapacity(128).Apply(options)
+		With.Runtime.Frame(nil).Apply(options)
+		With.Runtime.GCInterval(10 * time.Second).Apply(options)
+		With.Runtime.CustomGC(nil).Apply(options)
 	}
 }
 
 // InstanceFace 实例，用于扩展运行时能力
 func (_RuntimeOption) InstanceFace(face iface.Face[Runtime]) option.Setting[RuntimeOptions] {
-	return func(o *RuntimeOptions) {
-		o.InstanceFace = face
+	return func(options *RuntimeOptions) {
+		options.InstanceFace = face
 	}
 }
 
 // AutoRun 运行时是否开启自动运行
 func (_RuntimeOption) AutoRun(b bool) option.Setting[RuntimeOptions] {
-	return func(o *RuntimeOptions) {
-		o.AutoRun = b
+	return func(options *RuntimeOptions) {
+		options.AutoRun = b
 	}
 }
 
 // ProcessQueueCapacity 任务处理流水线大小
 func (_RuntimeOption) ProcessQueueCapacity(cap int) option.Setting[RuntimeOptions] {
-	return func(o *RuntimeOptions) {
+	return func(options *RuntimeOptions) {
 		if cap <= 0 {
 			exception.Panicf("%w: %w: ProcessQueueCapacity less equal 0 is invalid", ErrRuntime, ErrArgs)
 		}
-		o.ProcessQueueCapacity = cap
+		options.ProcessQueueCapacity = cap
 	}
 }
 
 // Frame 运行时的帧，设置为nil表示不使用帧更新特性
 func (_RuntimeOption) Frame(frame runtime.Frame) option.Setting[RuntimeOptions] {
-	return func(o *RuntimeOptions) {
-		o.Frame = frame
+	return func(options *RuntimeOptions) {
+		options.Frame = frame
 	}
 }
 
 // GCInterval 运行时的GC间隔时长
 func (_RuntimeOption) GCInterval(dur time.Duration) option.Setting[RuntimeOptions] {
-	return func(o *RuntimeOptions) {
+	return func(options *RuntimeOptions) {
 		if dur <= 0 {
 			exception.Panicf("%w: %w: GCInterval less equal 0 is invalid", ErrRuntime, ErrArgs)
 		}
-		o.GCInterval = dur
+		options.GCInterval = dur
 	}
 }
 
 // CustomGC 运行时的自定义GC
 func (_RuntimeOption) CustomGC(fn CustomGC) option.Setting[RuntimeOptions] {
-	return func(o *RuntimeOptions) {
-		o.CustomGC = fn
+	return func(options *RuntimeOptions) {
+		options.CustomGC = fn
 	}
 }

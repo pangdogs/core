@@ -31,8 +31,8 @@ type _UnsafeContext struct {
 }
 
 // Init 初始化
-func (u _UnsafeContext) Init(opts ContextOptions) {
-	u.Context.init(opts)
+func (u _UnsafeContext) Init(options ContextOptions) {
+	u.Context.init(options)
 }
 
 // GetOptions 获取服务上下文所有选项

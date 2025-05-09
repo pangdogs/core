@@ -131,8 +131,8 @@ func (frame *_FrameBehavior) GetLastUpdateElapseTime() time.Duration {
 	return frame.lastUpdateElapseTime
 }
 
-func (frame *_FrameBehavior) init(opts FrameOptions) {
-	frame.options = opts
+func (frame *_FrameBehavior) init(options FrameOptions) {
+	frame.options = options
 }
 
 func (frame *_FrameBehavior) setCurFrames(v int64) {

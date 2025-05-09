@@ -25,5 +25,5 @@ import (
 
 // GetEntityLib 获取实体原型库
 func (ctx *ContextBehavior) GetEntityLib() pt.EntityLib {
-	return ctx.opts.EntityLib
+	return ctx.options.EntityLib
 }

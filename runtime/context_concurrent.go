@@ -51,7 +51,7 @@ type iConcurrentContext interface {
 }
 
 func (ctx *ContextBehavior) getContext() Context {
-	return ctx.opts.InstanceFace.Iface
+	return ctx.options.InstanceFace.Iface
 }
 
 // Concurrent 获取多线程安全的运行时上下文

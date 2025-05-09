@@ -52,71 +52,71 @@ type _Option struct{}
 
 // Default 默认值
 func (_Option) Default() option.Setting[ContextOptions] {
-	return func(o *ContextOptions) {
-		With.InstanceFace(iface.Face[Context]{})(o)
-		With.Context(nil)(o)
-		With.PanicHandling(false, nil)(o)
-		With.Name("")(o)
-		With.PersistId(uid.Nil)(o)
-		With.EntityLib(pt.NewEntityLib(pt.DefaultComponentLib()))(o)
-		With.AddInManager(extension.NewAddInManager())(o)
-		With.RunningStatusChangedCB(nil)(o)
+	return func(options *ContextOptions) {
+		With.InstanceFace(iface.Face[Context]{}).Apply(options)
+		With.Context(nil).Apply(options)
+		With.PanicHandling(false, nil).Apply(options)
+		With.Name("").Apply(options)
+		With.PersistId(uid.Nil).Apply(options)
+		With.EntityLib(pt.NewEntityLib(pt.DefaultComponentLib())).Apply(options)
+		With.AddInManager(extension.NewAddInManager()).Apply(options)
+		With.RunningStatusChangedCB(nil).Apply(options)
 	}
 }
 
 // InstanceFace 实例，用于扩展服务上下文能力
 func (_Option) InstanceFace(face iface.Face[Context]) option.Setting[ContextOptions] {
-	return func(o *ContextOptions) {
-		o.InstanceFace = face
+	return func(options *ContextOptions) {
+		options.InstanceFace = face
 	}
 }
 
 // Context 父Context
 func (_Option) Context(ctx context.Context) option.Setting[ContextOptions] {
-	return func(o *ContextOptions) {
-		o.Context = ctx
+	return func(options *ContextOptions) {
+		options.Context = ctx
 	}
 }
 
 // PanicHandling panic时的处理方式
 func (_Option) PanicHandling(autoRecover bool, reportError chan error) option.Setting[ContextOptions] {
-	return func(o *ContextOptions) {
-		o.AutoRecover = autoRecover
-		o.ReportError = reportError
+	return func(options *ContextOptions) {
+		options.AutoRecover = autoRecover
+		options.ReportError = reportError
 	}
 }
 
 // Name 服务名称
 func (_Option) Name(name string) option.Setting[ContextOptions] {
-	return func(o *ContextOptions) {
-		o.Name = name
+	return func(options *ContextOptions) {
+		options.Name = name
 	}
 }
 
 // PersistId 服务持久化Id
 func (_Option) PersistId(id uid.Id) option.Setting[ContextOptions] {
-	return func(o *ContextOptions) {
-		o.PersistId = id
+	return func(options *ContextOptions) {
+		options.PersistId = id
 	}
 }
 
 // EntityLib 实体原型库
 func (_Option) EntityLib(lib pt.EntityLib) option.Setting[ContextOptions] {
-	return func(o *ContextOptions) {
-		o.EntityLib = lib
+	return func(options *ContextOptions) {
+		options.EntityLib = lib
 	}
 }
 
 // AddInManager 插件管理器
 func (_Option) AddInManager(mgr extension.AddInManager) option.Setting[ContextOptions] {
-	return func(o *ContextOptions) {
-		o.AddInManager = mgr
+	return func(options *ContextOptions) {
+		options.AddInManager = mgr
 	}
 }
 
 // RunningStatusChangedCB 运行状态变化回调
 func (_Option) RunningStatusChangedCB(cb RunningStatusChangedCB) option.Setting[ContextOptions] {
-	return func(o *ContextOptions) {
-		o.RunningStatusChangedCB = cb
+	return func(options *ContextOptions) {
+		options.RunningStatusChangedCB = cb
 	}
 }

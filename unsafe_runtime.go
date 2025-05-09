@@ -33,8 +33,8 @@ type _UnsafeRuntime struct {
 }
 
 // Init 初始化
-func (u _UnsafeRuntime) Init(rtCtx runtime.Context, opts RuntimeOptions) {
-	u.init(rtCtx, opts)
+func (u _UnsafeRuntime) Init(rtCtx runtime.Context, options RuntimeOptions) {
+	u.init(rtCtx, options)
 }
 
 // GetOptions 获取运行时所有选项

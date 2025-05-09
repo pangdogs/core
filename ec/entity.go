@@ -50,7 +50,7 @@ func UnsafeNewEntity(options EntityOptions) Entity {
 	e := &EntityBehavior{}
 	e.init(options)
 
-	return e.opts.InstanceFace.Iface
+	return e.options.InstanceFace.Iface
 }
 
 // Entity 实体接口
@@ -91,7 +91,7 @@ type Entity interface {
 }
 
 type iEntity interface {
-	init(opts EntityOptions)
+	init(options EntityOptions)
 	withContext(ctx context.Context)
 	getOptions() *EntityOptions
 	setId(id uid.Id)
@@ -109,7 +109,7 @@ type EntityBehavior struct {
 	context.Context
 	terminate          context.CancelFunc
 	terminated         chan async.Ret
-	opts               EntityOptions
+	options            EntityOptions
 	prototype          EntityPT
 	context            iface.Cache
 	componentNameIndex generic.SliceMap[string, *generic.Node[Component]]
@@ -130,7 +130,7 @@ type EntityBehavior struct {
 
 // GetId 获取实体Id
 func (entity *EntityBehavior) GetId() uid.Id {
-	return entity.opts.PersistId
+	return entity.options.PersistId
 }
 
 // GetPT 获取实体原型
@@ -143,7 +143,7 @@ func (entity *EntityBehavior) GetPT() EntityPT {
 
 // GetScope 获取可访问作用域
 func (entity *EntityBehavior) GetScope() Scope {
-	return entity.opts.Scope
+	return entity.options.Scope
 }
 
 // GetState 获取实体状态
@@ -156,18 +156,18 @@ func (entity *EntityBehavior) GetReflected() reflect.Value {
 	if entity.reflected.IsValid() {
 		return entity.reflected
 	}
-	entity.reflected = reflect.ValueOf(entity.opts.InstanceFace.Iface)
+	entity.reflected = reflect.ValueOf(entity.options.InstanceFace.Iface)
 	return entity.reflected
 }
 
 // GetMeta 获取Meta信息
 func (entity *EntityBehavior) GetMeta() meta.Meta {
-	return entity.opts.Meta
+	return entity.options.Meta
 }
 
 // DestroySelf 销毁自身
 func (entity *EntityBehavior) DestroySelf() {
-	_EmitEventEntityDestroySelf(entity, entity.opts.InstanceFace.Iface)
+	_EmitEventEntityDestroySelf(entity, entity.options.InstanceFace.Iface)
 }
 
 // EventEntityDestroySelf 事件：实体销毁自身
@@ -187,7 +187,7 @@ func (entity *EntityBehavior) GetConcurrentContext() iface.Cache {
 
 // GetInstanceFaceCache 支持重新解释类型
 func (entity *EntityBehavior) GetInstanceFaceCache() iface.Cache {
-	return entity.opts.InstanceFace.Cache
+	return entity.options.InstanceFace.Cache
 }
 
 // String implements fmt.Stringer
@@ -195,11 +195,11 @@ func (entity *EntityBehavior) String() string {
 	return fmt.Sprintf(`{"id":%q, "prototype":%q}`, entity.GetId(), entity.GetPT().Prototype())
 }
 
-func (entity *EntityBehavior) init(opts EntityOptions) {
-	entity.opts = opts
+func (entity *EntityBehavior) init(options EntityOptions) {
+	entity.options = options
 
-	if entity.opts.InstanceFace.IsNil() {
-		entity.opts.InstanceFace = iface.MakeFaceT[Entity](entity)
+	if entity.options.InstanceFace.IsNil() {
+		entity.options.InstanceFace = iface.MakeFaceT[Entity](entity)
 	}
 
 	entity.entityEventTab.Init(false, nil, event.EventRecursion_Allow)
@@ -215,11 +215,11 @@ func (entity *EntityBehavior) withContext(ctx context.Context) {
 }
 
 func (entity *EntityBehavior) getOptions() *EntityOptions {
-	return &entity.opts
+	return &entity.options
 }
 
 func (entity *EntityBehavior) setId(id uid.Id) {
-	entity.opts.PersistId = id
+	entity.options.PersistId = id
 }
 
 func (entity *EntityBehavior) setPT(prototype EntityPT) {

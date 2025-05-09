@@ -57,5 +57,5 @@ func (entity *EntityBehavior) Terminated() async.AsyncRet {
 }
 
 func (entity *EntityBehavior) getEntity() Entity {
-	return entity.opts.InstanceFace.Iface
+	return entity.options.InstanceFace.Iface
 }

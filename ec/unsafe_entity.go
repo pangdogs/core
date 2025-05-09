@@ -40,8 +40,8 @@ type _UnsafeEntity struct {
 }
 
 // Init 初始化
-func (u _UnsafeEntity) Init(opts EntityOptions) {
-	u.init(opts)
+func (u _UnsafeEntity) Init(options EntityOptions) {
+	u.init(options)
 }
 
 // WithContext 传递上下文
