@@ -43,7 +43,7 @@ func (rt *RuntimeBehavior) Run() async.AsyncRet {
 	default:
 	}
 
-	if rt.isRunning.CompareAndSwap(false, true) {
+	if !rt.isRunning.CompareAndSwap(false, true) {
 		exception.Panicf("%w: already running", ErrRuntime)
 	}
 

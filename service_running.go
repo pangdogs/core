@@ -44,7 +44,7 @@ func (svc *ServiceBehavior) Run() async.AsyncRet {
 	default:
 	}
 
-	if svc.isRunning.CompareAndSwap(false, true) {
+	if !svc.isRunning.CompareAndSwap(false, true) {
 		exception.Panicf("%w: already running", ErrRuntime)
 	}
 
