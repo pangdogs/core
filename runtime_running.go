@@ -43,6 +43,10 @@ func (rt *RuntimeBehavior) Run() async.AsyncRet {
 	default:
 	}
 
+	if rt.isRunning.CompareAndSwap(false, true) {
+		exception.Panicf("%w: already running", ErrRuntime)
+	}
+
 	if parentCtx, ok := ctx.GetParentContext().(ictx.Context); ok {
 		parentCtx.GetWaitGroup().Add(1)
 	}

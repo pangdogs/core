@@ -27,6 +27,7 @@ import (
 	"git.golaxy.org/core/utils/option"
 	"git.golaxy.org/core/utils/reinterpret"
 	"sync"
+	"sync/atomic"
 )
 
 // NewService 创建服务
@@ -70,6 +71,7 @@ type _StatusChanges struct {
 type ServiceBehavior struct {
 	ctx               service.Context
 	options           ServiceOptions
+	isRunning         atomic.Bool
 	statusChangesCond *sync.Cond
 	statusChanges     *_StatusChanges
 }

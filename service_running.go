@@ -44,6 +44,10 @@ func (svc *ServiceBehavior) Run() async.AsyncRet {
 	default:
 	}
 
+	if svc.isRunning.CompareAndSwap(false, true) {
+		exception.Panicf("%w: already running", ErrRuntime)
+	}
+
 	if parentCtx, ok := svc.ctx.GetParentContext().(ictx.Context); ok {
 		parentCtx.GetWaitGroup().Add(1)
 	}

@@ -30,6 +30,7 @@ import (
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/option"
 	"git.golaxy.org/core/utils/reinterpret"
+	"sync/atomic"
 )
 
 // NewRuntime 创建运行时
@@ -122,6 +123,7 @@ func (c _ComponentLifecycleCaller) Call(fun func(state ec.ComponentState)) bool 
 type RuntimeBehavior struct {
 	ctx                                               runtime.Context
 	options                                           RuntimeOptions
+	isRunning                                         atomic.Bool
 	processQueue                                      chan _Task
 	eventUpdate                                       event.Event
 	eventLateUpdate                                   event.Event
