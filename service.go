@@ -91,7 +91,7 @@ func (svc *ServiceBehavior) init(svcCtx service.Context, options ServiceOptions)
 		exception.Panicf("%w: %w: svcCtx is nil", ErrService, ErrArgs)
 	}
 
-	if !ictx.UnsafeContext(svcCtx).SetPaired(true) {
+	if !ictx.UnsafeContext(svcCtx).GetPaired().CompareAndSwap(false, true) {
 		exception.Panicf("%w: context already paired", ErrService)
 	}
 

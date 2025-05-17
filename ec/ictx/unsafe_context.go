@@ -21,6 +21,7 @@ package ictx
 
 import (
 	"context"
+	"sync/atomic"
 )
 
 // Deprecated: UnsafeContext 访问上下文内部方法
@@ -39,13 +40,8 @@ func (u _UnsafeContext) Init(parentCtx context.Context, autoRecover bool, report
 	u.init(parentCtx, autoRecover, reportError)
 }
 
-// SetPaired 设置配对标记
-func (u _UnsafeContext) SetPaired(v bool) bool {
-	return u.setPaired(v)
-}
-
 // GetPaired 获取配对标记
-func (u _UnsafeContext) GetPaired() bool {
+func (u _UnsafeContext) GetPaired() *atomic.Bool {
 	return u.getPaired()
 }
 

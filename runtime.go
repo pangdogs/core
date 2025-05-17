@@ -158,7 +158,7 @@ func (rt *RuntimeBehavior) init(rtCtx runtime.Context, options RuntimeOptions) {
 		exception.Panicf("%w: %w: rtCtx is nil", ErrRuntime, ErrArgs)
 	}
 
-	if !ictx.UnsafeContext(rtCtx).SetPaired(true) {
+	if !ictx.UnsafeContext(rtCtx).GetPaired().CompareAndSwap(false, true) {
 		exception.Panicf("%w: context already paired", ErrRuntime)
 	}
 

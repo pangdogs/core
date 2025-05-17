@@ -47,8 +47,7 @@ type Context interface {
 
 type iContext interface {
 	init(parentCtx context.Context, autoRecover bool, reportError chan error)
-	setPaired(v bool) bool
-	getPaired() bool
+	getPaired() *atomic.Bool
 	returnTerminated()
 }
 
@@ -107,12 +106,8 @@ func (ctx *ContextBehavior) init(parentCtx context.Context, autoRecover bool, re
 	ctx.terminated = async.MakeAsyncRet()
 }
 
-func (ctx *ContextBehavior) setPaired(v bool) bool {
-	return ctx.paired.CompareAndSwap(!v, v)
-}
-
-func (ctx *ContextBehavior) getPaired() bool {
-	return ctx.paired.Load()
+func (ctx *ContextBehavior) getPaired() *atomic.Bool {
+	return &ctx.paired
 }
 
 func (ctx *ContextBehavior) returnTerminated() {
