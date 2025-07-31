@@ -436,7 +436,7 @@ func (rt *RuntimeBehavior) activateEntity(entity ec.Entity) {
 
 		if !caller.Call(func(ec.EntityState) {
 			if cb, ok := entity.(LifecycleEntityAwake); ok {
-				generic.CastAction0(cb.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+				rt.checkActivatingEntityPanic(entity, generic.CastAction0(cb.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError()))
 			}
 		}) {
 			return
@@ -446,7 +446,7 @@ func (rt *RuntimeBehavior) activateEntity(entity ec.Entity) {
 
 		if !caller.Call(func(state ec.EntityState) {
 			entity.RangeComponents(func(comp ec.Component) bool {
-				rt.awakeComponent(comp)
+				rt.checkActivatingEntityPanic(entity, rt.awakeComponent(comp))
 				return entity.GetState() == state
 			})
 		}) {
@@ -455,7 +455,7 @@ func (rt *RuntimeBehavior) activateEntity(entity ec.Entity) {
 
 		if !caller.Call(func(state ec.EntityState) {
 			entity.RangeComponents(func(comp ec.Component) bool {
-				rt.enableAwokeComponent(comp)
+				rt.checkActivatingEntityPanic(entity, rt.enableAwokeComponent(comp))
 				return entity.GetState() == state
 			})
 		}) {
@@ -470,7 +470,7 @@ func (rt *RuntimeBehavior) activateEntity(entity ec.Entity) {
 
 		if !caller.Call(func(state ec.EntityState) {
 			entity.RangeComponents(func(comp ec.Component) bool {
-				rt.startComponent(comp)
+				rt.checkActivatingEntityPanic(entity, rt.startComponent(comp))
 				return entity.GetState() == state
 			})
 		}) {
@@ -479,7 +479,7 @@ func (rt *RuntimeBehavior) activateEntity(entity ec.Entity) {
 
 		if !caller.Call(func(ec.EntityState) {
 			if cb, ok := entity.(LifecycleEntityStart); ok {
-				generic.CastAction0(cb.Start).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+				rt.checkActivatingEntityPanic(entity, generic.CastAction0(cb.Start).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError()))
 			}
 		}) {
 			return
@@ -489,6 +489,12 @@ func (rt *RuntimeBehavior) activateEntity(entity ec.Entity) {
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Alive)
 
 	rt.changeRunningStatus(runtime.RunningStatus_EntityActivated, entity)
+}
+
+func (rt *RuntimeBehavior) checkActivatingEntityPanic(entity ec.Entity, err error) {
+	if err != nil && !rt.options.ContinueOnActivatingEntityPanic {
+		rt.ctx.GetEntityManager().RemoveEntity(entity.GetId())
+	}
 }
 
 func (rt *RuntimeBehavior) deactivateEntity(entity ec.Entity) {
@@ -543,7 +549,7 @@ func (rt *RuntimeBehavior) deactivateEntity(entity ec.Entity) {
 	rt.changeRunningStatus(runtime.RunningStatus_EntityDeactivated, entity)
 }
 
-func (rt *RuntimeBehavior) awakeComponent(comp ec.Component) {
+func (rt *RuntimeBehavior) awakeComponent(comp ec.Component) (err error) {
 	if comp.GetState() != ec.ComponentState_Awake {
 		return
 	}
@@ -553,7 +559,7 @@ func (rt *RuntimeBehavior) awakeComponent(comp ec.Component) {
 
 		if !caller.Call(func(ec.ComponentState) {
 			if cb, ok := comp.(LifecycleComponentAwake); ok {
-				generic.CastAction0(cb.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+				err = generic.CastAction0(cb.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 			}
 		}) {
 			return
@@ -561,9 +567,11 @@ func (rt *RuntimeBehavior) awakeComponent(comp ec.Component) {
 	}
 
 	ec.UnsafeComponent(comp).SetState(ec.ComponentState_Enable)
+
+	return
 }
 
-func (rt *RuntimeBehavior) enableAwokeComponent(comp ec.Component) {
+func (rt *RuntimeBehavior) enableAwokeComponent(comp ec.Component) (err error) {
 	if comp.GetState() != ec.ComponentState_Enable {
 		return
 	}
@@ -579,7 +587,7 @@ func (rt *RuntimeBehavior) enableAwokeComponent(comp ec.Component) {
 
 		if !caller.Call(func(ec.ComponentState) {
 			if cb, ok := comp.(LifecycleComponentOnEnable); ok {
-				generic.CastAction0(cb.OnEnable).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+				err = generic.CastAction0(cb.OnEnable).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 			}
 		}) {
 			return
@@ -600,9 +608,11 @@ func (rt *RuntimeBehavior) enableAwokeComponent(comp ec.Component) {
 	} else {
 		ec.UnsafeComponent(comp).SetState(ec.ComponentState_Start)
 	}
+
+	return
 }
 
-func (rt *RuntimeBehavior) startComponent(comp ec.Component) {
+func (rt *RuntimeBehavior) startComponent(comp ec.Component) (err error) {
 	if comp.GetState() != ec.ComponentState_Start {
 		return
 	}
@@ -612,7 +622,7 @@ func (rt *RuntimeBehavior) startComponent(comp ec.Component) {
 
 		if !caller.Call(func(ec.ComponentState) {
 			if cb, ok := comp.(LifecycleComponentStart); ok {
-				generic.CastAction0(cb.Start).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+				err = generic.CastAction0(cb.Start).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 			}
 		}) {
 			return
@@ -620,6 +630,8 @@ func (rt *RuntimeBehavior) startComponent(comp ec.Component) {
 	}
 
 	ec.UnsafeComponent(comp).SetState(ec.ComponentState_Alive)
+
+	return
 }
 
 func (rt *RuntimeBehavior) shutComponent(comp ec.Component) {

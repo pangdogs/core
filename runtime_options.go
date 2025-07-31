@@ -34,12 +34,13 @@ type (
 
 // RuntimeOptions 创建运行时的所有选项
 type RuntimeOptions struct {
-	InstanceFace         iface.Face[Runtime] // 实例，用于扩展运行时能力
-	AutoRun              bool                // 是否开启自动运行
-	ProcessQueueCapacity int                 // 任务处理流水线大小
-	Frame                runtime.Frame       // 帧，设置为nil表示不使用帧更新特性
-	GCInterval           time.Duration       // GC间隔时长
-	CustomGC             CustomGC            // 自定义GC
+	InstanceFace                    iface.Face[Runtime] // 实例，用于扩展运行时能力
+	AutoRun                         bool                // 是否开启自动运行
+	ContinueOnActivatingEntityPanic bool                // 激活实体时发生panic是否继续，不继续将会主动删除实体
+	ProcessQueueCapacity            int                 // 任务处理流水线大小
+	Frame                           runtime.Frame       // 帧，设置为nil表示不使用帧更新特性
+	GCInterval                      time.Duration       // GC间隔时长
+	CustomGC                        CustomGC            // 自定义GC
 }
 
 type _RuntimeOption struct{}
@@ -49,6 +50,7 @@ func (_RuntimeOption) Default() option.Setting[RuntimeOptions] {
 	return func(options *RuntimeOptions) {
 		With.Runtime.InstanceFace(iface.Face[Runtime]{}).Apply(options)
 		With.Runtime.AutoRun(false).Apply(options)
+		With.Runtime.ContinueOnActivatingEntityPanic(false).Apply(options)
 		With.Runtime.ProcessQueueCapacity(128).Apply(options)
 		With.Runtime.Frame(nil).Apply(options)
 		With.Runtime.GCInterval(10 * time.Second).Apply(options)
@@ -67,6 +69,13 @@ func (_RuntimeOption) InstanceFace(face iface.Face[Runtime]) option.Setting[Runt
 func (_RuntimeOption) AutoRun(b bool) option.Setting[RuntimeOptions] {
 	return func(options *RuntimeOptions) {
 		options.AutoRun = b
+	}
+}
+
+// ContinueOnActivatingEntityPanic 激活实体时发生panic是否继续，不继续将会主动删除实体
+func (_RuntimeOption) ContinueOnActivatingEntityPanic(b bool) option.Setting[RuntimeOptions] {
+	return func(options *RuntimeOptions) {
+		options.ContinueOnActivatingEntityPanic = b
 	}
 }
 

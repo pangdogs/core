@@ -275,6 +275,10 @@ func (mgr *_EntityManagerBehavior) addEntity(entity ec.Entity, parentId uid.Id) 
 		return entity.GetState() > ec.EntityState_Alive
 	}, mgr, entity)
 
+	if entity.GetState() > ec.EntityState_Alive {
+		return fmt.Errorf("%w: entity %q removed during activation", ErrEntityManager, entity.GetId())
+	}
+
 	if parent != nil {
 		if err := mgr.attachToParentNode(entity, parent); err != nil {
 			return fmt.Errorf("%w: entity %q attach to parent %q failed, %w", ErrEntityManager, entity.GetId(), parent.GetId(), err)
