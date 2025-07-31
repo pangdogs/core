@@ -2,7 +2,6 @@ package ec
 
 import (
 	"git.golaxy.org/core/utils/exception"
-	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/meta"
 	"git.golaxy.org/core/utils/option"
 	"reflect"
@@ -23,7 +22,7 @@ type EntityPT interface {
 	// ComponentUniqueID 是否为实体组件分配唯一Id
 	ComponentUniqueID() *bool
 	// Extra 自定义原型属性
-	Extra() generic.SliceMap[string, any]
+	Extra() meta.Meta
 	// CountComponents // 组件数量
 	CountComponents() int
 	// Component 获取组件
