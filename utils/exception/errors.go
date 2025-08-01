@@ -31,10 +31,22 @@ var (
 	ErrArgs     = errors.New("args")     // 参数错误
 )
 
+type StackedError struct {
+	Err   error
+	Stack []byte
+}
+
+func (e StackedError) Error() string {
+	return fmt.Sprintf("%s\n\n%s\n", e.Err, e.Stack)
+}
+
 func TraceStack(err error) error {
 	stackBuf := make([]byte, 4096)
 	n := runtime.Stack(stackBuf, false)
-	return fmt.Errorf("error:\n%w\nstack:\n%s\n", err, stackBuf[:n])
+	return &StackedError{
+		Err:   err,
+		Stack: stackBuf[:n],
+	}
 }
 
 func Error(v any) error {
