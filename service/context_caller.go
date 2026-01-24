@@ -21,12 +21,13 @@ package service
 
 import (
 	"fmt"
+	_ "unsafe"
+
 	"git.golaxy.org/core/ec"
-	"git.golaxy.org/core/ec/ictx"
 	"git.golaxy.org/core/utils/async"
+	"git.golaxy.org/core/utils/corectx"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/uid"
-	_ "unsafe"
 )
 
 // Caller 异步调用发起者
@@ -61,7 +62,7 @@ type Caller interface {
 }
 
 //go:linkname getCaller git.golaxy.org/core/runtime.getCaller
-func getCaller(provider ictx.ConcurrentContextProvider) async.Caller
+func getCaller(provider corectx.ConcurrentContextProvider) async.Caller
 
 func checkEntity(entity ec.Entity) error {
 	if entity.GetState() > ec.EntityState_Alive {

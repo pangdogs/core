@@ -21,6 +21,7 @@ package generic
 
 import (
 	"fmt"
+
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/types"
 )
@@ -44,13 +45,9 @@ func (f FuncPairVar0[VA, R1, R2]) Call(autoRecover bool, reportError chan error,
 	if autoRecover {
 		defer func() {
 			if panicErr = types.Panic2Err(recover()); panicErr != nil {
-				panicErr = fmt.Errorf("%w: %w", exception.ErrPanicked, panicErr)
-
-				if reportError != nil {
-					select {
-					case reportError <- exception.TraceStack(panicErr):
-					default:
-					}
+				select {
+				case reportError <- exception.TraceStack(fmt.Errorf("%w: %w", exception.ErrPanicked, panicErr)):
+				default:
 				}
 			}
 		}()
@@ -83,13 +80,9 @@ func (f FuncPairVar1[A1, VA, R1, R2]) Call(autoRecover bool, reportError chan er
 	if autoRecover {
 		defer func() {
 			if panicErr = types.Panic2Err(recover()); panicErr != nil {
-				panicErr = fmt.Errorf("%w: %w", exception.ErrPanicked, panicErr)
-
-				if reportError != nil {
-					select {
-					case reportError <- exception.TraceStack(panicErr):
-					default:
-					}
+				select {
+				case reportError <- exception.TraceStack(fmt.Errorf("%w: %w", exception.ErrPanicked, panicErr)):
+				default:
 				}
 			}
 		}()
@@ -122,13 +115,9 @@ func (f FuncPairVar2[A1, A2, VA, R1, R2]) Call(autoRecover bool, reportError cha
 	if autoRecover {
 		defer func() {
 			if panicErr = types.Panic2Err(recover()); panicErr != nil {
-				panicErr = fmt.Errorf("%w: %w", exception.ErrPanicked, panicErr)
-
-				if reportError != nil {
-					select {
-					case reportError <- exception.TraceStack(panicErr):
-					default:
-					}
+				select {
+				case reportError <- exception.TraceStack(fmt.Errorf("%w: %w", exception.ErrPanicked, panicErr)):
+				default:
 				}
 			}
 		}()
@@ -161,13 +150,9 @@ func (f FuncPairVar3[A1, A2, A3, VA, R1, R2]) Call(autoRecover bool, reportError
 	if autoRecover {
 		defer func() {
 			if panicErr = types.Panic2Err(recover()); panicErr != nil {
-				panicErr = fmt.Errorf("%w: %w", exception.ErrPanicked, panicErr)
-
-				if reportError != nil {
-					select {
-					case reportError <- exception.TraceStack(panicErr):
-					default:
-					}
+				select {
+				case reportError <- exception.TraceStack(fmt.Errorf("%w: %w", exception.ErrPanicked, panicErr)):
+				default:
 				}
 			}
 		}()
@@ -200,13 +185,9 @@ func (f FuncPairVar4[A1, A2, A3, A4, VA, R1, R2]) Call(autoRecover bool, reportE
 	if autoRecover {
 		defer func() {
 			if panicErr = types.Panic2Err(recover()); panicErr != nil {
-				panicErr = fmt.Errorf("%w: %w", exception.ErrPanicked, panicErr)
-
-				if reportError != nil {
-					select {
-					case reportError <- exception.TraceStack(panicErr):
-					default:
-					}
+				select {
+				case reportError <- exception.TraceStack(fmt.Errorf("%w: %w", exception.ErrPanicked, panicErr)):
+				default:
 				}
 			}
 		}()
@@ -248,13 +229,9 @@ func (f FuncPairVar5[A1, A2, A3, A4, A5, VA, R1, R2]) Call(
 	if autoRecover {
 		defer func() {
 			if panicErr = types.Panic2Err(recover()); panicErr != nil {
-				panicErr = fmt.Errorf("%w: %w", exception.ErrPanicked, panicErr)
-
-				if reportError != nil {
-					select {
-					case reportError <- exception.TraceStack(panicErr):
-					default:
-					}
+				select {
+				case reportError <- exception.TraceStack(fmt.Errorf("%w: %w", exception.ErrPanicked, panicErr)):
+				default:
 				}
 			}
 		}()
@@ -296,13 +273,9 @@ func (f FuncPairVar6[A1, A2, A3, A4, A5, A6, VA, R1, R2]) Call(
 	if autoRecover {
 		defer func() {
 			if panicErr = types.Panic2Err(recover()); panicErr != nil {
-				panicErr = fmt.Errorf("%w: %w", exception.ErrPanicked, panicErr)
-
-				if reportError != nil {
-					select {
-					case reportError <- exception.TraceStack(panicErr):
-					default:
-					}
+				select {
+				case reportError <- exception.TraceStack(fmt.Errorf("%w: %w", exception.ErrPanicked, panicErr)):
+				default:
 				}
 			}
 		}()
@@ -344,13 +317,9 @@ func (f FuncPairVar7[A1, A2, A3, A4, A5, A6, A7, VA, R1, R2]) Call(
 	if autoRecover {
 		defer func() {
 			if panicErr = types.Panic2Err(recover()); panicErr != nil {
-				panicErr = fmt.Errorf("%w: %w", exception.ErrPanicked, panicErr)
-
-				if reportError != nil {
-					select {
-					case reportError <- exception.TraceStack(panicErr):
-					default:
-					}
+				select {
+				case reportError <- exception.TraceStack(fmt.Errorf("%w: %w", exception.ErrPanicked, panicErr)):
+				default:
 				}
 			}
 		}()
@@ -392,13 +361,9 @@ func (f FuncPairVar8[A1, A2, A3, A4, A5, A6, A7, A8, VA, R1, R2]) Call(
 	if autoRecover {
 		defer func() {
 			if panicErr = types.Panic2Err(recover()); panicErr != nil {
-				panicErr = fmt.Errorf("%w: %w", exception.ErrPanicked, panicErr)
-
-				if reportError != nil {
-					select {
-					case reportError <- exception.TraceStack(panicErr):
-					default:
-					}
+				select {
+				case reportError <- exception.TraceStack(fmt.Errorf("%w: %w", exception.ErrPanicked, panicErr)):
+				default:
 				}
 			}
 		}()
@@ -440,13 +405,9 @@ func (f FuncPairVar9[A1, A2, A3, A4, A5, A6, A7, A8, A9, VA, R1, R2]) Call(
 	if autoRecover {
 		defer func() {
 			if panicErr = types.Panic2Err(recover()); panicErr != nil {
-				panicErr = fmt.Errorf("%w: %w", exception.ErrPanicked, panicErr)
-
-				if reportError != nil {
-					select {
-					case reportError <- exception.TraceStack(panicErr):
-					default:
-					}
+				select {
+				case reportError <- exception.TraceStack(fmt.Errorf("%w: %w", exception.ErrPanicked, panicErr)):
+				default:
 				}
 			}
 		}()
@@ -488,13 +449,9 @@ func (f FuncPairVar10[A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, VA, R1, R2]) Call
 	if autoRecover {
 		defer func() {
 			if panicErr = types.Panic2Err(recover()); panicErr != nil {
-				panicErr = fmt.Errorf("%w: %w", exception.ErrPanicked, panicErr)
-
-				if reportError != nil {
-					select {
-					case reportError <- exception.TraceStack(panicErr):
-					default:
-					}
+				select {
+				case reportError <- exception.TraceStack(fmt.Errorf("%w: %w", exception.ErrPanicked, panicErr)):
+				default:
 				}
 			}
 		}()

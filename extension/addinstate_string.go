@@ -9,17 +9,18 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[AddInState_Loaded-0]
-	_ = x[AddInState_Active-1]
-	_ = x[AddInState_Inactive-2]
+	_ = x[AddInState_Running-1]
+	_ = x[AddInState_Unloaded-2]
 }
 
-const _AddInState_name = "AddInState_LoadedAddInState_ActiveAddInState_Inactive"
+const _AddInState_name = "AddInState_LoadedAddInState_RunningAddInState_Unloaded"
 
-var _AddInState_index = [...]uint8{0, 18, 36, 56}
+var _AddInState_index = [...]uint8{0, 17, 35, 54}
 
 func (i AddInState) String() string {
-	if i < 0 || i >= AddInState(len(_AddInState_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_AddInState_index)-1 {
 		return "AddInState(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _AddInState_name[_AddInState_index[i]:_AddInState_index[i+1]]
+	return _AddInState_name[_AddInState_index[idx]:_AddInState_index[idx+1]]
 }

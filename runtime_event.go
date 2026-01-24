@@ -17,19 +17,18 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-//go:generate go run git.golaxy.org/core/event/eventc event --default_export=false --default_auto=false
+//go:generate go run git.golaxy.org/core/event/eventc event
+//go:generate go run git.golaxy.org/core/event/eventc eventtab --name=runtimeEventTab --export_interface=false
 package core
 
-import "git.golaxy.org/core/runtime"
-
+// +event-gen:export_emit=0
+// +event-tab-gen:recursion=disallow
 type eventUpdate interface {
 	Update()
 }
 
+// +event-gen:export_emit=0
+// +event-tab-gen:recursion=disallow
 type eventLateUpdate interface {
 	LateUpdate()
-}
-
-type eventRuntimeRunningStatusChanged interface {
-	OnRuntimeRunningStatusChanged(rtCtx runtime.Context, status runtime.RunningStatus, args ...any)
 }

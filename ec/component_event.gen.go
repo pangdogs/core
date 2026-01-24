@@ -29,7 +29,7 @@ type iAutoEventComponentEnableChanged interface {
 	EventComponentEnableChanged() event.IEvent
 }
 
-func BindEventComponentEnableChanged(auto iAutoEventComponentEnableChanged, subscriber EventComponentEnableChanged, priority ...int32) event.Hook {
+func BindEventComponentEnableChanged(auto iAutoEventComponentEnableChanged, subscriber EventComponentEnableChanged, priority ...int32) event.Handle {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
@@ -71,48 +71,48 @@ func (h EventComponentEnableChangedHandler) OnComponentEnableChanged(comp Compon
 	h(comp, enable)
 }
 
-type iAutoEventComponentDestroySelf interface {
-	EventComponentDestroySelf() event.IEvent
+type iAutoEventComponentDestroy interface {
+	EventComponentDestroy() event.IEvent
 }
 
-func BindEventComponentDestroySelf(auto iAutoEventComponentDestroySelf, subscriber EventComponentDestroySelf, priority ...int32) event.Hook {
+func BindEventComponentDestroy(auto iAutoEventComponentDestroy, subscriber EventComponentDestroy, priority ...int32) event.Handle {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
-	return event.Bind[EventComponentDestroySelf](auto.EventComponentDestroySelf(), subscriber, priority...)
+	return event.Bind[EventComponentDestroy](auto.EventComponentDestroy(), subscriber, priority...)
 }
 
-func _EmitEventComponentDestroySelf(auto iAutoEventComponentDestroySelf, comp Component) {
+func _EmitEventComponentDestroy(auto iAutoEventComponentDestroy, comp Component) {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
-	event.UnsafeEvent(auto.EventComponentDestroySelf()).Emit(func(subscriber event.Cache) bool {
-		event.Cache2Iface[EventComponentDestroySelf](subscriber).OnComponentDestroySelf(comp)
+	event.UnsafeEvent(auto.EventComponentDestroy()).Emit(func(subscriber event.Cache) bool {
+		event.Cache2Iface[EventComponentDestroy](subscriber).OnComponentDestroy(comp)
 		return true
 	})
 }
 
-func _EmitEventComponentDestroySelfWithInterrupt(auto iAutoEventComponentDestroySelf, interrupt func(comp Component) bool, comp Component) {
+func _EmitEventComponentDestroyWithInterrupt(auto iAutoEventComponentDestroy, interrupt func(comp Component) bool, comp Component) {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
-	event.UnsafeEvent(auto.EventComponentDestroySelf()).Emit(func(subscriber event.Cache) bool {
+	event.UnsafeEvent(auto.EventComponentDestroy()).Emit(func(subscriber event.Cache) bool {
 		if interrupt != nil {
 			if interrupt(comp) {
 				return false
 			}
 		}
-		event.Cache2Iface[EventComponentDestroySelf](subscriber).OnComponentDestroySelf(comp)
+		event.Cache2Iface[EventComponentDestroy](subscriber).OnComponentDestroy(comp)
 		return true
 	})
 }
 
-func HandleEventComponentDestroySelf(fun func(comp Component)) EventComponentDestroySelfHandler {
-	return EventComponentDestroySelfHandler(fun)
+func HandleEventComponentDestroy(fun func(comp Component)) EventComponentDestroyHandler {
+	return EventComponentDestroyHandler(fun)
 }
 
-type EventComponentDestroySelfHandler func(comp Component)
+type EventComponentDestroyHandler func(comp Component)
 
-func (h EventComponentDestroySelfHandler) OnComponentDestroySelf(comp Component) {
+func (h EventComponentDestroyHandler) OnComponentDestroy(comp Component) {
 	h(comp)
 }

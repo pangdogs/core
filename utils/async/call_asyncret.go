@@ -21,6 +21,7 @@ package async
 
 import (
 	"context"
+
 	"git.golaxy.org/core/utils/types"
 )
 
@@ -96,4 +97,20 @@ func (asyncRet AsyncRetT[T]) Wait(ctx context.Context) RetT[T] {
 	case <-ctx.Done():
 		return MakeRetT[T](types.ZeroT[T](), context.Canceled)
 	}
+}
+
+// Context 转为上下文，丢弃异步调用结果
+func (asyncRet AsyncRetT[T]) Context(ctx context.Context) context.Context {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	ctx, cancel := context.WithCancel(ctx)
+
+	go func() {
+		<-asyncRet
+		cancel()
+	}()
+
+	return ctx
 }

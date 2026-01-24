@@ -27,3 +27,7 @@ import (
 func (ctx *ContextBehavior) GetAddInManager() extension.AddInManager {
 	return ctx.options.AddInManager
 }
+
+func (ctx *ContextBehavior) getAddInManager() extension.RuntimeAddInManager {
+	return ctx.options.AddInManager
+}

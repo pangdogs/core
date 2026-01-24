@@ -20,6 +20,9 @@
 package runtime
 
 import (
+	"sync/atomic"
+
+	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/async"
 )
@@ -35,14 +38,14 @@ type _UnsafeContext struct {
 	Context
 }
 
-// Init 初始化
-func (u _UnsafeContext) Init(svcCtx service.Context, options ContextOptions) {
-	u.Context.init(svcCtx, options)
-}
-
 // GetOptions 获取运行时上下文所有选项
 func (u _UnsafeContext) GetOptions() *ContextOptions {
 	return u.getOptions()
+}
+
+// EmitEventRunningEvent 发送运行事件
+func (u _UnsafeContext) EmitEventRunningEvent(runningEvent RunningEvent, args ...any) {
+	u.emitEventRunningEvent(runningEvent, args...)
 }
 
 // SetFrame 设置帧
@@ -60,9 +63,14 @@ func (u _UnsafeContext) GetServiceCtx() service.Context {
 	return u.getServiceCtx()
 }
 
-// ChangeRunningStatus 修改运行状态
-func (u _UnsafeContext) ChangeRunningStatus(status RunningStatus, args ...any) {
-	u.changeRunningStatus(status, args...)
+// GetAddInManager 获取插件管理器
+func (u _UnsafeContext) GetAddInManager() extension.RuntimeAddInManager {
+	return u.getAddInManager()
+}
+
+// GetScoped 获取作用域状态
+func (u _UnsafeContext) GetScoped() *atomic.Bool {
+	return u.getScoped()
 }
 
 // GC GC

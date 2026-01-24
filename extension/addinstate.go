@@ -25,6 +25,6 @@ type AddInState int8
 
 const (
 	AddInState_Loaded   AddInState = iota // 已加载
-	AddInState_Active                     // 已激活
-	AddInState_Inactive                   // 未激活
+	AddInState_Running                    // 运行中
+	AddInState_Unloaded                   // 已卸载
 )

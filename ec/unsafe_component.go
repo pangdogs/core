@@ -20,10 +20,11 @@
 package ec
 
 import (
-	"context"
-	"git.golaxy.org/core/utils/types"
-	"git.golaxy.org/core/utils/uid"
 	"reflect"
+
+	"git.golaxy.org/core/event"
+	"git.golaxy.org/core/utils/generic"
+	"git.golaxy.org/core/utils/uid"
 )
 
 // Deprecated: UnsafeComponent 访问组件内部函数
@@ -37,24 +38,9 @@ type _UnsafeComponent struct {
 	Component
 }
 
-// Init 初始化
-func (u _UnsafeComponent) Init(name string, entity Entity, instance Component) {
-	u.init(name, entity, instance)
-}
-
-// WithContext 传递上下文
-func (u _UnsafeComponent) WithContext(ctx context.Context) {
-	u.withContext(ctx)
-}
-
 // SetId 设置Id
 func (u _UnsafeComponent) SetId(id uid.Id) {
 	u.setId(id)
-}
-
-// SetBuiltin 设置实体原型中的组件信息
-func (u _UnsafeComponent) SetBuiltin(builtin *BuiltinComponent) {
-	u.setBuiltin(builtin)
 }
 
 // SetState 设置状态
@@ -67,17 +53,42 @@ func (u _UnsafeComponent) SetReflected(v reflect.Value) {
 	u.setReflected(v)
 }
 
+// SetBuiltin 设置实体原型中的组件信息
+func (u _UnsafeComponent) SetBuiltin(builtin *BuiltinComponent) {
+	u.setBuiltin(builtin)
+}
+
 // SetRemovable 设置是否可以删除
 func (u _UnsafeComponent) SetRemovable(b bool) {
 	u.setRemovable(b)
 }
 
 // GetCallingStateBits 获取调用状态标志位
-func (u _UnsafeComponent) GetCallingStateBits() *types.Bits16 {
+func (u _UnsafeComponent) GetCallingStateBits() *generic.Bits16 {
 	return u.getCallingStateBits()
 }
 
 // GetProcessedStateBits 获取已处理状态标志位
-func (u _UnsafeComponent) GetProcessedStateBits() *types.Bits16 {
+func (u _UnsafeComponent) GetProcessedStateBits() *generic.Bits16 {
 	return u.getProcessedStateBits()
+}
+
+// GetAttachedHandle 获取加入实体时的句柄
+func (u _UnsafeComponent) GetAttachedHandle() (int, int64) {
+	return u.getAttachedHandle()
+}
+
+// ManagedRuntimeUpdateHandle 托管运行时更新句柄
+func (u _UnsafeComponent) ManagedRuntimeUpdateHandle(updateHandle event.Handle) {
+	u.managedRuntimeUpdateHandle(updateHandle)
+}
+
+// ManagedRuntimeLateUpdateHandle 托管运行时延迟更新句柄
+func (u _UnsafeComponent) ManagedRuntimeLateUpdateHandle(lateUpdateHandle event.Handle) {
+	u.managedRuntimeLateUpdateHandle(lateUpdateHandle)
+}
+
+// ManagedUnbindRuntimeHandles 解绑定托管的运行时句柄
+func (u _UnsafeComponent) ManagedUnbindRuntimeHandles() {
+	u.managedUnbindRuntimeHandles()
 }

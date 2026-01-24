@@ -21,6 +21,7 @@ package event
 
 import (
 	"fmt"
+
 	"git.golaxy.org/core/utils/exception"
 )
 

@@ -21,26 +21,39 @@
 //go:generate go run git.golaxy.org/core/event/eventc eventtab --name=entityTreeNodeEventTab
 package ec
 
+import "git.golaxy.org/core/utils/uid"
+
 // EventTreeNodeAddChild 事件：实体节点添加子实体
-// +event-gen:export=0
+// +event-gen:export_emit=0
+// +event-tab-gen:recursion=allow
 type EventTreeNodeAddChild interface {
-	OnTreeNodeAddChild(self, child Entity)
+	OnTreeNodeAddChild(entity Entity, childId uid.Id)
 }
 
 // EventTreeNodeRemoveChild 事件：实体节点删除子实体
-// +event-gen:export=0
+// +event-gen:export_emit=0
+// +event-tab-gen:recursion=allow
 type EventTreeNodeRemoveChild interface {
-	OnTreeNodeRemoveChild(self, child Entity)
+	OnTreeNodeRemoveChild(entity Entity, childId uid.Id)
 }
 
-// EventTreeNodeEnterParent 事件：实体加入父实体节点
-// +event-gen:export=0
-type EventTreeNodeEnterParent interface {
-	OnTreeNodeEnterParent(self, parent Entity)
+// EventTreeNodeAttachParent 事件：实体加入父实体节点
+// +event-gen:export_emit=0
+// +event-tab-gen:recursion=allow
+type EventTreeNodeAttachParent interface {
+	OnTreeNodeAttachParent(entity Entity, parentId uid.Id)
 }
 
-// EventTreeNodeLeaveParent 事件：实体离开父实体节点
-// +event-gen:export=0
-type EventTreeNodeLeaveParent interface {
-	OnTreeNodeLeaveParent(self, parent Entity)
+// EventTreeNodeDetachParent 事件：实体离开父实体节点
+// +event-gen:export_emit=0
+// +event-tab-gen:recursion=allow
+type EventTreeNodeDetachParent interface {
+	OnTreeNodeDetachParent(entity Entity, parentId uid.Id)
+}
+
+// EventTreeNodeMoveTo 事件：实体切换父节点
+// +event-gen:export_emit=0
+// +event-tab-gen:recursion=allow
+type EventTreeNodeMoveTo interface {
+	OnTreeNodeMoveTo(entity Entity, fromParentId, toParentId uid.Id)
 }

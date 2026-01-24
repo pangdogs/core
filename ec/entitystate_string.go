@@ -24,8 +24,9 @@ const _EntityState_name = "EntityState_BirthEntityState_EnterEntityState_AwakeEn
 var _EntityState_index = [...]uint8{0, 17, 34, 51, 68, 85, 102, 118, 135, 156}
 
 func (i EntityState) String() string {
-	if i < 0 || i >= EntityState(len(_EntityState_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_EntityState_index)-1 {
 		return "EntityState(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _EntityState_name[_EntityState_index[i]:_EntityState_index[i+1]]
+	return _EntityState_name[_EntityState_index[idx]:_EntityState_index[idx+1]]
 }

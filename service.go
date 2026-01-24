@@ -20,14 +20,13 @@
 package core
 
 import (
-	"git.golaxy.org/core/ec/ictx"
+	"sync/atomic"
+
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/option"
 	"git.golaxy.org/core/utils/reinterpret"
-	"sync"
-	"sync/atomic"
 )
 
 // NewService 创建服务
@@ -37,21 +36,22 @@ func NewService(svcCtx service.Context, settings ...option.Setting[ServiceOption
 
 // Deprecated: UnsafeNewService 内部创建服务
 func UnsafeNewService(svcCtx service.Context, options ServiceOptions) Service {
+	var svc Service
+
 	if !options.InstanceFace.IsNil() {
-		options.InstanceFace.Iface.init(svcCtx, options)
-		return options.InstanceFace.Iface
+		svc = options.InstanceFace.Iface
+	} else {
+		svc = &ServiceBehavior{}
 	}
+	svc.init(svcCtx, options)
 
-	service := &ServiceBehavior{}
-	service.init(svcCtx, options)
-
-	return service.options.InstanceFace.Iface
+	return svc
 }
 
 // Service 服务
 type Service interface {
 	iService
-	iRunning
+	iWorker
 	reinterpret.InstanceProvider
 
 	// GetContext 获取服务上下文
@@ -63,17 +63,10 @@ type iService interface {
 	getOptions() *ServiceOptions
 }
 
-type _StatusChanges struct {
-	status service.RunningStatus
-	args   []any
-}
-
 type ServiceBehavior struct {
-	ctx               service.Context
-	options           ServiceOptions
-	isRunning         atomic.Bool
-	statusChangesCond *sync.Cond
-	statusChanges     *_StatusChanges
+	ctx       service.Context
+	options   ServiceOptions
+	isRunning atomic.Bool
 }
 
 // GetContext 获取服务上下文
@@ -91,21 +84,24 @@ func (svc *ServiceBehavior) init(svcCtx service.Context, options ServiceOptions)
 		exception.Panicf("%w: %w: svcCtx is nil", ErrService, ErrArgs)
 	}
 
-	if !ictx.UnsafeContext(svcCtx).GetPaired().CompareAndSwap(false, true) {
-		exception.Panicf("%w: context already paired", ErrService)
+	if !service.UnsafeContext(svcCtx).GetScoped().CompareAndSwap(false, true) {
+		exception.Panicf("%w: %w: svcCtx is already bound to another service scope", ErrService, ErrArgs)
 	}
 
 	svc.ctx = svcCtx
 	svc.options = options
-	svc.statusChangesCond = sync.NewCond(&sync.Mutex{})
 
 	if svc.options.InstanceFace.IsNil() {
 		svc.options.InstanceFace = iface.MakeFaceT[Service](svc)
 	}
 
-	svc.changeRunningStatus(service.RunningStatus_Birth)
+	svc.emitEventRunningEvent(service.RunningEvent_Birth)
 }
 
 func (svc *ServiceBehavior) getOptions() *ServiceOptions {
 	return &svc.options
+}
+
+func (svc *ServiceBehavior) getInstance() Service {
+	return svc.options.InstanceFace.Iface
 }

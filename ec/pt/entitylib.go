@@ -20,38 +20,31 @@
 package pt
 
 import (
+	"context"
+	"reflect"
+	"slices"
+	"sync"
+
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/types"
-	"reflect"
-	"slices"
-	"sync"
 )
 
 // EntityLib 实体原型库
 type EntityLib interface {
-	iEntityLib
 	EntityPTProvider
 
 	// GetComponentLib 获取组件原型库
 	GetComponentLib() ComponentLib
 	// Declare 声明实体原型
 	Declare(prototype any, comps ...any) ec.EntityPT
-	// Redeclare 重声明实体原型
-	Redeclare(prototype any, comps ...any) ec.EntityPT
-	// Undeclare 取消声明实体原型
-	Undeclare(prototype string)
 	// Get 获取实体原型
 	Get(prototype string) (ec.EntityPT, bool)
-	// Range 遍历所有已注册的实体原型
-	Range(fun generic.Func1[ec.EntityPT, bool])
-	// ReversedRange 反向遍历所有已注册的实体原型
-	ReversedRange(fun generic.Func1[ec.EntityPT, bool])
-}
-
-type iEntityLib interface {
-	setCallback(declareCB, redeclareCB, undeclareCB generic.Action1[ec.EntityPT])
+	// List 获取所有实体原型
+	List() []ec.EntityPT
+	// ListAndWatch 获取并观察所有实体原型的声明
+	ListAndWatch(ctx context.Context) <-chan ec.EntityPT
 }
 
 // NewEntityLib 创建实体原型库
@@ -61,17 +54,18 @@ func NewEntityLib(compLib ComponentLib) EntityLib {
 	}
 
 	return &_EntityLib{
-		compLib:     compLib,
-		entityIndex: map[string]*_Entity{},
+		compLib:       compLib,
+		entityPTIndex: map[string]int{},
+		watchers:      map[*generic.UnboundedChannel[ec.EntityPT]]struct{}{},
 	}
 }
 
 type _EntityLib struct {
 	sync.RWMutex
-	compLib                             ComponentLib
-	entityIndex                         map[string]*_Entity
-	entityList                          []*_Entity
-	declareCB, redeclareCB, undeclareCB generic.Action1[ec.EntityPT]
+	compLib       ComponentLib
+	entityPTIndex map[string]int
+	entityPTList  generic.FreeList[ec.EntityPT]
+	watchers      map[*generic.UnboundedChannel[ec.EntityPT]]struct{}
 }
 
 // GetEntityLib 获取实体原型库
@@ -86,76 +80,6 @@ func (lib *_EntityLib) GetComponentLib() ComponentLib {
 
 // Declare 声明实体原型
 func (lib *_EntityLib) Declare(prototype any, comps ...any) ec.EntityPT {
-	entityPT := lib.declare(false, prototype, comps...)
-	lib.declareCB.UnsafeCall(entityPT)
-	return entityPT
-}
-
-// Redeclare 重声明实体原型
-func (lib *_EntityLib) Redeclare(prototype any, comps ...any) ec.EntityPT {
-	entityPT := lib.declare(true, prototype, comps...)
-	lib.redeclareCB.UnsafeCall(entityPT)
-	return entityPT
-}
-
-// Undeclare 取消声明实体原型
-func (lib *_EntityLib) Undeclare(prototype string) {
-	entityPT, ok := lib.undeclare(prototype)
-	if !ok {
-		return
-	}
-	lib.undeclareCB.UnsafeCall(entityPT)
-}
-
-// Get 获取实体原型
-func (lib *_EntityLib) Get(prototype string) (ec.EntityPT, bool) {
-	lib.RLock()
-	defer lib.RUnlock()
-
-	entityPT, ok := lib.entityIndex[prototype]
-	if !ok {
-		return nil, false
-	}
-
-	return entityPT, ok
-}
-
-// Range 遍历所有已注册的实体原型
-func (lib *_EntityLib) Range(fun generic.Func1[ec.EntityPT, bool]) {
-	lib.RLock()
-	copied := slices.Clone(lib.entityList)
-	lib.RUnlock()
-
-	for i := range copied {
-		if !fun.UnsafeCall(copied[i]) {
-			return
-		}
-	}
-}
-
-// ReversedRange 反向遍历所有已注册的实体原型
-func (lib *_EntityLib) ReversedRange(fun generic.Func1[ec.EntityPT, bool]) {
-	lib.RLock()
-	copied := slices.Clone(lib.entityList)
-	lib.RUnlock()
-
-	for i := len(copied) - 1; i >= 0; i-- {
-		if !fun.UnsafeCall(copied[i]) {
-			return
-		}
-	}
-}
-
-func (lib *_EntityLib) setCallback(declareCB, redeclareCB, undeclareCB generic.Action1[ec.EntityPT]) {
-	lib.Lock()
-	defer lib.Unlock()
-
-	lib.declareCB = declareCB
-	lib.redeclareCB = redeclareCB
-	lib.undeclareCB = undeclareCB
-}
-
-func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) ec.EntityPT {
 	if prototype == nil {
 		exception.Panicf("%w: %w: prototype is nil", ErrPt, exception.ErrArgs)
 	}
@@ -167,36 +91,35 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) ec.EntityPT
 	lib.Lock()
 	defer lib.Unlock()
 
-	var entityAtti EntityAttribute
+	var entityDescr EntityDescriptor
 
 	switch v := prototype.(type) {
-	case EntityAttribute:
-		entityAtti = v
-	case *EntityAttribute:
-		entityAtti = *v
+	case EntityDescriptor:
+		entityDescr = v
+	case *EntityDescriptor:
+		entityDescr = *v
 	case string:
-		entityAtti = EntityAttribute{Prototype: v}
+		entityDescr = EntityDescriptor{Prototype: v}
 	default:
 		exception.Panicf("%w: invalid prototype type: %T", ErrPt, prototype)
 	}
 
-	if entityAtti.Prototype == "" {
+	if entityDescr.Prototype == "" {
 		exception.Panicf("%w: prototype can't empty", ErrPt)
 	}
 
 	entityPT := &_Entity{
-		prototype:                  entityAtti.Prototype,
-		scope:                      entityAtti.Scope,
-		componentNameIndexing:      entityAtti.ComponentNameIndexing,
-		componentAwakeOnFirstTouch: entityAtti.ComponentAwakeOnFirstTouch,
-		componentUniqueID:          entityAtti.ComponentUniqueID,
-		extra:                      entityAtti.Extra,
+		prototype:                  entityDescr.Prototype,
+		scope:                      entityDescr.Scope,
+		componentAwakeOnFirstTouch: entityDescr.ComponentAwakeOnFirstTouch,
+		componentUniqueID:          entityDescr.ComponentUniqueID,
+		meta:                       entityDescr.Meta,
 	}
 
-	if entityAtti.Instance != nil {
-		instanceRT, ok := entityAtti.Instance.(reflect.Type)
+	if entityDescr.Instance != nil {
+		instanceRT, ok := entityDescr.Instance.(reflect.Type)
 		if !ok {
-			instanceRT = reflect.TypeOf(entityAtti.Instance)
+			instanceRT = reflect.TypeOf(entityDescr.Instance)
 		}
 
 		for instanceRT.Kind() == reflect.Pointer {
@@ -221,13 +144,13 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) ec.EntityPT
 
 	retry:
 		switch v := comp.(type) {
-		case ComponentAttribute:
+		case ComponentDescriptor:
 			builtin.Name = v.Name
 			builtin.Removable = v.Removable
-			builtin.Extra = v.Extra
+			builtin.Meta = v.Meta
 			comp = v.Instance
 			goto retry
-		case *ComponentAttribute:
+		case *ComponentDescriptor:
 			comp = *v
 			goto retry
 		case string:
@@ -250,36 +173,63 @@ func (lib *_EntityLib) declare(re bool, prototype any, comps ...any) ec.EntityPT
 		entityPT.components = append(entityPT.components, builtin)
 	}
 
-	if _, ok := lib.entityIndex[entityAtti.Prototype]; ok {
-		if re {
-			lib.entityList = slices.DeleteFunc(lib.entityList, func(pt *_Entity) bool {
-				return pt.prototype == prototype
-			})
-		} else {
-			exception.Panicf("%w: entity %q is already declared", ErrPt, prototype)
-		}
+	if entityPTIdx, ok := lib.entityPTIndex[entityDescr.Prototype]; ok {
+		lib.entityPTList.Release(entityPTIdx)
 	}
 
-	lib.entityIndex[entityAtti.Prototype] = entityPT
-	lib.entityList = append(lib.entityList, entityPT)
+	lib.entityPTIndex[entityDescr.Prototype] = lib.entityPTList.PushBack(entityPT).Index()
+
+	for watcher := range lib.watchers {
+		watcher.In() <- entityPT
+	}
 
 	return entityPT
 }
 
-func (lib *_EntityLib) undeclare(prototype string) (ec.EntityPT, bool) {
-	lib.Lock()
-	defer lib.Unlock()
+// Get 获取实体原型
+func (lib *_EntityLib) Get(prototype string) (ec.EntityPT, bool) {
+	lib.RLock()
+	defer lib.RUnlock()
 
-	entityPT, ok := lib.entityIndex[prototype]
+	entityPTIdx, ok := lib.entityPTIndex[prototype]
 	if !ok {
 		return nil, false
 	}
 
-	delete(lib.entityIndex, prototype)
+	return lib.entityPTList.Get(entityPTIdx).V, true
+}
 
-	lib.entityList = slices.DeleteFunc(lib.entityList, func(pt *_Entity) bool {
-		return pt.prototype == prototype
+// List 获取所有实体原型
+func (lib *_EntityLib) List() []ec.EntityPT {
+	lib.RLock()
+	defer lib.RUnlock()
+
+	return lib.entityPTList.ToSlice()
+}
+
+// ListAndWatch 获取并观察所有实体原型的声明
+func (lib *_EntityLib) ListAndWatch(ctx context.Context) <-chan ec.EntityPT {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	lib.Lock()
+	defer lib.Unlock()
+
+	watcher := generic.NewUnboundedChannel[ec.EntityPT]()
+	lib.watchers[watcher] = struct{}{}
+
+	lib.entityPTList.TraversalEach(func(slot *generic.FreeSlot[ec.EntityPT]) {
+		watcher.In() <- slot.V
 	})
 
-	return entityPT, true
+	go func() {
+		<-ctx.Done()
+		lib.Lock()
+		defer lib.Unlock()
+		watcher.Close()
+		delete(lib.watchers, watcher)
+	}()
+
+	return watcher.Out()
 }

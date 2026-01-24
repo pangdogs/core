@@ -22,17 +22,26 @@
 package runtime
 
 import (
-	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/utils/uid"
 )
 
 // EventEntityTreeAddNode 事件：新增实体树节点
-// +event-gen:export=0
+// +event-gen:export_emit=0
+// +event-tab-gen:recursion=allow
 type EventEntityTreeAddNode interface {
-	OnEntityTreeAddNode(entityTree EntityTree, parent, child ec.Entity)
+	OnEntityTreeAddNode(entityTree EntityTree, parentId, childId uid.Id)
 }
 
 // EventEntityTreeRemoveNode 事件：删除实体树节点
-// +event-gen:export=0
+// +event-gen:export_emit=0
+// +event-tab-gen:recursion=allow
 type EventEntityTreeRemoveNode interface {
-	OnEntityTreeRemoveNode(entityTree EntityTree, parent, child ec.Entity)
+	OnEntityTreeRemoveNode(entityTree EntityTree, parentId, childId uid.Id)
+}
+
+// EventEntityTreeMoveNode 事件：实体树移动节点
+// +event-gen:export_emit=0
+// +event-tab-gen:recursion=allow
+type EventEntityTreeMoveNode interface {
+	OnEntityTreeMoveNode(entityTree EntityTree, childId, fromParentId, toParentId uid.Id)
 }

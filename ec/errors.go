@@ -21,6 +21,7 @@ package ec
 
 import (
 	"fmt"
+
 	"git.golaxy.org/core/utils/exception"
 )
 

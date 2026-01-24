@@ -19,7 +19,7 @@
 
 package uid
 
-import "github.com/segmentio/ksuid"
+import "github.com/rs/xid"
 
 var (
 	// Nil is a nil id.
@@ -27,7 +27,7 @@ var (
 
 	// New generates a new id.
 	New = func() Id {
-		return Id(ksuid.New().String())
+		return Id(xid.New().String())
 	}
 
 	// From generate id from string.

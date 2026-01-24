@@ -20,23 +20,23 @@
 package pt
 
 import (
+	"reflect"
+	"slices"
+
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/meta"
 	"git.golaxy.org/core/utils/option"
-	"reflect"
-	"slices"
 )
 
 type _Entity struct {
 	prototype                  string
 	instanceRT                 reflect.Type
-	scope                      *ec.Scope
-	componentNameIndexing      *bool
-	componentAwakeOnFirstTouch *bool
-	componentUniqueID          *bool
-	extra                      meta.Meta
+	scope                      ec.Scope
+	componentAwakeOnFirstTouch bool
+	componentUniqueID          bool
+	meta                       meta.Meta
 	components                 []ec.BuiltinComponent
 }
 
@@ -54,23 +54,23 @@ func (pt *_Entity) InstanceRT() reflect.Type {
 }
 
 // Scope 可访问作用域
-func (pt *_Entity) Scope() *ec.Scope {
+func (pt *_Entity) Scope() ec.Scope {
 	return pt.scope
 }
 
-// ComponentNameIndexing 是否开启组件名称索引
-func (pt *_Entity) ComponentNameIndexing() *bool {
-	return pt.componentNameIndexing
-}
-
 // ComponentAwakeOnFirstTouch 当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
-func (pt *_Entity) ComponentAwakeOnFirstTouch() *bool {
+func (pt *_Entity) ComponentAwakeOnFirstTouch() bool {
 	return pt.componentAwakeOnFirstTouch
 }
 
 // ComponentUniqueID 是否为实体组件分配唯一Id
-func (pt *_Entity) ComponentUniqueID() *bool {
+func (pt *_Entity) ComponentUniqueID() bool {
 	return pt.componentUniqueID
+}
+
+// Meta 原型Meta信息
+func (pt *_Entity) Meta() meta.Meta {
+	return pt.meta
 }
 
 // CountComponents // 组件数量
@@ -78,21 +78,16 @@ func (pt *_Entity) CountComponents() int {
 	return len(pt.components)
 }
 
-// Extra 自定义原型属性
-func (pt *_Entity) Extra() meta.Meta {
-	return pt.extra
-}
-
-// Component 获取组件
-func (pt *_Entity) Component(idx int) ec.BuiltinComponent {
+// GetComponent 获取组件
+func (pt *_Entity) GetComponent(idx int) ec.BuiltinComponent {
 	if idx < 0 || idx >= len(pt.components) {
 		exception.Panicf("%w: %w: idx out of range", ErrPt, exception.ErrArgs)
 	}
 	return pt.components[idx]
 }
 
-// Components 获取所有组件
-func (pt *_Entity) Components() []ec.BuiltinComponent {
+// ListComponents 获取所有组件
+func (pt *_Entity) ListComponents() []ec.BuiltinComponent {
 	return slices.Clone(pt.components)
 }
 
@@ -102,18 +97,9 @@ func (pt *_Entity) Construct(settings ...option.Setting[ec.EntityOptions]) ec.En
 	if pt.instanceRT != nil {
 		options.InstanceFace = iface.MakeFaceT(reflect.New(pt.instanceRT).Interface().(ec.Entity))
 	}
-	if pt.scope != nil {
-		options.Scope = *pt.scope
-	}
-	if pt.componentNameIndexing != nil {
-		options.ComponentNameIndexing = *pt.componentNameIndexing
-	}
-	if pt.componentAwakeOnFirstTouch != nil {
-		options.ComponentAwakeOnFirstTouch = *pt.componentAwakeOnFirstTouch
-	}
-	if pt.componentUniqueID != nil {
-		options.ComponentUniqueID = *pt.componentUniqueID
-	}
+	options.Scope = pt.scope
+	options.ComponentAwakeOnFirstTouch = pt.componentAwakeOnFirstTouch
+	options.ComponentUniqueID = pt.componentUniqueID
 	options = option.Append(options, settings...)
 
 	return pt.assemble(ec.UnsafeNewEntity(options))

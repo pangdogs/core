@@ -21,8 +21,9 @@ package generic
 
 import (
 	"cmp"
-	"git.golaxy.org/core/utils/types"
 	"slices"
+
+	"git.golaxy.org/core/utils/types"
 )
 
 func MakeSliceMap[K cmp.Ordered, V any](kvs ...KV[K, V]) SliceMap[K, V] {

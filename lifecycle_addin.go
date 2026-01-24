@@ -44,8 +44,8 @@ type LifecycleRuntimeAddInShut interface {
 	Shut(rtCtx runtime.Context)
 }
 
-// LifecycleAddInOnRuntimeRunningStatusChanged 运行时运行状态变化，当插件安装在运行时上时，实现此接口即可使用
-type LifecycleAddInOnRuntimeRunningStatusChanged = eventRuntimeRunningStatusChanged
+// LifecycleAddInOnRuntimeRunningEvent 运行事件，当插件安装在运行时上时，实现此接口即可使用
+type LifecycleAddInOnRuntimeRunningEvent = runtime.EventContextRunningEvent
 
 // LifecycleServiceAddInInit 服务插件初始化回调，当插件安装在服务上时，实现此接口即可使用
 type LifecycleServiceAddInInit interface {
@@ -55,9 +55,4 @@ type LifecycleServiceAddInInit interface {
 // LifecycleServiceAddInShut 服务插件结束回调，当插件安装在服务上时，实现此接口即可使用
 type LifecycleServiceAddInShut interface {
 	Shut(svcCtx service.Context)
-}
-
-// LifecycleAddInOnServiceRunningStatusChanged 服务运行状态变化，当插件安装在服务上时，实现此接口即可使用
-type LifecycleAddInOnServiceRunningStatusChanged interface {
-	OnServiceRunningStatusChanged(svcCtx service.Context, status service.RunningStatus, args ...any)
 }

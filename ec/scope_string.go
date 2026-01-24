@@ -17,8 +17,9 @@ const _Scope_name = "Scope_LocalScope_Global"
 var _Scope_index = [...]uint8{0, 11, 23}
 
 func (i Scope) String() string {
-	if i < 0 || i >= Scope(len(_Scope_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_Scope_index)-1 {
 		return "Scope(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _Scope_name[_Scope_index[i]:_Scope_index[i+1]]
+	return _Scope_name[_Scope_index[idx]:_Scope_index[idx+1]]
 }

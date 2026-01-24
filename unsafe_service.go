@@ -19,8 +19,6 @@
 
 package core
 
-import "git.golaxy.org/core/service"
-
 // Deprecated: UnsafeService 访问服务内部方法
 func UnsafeService(service Service) _UnsafeService {
 	return _UnsafeService{
@@ -30,11 +28,6 @@ func UnsafeService(service Service) _UnsafeService {
 
 type _UnsafeService struct {
 	Service
-}
-
-// Init 初始化
-func (u _UnsafeService) Init(svcCtx service.Context, options ServiceOptions) {
-	u.init(svcCtx, options)
 }
 
 // GetOptions 获取服务所有选项

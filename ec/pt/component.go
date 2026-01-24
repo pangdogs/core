@@ -20,8 +20,9 @@
 package pt
 
 import (
-	"git.golaxy.org/core/ec"
 	"reflect"
+
+	"git.golaxy.org/core/ec"
 )
 
 type _Component struct {

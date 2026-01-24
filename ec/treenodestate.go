@@ -28,4 +28,5 @@ const (
 	TreeNodeState_Attaching                      // 正在加入实体树
 	TreeNodeState_Attached                       // 在实体树中
 	TreeNodeState_Detaching                      // 正在脱离实体树
+	TreeNodeState_Moving                         // 正在移动实体父节点
 )

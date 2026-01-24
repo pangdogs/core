@@ -19,6 +19,12 @@
 
 package service
 
+import (
+	"sync/atomic"
+
+	"git.golaxy.org/core/extension"
+)
+
 // Deprecated: UnsafeContext 访问服务上下文内部方法
 func UnsafeContext(ctx Context) _UnsafeContext {
 	return _UnsafeContext{
@@ -30,17 +36,22 @@ type _UnsafeContext struct {
 	Context
 }
 
-// Init 初始化
-func (u _UnsafeContext) Init(options ContextOptions) {
-	u.Context.init(options)
-}
-
 // GetOptions 获取服务上下文所有选项
 func (u _UnsafeContext) GetOptions() *ContextOptions {
 	return u.getOptions()
 }
 
-// ChangeRunningStatus 修改运行状态
-func (u _UnsafeContext) ChangeRunningStatus(status RunningStatus, args ...any) {
-	u.changeRunningStatus(status, args...)
+// EmitEventRunningEvent 发送运行事件
+func (u _UnsafeContext) EmitEventRunningEvent(runningEvent RunningEvent, args ...any) {
+	u.emitEventRunningEvent(runningEvent, args...)
+}
+
+// GetAddInManager 获取插件管理器
+func (u _UnsafeContext) GetAddInManager() extension.ServiceAddInManager {
+	return u.getAddInManager()
+}
+
+// GetScoped 获取作用域状态
+func (u _UnsafeContext) GetScoped() *atomic.Bool {
+	return u.getScoped()
 }

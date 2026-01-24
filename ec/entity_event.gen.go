@@ -25,48 +25,48 @@ import (
 	event "git.golaxy.org/core/event"
 )
 
-type iAutoEventEntityDestroySelf interface {
-	EventEntityDestroySelf() event.IEvent
+type iAutoEventEntityDestroy interface {
+	EventEntityDestroy() event.IEvent
 }
 
-func BindEventEntityDestroySelf(auto iAutoEventEntityDestroySelf, subscriber EventEntityDestroySelf, priority ...int32) event.Hook {
+func BindEventEntityDestroy(auto iAutoEventEntityDestroy, subscriber EventEntityDestroy, priority ...int32) event.Handle {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
-	return event.Bind[EventEntityDestroySelf](auto.EventEntityDestroySelf(), subscriber, priority...)
+	return event.Bind[EventEntityDestroy](auto.EventEntityDestroy(), subscriber, priority...)
 }
 
-func _EmitEventEntityDestroySelf(auto iAutoEventEntityDestroySelf, entity Entity) {
+func _EmitEventEntityDestroy(auto iAutoEventEntityDestroy, entity Entity) {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
-	event.UnsafeEvent(auto.EventEntityDestroySelf()).Emit(func(subscriber event.Cache) bool {
-		event.Cache2Iface[EventEntityDestroySelf](subscriber).OnEntityDestroySelf(entity)
+	event.UnsafeEvent(auto.EventEntityDestroy()).Emit(func(subscriber event.Cache) bool {
+		event.Cache2Iface[EventEntityDestroy](subscriber).OnEntityDestroy(entity)
 		return true
 	})
 }
 
-func _EmitEventEntityDestroySelfWithInterrupt(auto iAutoEventEntityDestroySelf, interrupt func(entity Entity) bool, entity Entity) {
+func _EmitEventEntityDestroyWithInterrupt(auto iAutoEventEntityDestroy, interrupt func(entity Entity) bool, entity Entity) {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
-	event.UnsafeEvent(auto.EventEntityDestroySelf()).Emit(func(subscriber event.Cache) bool {
+	event.UnsafeEvent(auto.EventEntityDestroy()).Emit(func(subscriber event.Cache) bool {
 		if interrupt != nil {
 			if interrupt(entity) {
 				return false
 			}
 		}
-		event.Cache2Iface[EventEntityDestroySelf](subscriber).OnEntityDestroySelf(entity)
+		event.Cache2Iface[EventEntityDestroy](subscriber).OnEntityDestroy(entity)
 		return true
 	})
 }
 
-func HandleEventEntityDestroySelf(fun func(entity Entity)) EventEntityDestroySelfHandler {
-	return EventEntityDestroySelfHandler(fun)
+func HandleEventEntityDestroy(fun func(entity Entity)) EventEntityDestroyHandler {
+	return EventEntityDestroyHandler(fun)
 }
 
-type EventEntityDestroySelfHandler func(entity Entity)
+type EventEntityDestroyHandler func(entity Entity)
 
-func (h EventEntityDestroySelfHandler) OnEntityDestroySelf(entity Entity) {
+func (h EventEntityDestroyHandler) OnEntityDestroy(entity Entity) {
 	h(entity)
 }

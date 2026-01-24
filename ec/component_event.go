@@ -22,15 +22,15 @@
 package ec
 
 // EventComponentEnableChanged 事件：组件启用状态改变
-// +event-gen:export=0
-// +event-tab-gen:recursion=deepest
+// +event-gen:export_emit=0
+// +event-tab-gen:recursion=allow
 type EventComponentEnableChanged interface {
 	OnComponentEnableChanged(comp Component, enable bool)
 }
 
-// EventComponentDestroySelf 事件：组件销毁自身
-// +event-gen:export=0
-// +event-tab-gen:recursion=discard
-type EventComponentDestroySelf interface {
-	OnComponentDestroySelf(comp Component)
+// EventComponentDestroy 事件：组件销毁
+// +event-gen:export_emit=0
+// +event-tab-gen:recursion=allow
+type EventComponentDestroy interface {
+	OnComponentDestroy(comp Component)
 }

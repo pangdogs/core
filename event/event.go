@@ -26,75 +26,88 @@ import (
 )
 
 // EventRecursion 发生事件递归时的处理方式（事件递归：事件发送过程中，在订阅者的逻辑中，再次发送这个事件）
-type EventRecursion int32
+type EventRecursion int8
 
 const (
-	EventRecursion_Allow    EventRecursion = iota // 允许事件递归，可能会无限递归
-	EventRecursion_Disallow                       // 不允许事件递归，递归时会panic
-	EventRecursion_Discard                        // 丢弃递归的事件，不会再发送给任何订阅者
-	EventRecursion_Truncate                       // 截断递归的事件，不会再发送给当前订阅者，但是会发送给其他订阅者
-	EventRecursion_Deepest                        // 深度优先处理递归的事件，会中断当前事件发送过程，并在新的事件发送过程中，不会再次发送给这个订阅者
+	EventRecursion_Allow        EventRecursion = iota // 允许事件递归，可能会无限递归
+	EventRecursion_Disallow                           // 不允许事件递归，递归时会panic
+	EventRecursion_Discard                            // 丢弃递归的事件，不会再发送给任何订阅者
+	EventRecursion_SkipReceived                       // 发送递归事件时跳过已接收事件的订阅者
+	EventRecursion_ReceiveOnce                        // 订阅者在整个事件发送过程中只接收一次
 )
 
 var (
 	// EventRecursionLimit 事件递归次数上限，超过此上限会panic
-	EventRecursionLimit = int32(128)
+	EventRecursionLimit = 128
 )
 
 // IEvent 事件接口
 type IEvent interface {
 	ctrl() IEventCtrl
 	emit(fun generic.Func1[iface.Cache, bool])
-	newHook(subscriberFace iface.FaceAny, priority int32) Hook
+	newHandle(subscriberFace iface.FaceAny, priority int32) Handle
 	removeSubscriber(subscriber any)
+}
+
+type _Subscriber struct {
+	face            iface.FaceAny
+	priority        int32
+	receivedDepth   int32
+	receivedEmitted int64
 }
 
 // Event 事件
 type Event struct {
-	subscribers    generic.List[Hook]
-	autoRecover    bool
-	reportError    chan error
-	eventRecursion EventRecursion
-	emitted        int32
-	emitDepth      int32
-	inited         bool
-	enabled        bool
+	autoRecover bool
+	reportError chan error
+	recursion   EventRecursion
+	disabled    bool
+	subscribers generic.FreeList[_Subscriber]
+	emitted     int64
 }
 
-// Init 初始化事件
-func (event *Event) Init(autoRecover bool, reportError chan error, eventRecursion EventRecursion) {
-	if event.inited {
-		exception.Panicf("%w: event is already initialized", ErrEvent)
-	}
+// GetPanicHandling 获取panic时的处理方式
+func (event *Event) GetPanicHandling() (autoRecover bool, reportError chan error) {
+	return event.autoRecover, event.reportError
+}
 
+// SetPanicHandling 设置panic时的处理方式
+func (event *Event) SetPanicHandling(autoRecover bool, reportError chan error) {
 	event.autoRecover = autoRecover
 	event.reportError = reportError
-	event.eventRecursion = eventRecursion
-	event.inited = true
-
-	event.Enable()
 }
 
-// Enable 启用事件
-func (event *Event) Enable() {
-	if !event.inited {
-		exception.Panicf("%w: event not initialized", ErrEvent)
+// GetRecursion 获取发生事件递归时的处理方式
+func (event *Event) GetRecursion() EventRecursion {
+	return event.recursion
+}
+
+// SetRecursion 设置发生事件递归时的处理方式
+func (event *Event) SetRecursion(recursion EventRecursion) {
+	event.recursion = recursion
+}
+
+// GetEnable 获取事件是否启用
+func (event *Event) GetEnable() bool {
+	return !event.disabled
+}
+
+// SetEnable 设置事件是否启用
+func (event *Event) SetEnable(b bool) {
+	if !event.disabled == b {
+		return
 	}
-	event.enabled = true
-}
 
-// Disable 关闭事件
-func (event *Event) Disable() {
-	event.UnbindAll()
-	event.enabled = false
+	event.disabled = !b
+
+	if event.disabled {
+		event.UnbindAll()
+	}
 }
 
 // UnbindAll 解绑定所有订阅者
 func (event *Event) UnbindAll() {
-	event.subscribers.Traversal(func(node *generic.Node[Hook]) bool {
-		node.V.Unbind()
-		return true
-	})
+	event.subscribers.TraversalEach(func(slot *generic.FreeSlot[_Subscriber]) { slot.Free() })
 }
 
 func (event *Event) ctrl() IEventCtrl {
@@ -102,59 +115,58 @@ func (event *Event) ctrl() IEventCtrl {
 }
 
 func (event *Event) emit(fun generic.Func1[iface.Cache, bool]) {
-	if !event.enabled {
+	if event.disabled {
 		return
 	}
 
-	if event.emitted >= EventRecursionLimit {
-		exception.Panicf("%w: recursive event calls(%d) cause stack overflow", ErrEvent, event.emitted)
+	emitDepth := event.subscribers.Depth()
+	if emitDepth > 0 {
+		if emitDepth >= EventRecursionLimit {
+			exception.Panicf("%w: recursive event calls(%d) cause stack overflow", ErrEvent, event.subscribers.Depth())
+		}
+	} else {
+		event.emitted++
 	}
 
-	switch event.eventRecursion {
+	switch event.recursion {
 	case EventRecursion_Discard:
-		if event.emitted > 0 {
+		if emitDepth > 0 {
 			return
+		}
+	case EventRecursion_Disallow:
+		if emitDepth > 0 {
+			exception.Panicf("%w: recursive event disallowed", ErrEvent)
 		}
 	}
 
-	event.emitted++
-	defer func() { event.emitted-- }()
-	event.emitDepth = event.emitted
 	ver := event.subscribers.Version()
 
-	event.subscribers.Traversal(func(node *generic.Node[Hook]) bool {
-		if !event.enabled {
+	event.subscribers.Traversal(func(slot *generic.FreeSlot[_Subscriber]) bool {
+		if event.disabled {
 			return false
 		}
 
-		if node.V.subscriberFace.IsNil() || node.Version() > ver {
+		if slot.V.face.IsNil() || slot.Version() > ver {
 			return true
 		}
 
-		switch event.eventRecursion {
-		case EventRecursion_Allow:
-			break
-		case EventRecursion_Disallow:
-			if node.V.received > 0 {
-				exception.Panicf("%w: recursive event disallowed", ErrEvent)
-			}
-		case EventRecursion_Truncate:
-			if node.V.received > 0 {
+		switch event.recursion {
+		case EventRecursion_SkipReceived:
+			if slot.V.receivedDepth > 0 {
 				return true
 			}
-		case EventRecursion_Deepest:
-			if event.emitDepth != event.emitted {
-				return false
-			}
-			if node.V.received > 0 {
+		case EventRecursion_ReceiveOnce:
+			if slot.V.receivedEmitted >= event.emitted {
 				return true
 			}
 		}
 
-		node.V.received++
-		defer func() { node.V.received-- }()
+		slot.V.receivedDepth++
+		defer func() { slot.V.receivedDepth-- }()
 
-		ret, panicErr := fun.Call(event.autoRecover, event.reportError, node.V.subscriberFace.Cache)
+		slot.V.receivedEmitted = event.emitted
+
+		ret, panicErr := fun.Call(event.autoRecover, event.reportError, slot.V.face.Cache)
 		if panicErr != nil {
 			return true
 		}
@@ -163,8 +175,8 @@ func (event *Event) emit(fun generic.Func1[iface.Cache, bool]) {
 	})
 }
 
-func (event *Event) newHook(subscriberFace iface.FaceAny, priority int32) Hook {
-	if !event.enabled {
+func (event *Event) newHandle(subscriberFace iface.FaceAny, priority int32) Handle {
+	if event.disabled {
 		exception.Panicf("%w: event disabled", ErrEvent)
 	}
 
@@ -172,36 +184,33 @@ func (event *Event) newHook(subscriberFace iface.FaceAny, priority int32) Hook {
 		exception.Panicf("%w: %w: subscriberFace is nil", ErrEvent, exception.ErrArgs)
 	}
 
-	hook := Hook{
-		subscriberFace: subscriberFace,
-		priority:       priority,
-	}
-
-	var at *generic.Node[Hook]
-
-	event.subscribers.ReversedTraversal(func(other *generic.Node[Hook]) bool {
-		if hook.priority >= other.V.priority {
-			at = other
+	var at *generic.FreeSlot[_Subscriber]
+	event.subscribers.ReversedTraversal(func(slot *generic.FreeSlot[_Subscriber]) bool {
+		if priority >= slot.V.priority {
+			at = slot
 			return false
 		}
 		return true
 	})
 
+	var slot *generic.FreeSlot[_Subscriber]
 	if at != nil {
-		hook.at = event.subscribers.InsertAfter(Hook{}, at)
+		slot = event.subscribers.InsertAfter(_Subscriber{face: subscriberFace, priority: priority}, at.Index())
 	} else {
-		hook.at = event.subscribers.PushFront(Hook{})
+		slot = event.subscribers.PushFront(_Subscriber{face: subscriberFace, priority: priority})
 	}
 
-	hook.at.V = hook
-
-	return hook
+	return Handle{
+		event: event,
+		idx:   slot.Index(),
+		ver:   slot.Version(),
+	}
 }
 
 func (event *Event) removeSubscriber(subscriber any) {
-	event.subscribers.ReversedTraversal(func(other *generic.Node[Hook]) bool {
-		if other.V.subscriberFace.Iface == subscriber {
-			other.Escape()
+	event.subscribers.ReversedTraversal(func(slot *generic.FreeSlot[_Subscriber]) bool {
+		if slot.V.face.Iface == subscriber {
+			slot.Free()
 			return false
 		}
 		return true

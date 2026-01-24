@@ -21,15 +21,16 @@ package core
 
 import (
 	"context"
-	"git.golaxy.org/core/ec"
-	"git.golaxy.org/core/ec/ictx"
-	"git.golaxy.org/core/ec/pt"
+	"sync"
+	"time"
+
 	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/async"
+	"git.golaxy.org/core/utils/corectx"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
-	"time"
+	"github.com/elliotchance/pie/v2"
 )
 
 // Run 运行
@@ -40,15 +41,15 @@ func (svc *ServiceBehavior) Run() async.AsyncRet {
 	case <-ctx.Done():
 		exception.Panicf("%w: %w", ErrService, context.Canceled)
 	case <-ctx.Terminated():
-		exception.Panicf("%w: terminated", ErrRuntime)
+		exception.Panicf("%w: terminated", ErrService)
 	default:
 	}
 
 	if !svc.isRunning.CompareAndSwap(false, true) {
-		exception.Panicf("%w: already running", ErrRuntime)
+		exception.Panicf("%w: already running", ErrService)
 	}
 
-	if parentCtx, ok := svc.ctx.GetParentContext().(ictx.Context); ok {
+	if parentCtx, ok := svc.ctx.GetParentContext().(corectx.Context); ok {
 		parentCtx.GetWaitGroup().Add(1)
 	}
 
@@ -70,8 +71,8 @@ func (svc *ServiceBehavior) Terminated() async.AsyncRet {
 func (svc *ServiceBehavior) running() {
 	ctx := svc.ctx
 
-	svc.changeRunningStatus(service.RunningStatus_Starting)
-	svc.changeRunningStatus(service.RunningStatus_Started)
+	svc.emitEventRunningEvent(service.RunningEvent_Starting)
+	svc.emitEventRunningEvent(service.RunningEvent_Started)
 
 loop:
 	for {
@@ -83,162 +84,129 @@ loop:
 		}
 	}
 
-	svc.changeRunningStatus(service.RunningStatus_Terminating)
+	svc.emitEventRunningEvent(service.RunningEvent_Terminating)
 
 	ctx.GetWaitGroup().Wait()
 
-	svc.changeRunningStatus(service.RunningStatus_Terminated)
+	svc.emitEventRunningEvent(service.RunningEvent_Terminated)
 
-	if parentCtx, ok := ctx.GetParentContext().(ictx.Context); ok {
+	if parentCtx, ok := ctx.GetParentContext().(corectx.Context); ok {
 		parentCtx.GetWaitGroup().Done()
 	}
 
-	ictx.UnsafeContext(ctx).ReturnTerminated()
+	corectx.UnsafeContext(ctx).ReturnTerminated()
 }
 
-func (svc *ServiceBehavior) changeRunningStatus(status service.RunningStatus, args ...any) {
-	service.UnsafeContext(svc.ctx).ChangeRunningStatus(status, args...)
+func (svc *ServiceBehavior) emitEventRunningEvent(runningEvent service.RunningEvent, args ...any) {
+	svc.onBeforeContextRunningEvent(svc.ctx, runningEvent, args...)
+	service.UnsafeContext(svc.ctx).EmitEventRunningEvent(runningEvent, args...)
+	svc.onAfterContextRunningEvent(svc.ctx, runningEvent, args...)
+}
 
-	svc.statusChangesCond.L.Lock()
-	svc.statusChanges = &_StatusChanges{
-		status: status,
-		args:   args,
-	}
-	svc.statusChangesCond.Broadcast()
-	svc.statusChangesCond.L.Unlock()
-
-	switch status {
-	case service.RunningStatus_Starting:
+func (svc *ServiceBehavior) onBeforeContextRunningEvent(ctx service.Context, runningEvent service.RunningEvent, args ...any) {
+	switch runningEvent {
+	case service.RunningEvent_Starting:
 		svc.initEntityPT()
+		svc.initComponentPT()
 		svc.initAddIn()
-	case service.RunningStatus_Terminated:
+	}
+}
+
+func (svc *ServiceBehavior) onAfterContextRunningEvent(ctx service.Context, runningEvent service.RunningEvent, args ...any) {
+	switch runningEvent {
+	case service.RunningEvent_Terminated:
 		svc.shutAddIn()
-		svc.shutEntityPT()
 	}
 }
 
 func (svc *ServiceBehavior) initEntityPT() {
-	entityLib := svc.ctx.GetEntityLib()
-	if entityLib == nil {
-		return
-	}
-
-	pt.UnsafeEntityLib(entityLib).SetCallback(
-		func(entityPT ec.EntityPT) {
-			svc.changeRunningStatus(service.RunningStatus_EntityPTDeclared, entityPT)
-		},
-		func(entityPT ec.EntityPT) {
-			svc.changeRunningStatus(service.RunningStatus_EntityPTRedeclared, entityPT)
-		},
-		func(entityPT ec.EntityPT) {
-			svc.changeRunningStatus(service.RunningStatus_EntityPTUndeclared, entityPT)
-		},
-	)
-
-	entityLib.Range(func(entityPT ec.EntityPT) bool {
-		svc.changeRunningStatus(service.RunningStatus_EntityPTDeclared, entityPT)
-		return true
-	})
+	go func() {
+		for entityPT := range svc.ctx.GetEntityLib().ListAndWatch(svc.ctx) {
+			svc.emitEventRunningEvent(service.RunningEvent_EntityPTDeclared, entityPT)
+		}
+	}()
 }
 
-func (svc *ServiceBehavior) shutEntityPT() {
-	entityLib := svc.ctx.GetEntityLib()
-	if entityLib == nil {
-		return
-	}
-
-	pt.UnsafeEntityLib(entityLib).SetCallback(nil, nil, nil)
+func (svc *ServiceBehavior) initComponentPT() {
+	go func() {
+		for compPT := range svc.ctx.GetEntityLib().GetComponentLib().ListAndWatch(svc.ctx) {
+			svc.emitEventRunningEvent(service.RunningEvent_ComponentPTDeclared, compPT)
+		}
+	}()
 }
 
 func (svc *ServiceBehavior) initAddIn() {
-	addInManager := svc.ctx.GetAddInManager()
-	if addInManager == nil {
-		return
-	}
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
 
-	extension.UnsafeAddInManager(addInManager).SetCallback(svc.activateAddIn, svc.deactivateAddIn)
+	go func() {
+		for event := range service.UnsafeContext(svc.ctx).GetAddInManager().ListAndWatch(svc.ctx.Terminated().Context(nil)) {
+			switch e := event.(type) {
+			case *extension.EventServiceAddInSnapshot:
+				for _, status := range e.StatusList {
+					svc.activateAddIn(status)
+				}
+				wg.Done()
+			case *extension.EventServiceInstallAddIn:
+				select {
+				case <-svc.ctx.Done():
+					continue
+				default:
+					svc.activateAddIn(e.Status)
+				}
+			case *extension.EventServiceUninstallAddIn:
+				svc.deactivateAddIn(e.Status)
+			}
+		}
+	}()
 
-	addInManager.Range(func(addInStatus extension.AddInStatus) bool {
-		svc.activateAddIn(addInStatus)
-		return true
-	})
+	wg.Wait()
 }
 
 func (svc *ServiceBehavior) shutAddIn() {
-	addInManager := svc.ctx.GetAddInManager()
-	if addInManager == nil {
-		return
-	}
-
-	extension.UnsafeAddInManager(addInManager).SetCallback(nil, nil)
-
-	addInManager.ReversedRange(func(addInStatus extension.AddInStatus) bool {
-		svc.deactivateAddIn(addInStatus)
-		return true
-	})
-}
-
-func (svc *ServiceBehavior) activateAddIn(addInStatus extension.AddInStatus) {
-	if addInStatus.State() != extension.AddInState_Loaded {
-		return
-	}
-
-	if !func() bool {
-		svc.changeRunningStatus(service.RunningStatus_ActivatingAddIn, addInStatus)
-		defer svc.changeRunningStatus(service.RunningStatus_AddInActivated, addInStatus)
-
-		if cb, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInInit); ok {
-			generic.CastAction2(cb.Init).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
-		} else if cb, ok := addInStatus.InstanceFace().Iface.(LifecycleServiceAddInInit); ok {
-			generic.CastAction1(cb.Init).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx)
-		}
-
-		return extension.UnsafeAddInStatus(addInStatus).SetState(extension.AddInState_Active, extension.AddInState_Loaded)
-	}() {
-		return
-	}
-
-	if cb, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInOnServiceRunningStatusChanged); ok {
-		go func() {
-			for {
-				if !func() bool {
-					svc.statusChangesCond.L.Lock()
-					svc.statusChangesCond.Wait()
-					statusChanges := svc.statusChanges
-					svc.statusChangesCond.L.Unlock()
-
-					if statusChanges.status == service.RunningStatus_DeactivatingAddIn && statusChanges.args[0].(extension.AddInStatus) == addInStatus {
-						return false
-					}
-					if addInStatus.State() != extension.AddInState_Active {
-						return false
-					}
-
-					cb.OnServiceRunningStatusChanged(svc.ctx, statusChanges.status, statusChanges.args...)
-					return true
-				}() {
-					return
-				}
-			}
-		}()
+	for _, status := range pie.Reverse(service.UnsafeContext(svc.ctx).GetAddInManager().List()) {
+		svcAddInStatus := status.(extension.ServiceAddInStatus)
+		svcAddInStatus.Uninstall()
+		<-svcAddInStatus.WaitState(extension.AddInState_Unloaded)
 	}
 }
 
-func (svc *ServiceBehavior) deactivateAddIn(addInStatus extension.AddInStatus) {
-	if addInStatus.State() != extension.AddInState_Active {
+func (svc *ServiceBehavior) activateAddIn(status extension.AddInStatus) {
+	svcAddInStatus := status.(extension.ServiceAddInStatus)
+
+	if !extension.UnsafeServiceAddInStatus(svcAddInStatus).DoInstallingOnce() {
 		return
 	}
 
-	svc.changeRunningStatus(service.RunningStatus_DeactivatingAddIn, addInStatus)
-	defer svc.changeRunningStatus(service.RunningStatus_AddInDeactivated, addInStatus)
+	svc.emitEventRunningEvent(service.RunningEvent_AddInActivating, status)
 
-	if !extension.UnsafeAddInStatus(addInStatus).SetState(extension.AddInState_Inactive, extension.AddInState_Active) {
+	if cb, ok := status.InstanceFace().Iface.(LifecycleAddInInit); ok {
+		generic.CastAction2(cb.Init).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
+	} else if cb, ok := status.InstanceFace().Iface.(LifecycleServiceAddInInit); ok {
+		generic.CastAction1(cb.Init).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx)
+	}
+
+	extension.UnsafeServiceAddInStatus(svcAddInStatus).SetState(extension.AddInState_Loaded, extension.AddInState_Running)
+
+	svc.emitEventRunningEvent(service.RunningEvent_AddInActivatingDone, status)
+}
+
+func (svc *ServiceBehavior) deactivateAddIn(status extension.AddInStatus) {
+	svcAddInStatus := status.(extension.ServiceAddInStatus)
+
+	if !extension.UnsafeServiceAddInStatus(svcAddInStatus).DoUninstallingOnce() {
 		return
 	}
 
-	if cb, ok := addInStatus.InstanceFace().Iface.(LifecycleAddInShut); ok {
+	svc.emitEventRunningEvent(service.RunningEvent_AddInDeactivating, status)
+
+	if cb, ok := status.InstanceFace().Iface.(LifecycleAddInShut); ok {
 		generic.CastAction2(cb.Shut).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
-	} else if cb, ok := addInStatus.InstanceFace().Iface.(LifecycleServiceAddInShut); ok {
+	} else if cb, ok := status.InstanceFace().Iface.(LifecycleServiceAddInShut); ok {
 		generic.CastAction1(cb.Shut).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx)
 	}
+
+	extension.UnsafeServiceAddInStatus(svcAddInStatus).SetState(extension.AddInState_Running, extension.AddInState_Unloaded)
+
+	svc.emitEventRunningEvent(service.RunningEvent_AddInDeactivatingDone, status)
 }

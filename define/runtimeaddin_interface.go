@@ -24,7 +24,7 @@ import (
 	"git.golaxy.org/core/utils/generic"
 )
 
-// RuntimeAddInInterface 定义运行时插件接口，支持运行时上下文，通常用于为同类插件的不同实现提供统一的接口
+// RuntimeAddInInterface 定义运行时插件接口，支持安装至运行时上下文，通常用于为同类插件的不同实现提供统一的接口
 func RuntimeAddInInterface[ADDIN_IFACE any]() RuntimeAddInInterfaceDefinition[ADDIN_IFACE] {
 	plug := defineAddInInterface[ADDIN_IFACE]()
 

@@ -20,13 +20,15 @@
 package runtime
 
 import (
+	"math"
+
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/option"
 )
 
 // FrameOptions 帧的所有选项
 type FrameOptions struct {
-	TargetFPS   float32 // 目标FPS
+	TargetFPS   float64 // 目标FPS
 	TotalFrames int64   // 运行帧数上限
 }
 
@@ -41,12 +43,12 @@ func (_FrameOption) Default() option.Setting[FrameOptions] {
 }
 
 // TargetFPS 目标FPS
-func (_FrameOption) TargetFPS(fps float32) option.Setting[FrameOptions] {
+func (_FrameOption) TargetFPS(fps float64) option.Setting[FrameOptions] {
 	return func(options *FrameOptions) {
 		if fps <= 0 {
 			exception.Panicf("%w: %w: TargetFPS less equal 0 is invalid", ErrFrame, exception.ErrArgs)
 		}
-		options.TargetFPS = fps
+		options.TargetFPS = math.Round(fps)
 	}
 }
 

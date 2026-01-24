@@ -21,6 +21,7 @@ package async
 
 import (
 	"fmt"
+
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 )

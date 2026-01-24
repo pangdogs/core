@@ -31,10 +31,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"os"
 	"path/filepath"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func main() {
@@ -86,7 +87,7 @@ func main() {
 	// 生成事件代码相关选项
 	eventCmd := &cobra.Command{
 		Use:   "event",
-		Short: "根据定义的事件，生成事件代码。（支持定义选项：+event-gen:export=[0,1]&auto=[0,1]）",
+		Short: "根据定义的事件，生成事件代码。（支持定义选项：+event-gen:export_emit=[0,1]&auto=[0,1]）",
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())
 			loadDeclFile()
@@ -95,13 +96,13 @@ func main() {
 			genEvent()
 		},
 	}
-	eventCmd.Flags().Bool("default_export", true, "生成事件代码时，发送事件的代码的可见性，事件定义选项+event-gen:export=[0,1]可以覆盖此配置。")
+	eventCmd.Flags().Bool("default_export_emit", true, "生成事件代码时，发送事件的代码的可见性，事件定义选项+event-gen:export_emit=[0,1]可以覆盖此配置。")
 	eventCmd.Flags().Bool("default_auto", true, "生成事件代码时，是否生成简化绑定事件的代码，事件定义选项+event-gen:auto=[0,1]可以覆盖此配置。")
 
 	// 生成事件表代码相关选项
 	eventTabCmd := &cobra.Command{
 		Use:   "eventtab",
-		Short: "根据定义的事件，生成事件表代码。（支持定义选项：+event-tab-gen:recursion=[allow,disallow,discard,truncate,deepest]）",
+		Short: "根据定义的事件，生成事件表代码。（支持定义选项：+event-tab-gen:recursion=[allow,disallow,discard,skip_received,receive_once]）",
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())
 			{
@@ -131,6 +132,7 @@ func main() {
 	eventTabCmd.Flags().String("package", os.Getenv("GOPACKAGE"), "生成事件表代码，使用的包名。")
 	eventTabCmd.Flags().String("dir", filepath.Dir(os.Getenv("GOFILE")), "生成事件表代码时，输出代码文件（.go）的目录。")
 	eventTabCmd.Flags().String("name", defaultEventTab(), "生成的事件表名称。")
+	eventTabCmd.Flags().Bool("export_interface", true, "生成事件表代码时，事件表接口的可见性。")
 
 	rootCmd.AddCommand(eventCmd, eventTabCmd)
 

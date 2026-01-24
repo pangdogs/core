@@ -41,7 +41,7 @@ func Using[T any](provider AddInProvider, name string) T {
 		exception.Panicf("%w: addIn %q not installed", ErrExtension, name)
 	}
 
-	if status.State() != AddInState_Active {
+	if status.State() != AddInState_Running {
 		exception.Panicf("%w: addIn %q not actived", ErrExtension, name)
 	}
 
@@ -49,11 +49,11 @@ func Using[T any](provider AddInProvider, name string) T {
 }
 
 // Install 安装插件
-func Install[T any](provider AddInProvider, addIn T, name ...string) {
+func Install[T any](provider AddInProvider, addIn T, name ...string) AddInStatus {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrExtension, exception.ErrArgs)
 	}
-	provider.GetAddInManager().Install(iface.MakeFaceAny(addIn), name...)
+	return provider.GetAddInManager().Install(iface.MakeFaceAny(addIn), name...)
 }
 
 // Uninstall 卸载插件

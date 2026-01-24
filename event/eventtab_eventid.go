@@ -20,11 +20,12 @@
 package event
 
 import (
-	"git.golaxy.org/core/utils/exception"
-	"git.golaxy.org/core/utils/types"
 	"hash/fnv"
 	"reflect"
 	"sync"
+
+	"git.golaxy.org/core/utils/exception"
+	"git.golaxy.org/core/utils/types"
 )
 
 // MakeEventTabId 创建事件表Id

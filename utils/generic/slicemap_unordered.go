@@ -20,8 +20,9 @@
 package generic
 
 import (
-	"git.golaxy.org/core/utils/types"
 	"slices"
+
+	"git.golaxy.org/core/utils/types"
 )
 
 func MakeUnorderedSliceMap[K comparable, V any](kvs ...UnorderedKV[K, V]) UnorderedSliceMap[K, V] {

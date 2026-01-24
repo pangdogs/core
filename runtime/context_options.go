@@ -21,6 +21,7 @@ package runtime
 
 import (
 	"context"
+
 	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
@@ -29,19 +30,19 @@ import (
 )
 
 type (
-	RunningStatusChangedCB = generic.ActionVar2[Context, RunningStatus, any] // 运行状态变化回调
+	RunningEventCB = generic.ActionVar2[Context, RunningEvent, any] // 运行事件回调
 )
 
 // ContextOptions 创建运行时上下文的所有选项
 type ContextOptions struct {
-	InstanceFace           iface.Face[Context]    // 实例，用于扩展运行时上下文能力
-	Context                context.Context        // 父Context
-	AutoRecover            bool                   // 是否开启panic时自动恢复
-	ReportError            chan error             // panic时错误写入的error channel
-	Name                   string                 // 运行时名称
-	PersistId              uid.Id                 // 运行时持久化Id
-	AddInManager           extension.AddInManager // 插件管理器
-	RunningStatusChangedCB RunningStatusChangedCB // 运行状态变化回调
+	InstanceFace   iface.Face[Context]           // 实例，用于扩展运行时上下文能力
+	Context        context.Context               // 父Context
+	AutoRecover    bool                          // 是否开启panic时自动恢复
+	ReportError    chan error                    // panic时错误写入的error channel
+	Name           string                        // 运行时名称
+	PersistId      uid.Id                        // 运行时持久化Id
+	AddInManager   extension.RuntimeAddInManager // 插件管理器
+	RunningEventCB RunningEventCB                // 运行事件回调
 }
 
 type _ContextOption struct{}
@@ -54,8 +55,8 @@ func (_ContextOption) Default() option.Setting[ContextOptions] {
 		With.Context.PanicHandling(false, nil).Apply(options)
 		With.Context.Name("").Apply(options)
 		With.Context.PersistId(uid.Nil).Apply(options)
-		With.Context.AddInManager(extension.NewAddInManager()).Apply(options)
-		With.Context.RunningStatusChangedCB(nil).Apply(options)
+		With.Context.AddInManager(nil).Apply(options)
+		With.Context.RunningEventCB(nil).Apply(options)
 	}
 }
 
@@ -96,15 +97,15 @@ func (_ContextOption) PersistId(id uid.Id) option.Setting[ContextOptions] {
 }
 
 // AddInManager 插件管理器
-func (_ContextOption) AddInManager(mgr extension.AddInManager) option.Setting[ContextOptions] {
+func (_ContextOption) AddInManager(mgr extension.RuntimeAddInManager) option.Setting[ContextOptions] {
 	return func(options *ContextOptions) {
 		options.AddInManager = mgr
 	}
 }
 
-// RunningStatusChangedCB 运行状态变化回调
-func (_ContextOption) RunningStatusChangedCB(cb RunningStatusChangedCB) option.Setting[ContextOptions] {
+// RunningEventCB 运行事件回调
+func (_ContextOption) RunningEventCB(cb RunningEventCB) option.Setting[ContextOptions] {
 	return func(options *ContextOptions) {
-		options.RunningStatusChangedCB = cb
+		options.RunningEventCB = cb
 	}
 }

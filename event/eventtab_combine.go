@@ -22,24 +22,24 @@ package event
 // CombineEventTab 联合事件表，可以将多个事件表联合在一起，方便管理多个事件表
 type CombineEventTab []IEventTab
 
-// Init 初始化事件
-func (c *CombineEventTab) Init(autoRecover bool, reportError chan error, recursion EventRecursion) {
+// SetPanicHandling 设置panic时的处理方式
+func (c *CombineEventTab) SetPanicHandling(autoRecover bool, reportError chan error) {
 	for _, tab := range *c {
-		tab.Ctrl().Init(autoRecover, reportError, recursion)
+		tab.Ctrl().SetPanicHandling(autoRecover, reportError)
 	}
 }
 
-// Enable 启用事件
-func (c *CombineEventTab) Enable() {
+// SetRecursion 设置发生事件递归时的处理方式
+func (c *CombineEventTab) SetRecursion(recursion EventRecursion) {
 	for _, tab := range *c {
-		tab.Ctrl().Enable()
+		tab.Ctrl().SetRecursion(recursion)
 	}
 }
 
-// Disable 关闭事件
-func (c *CombineEventTab) Disable() {
+// SetEnable 设置事件是否启用
+func (c *CombineEventTab) SetEnable(b bool) {
 	for _, tab := range *c {
-		tab.Ctrl().Disable()
+		tab.Ctrl().SetEnable(b)
 	}
 }
 

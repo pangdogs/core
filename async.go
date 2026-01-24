@@ -21,22 +21,23 @@ package core
 
 import (
 	"context"
-	"git.golaxy.org/core/ec/ictx"
+	"time"
+
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/utils/async"
+	"git.golaxy.org/core/utils/corectx"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
-	"time"
 )
 
 // CallAsync 异步执行代码，有返回值
-func CallAsync(provider ictx.ConcurrentContextProvider, fun generic.FuncVar1[runtime.Context, any, async.Ret], args ...any) async.AsyncRet {
+func CallAsync(provider corectx.ConcurrentContextProvider, fun generic.FuncVar1[runtime.Context, any, async.Ret], args ...any) async.AsyncRet {
 	ctx := runtime.UnsafeConcurrentContext(runtime.Concurrent(provider)).GetContext()
 	return ctx.CallAsync(func(...any) async.Ret { return fun.UnsafeCall(ctx, args...) })
 }
 
 // CallVoidAsync 异步执行代码，无返回值
-func CallVoidAsync(provider ictx.ConcurrentContextProvider, fun generic.ActionVar1[runtime.Context, any], args ...any) async.AsyncRet {
+func CallVoidAsync(provider corectx.ConcurrentContextProvider, fun generic.ActionVar1[runtime.Context, any], args ...any) async.AsyncRet {
 	ctx := runtime.UnsafeConcurrentContext(runtime.Concurrent(provider)).GetContext()
 	return ctx.CallVoidAsync(func(...any) { fun.UnsafeCall(ctx, args...) })
 }

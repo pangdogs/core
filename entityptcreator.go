@@ -35,105 +35,96 @@ func BuildEntityPT(svcCtx service.Context, prototype string) *EntityPTCreator {
 	}
 	return &EntityPTCreator{
 		svcCtx: svcCtx,
-		atti:   pt.NewEntityAttribute(prototype),
+		descr:  pt.NewEntityDescriptor(prototype),
 	}
 }
 
 // EntityPTCreator 实体原型构建器
 type EntityPTCreator struct {
 	svcCtx service.Context
-	atti   *pt.EntityAttribute
+	descr  *pt.EntityDescriptor
 	comps  []any
 }
 
 // SetInstance 设置实例，用于扩展实体能力
 func (c *EntityPTCreator) SetInstance(instance any) *EntityPTCreator {
-	if c.atti == nil {
-		exception.Panicf("%w: atti is nil", ErrCore)
+	if c.descr == nil {
+		exception.Panicf("%w: descr is nil", ErrCore)
 	}
-	c.atti.SetInstance(instance)
+	c.descr.SetInstance(instance)
 	return c
 }
 
 // SetScope 设置实体的可访问作用域
 func (c *EntityPTCreator) SetScope(scope ec.Scope) *EntityPTCreator {
-	if c.atti == nil {
-		exception.Panicf("%w: atti is nil", ErrCore)
+	if c.descr == nil {
+		exception.Panicf("%w: descr is nil", ErrCore)
 	}
-	c.atti.SetScope(scope)
-	return c
-}
-
-// SetComponentNameIndexing 设置是否开启组件名称索引
-func (c *EntityPTCreator) SetComponentNameIndexing(b bool) *EntityPTCreator {
-	if c.atti == nil {
-		exception.Panicf("%w: atti is nil", ErrCore)
-	}
-	c.atti.SetComponentNameIndexing(b)
+	c.descr.SetScope(scope)
 	return c
 }
 
 // SetComponentAwakeOnFirstTouch 设置当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
 func (c *EntityPTCreator) SetComponentAwakeOnFirstTouch(b bool) *EntityPTCreator {
-	if c.atti == nil {
-		exception.Panicf("%w: atti is nil", ErrCore)
+	if c.descr == nil {
+		exception.Panicf("%w: descr is nil", ErrCore)
 	}
-	c.atti.SetComponentAwakeOnFirstTouch(b)
+	c.descr.SetComponentAwakeOnFirstTouch(b)
 	return c
 }
 
 // SetComponentUniqueID 设置是否为实体组件分配唯一Id
 func (c *EntityPTCreator) SetComponentUniqueID(b bool) *EntityPTCreator {
-	if c.atti == nil {
-		exception.Panicf("%w: atti is nil", ErrCore)
+	if c.descr == nil {
+		exception.Panicf("%w: descr is nil", ErrCore)
 	}
-	c.atti.SetComponentUniqueID(b)
+	c.descr.SetComponentUniqueID(b)
 	return c
 }
 
-// SetExtra 设置自定义属性
-func (c *EntityPTCreator) SetExtra(dict map[string]any) *EntityPTCreator {
-	if c.atti == nil {
-		exception.Panicf("%w: atti is nil", ErrCore)
+// SetMeta 设置原型Meta信息
+func (c *EntityPTCreator) SetMeta(dict map[string]any) *EntityPTCreator {
+	if c.descr == nil {
+		exception.Panicf("%w: descr is nil", ErrCore)
 	}
-	c.atti.SetExtra(dict)
+	c.descr.SetMeta(dict)
 	return c
 }
 
-// MergeExtra 合并自定义属性，如果存在则覆盖
-func (c *EntityPTCreator) MergeExtra(dict map[string]any) *EntityPTCreator {
-	if c.atti == nil {
-		exception.Panicf("%w: atti is nil", ErrCore)
+// MergeMeta 合并原型Meta信息，如果存在则覆盖
+func (c *EntityPTCreator) MergeMeta(dict map[string]any) *EntityPTCreator {
+	if c.descr == nil {
+		exception.Panicf("%w: descr is nil", ErrCore)
 	}
-	c.atti.MergeExtra(dict)
+	c.descr.MergeMeta(dict)
 	return c
 }
 
-// MergeExtraIfAbsent 合并自定义属性，如果存在则跳过
-func (c *EntityPTCreator) MergeExtraIfAbsent(dict map[string]any) *EntityPTCreator {
-	if c.atti == nil {
-		exception.Panicf("%w: atti is nil", ErrCore)
+// MergeMetaIfAbsent 合并原型Meta信息，如果存在则跳过
+func (c *EntityPTCreator) MergeMetaIfAbsent(dict map[string]any) *EntityPTCreator {
+	if c.descr == nil {
+		exception.Panicf("%w: descr is nil", ErrCore)
 	}
-	c.atti.MergeIfAbsent(dict)
+	c.descr.MergeIfAbsent(dict)
 	return c
 }
 
-// AssignExtra 赋值自定义属性
-func (c *EntityPTCreator) AssignExtra(m meta.Meta) *EntityPTCreator {
-	if c.atti == nil {
-		exception.Panicf("%w: atti is nil", ErrCore)
+// AssignMeta 赋值原型Meta信息
+func (c *EntityPTCreator) AssignMeta(m meta.Meta) *EntityPTCreator {
+	if c.descr == nil {
+		exception.Panicf("%w: descr is nil", ErrCore)
 	}
-	c.atti.AssignExtra(m)
+	c.descr.AssignMeta(m)
 	return c
 }
 
 // AddComponent 添加组件
 func (c *EntityPTCreator) AddComponent(comp any, name ...string) *EntityPTCreator {
 	switch v := comp.(type) {
-	case pt.ComponentAttribute, *pt.ComponentAttribute:
+	case pt.ComponentDescriptor, *pt.ComponentDescriptor:
 		c.comps = append(c.comps, v)
 	default:
-		c.comps = append(c.comps, pt.NewComponentAttribute(comp).SetName(pie.First(name)))
+		c.comps = append(c.comps, pt.NewComponentDescriptor(comp).SetName(pie.First(name)))
 	}
 	return c
 }
@@ -143,19 +134,8 @@ func (c *EntityPTCreator) Declare() {
 	if c.svcCtx == nil {
 		exception.Panicf("%w: svcCtx is nil", ErrCore)
 	}
-	if c.atti == nil {
-		exception.Panicf("%w: atti is nil", ErrCore)
+	if c.descr == nil {
+		exception.Panicf("%w: descr is nil", ErrCore)
 	}
-	c.svcCtx.GetEntityLib().Declare(c.atti, c.comps...)
-}
-
-// Redeclare 重新声明实体原型
-func (c *EntityPTCreator) Redeclare() {
-	if c.svcCtx == nil {
-		exception.Panicf("%w: svcCtx is nil", ErrCore)
-	}
-	if c.atti == nil {
-		exception.Panicf("%w: atti is nil", ErrCore)
-	}
-	c.svcCtx.GetEntityLib().Redeclare(c.atti, c.comps...)
+	c.svcCtx.GetEntityLib().Declare(c.descr, c.comps...)
 }

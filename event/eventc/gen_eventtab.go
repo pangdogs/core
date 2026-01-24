@@ -22,17 +22,19 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/spf13/viper"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/spf13/viper"
 )
 
 func genEventTab() {
 	declFile := viper.GetString("decl_file")
 	packageEventAlias := viper.GetString("package_event_alias")
+	exportInterface := viper.GetBool("export_interface")
 	pkg := viper.GetString("package")
 	dir := viper.GetString("dir")
 	tabName := viper.GetString("name")
@@ -87,15 +89,25 @@ package %s
 			eventsCode += fmt.Sprintf("\t%s() %sIEvent\n", event.Name, eventPrefix)
 		}
 
-		fmt.Fprintf(code, `
+		if exportInterface {
+			fmt.Fprintf(code, `
 type I%[1]s interface {
 %[2]s}
 `, strings.Title(tabName), eventsCode)
+		} else {
+			fmt.Fprintf(code, `
+type i%[1]s interface {
+%[2]s}
+`, strings.Title(tabName), eventsCode)
+		}
 	}
 
 	// 生成事件表
 	{
-		var eventsRecursionCode string
+		// 生成递归设置
+		var allEventsSetRecursionCode, caseEventsSetRecursionCode string
+		caseEventsRecursion := map[int]string{}
+		getEventsSetRecursionCode := map[int]string{}
 
 		for i, event := range eventDeclTab.Events {
 			eventRecursion := "recursion"
@@ -111,14 +123,29 @@ type I%[1]s interface {
 					eventRecursion = eventPrefix + "EventRecursion_Disallow"
 				case "discard":
 					eventRecursion = eventPrefix + "EventRecursion_Discard"
-				case "truncate":
-					eventRecursion = eventPrefix + "EventRecursion_Truncate"
-				case "deepest":
-					eventRecursion = eventPrefix + "EventRecursion_Deepest"
+				case "skip_received":
+					eventRecursion = eventPrefix + "EventRecursion_SkipReceived"
+				case "receive_once":
+					eventRecursion = eventPrefix + "EventRecursion_ReceiveOnce"
 				}
+				getEventsSetRecursionCode[i] = fmt.Sprintf("\n\t(*eventTab).SetRecursion(%s)", eventRecursion)
+				caseEventsRecursion[i] = eventRecursion
+			}
+			allEventsSetRecursionCode += fmt.Sprintf("\n\t(*eventTab)[%d].SetRecursion(%s)", i, eventRecursion)
+		}
+
+		if len(getEventsSetRecursionCode) > 0 {
+			caseEventsSetRecursionCode = "\n\tswitch pos {"
+
+			for i := range eventDeclTab.Events {
+				eventRecursion, ok := caseEventsRecursion[i]
+				if !ok {
+					continue
+				}
+				caseEventsSetRecursionCode += fmt.Sprintf("\n\tcase %[1]d:\n\t\t(*eventTab)[%[1]d].SetRecursion(%s)", i, eventRecursion)
 			}
 
-			eventsRecursionCode += fmt.Sprintf("\t(*eventTab)[%d].Init(autoRecover, reportError, %s)\n", i, eventRecursion)
+			caseEventsSetRecursionCode += "\n\t}"
 		}
 
 		// 生成事件Id
@@ -139,18 +166,18 @@ var (`)
 		fmt.Fprintf(code, `
 type %[1]s [%[2]d]%[4]sEvent
 
-func (eventTab *%[1]s) Init(autoRecover bool, reportError chan error, recursion %[4]sEventRecursion) {
-%[3]s}
-
-func (eventTab *%[1]s) Enable() {
+func (eventTab *%[1]s) SetPanicHandling(autoRecover bool, reportError chan error) {
 	for i := range *eventTab {
-		(*eventTab)[i].Enable()
+		(*eventTab)[i].SetPanicHandling(autoRecover, reportError)
 	}
 }
 
-func (eventTab *%[1]s) Disable() {
+func (eventTab *%[1]s) SetRecursion(recursion %[4]sEventRecursion) {%[3]s
+}
+
+func (eventTab *%[1]s) SetEnable(b bool) {
 	for i := range *eventTab {
-		(*eventTab)[i].Disable()
+		(*eventTab)[i].SetEnable(b)
 	}
 }
 
@@ -171,24 +198,28 @@ func (eventTab *%[1]s) Event(id uint64) %[4]sIEvent {
 	pos := id & 0xFFFFFFFF
 	if pos >= uint64(len(*eventTab)) {
 		return nil
-	}
+	}%[5]s
 	return &(*eventTab)[pos]
 }
-`, tabName, len(eventDeclTab.Events), eventsRecursionCode, eventPrefix)
-	}
+`, tabName, len(eventDeclTab.Events), allEventsSetRecursionCode, eventPrefix, caseEventsSetRecursionCode)
 
-	for i, event := range eventDeclTab.Events {
-		fmt.Fprintf(code, `
-func (eventTab *%[1]s) %[2]s() %[4]sIEvent {
+		for i, event := range eventDeclTab.Events {
+			fmt.Fprintf(code, `
+func (eventTab *%[1]s) %[2]s() %[4]sIEvent {%[5]s
 	return &(*eventTab)[%[3]d]
 }
-`, tabName, event.Name, i, eventPrefix)
+`, tabName, event.Name, i, eventPrefix, getEventsSetRecursionCode[i])
+		}
 	}
 
 	log.Printf("EventTab: %s", tabName)
 
 	// 输出文件
-	outFile := filepath.Join(dir, filepath.Base(strings.TrimSuffix(declFile, ".go"))+".tab.gen.go")
+	outFile := filepath.Base(strings.TrimSuffix(declFile, ".go"))
+	if !strings.HasSuffix(outFile, "_event") {
+		outFile = outFile + "_event"
+	}
+	outFile = filepath.Join(dir, outFile+"tab.gen.go")
 
 	os.MkdirAll(filepath.Dir(outFile), os.ModePerm)
 

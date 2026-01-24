@@ -25,7 +25,7 @@ import (
 	"git.golaxy.org/core/utils/generic"
 )
 
-// ServiceAddIn 定义服务插件，支持服务上下文
+// ServiceAddIn 定义服务插件，支持安装至服务上下文
 func ServiceAddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADDIN_IFACE]) ServiceAddInDefinition[ADDIN_IFACE, SETTING] {
 	plug := defineAddIn[ADDIN_IFACE, SETTING](creator)
 

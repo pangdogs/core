@@ -44,9 +44,9 @@ func (u _UnsafeEvent) Emit(fun func(subscriber iface.Cache) bool) {
 	u.emit(fun)
 }
 
-// NewHook 创建事件钩子
-func (u _UnsafeEvent) NewHook(subscriberFace iface.FaceAny, priority int32) Hook {
-	return u.newHook(subscriberFace, priority)
+// NewHandle 创建事件句柄
+func (u _UnsafeEvent) NewHandle(subscriberFace iface.FaceAny, priority int32) Handle {
+	return u.newHandle(subscriberFace, priority)
 }
 
 // RemoveSubscriber 删除订阅者

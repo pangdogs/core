@@ -52,19 +52,19 @@
 		{事件定义包名}.Bind{事件名}({发布者}, c)
 	}
 
-	3.如果订阅者生命周期小于发布者，那么需要记录 hook 并且在 Dispose 时解除绑定，示例如下：
+	3.如果订阅者生命周期小于发布者，那么需要记录 handle 并且在 Dispose 时解除绑定，示例如下：
 	type Comp struct {
 		ec.ComponentBehavior
-		hook event.Hook
+		handle event.Handle
 	}
 	func (c *Comp) MethodXXX() {
-		c.hook = {事件定义包名}.Bind{事件名}({发布者}, c)
+		c.handle = {事件定义包名}.Bind{事件名}({发布者}, c)
 	}
 	func (c *Comp) Dispose() {
-		c.hook.Unbind()
+		c.handle.Unbind()
 	}
 
-	4.如果不想写代码记录 hook，可以使用 ec.Component、ec.Entity 或 runtime.Context 的 ManagedAddHooks() 来记录 hook，在它们生命周期结束时，将会自动解除绑定
+	4.如果不想写代码记录 handle，可以使用 ec.Component、ec.Entity 或 runtime.Context 的 ManagedAddEventHandles() 来记录 handle，在它们生命周期结束时，将会自动解除绑定
 
 定义事件表：
 	1.在定义事件的源码文件（.go）头部添加以下注释，在编译前自动化生成代码：
@@ -72,12 +72,12 @@
 
 事件的选项（添加到定义事件的注释里）：
 	1.发送事件的代码的可见性
-		+event-gen:export=[0,1]
+		+event-gen:export_emit=[0,1]
 
 	2.是否生成简化绑定事件的代码
 		+event-gen:auto=[0,1]
 
 	3.事件表初始化时，该事件使用的递归处理方式，不填表示使用事件表初始化参数值
-		+event-tab-gen:recursion=[allow,disallow,discard,truncate,deepest]
+		+event-tab-gen:recursion=[allow,disallow,discard,skip_received,receive_once]
 */
 package event

@@ -25,7 +25,7 @@ import (
 	"git.golaxy.org/core/utils/generic"
 )
 
-// RuntimeAddIn 定义运行时插件，支持运行时上下文
+// RuntimeAddIn 定义运行时插件，支持安装至运行时上下文
 func RuntimeAddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADDIN_IFACE]) RuntimeAddInDefinition[ADDIN_IFACE, SETTING] {
 	plug := defineAddIn[ADDIN_IFACE, SETTING](creator)
 

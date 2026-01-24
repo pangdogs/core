@@ -22,19 +22,29 @@
 package ec
 
 // EventComponentManagerAddComponents 事件：实体的组件管理器添加组件
-// +event-gen:export=0
+// +event-gen:export_emit=0
+// +event-tab-gen:recursion=allow
 type EventComponentManagerAddComponents interface {
 	OnComponentManagerAddComponents(entity Entity, components []Component)
 }
 
 // EventComponentManagerRemoveComponent 事件：实体的组件管理器删除组件
-// +event-gen:export=0
+// +event-gen:export_emit=0
+// +event-tab-gen:recursion=allow
 type EventComponentManagerRemoveComponent interface {
 	OnComponentManagerRemoveComponent(entity Entity, component Component)
 }
 
+// EventComponentManagerComponentEnableChanged 事件：实体组件管理器中的组件启用状态改变
+// +event-gen:export_emit=0
+// +event-tab-gen:recursion=allow
+type EventComponentManagerComponentEnableChanged interface {
+	OnComponentManagerComponentEnableChanged(entity Entity, component Component, enable bool)
+}
+
 // EventComponentManagerFirstTouchComponent 事件：实体的组件管理器首次访问组件
-// +event-gen:export=0
+// +event-gen:export_emit=0
+// +event-tab-gen:recursion=allow
 type EventComponentManagerFirstTouchComponent interface {
 	OnComponentManagerFirstTouchComponent(entity Entity, component Component)
 }

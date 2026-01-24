@@ -20,13 +20,15 @@
 package define
 
 import (
+	"reflect"
+
 	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/types"
 )
 
-// AddIn 定义通用插件，支持运行时和服务上下文
+// AddIn 定义通用插件，支持安装至运行时上下文和服务上下文
 func AddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADDIN_IFACE]) AddInDefinition[ADDIN_IFACE, SETTING] {
 	return defineAddIn[ADDIN_IFACE, SETTING](creator)
 }
@@ -44,7 +46,13 @@ func defineAddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADD
 		exception.Panicf("%w: %w: creator is nil", exception.ErrCore, exception.ErrArgs)
 	}
 
-	name := types.FullNameT[ADDIN_IFACE]()
+	addinRT := reflect.TypeFor[ADDIN_IFACE]()
+
+	for addinRT.Kind() == reflect.Pointer {
+		addinRT = addinRT.Elem()
+	}
+
+	name := types.FullNameRT(addinRT)
 
 	return AddInDefinition[ADDIN_IFACE, SETTING]{
 		Name: name,

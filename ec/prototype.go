@@ -1,10 +1,11 @@
 package ec
 
 import (
+	"reflect"
+
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/meta"
 	"git.golaxy.org/core/utils/option"
-	"reflect"
 )
 
 // EntityPT 实体原型接口
@@ -14,21 +15,19 @@ type EntityPT interface {
 	// InstanceRT 实体实例反射类型
 	InstanceRT() reflect.Type
 	// Scope 可访问作用域
-	Scope() *Scope
-	// ComponentNameIndexing 是否开启组件名称索引
-	ComponentNameIndexing() *bool
+	Scope() Scope
 	// ComponentAwakeOnFirstTouch 当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
-	ComponentAwakeOnFirstTouch() *bool
+	ComponentAwakeOnFirstTouch() bool
 	// ComponentUniqueID 是否为实体组件分配唯一Id
-	ComponentUniqueID() *bool
-	// Extra 自定义原型属性
-	Extra() meta.Meta
+	ComponentUniqueID() bool
+	// Meta 原型Meta信息
+	Meta() meta.Meta
 	// CountComponents // 组件数量
 	CountComponents() int
-	// Component 获取组件
-	Component(idx int) BuiltinComponent
-	// Components 获取所有组件
-	Components() []BuiltinComponent
+	// GetComponent 获取组件
+	GetComponent(idx int) BuiltinComponent
+	// ListComponents 获取所有组件
+	ListComponents() []BuiltinComponent
 	// Construct 创建实体
 	Construct(settings ...option.Setting[EntityOptions]) Entity
 }
@@ -39,7 +38,7 @@ type BuiltinComponent struct {
 	Offset    int         // 组件位置
 	Name      string      // 组件名称
 	Removable bool        // 可以删除
-	Extra     meta.Meta   // 自定义原型属性
+	Meta      meta.Meta   // 原型Meta信息
 }
 
 // ComponentPT 组件原型接口
@@ -71,27 +70,22 @@ func (_NoneEntityPT) InstanceRT() reflect.Type {
 }
 
 // Scope 可访问作用域
-func (_NoneEntityPT) Scope() *Scope {
-	return nil
-}
-
-// ComponentNameIndexing 是否开启组件名称索引
-func (_NoneEntityPT) ComponentNameIndexing() *bool {
-	return nil
+func (_NoneEntityPT) Scope() Scope {
+	return Scope_Global
 }
 
 // ComponentAwakeOnFirstTouch 当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
-func (_NoneEntityPT) ComponentAwakeOnFirstTouch() *bool {
-	return nil
+func (_NoneEntityPT) ComponentAwakeOnFirstTouch() bool {
+	return false
 }
 
 // ComponentUniqueID 是否为实体组件分配唯一Id
-func (_NoneEntityPT) ComponentUniqueID() *bool {
-	return nil
+func (_NoneEntityPT) ComponentUniqueID() bool {
+	return false
 }
 
-// Extra 自定义原型属性
-func (_NoneEntityPT) Extra() meta.Meta {
+// Meta 原型Meta信息
+func (_NoneEntityPT) Meta() meta.Meta {
 	return nil
 }
 
@@ -100,14 +94,14 @@ func (_NoneEntityPT) CountComponents() int {
 	return 0
 }
 
-// Component 获取组件
-func (_NoneEntityPT) Component(idx int) BuiltinComponent {
+// GetComponent 获取组件
+func (_NoneEntityPT) GetComponent(idx int) BuiltinComponent {
 	exception.Panicf("%w: %w: idx out of range", ErrEC, exception.ErrArgs)
 	panic("unreachable")
 }
 
-// Components 获取所有组件
-func (_NoneEntityPT) Components() []BuiltinComponent {
+// ListComponents 获取所有组件
+func (_NoneEntityPT) ListComponents() []BuiltinComponent {
 	return nil
 }
 

@@ -21,11 +21,12 @@ package ec
 
 import (
 	"context"
+	"reflect"
+
+	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
-	"git.golaxy.org/core/utils/types"
 	"git.golaxy.org/core/utils/uid"
-	"reflect"
 )
 
 // Deprecated: UnsafeEntity 访问实体内部函数
@@ -37,11 +38,6 @@ func UnsafeEntity(entity Entity) _UnsafeEntity {
 
 type _UnsafeEntity struct {
 	Entity
-}
-
-// Init 初始化
-func (u _UnsafeEntity) Init(options EntityOptions) {
-	u.init(options)
 }
 
 // WithContext 传递上下文
@@ -69,11 +65,6 @@ func (u _UnsafeEntity) SetContext(ctx iface.Cache) {
 	u.setContext(ctx)
 }
 
-// GetVersion 获取组件列表变化版本号
-func (u _UnsafeEntity) GetVersion() int64 {
-	return u.getVersion()
-}
-
 // SetState 设置状态
 func (u _UnsafeEntity) SetState(state EntityState) {
 	u.setState(state)
@@ -84,44 +75,54 @@ func (u _UnsafeEntity) SetReflected(v reflect.Value) {
 	u.setReflected(v)
 }
 
+// GetCallingStateBits 获取调用状态标志位
+func (u _UnsafeEntity) GetCallingStateBits() *generic.Bits16 {
+	return u.getCallingStateBits()
+}
+
 // GetProcessedStateBits 获取已处理状态标志位
-func (u _UnsafeEntity) GetProcessedStateBits() *types.Bits16 {
+func (u _UnsafeEntity) GetProcessedStateBits() *generic.Bits16 {
 	return u.getProcessedStateBits()
 }
 
-// GetComponentNameIndex 获取组件名称索引
-func (u _UnsafeEntity) GetComponentNameIndex() *generic.SliceMap[string, *generic.Node[Component]] {
+// GetEnteredHandle 获取加入运行时时的句柄
+func (u _UnsafeEntity) GetEnteredHandle() (int, int64) {
+	return u.getEnteredHandle()
+}
+
+// SetEnteredHandle 设置加入运行时时的句柄
+func (u _UnsafeEntity) SetEnteredHandle(idx int, ver int64) {
+	u.setEnteredHandle(idx, ver)
+}
+
+// ManagedRuntimeUpdateHandle 托管运行时更新句柄
+func (u _UnsafeEntity) ManagedRuntimeUpdateHandle(updateHandle event.Handle) {
+	u.managedRuntimeUpdateHandle(updateHandle)
+}
+
+// ManagedRuntimeLateUpdateHandle 托管运行时延迟更新句柄
+func (u _UnsafeEntity) ManagedRuntimeLateUpdateHandle(lateUpdateHandle event.Handle) {
+	u.managedRuntimeLateUpdateHandle(lateUpdateHandle)
+}
+
+// ManagedUnbindRuntimeHandles 解绑定托管的运行时句柄
+func (u _UnsafeEntity) ManagedUnbindRuntimeHandles() {
+	u.managedUnbindRuntimeHandles()
+}
+
+// GetVersion 获取实体组件变化版本号
+func (u _UnsafeEntity) GetVersion() int64 {
+	return u.getVersion()
+}
+
+// GetComponentNameIndex 获取实体组件名称索引
+func (u _UnsafeEntity) GetComponentNameIndex() *generic.SliceMap[string, int] {
 	return u.getComponentNameIndex()
 }
 
-// GetComponentList 获取组件列表
-func (u _UnsafeEntity) GetComponentList() *generic.List[Component] {
+// GetComponentList 获取实体组件链表
+func (u _UnsafeEntity) GetComponentList() *generic.FreeList[Component] {
 	return u.getComponentList()
-}
-
-// GetComponentNode 使用名称查询组件节点，组件同名时，返回首个组件
-func (u _UnsafeEntity) GetComponentNode(name string) (*generic.Node[Component], bool) {
-	return u.getComponentNode(name)
-}
-
-// GetComponentNodeById 使用组件Id查询组件节点（需要开启为实体组件分配唯一Id特性）
-func (u _UnsafeEntity) GetComponentNodeById(id uid.Id) (*generic.Node[Component], bool) {
-	return u.getComponentNodeById(id)
-}
-
-// GetComponentNodeByPT 使用组件原型查询组件节点
-func (u _UnsafeEntity) GetComponentNodeByPT(prototype string) (*generic.Node[Component], bool) {
-	return u.getComponentNodeByPT(prototype)
-}
-
-// GetComponentNodeByRef 使用组件引用查询组件节点
-func (u _UnsafeEntity) GetComponentNodeByRef(comp Component) (*generic.Node[Component], bool) {
-	return u.getComponentNodeByRef(comp)
-}
-
-// RemoveComponentByRef 使用组件引用删除组件
-func (u _UnsafeEntity) RemoveComponentByRef(comp Component) {
-	u.removeComponentByRef(comp)
 }
 
 // SetTreeNodeState 设置实体树节点状态
@@ -129,17 +130,27 @@ func (u _UnsafeEntity) SetTreeNodeState(state TreeNodeState) {
 	u.setTreeNodeState(state)
 }
 
-// SetTreeNodeParent 设置在实体树中的父实体
-func (u _UnsafeEntity) SetTreeNodeParent(parent Entity) {
-	u.setTreeNodeParent(parent)
+// EmitEventTreeNodeAddChild 发送实体树节点添加子实体事件
+func (u _UnsafeEntity) EmitEventTreeNodeAddChild(childId uid.Id) {
+	u.emitEventTreeNodeAddChild(childId)
 }
 
-// EnterParentNode 进入父节点
-func (u _UnsafeEntity) EnterParentNode() {
-	u.enterParentNode()
+// EmitEventTreeNodeRemoveChild 发送实体树节点删除子实体事件
+func (u _UnsafeEntity) EmitEventTreeNodeRemoveChild(childId uid.Id) {
+	u.emitEventTreeNodeRemoveChild(childId)
 }
 
-// LeaveParentNode 离开父节点
-func (u _UnsafeEntity) LeaveParentNode() {
-	u.leaveParentNode()
+// EmitEventTreeNodeAttachParent 发送实体树节点加入父节点事件
+func (u _UnsafeEntity) EmitEventTreeNodeAttachParent(parentId uid.Id) {
+	u.emitEventTreeNodeAttachParent(parentId)
+}
+
+// EmitEventTreeNodeDetachParent 发送实体树节点离开父节点事件
+func (u _UnsafeEntity) EmitEventTreeNodeDetachParent(parentId uid.Id) {
+	u.emitEventTreeNodeDetachParent(parentId)
+}
+
+// EmitEventTreeNodeMoveTo 发送实体树节点切换父节点事件
+func (u _UnsafeEntity) EmitEventTreeNodeMoveTo(fromParentId, toParentId uid.Id) {
+	u.emitEventTreeNodeMoveTo(fromParentId, toParentId)
 }

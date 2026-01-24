@@ -30,7 +30,7 @@ type iAutoEventEntityManagerAddEntity interface {
 	EventEntityManagerAddEntity() event.IEvent
 }
 
-func BindEventEntityManagerAddEntity(auto iAutoEventEntityManagerAddEntity, subscriber EventEntityManagerAddEntity, priority ...int32) event.Hook {
+func BindEventEntityManagerAddEntity(auto iAutoEventEntityManagerAddEntity, subscriber EventEntityManagerAddEntity, priority ...int32) event.Handle {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
@@ -76,7 +76,7 @@ type iAutoEventEntityManagerRemoveEntity interface {
 	EventEntityManagerRemoveEntity() event.IEvent
 }
 
-func BindEventEntityManagerRemoveEntity(auto iAutoEventEntityManagerRemoveEntity, subscriber EventEntityManagerRemoveEntity, priority ...int32) event.Hook {
+func BindEventEntityManagerRemoveEntity(auto iAutoEventEntityManagerRemoveEntity, subscriber EventEntityManagerRemoveEntity, priority ...int32) event.Handle {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
@@ -122,7 +122,7 @@ type iAutoEventEntityManagerEntityAddComponents interface {
 	EventEntityManagerEntityAddComponents() event.IEvent
 }
 
-func BindEventEntityManagerEntityAddComponents(auto iAutoEventEntityManagerEntityAddComponents, subscriber EventEntityManagerEntityAddComponents, priority ...int32) event.Hook {
+func BindEventEntityManagerEntityAddComponents(auto iAutoEventEntityManagerEntityAddComponents, subscriber EventEntityManagerEntityAddComponents, priority ...int32) event.Handle {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
@@ -168,7 +168,7 @@ type iAutoEventEntityManagerEntityRemoveComponent interface {
 	EventEntityManagerEntityRemoveComponent() event.IEvent
 }
 
-func BindEventEntityManagerEntityRemoveComponent(auto iAutoEventEntityManagerEntityRemoveComponent, subscriber EventEntityManagerEntityRemoveComponent, priority ...int32) event.Hook {
+func BindEventEntityManagerEntityRemoveComponent(auto iAutoEventEntityManagerEntityRemoveComponent, subscriber EventEntityManagerEntityRemoveComponent, priority ...int32) event.Handle {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
@@ -210,11 +210,57 @@ func (h EventEntityManagerEntityRemoveComponentHandler) OnEntityManagerEntityRem
 	h(entityManager, entity, component)
 }
 
+type iAutoEventEntityManagerEntityComponentEnableChanged interface {
+	EventEntityManagerEntityComponentEnableChanged() event.IEvent
+}
+
+func BindEventEntityManagerEntityComponentEnableChanged(auto iAutoEventEntityManagerEntityComponentEnableChanged, subscriber EventEntityManagerEntityComponentEnableChanged, priority ...int32) event.Handle {
+	if auto == nil {
+		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
+	}
+	return event.Bind[EventEntityManagerEntityComponentEnableChanged](auto.EventEntityManagerEntityComponentEnableChanged(), subscriber, priority...)
+}
+
+func _EmitEventEntityManagerEntityComponentEnableChanged(auto iAutoEventEntityManagerEntityComponentEnableChanged, entityManager EntityManager, entity ec.Entity, component ec.Component, enable bool) {
+	if auto == nil {
+		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
+	}
+	event.UnsafeEvent(auto.EventEntityManagerEntityComponentEnableChanged()).Emit(func(subscriber event.Cache) bool {
+		event.Cache2Iface[EventEntityManagerEntityComponentEnableChanged](subscriber).OnEntityManagerEntityComponentEnableChanged(entityManager, entity, component, enable)
+		return true
+	})
+}
+
+func _EmitEventEntityManagerEntityComponentEnableChangedWithInterrupt(auto iAutoEventEntityManagerEntityComponentEnableChanged, interrupt func(entityManager EntityManager, entity ec.Entity, component ec.Component, enable bool) bool, entityManager EntityManager, entity ec.Entity, component ec.Component, enable bool) {
+	if auto == nil {
+		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
+	}
+	event.UnsafeEvent(auto.EventEntityManagerEntityComponentEnableChanged()).Emit(func(subscriber event.Cache) bool {
+		if interrupt != nil {
+			if interrupt(entityManager, entity, component, enable) {
+				return false
+			}
+		}
+		event.Cache2Iface[EventEntityManagerEntityComponentEnableChanged](subscriber).OnEntityManagerEntityComponentEnableChanged(entityManager, entity, component, enable)
+		return true
+	})
+}
+
+func HandleEventEntityManagerEntityComponentEnableChanged(fun func(entityManager EntityManager, entity ec.Entity, component ec.Component, enable bool)) EventEntityManagerEntityComponentEnableChangedHandler {
+	return EventEntityManagerEntityComponentEnableChangedHandler(fun)
+}
+
+type EventEntityManagerEntityComponentEnableChangedHandler func(entityManager EntityManager, entity ec.Entity, component ec.Component, enable bool)
+
+func (h EventEntityManagerEntityComponentEnableChangedHandler) OnEntityManagerEntityComponentEnableChanged(entityManager EntityManager, entity ec.Entity, component ec.Component, enable bool) {
+	h(entityManager, entity, component, enable)
+}
+
 type iAutoEventEntityManagerEntityFirstTouchComponent interface {
 	EventEntityManagerEntityFirstTouchComponent() event.IEvent
 }
 
-func BindEventEntityManagerEntityFirstTouchComponent(auto iAutoEventEntityManagerEntityFirstTouchComponent, subscriber EventEntityManagerEntityFirstTouchComponent, priority ...int32) event.Hook {
+func BindEventEntityManagerEntityFirstTouchComponent(auto iAutoEventEntityManagerEntityFirstTouchComponent, subscriber EventEntityManagerEntityFirstTouchComponent, priority ...int32) event.Handle {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}

@@ -27,8 +27,9 @@ const _ComponentState_name = "ComponentState_BirthComponentState_AttachComponent
 var _ComponentState_index = [...]uint8{0, 20, 41, 61, 82, 101, 121, 141, 162, 181, 203, 223, 247}
 
 func (i ComponentState) String() string {
-	if i < 0 || i >= ComponentState(len(_ComponentState_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_ComponentState_index)-1 {
 		return "ComponentState(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _ComponentState_name[_ComponentState_index[i]:_ComponentState_index[i+1]]
+	return _ComponentState_name[_ComponentState_index[idx]:_ComponentState_index[idx+1]]
 }

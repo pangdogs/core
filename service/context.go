@@ -22,14 +22,16 @@ package service
 import (
 	"context"
 	"fmt"
-	"git.golaxy.org/core/ec/ictx"
+	"reflect"
+	"sync/atomic"
+
 	"git.golaxy.org/core/ec/pt"
 	"git.golaxy.org/core/extension"
+	"git.golaxy.org/core/utils/corectx"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/option"
 	"git.golaxy.org/core/utils/reinterpret"
 	"git.golaxy.org/core/utils/uid"
-	"reflect"
 )
 
 // NewContext 创建服务上下文
@@ -39,21 +41,22 @@ func NewContext(settings ...option.Setting[ContextOptions]) Context {
 
 // Deprecated: UnsafeNewContext 内部创建服务上下文
 func UnsafeNewContext(options ContextOptions) Context {
-	if !options.InstanceFace.IsNil() {
-		options.InstanceFace.Iface.init(options)
-		return options.InstanceFace.Iface
-	}
+	var ctx Context
 
-	ctx := &ContextBehavior{}
+	if !options.InstanceFace.IsNil() {
+		ctx = options.InstanceFace.Iface
+	} else {
+		ctx = &ContextBehavior{}
+	}
 	ctx.init(options)
 
-	return ctx.options.InstanceFace.Iface
+	return ctx
 }
 
 // Context 服务上下文
 type Context interface {
 	iContext
-	ictx.Context
+	corectx.Context
 	reinterpret.InstanceProvider
 	extension.AddInProvider
 	pt.EntityPTProvider
@@ -73,15 +76,18 @@ type Context interface {
 type iContext interface {
 	init(options ContextOptions)
 	getOptions() *ContextOptions
-	changeRunningStatus(status RunningStatus, args ...any)
+	emitEventRunningEvent(runningEvent RunningEvent, args ...any)
+	getAddInManager() extension.ServiceAddInManager
+	getScoped() *atomic.Bool
 }
 
 // ContextBehavior 服务上下文行为，在扩展服务上下文能力时，匿名嵌入至服务上下文结构体中
 type ContextBehavior struct {
-	ictx.ContextBehavior
+	corectx.ContextBehavior
 	options       ContextOptions
 	reflected     reflect.Value
 	entityManager _EntityManagerBehavior
+	scoped        atomic.Bool
 }
 
 // GetName 获取名称
@@ -129,15 +135,31 @@ func (ctx *ContextBehavior) init(options ContextOptions) {
 		ctx.options.PersistId = uid.New()
 	}
 
-	ictx.UnsafeContext(&ctx.ContextBehavior).Init(ctx.options.Context, ctx.options.AutoRecover, ctx.options.ReportError)
-	ctx.reflected = reflect.ValueOf(ctx.options.InstanceFace.Iface)
-	ctx.entityManager.init(ctx.options.InstanceFace.Iface)
+	if ctx.options.EntityLib == nil {
+		ctx.options.EntityLib = pt.NewEntityLib(pt.DefaultComponentLib())
+	}
+
+	if ctx.options.AddInManager == nil {
+		ctx.options.AddInManager = extension.NewServiceAddInManager()
+	}
+
+	corectx.UnsafeContext(&ctx.ContextBehavior).Init(ctx.options.Context, ctx.options.AutoRecover, ctx.options.ReportError)
+	ctx.reflected = reflect.ValueOf(ctx.getInstance())
+	ctx.entityManager.init(ctx.getInstance())
 }
 
 func (ctx *ContextBehavior) getOptions() *ContextOptions {
 	return &ctx.options
 }
 
-func (ctx *ContextBehavior) changeRunningStatus(status RunningStatus, args ...any) {
-	ctx.options.RunningStatusChangedCB.Call(ctx.GetAutoRecover(), ctx.GetReportError(), ctx.options.InstanceFace.Iface, status, args...)
+func (ctx *ContextBehavior) emitEventRunningEvent(runningEvent RunningEvent, args ...any) {
+	ctx.options.RunningEventCB.Call(ctx.GetAutoRecover(), ctx.GetReportError(), ctx.getInstance(), runningEvent, args...)
+}
+
+func (ctx *ContextBehavior) getScoped() *atomic.Bool {
+	return &ctx.scoped
+}
+
+func (ctx *ContextBehavior) getInstance() Context {
+	return ctx.options.InstanceFace.Iface
 }

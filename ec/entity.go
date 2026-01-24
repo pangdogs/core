@@ -22,17 +22,17 @@ package ec
 import (
 	"context"
 	"fmt"
-	"git.golaxy.org/core/ec/ictx"
+	"reflect"
+
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/utils/async"
+	"git.golaxy.org/core/utils/corectx"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/meta"
 	"git.golaxy.org/core/utils/option"
 	"git.golaxy.org/core/utils/reinterpret"
-	"git.golaxy.org/core/utils/types"
 	"git.golaxy.org/core/utils/uid"
-	"reflect"
 )
 
 // NewEntity 创建实体
@@ -42,15 +42,16 @@ func NewEntity(settings ...option.Setting[EntityOptions]) Entity {
 
 // Deprecated: UnsafeNewEntity 内部创建实体
 func UnsafeNewEntity(options EntityOptions) Entity {
-	if !options.InstanceFace.IsNil() {
-		options.InstanceFace.Iface.init(options)
-		return options.InstanceFace.Iface
-	}
+	var e Entity
 
-	e := &EntityBehavior{}
+	if !options.InstanceFace.IsNil() {
+		e = options.InstanceFace.Iface
+	} else {
+		e = &EntityBehavior{}
+	}
 	e.init(options)
 
-	return e.options.InstanceFace.Iface
+	return e
 }
 
 // Entity 实体接口
@@ -60,7 +61,7 @@ type Entity interface {
 	iContext
 	iComponentManager
 	iTreeNode
-	ictx.CurrentContextProvider
+	corectx.CurrentContextProvider
 	reinterpret.InstanceProvider
 	fmt.Stringer
 
@@ -76,16 +77,10 @@ type Entity interface {
 	GetReflected() reflect.Value
 	// GetMeta 获取Meta信息
 	GetMeta() meta.Meta
-	// ManagedAddHooks 托管事件钩子（event.Hook），在实体销毁时自动解绑定
-	ManagedAddHooks(hooks ...event.Hook)
-	// ManagedAddTagHooks 根据标签托管事件钩子（event.Hook），在实体销毁时自动解绑定
-	ManagedAddTagHooks(tag string, hooks ...event.Hook)
-	// ManagedGetTagHooks 根据标签获取托管事件钩子（event.Hook）
-	ManagedGetTagHooks(tag string) []event.Hook
-	// ManagedUnbindTagHooks 根据标签解绑定托管的事件钩子（event.Hook）
-	ManagedUnbindTagHooks(tag string)
-	// DestroySelf 销毁自身
-	DestroySelf()
+	// Managed 托管事件句柄
+	Managed() *event.ManagedHandles
+	// Destroy 销毁
+	Destroy()
 
 	IEntityEventTab
 }
@@ -97,31 +92,41 @@ type iEntity interface {
 	setId(id uid.Id)
 	setPT(prototype EntityPT)
 	setContext(ctx iface.Cache)
-	getVersion() int64
 	setState(state EntityState)
 	setReflected(v reflect.Value)
-	getProcessedStateBits() *types.Bits16
-	managedUnbindAllHooks()
+	getCallingStateBits() *generic.Bits16
+	getProcessedStateBits() *generic.Bits16
+	getEnteredHandle() (int, int64)
+	setEnteredHandle(idx int, ver int64)
+	managedRuntimeUpdateHandle(updateHandle event.Handle)
+	managedRuntimeLateUpdateHandle(lateUpdateHandle event.Handle)
+	managedUnbindRuntimeHandles()
 }
+
+const (
+	entityReentrancyGuard_Destroy = iota
+)
 
 // EntityBehavior 实体行为，在扩展实体能力时，匿名嵌入至实体结构体中
 type EntityBehavior struct {
 	context.Context
-	terminate          context.CancelFunc
-	terminated         chan async.Ret
-	options            EntityOptions
-	prototype          EntityPT
-	context            iface.Cache
-	componentNameIndex generic.SliceMap[string, *generic.Node[Component]]
-	components         generic.List[Component]
-	state              EntityState
-	reflected          reflect.Value
-	treeNodeState      TreeNodeState
-	treeNodeParent     Entity
-	callingStateBits   types.Bits16
-	processedStateBits types.Bits16
-	managedHooks       []event.Hook
-	managedTagHooks    generic.SliceMap[string, []event.Hook]
+	terminate             context.CancelFunc
+	terminated            chan async.Ret
+	options               EntityOptions
+	prototype             EntityPT
+	context               iface.Cache
+	componentNameIndex    generic.SliceMap[string, int]
+	componentList         generic.FreeList[Component]
+	state                 EntityState
+	reflected             reflect.Value
+	treeNodeState         TreeNodeState
+	callingStateBits      generic.Bits16
+	processedStateBits    generic.Bits16
+	reentrancyGuard       generic.ReentrancyGuardBits8
+	enteredIndex          int
+	enteredVersion        int64
+	managedHandles        event.ManagedHandles
+	managedRuntimeHandles [2]event.Handle
 
 	entityEventTab                 entityEventTab
 	entityComponentManagerEventTab entityComponentManagerEventTab
@@ -156,7 +161,7 @@ func (entity *EntityBehavior) GetReflected() reflect.Value {
 	if entity.reflected.IsValid() {
 		return entity.reflected
 	}
-	entity.reflected = reflect.ValueOf(entity.options.InstanceFace.Iface)
+	entity.reflected = reflect.ValueOf(entity.getInstance())
 	return entity.reflected
 }
 
@@ -165,14 +170,24 @@ func (entity *EntityBehavior) GetMeta() meta.Meta {
 	return entity.options.Meta
 }
 
-// DestroySelf 销毁自身
-func (entity *EntityBehavior) DestroySelf() {
-	_EmitEventEntityDestroySelf(entity, entity.options.InstanceFace.Iface)
+// Managed 托管事件句柄
+func (entity *EntityBehavior) Managed() *event.ManagedHandles {
+	return &entity.managedHandles
 }
 
-// EventEntityDestroySelf 事件：实体销毁自身
-func (entity *EntityBehavior) EventEntityDestroySelf() event.IEvent {
-	return entity.entityEventTab.EventEntityDestroySelf()
+// Destroy 销毁
+func (entity *EntityBehavior) Destroy() {
+	entity.reentrancyGuard.Call(entityReentrancyGuard_Destroy, func() {
+		if entity.state > EntityState_Alive {
+			return
+		}
+		_EmitEventEntityDestroy(entity, entity.getInstance())
+	})
+}
+
+// EventEntityDestroy 事件：实体销毁
+func (entity *EntityBehavior) EventEntityDestroy() event.IEvent {
+	return entity.entityEventTab.EventEntityDestroy()
 }
 
 // GetCurrentContext 获取当前上下文
@@ -202,10 +217,6 @@ func (entity *EntityBehavior) init(options EntityOptions) {
 		entity.options.InstanceFace = iface.MakeFaceT[Entity](entity)
 	}
 
-	entity.entityEventTab.Init(false, nil, event.EventRecursion_Allow)
-	entity.entityComponentManagerEventTab.Init(false, nil, event.EventRecursion_Allow)
-	entity.entityTreeNodeEventTab.Init(false, nil, event.EventRecursion_Allow)
-
 	entity.setState(EntityState_Birth)
 }
 
@@ -230,26 +241,23 @@ func (entity *EntityBehavior) setContext(ctx iface.Cache) {
 	entity.context = ctx
 }
 
-func (entity *EntityBehavior) getVersion() int64 {
-	return entity.components.Version()
-}
-
 func (entity *EntityBehavior) setState(state EntityState) {
-	if entity.processedStateBits.Is(int8(state)) {
+	if entity.processedStateBits.Is(int(state)) {
 		return
 	}
 
 	entity.state = state
-	entity.processedStateBits.Set(int8(state), true)
+	entity.processedStateBits.Set(int(state), true)
 
 	switch entity.state {
 	case EntityState_Death:
 		entity.terminate()
-		entity.entityEventTab.Disable()
-		entity.entityComponentManagerEventTab.Disable()
-		entity.entityTreeNodeEventTab.Disable()
+		entity.entityEventTab.SetEnable(false)
+		entity.entityComponentManagerEventTab.SetEnable(false)
+		entity.entityTreeNodeEventTab.SetEnable(false)
 	case EntityState_Destroyed:
-		entity.managedUnbindAllHooks()
+		entity.managedHandles.UnbindAllEventHandles()
+		entity.managedUnbindRuntimeHandles()
 		async.Return(entity.terminated, async.VoidRet)
 	}
 }
@@ -258,6 +266,41 @@ func (entity *EntityBehavior) setReflected(v reflect.Value) {
 	entity.reflected = v
 }
 
-func (entity *EntityBehavior) getProcessedStateBits() *types.Bits16 {
+func (entity *EntityBehavior) getCallingStateBits() *generic.Bits16 {
+	return &entity.callingStateBits
+}
+
+func (entity *EntityBehavior) getProcessedStateBits() *generic.Bits16 {
 	return &entity.processedStateBits
+}
+
+func (entity *EntityBehavior) getEnteredHandle() (int, int64) {
+	return entity.enteredIndex, entity.enteredVersion
+}
+
+func (entity *EntityBehavior) setEnteredHandle(idx int, ver int64) {
+	entity.enteredIndex = idx
+	entity.enteredVersion = ver
+}
+
+func (entity *EntityBehavior) managedRuntimeUpdateHandle(updateHandle event.Handle) {
+	if entity.managedRuntimeHandles[0] != updateHandle {
+		entity.managedRuntimeHandles[0].Unbind()
+	}
+	entity.managedRuntimeHandles[0] = updateHandle
+}
+
+func (entity *EntityBehavior) managedRuntimeLateUpdateHandle(lateUpdateHandle event.Handle) {
+	if entity.managedRuntimeHandles[1] != lateUpdateHandle {
+		entity.managedRuntimeHandles[1].Unbind()
+	}
+	entity.managedRuntimeHandles[1] = lateUpdateHandle
+}
+
+func (entity *EntityBehavior) managedUnbindRuntimeHandles() {
+	event.UnbindHandles(entity.managedRuntimeHandles[:])
+}
+
+func (entity *EntityBehavior) getInstance() Entity {
+	return entity.options.InstanceFace.Iface
 }

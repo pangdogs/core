@@ -19,30 +19,32 @@
 
 package ec
 
-import "git.golaxy.org/core/event"
+import (
+	"git.golaxy.org/core/event"
+	"git.golaxy.org/core/utils/uid"
+)
 
 type iTreeNode interface {
+	iiTreeNode
+
 	// GetTreeNodeState 获取实体树节点状态
 	GetTreeNodeState() TreeNodeState
-	// GetTreeNodeParent 获取在实体树中的父实体
-	GetTreeNodeParent() (Entity, bool)
-
-	setTreeNodeState(state TreeNodeState)
-	setTreeNodeParent(parent Entity)
-	enterParentNode()
-	leaveParentNode()
 
 	IEntityTreeNodeEventTab
+}
+
+type iiTreeNode interface {
+	setTreeNodeState(state TreeNodeState)
+	emitEventTreeNodeAddChild(childId uid.Id)
+	emitEventTreeNodeRemoveChild(childId uid.Id)
+	emitEventTreeNodeAttachParent(parentId uid.Id)
+	emitEventTreeNodeDetachParent(parentId uid.Id)
+	emitEventTreeNodeMoveTo(fromParentId, toParentId uid.Id)
 }
 
 // GetTreeNodeState 获取实体树节点状态
 func (entity *EntityBehavior) GetTreeNodeState() TreeNodeState {
 	return entity.treeNodeState
-}
-
-// GetTreeNodeParent 获取在实体树中的父实体
-func (entity *EntityBehavior) GetTreeNodeParent() (Entity, bool) {
-	return entity.treeNodeParent, entity.treeNodeParent != nil
 }
 
 // EventTreeNodeAddChild 事件：实体节点添加子实体
@@ -55,56 +57,41 @@ func (entity *EntityBehavior) EventTreeNodeRemoveChild() event.IEvent {
 	return entity.entityTreeNodeEventTab.EventTreeNodeRemoveChild()
 }
 
-// EventTreeNodeEnterParent 事件：实体加入父实体节点
-func (entity *EntityBehavior) EventTreeNodeEnterParent() event.IEvent {
-	return entity.entityTreeNodeEventTab.EventTreeNodeEnterParent()
+// EventTreeNodeAttachParent 事件：实体加入父实体节点
+func (entity *EntityBehavior) EventTreeNodeAttachParent() event.IEvent {
+	return entity.entityTreeNodeEventTab.EventTreeNodeAttachParent()
 }
 
-// EventTreeNodeLeaveParent 事件：实体离开父实体节点
-func (entity *EntityBehavior) EventTreeNodeLeaveParent() event.IEvent {
-	return entity.entityTreeNodeEventTab.EventTreeNodeLeaveParent()
+// EventTreeNodeDetachParent 事件：实体离开父实体节点
+func (entity *EntityBehavior) EventTreeNodeDetachParent() event.IEvent {
+	return entity.entityTreeNodeEventTab.EventTreeNodeDetachParent()
+}
+
+// EventTreeNodeMoveTo 事件：实体切换父节点
+func (entity *EntityBehavior) EventTreeNodeMoveTo() event.IEvent {
+	return entity.entityTreeNodeEventTab.EventTreeNodeMoveTo()
 }
 
 func (entity *EntityBehavior) setTreeNodeState(state TreeNodeState) {
 	entity.treeNodeState = state
 }
 
-func (entity *EntityBehavior) setTreeNodeParent(parent Entity) {
-	entity.treeNodeParent = parent
+func (entity *EntityBehavior) emitEventTreeNodeAddChild(childId uid.Id) {
+	_EmitEventTreeNodeAddChild(entity, entity.getInstance(), childId)
 }
 
-func (entity *EntityBehavior) enterParentNode() {
-	if entity.treeNodeParent == nil {
-		return
-	}
-
-	_EmitEventTreeNodeEnterParentWithInterrupt(entity, func(child, parent Entity) bool {
-		return child.GetState() > EntityState_Alive || parent.GetState() > EntityState_Alive
-	}, entity.options.InstanceFace.Iface, entity.treeNodeParent)
-
-	if entity.treeNodeParent == nil {
-		return
-	}
-
-	_EmitEventTreeNodeAddChildWithInterrupt(entity.treeNodeParent, func(parent, child Entity) bool {
-		return parent.GetState() > EntityState_Alive || child.GetState() > EntityState_Alive
-	}, entity.treeNodeParent, entity.options.InstanceFace.Iface)
+func (entity *EntityBehavior) emitEventTreeNodeRemoveChild(childId uid.Id) {
+	_EmitEventTreeNodeRemoveChild(entity, entity.getInstance(), childId)
 }
 
-func (entity *EntityBehavior) leaveParentNode() {
-	if entity.treeNodeParent == nil {
-		return
-	}
+func (entity *EntityBehavior) emitEventTreeNodeAttachParent(parentId uid.Id) {
+	_EmitEventTreeNodeAttachParent(entity, entity.getInstance(), parentId)
+}
 
-	_EmitEventTreeNodeRemoveChildWithInterrupt(entity.treeNodeParent, func(parent, child Entity) bool {
-		return parent.GetState() >= EntityState_Destroyed || child.GetState() >= EntityState_Destroyed
-	}, entity.treeNodeParent, entity.options.InstanceFace.Iface)
+func (entity *EntityBehavior) emitEventTreeNodeDetachParent(parentId uid.Id) {
+	_EmitEventTreeNodeDetachParent(entity, entity.getInstance(), parentId)
+}
 
-	if entity.treeNodeParent == nil {
-		return
-	}
-
-	_EmitEventTreeNodeLeaveParentWithInterrupt(entity, func(child, parent Entity) bool {
-		return child.GetState() >= EntityState_Destroyed || parent.GetState() >= EntityState_Destroyed
-	}, entity.options.InstanceFace.Iface, entity.treeNodeParent)
+func (entity *EntityBehavior) emitEventTreeNodeMoveTo(fromParentId, toParentId uid.Id) {
+	_EmitEventTreeNodeMoveTo(entity, entity.getInstance(), fromParentId, toParentId)
 }

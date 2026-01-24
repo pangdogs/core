@@ -21,11 +21,12 @@ package service
 
 import (
 	"fmt"
+	"sync"
+
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/uid"
-	"sync"
 )
 
 // EntityManager 实体管理器接口
@@ -36,10 +37,6 @@ type EntityManager interface {
 	GetEntity(id uid.Id) (ec.ConcurrentEntity, bool)
 	// GetOrAddEntity 查询或添加实体
 	GetOrAddEntity(entity ec.ConcurrentEntity) (ec.ConcurrentEntity, bool, error)
-	// AddEntity 添加实体
-	AddEntity(entity ec.ConcurrentEntity) error
-	// GetAndRemoveEntity 查询并删除实体
-	GetAndRemoveEntity(id uid.Id) (ec.ConcurrentEntity, bool)
 	// RemoveEntity 删除实体
 	RemoveEntity(id uid.Id)
 }
@@ -86,39 +83,25 @@ func (mgr *_EntityManagerBehavior) GetOrAddEntity(entity ec.ConcurrentEntity) (e
 		return nil, false, fmt.Errorf("%w: entity context is nil", ErrEntityManager)
 	}
 
+	select {
+	case <-entity.Done():
+		return nil, false, fmt.Errorf("%w: entity is death", ErrEntityManager)
+	default:
+	}
+
 	actual, loaded := mgr.entities.LoadOrStore(entity.GetId(), entity)
-	return actual.(ec.ConcurrentEntity), loaded, nil
-}
-
-// GetAndRemoveEntity 查询并删除实体
-func (mgr *_EntityManagerBehavior) GetAndRemoveEntity(id uid.Id) (ec.ConcurrentEntity, bool) {
-	v, loaded := mgr.entities.LoadAndDelete(id)
 	if !loaded {
-		return nil, false
-	}
-	return v.(ec.ConcurrentEntity), true
-}
-
-// AddEntity 添加实体
-func (mgr *_EntityManagerBehavior) AddEntity(entity ec.ConcurrentEntity) error {
-	if entity == nil {
-		return fmt.Errorf("%w: %w: entity is nil", ErrEntityManager, exception.ErrArgs)
+		mgr.ctx.emitEventRunningEvent(RunningEvent_EntityRegistered, entity)
 	}
 
-	if entity.GetId().IsNil() {
-		return fmt.Errorf("%w: entity id is nil", ErrEntityManager)
-	}
-
-	if entity.GetConcurrentContext() == iface.NilCache {
-		return fmt.Errorf("%w: entity context is nil", ErrEntityManager)
-	}
-
-	mgr.entities.Store(entity.GetId(), entity)
-
-	return nil
+	return actual.(ec.ConcurrentEntity), loaded, nil
 }
 
 // RemoveEntity 删除实体
 func (mgr *_EntityManagerBehavior) RemoveEntity(id uid.Id) {
-	mgr.entities.Delete(id)
+	entity, loaded := mgr.entities.LoadAndDelete(id)
+	if !loaded {
+		return
+	}
+	mgr.ctx.emitEventRunningEvent(RunningEvent_EntityUnregistered, entity)
 }

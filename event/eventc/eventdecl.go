@@ -21,10 +21,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
 	"go/ast"
 	"go/token"
 	"regexp"
+	"strings"
+
+	"github.com/spf13/viper"
 )
 
 type EventDecl struct {
@@ -115,15 +117,19 @@ func (tab *EventDeclTab) Parse() {
 					paramName = fmt.Sprintf("p%d", i)
 				}
 
+				begin := fset.Position(param.Type.Pos()).Offset
+				end := fset.Position(param.Type.End()).Offset
+				paramTypeName := string(fdata[begin:end])
+
 				if eventFuncParams != "" {
 					eventFuncParams += ", "
 				}
 				eventFuncParams += paramName
+				if strings.HasPrefix(paramTypeName, "...") {
+					eventFuncParams += "..."
+				}
 
-				begin := fset.Position(param.Type.Pos()).Offset
-				end := fset.Position(param.Type.End()).Offset
-
-				eventFuncParamsDecl += fmt.Sprintf(", %s %s", paramName, fdata[begin:end])
+				eventFuncParamsDecl += fmt.Sprintf(", %s %s", paramName, paramTypeName)
 			}
 		}
 

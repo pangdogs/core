@@ -22,7 +22,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/spf13/viper"
 	"go/ast"
 	"go/printer"
 	"go/token"
@@ -34,12 +33,14 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/spf13/viper"
 )
 
 func genEvent() {
 	declFile := viper.GetString("decl_file")
 	packageEventAlias := viper.GetString("package_event_alias")
-	defExport := viper.GetBool("default_export")
+	defExportEmit := viper.GetBool("default_export_emit")
 	defAuto := viper.GetBool("default_auto")
 	fast := viper.Get("file_ast").(*ast.File)
 	fset := viper.Get("file_set").(*token.FileSet)
@@ -105,20 +106,17 @@ package %s
 
 	// 生成事件发送代码
 	for _, eventDecl := range eventDeclTab.Events {
-		// 是否导出事件发送代码
-		exportEmitStr := "_Emit"
-		if defExport {
-			exportEmitStr = "Emit"
-		}
-
-		// 是否生成事件auto代码
-		auto := defAuto
-
 		// 解析atti
 		atti := parseGenAtti(eventDecl.Comment, "+event-gen:")
 
-		if atti.Has("export") {
-			if b, err := strconv.ParseBool(atti.Get("export")); err == nil {
+		// 是否导出事件发送代码
+		exportEmitStr := "_Emit"
+		if defExportEmit {
+			exportEmitStr = "Emit"
+		}
+
+		if atti.Has("export_emit") {
+			if b, err := strconv.ParseBool(atti.Get("export_emit")); err == nil {
 				if b {
 					exportEmitStr = "Emit"
 				} else {
@@ -126,6 +124,9 @@ package %s
 				}
 			}
 		}
+
+		// 是否生成事件auto代码
+		auto := defAuto
 
 		if atti.Has("auto") {
 			if b, err := strconv.ParseBool(atti.Get("auto")); err == nil {
@@ -136,7 +137,7 @@ package %s
 		// 事件可见性
 		var visibility string
 
-		if unicode.IsLower(rune(eventDecl.Name[0])) {
+		if !unicode.IsUpper(rune(eventDecl.Name[0])) {
 			visibility = "_"
 		}
 
@@ -145,21 +146,21 @@ package %s
 			if eventDecl.FuncHasRet {
 				fmt.Fprintf(code, `
 type iAuto%[1]s interface {
-	%[1]s() %[6]sIEvent
+	%[2]s() %[6]sIEvent
 }
 
-func Bind%[1]s(auto iAuto%[1]s, subscriber %[2]s%[8]s, priority ...int32) %[6]sHook {
+func %[11]sBind%[1]s(auto iAuto%[1]s, subscriber %[2]s%[8]s, priority ...int32) %[6]sHandle {
 	if auto == nil {
 		%[6]sPanicf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
-	return %[6]sBind[%[2]s%[8]s](auto.%[1]s(), subscriber, priority...)
+	return %[6]sBind[%[2]s%[8]s](auto.%[2]s(), subscriber, priority...)
 }
 
 func %[9]s%[1]s%[7]s(auto iAuto%[1]s%[4]s) {
 	if auto == nil {
 		%[6]sPanicf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
-	%[6]sUnsafeEvent(auto.%[1]s()).Emit(func(subscriber %[6]sCache) bool {
+	%[6]sUnsafeEvent(auto.%[2]s()).Emit(func(subscriber %[6]sCache) bool {
 		return %[6]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
 	})
 }
@@ -168,7 +169,7 @@ func %[9]s%[1]s%[7]sWithInterrupt(auto iAuto%[1]s, interrupt func(%[10]s) bool%[
 	if auto == nil {
 		%[6]sPanicf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
-	%[6]sUnsafeEvent(auto.%[1]s()).Emit(func(subscriber %[6]sCache) bool {
+	%[6]sUnsafeEvent(auto.%[2]s()).Emit(func(subscriber %[6]sCache) bool {
 		if interrupt != nil {
 			if interrupt(%[5]s) {
 				return false
@@ -177,26 +178,26 @@ func %[9]s%[1]s%[7]sWithInterrupt(auto iAuto%[1]s, interrupt func(%[10]s) bool%[
 		return %[6]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
 	})
 }
-`, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, eventPrefix, eventDecl.FuncTypeParamsDecl, eventDecl.FuncTypeParams, exportEmitStr, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "))
+`, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, eventPrefix, eventDecl.FuncTypeParamsDecl, eventDecl.FuncTypeParams, exportEmitStr, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "), visibility)
 
 			} else {
 				fmt.Fprintf(code, `
 type iAuto%[1]s interface {
-	%[1]s() %[6]sIEvent
+	%[2]s() %[6]sIEvent
 }
 
-func Bind%[1]s(auto iAuto%[1]s, subscriber %[2]s%[8]s, priority ...int32) %[6]sHook {
+func %[11]sBind%[1]s(auto iAuto%[1]s, subscriber %[2]s%[8]s, priority ...int32) %[6]sHandle {
 	if auto == nil {
 		%[6]sPanicf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
-	return %[6]sBind[%[2]s%[8]s](auto.%[1]s(), subscriber, priority...)
+	return %[6]sBind[%[2]s%[8]s](auto.%[2]s(), subscriber, priority...)
 }
 
 func %[9]s%[1]s%[7]s(auto iAuto%[1]s%[4]s) {
 	if auto == nil {
 		%[6]sPanicf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
-	%[6]sUnsafeEvent(auto.%[1]s()).Emit(func(subscriber %[6]sCache) bool {
+	%[6]sUnsafeEvent(auto.%[2]s()).Emit(func(subscriber %[6]sCache) bool {
 		%[6]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
 		return true
 	})
@@ -206,7 +207,7 @@ func %[9]s%[1]s%[7]sWithInterrupt(auto iAuto%[1]s, interrupt func(%[10]s) bool%[
 	if auto == nil {
 		%[6]sPanicf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
-	%[6]sUnsafeEvent(auto.%[1]s()).Emit(func(subscriber %[6]sCache) bool {
+	%[6]sUnsafeEvent(auto.%[2]s()).Emit(func(subscriber %[6]sCache) bool {
 		if interrupt != nil {
 			if interrupt(%[5]s) {
 				return false
@@ -216,7 +217,7 @@ func %[9]s%[1]s%[7]sWithInterrupt(auto iAuto%[1]s, interrupt func(%[10]s) bool%[
 		return true
 	})
 }
-`, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, eventPrefix, eventDecl.FuncTypeParamsDecl, eventDecl.FuncTypeParams, exportEmitStr, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "))
+`, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, eventPrefix, eventDecl.FuncTypeParamsDecl, eventDecl.FuncTypeParams, exportEmitStr, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "), visibility)
 			}
 		} else {
 			if eventDecl.FuncHasRet {
@@ -305,7 +306,11 @@ func (h %[5]s%[1]sHandler) %[2]s(%[3]s) {
 	}
 
 	// 输出文件
-	outFile := filepath.Join(filepath.Dir(declFile), filepath.Base(strings.TrimSuffix(declFile, ".go"))+".gen.go")
+	outFile := filepath.Base(strings.TrimSuffix(declFile, ".go"))
+	if !strings.HasSuffix(outFile, "_event") {
+		outFile = outFile + "_event"
+	}
+	outFile = filepath.Join(filepath.Dir(declFile), outFile+".gen.go")
 
 	os.MkdirAll(filepath.Dir(outFile), os.ModePerm)
 

@@ -29,7 +29,7 @@ type iAutoEventComponentManagerAddComponents interface {
 	EventComponentManagerAddComponents() event.IEvent
 }
 
-func BindEventComponentManagerAddComponents(auto iAutoEventComponentManagerAddComponents, subscriber EventComponentManagerAddComponents, priority ...int32) event.Hook {
+func BindEventComponentManagerAddComponents(auto iAutoEventComponentManagerAddComponents, subscriber EventComponentManagerAddComponents, priority ...int32) event.Handle {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
@@ -75,7 +75,7 @@ type iAutoEventComponentManagerRemoveComponent interface {
 	EventComponentManagerRemoveComponent() event.IEvent
 }
 
-func BindEventComponentManagerRemoveComponent(auto iAutoEventComponentManagerRemoveComponent, subscriber EventComponentManagerRemoveComponent, priority ...int32) event.Hook {
+func BindEventComponentManagerRemoveComponent(auto iAutoEventComponentManagerRemoveComponent, subscriber EventComponentManagerRemoveComponent, priority ...int32) event.Handle {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
@@ -117,11 +117,57 @@ func (h EventComponentManagerRemoveComponentHandler) OnComponentManagerRemoveCom
 	h(entity, component)
 }
 
+type iAutoEventComponentManagerComponentEnableChanged interface {
+	EventComponentManagerComponentEnableChanged() event.IEvent
+}
+
+func BindEventComponentManagerComponentEnableChanged(auto iAutoEventComponentManagerComponentEnableChanged, subscriber EventComponentManagerComponentEnableChanged, priority ...int32) event.Handle {
+	if auto == nil {
+		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
+	}
+	return event.Bind[EventComponentManagerComponentEnableChanged](auto.EventComponentManagerComponentEnableChanged(), subscriber, priority...)
+}
+
+func _EmitEventComponentManagerComponentEnableChanged(auto iAutoEventComponentManagerComponentEnableChanged, entity Entity, component Component, enable bool) {
+	if auto == nil {
+		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
+	}
+	event.UnsafeEvent(auto.EventComponentManagerComponentEnableChanged()).Emit(func(subscriber event.Cache) bool {
+		event.Cache2Iface[EventComponentManagerComponentEnableChanged](subscriber).OnComponentManagerComponentEnableChanged(entity, component, enable)
+		return true
+	})
+}
+
+func _EmitEventComponentManagerComponentEnableChangedWithInterrupt(auto iAutoEventComponentManagerComponentEnableChanged, interrupt func(entity Entity, component Component, enable bool) bool, entity Entity, component Component, enable bool) {
+	if auto == nil {
+		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
+	}
+	event.UnsafeEvent(auto.EventComponentManagerComponentEnableChanged()).Emit(func(subscriber event.Cache) bool {
+		if interrupt != nil {
+			if interrupt(entity, component, enable) {
+				return false
+			}
+		}
+		event.Cache2Iface[EventComponentManagerComponentEnableChanged](subscriber).OnComponentManagerComponentEnableChanged(entity, component, enable)
+		return true
+	})
+}
+
+func HandleEventComponentManagerComponentEnableChanged(fun func(entity Entity, component Component, enable bool)) EventComponentManagerComponentEnableChangedHandler {
+	return EventComponentManagerComponentEnableChangedHandler(fun)
+}
+
+type EventComponentManagerComponentEnableChangedHandler func(entity Entity, component Component, enable bool)
+
+func (h EventComponentManagerComponentEnableChangedHandler) OnComponentManagerComponentEnableChanged(entity Entity, component Component, enable bool) {
+	h(entity, component, enable)
+}
+
 type iAutoEventComponentManagerFirstTouchComponent interface {
 	EventComponentManagerFirstTouchComponent() event.IEvent
 }
 
-func BindEventComponentManagerFirstTouchComponent(auto iAutoEventComponentManagerFirstTouchComponent, subscriber EventComponentManagerFirstTouchComponent, priority ...int32) event.Hook {
+func BindEventComponentManagerFirstTouchComponent(auto iAutoEventComponentManagerFirstTouchComponent, subscriber EventComponentManagerFirstTouchComponent, priority ...int32) event.Handle {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}

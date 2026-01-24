@@ -21,10 +21,10 @@ package core
 
 import (
 	"git.golaxy.org/core/ec"
-	"git.golaxy.org/core/ec/ictx"
 	"git.golaxy.org/core/ec/pt"
 	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/service"
+	"git.golaxy.org/core/utils/corectx"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/meta"
@@ -33,7 +33,7 @@ import (
 )
 
 // BuildEntity 创建实体
-func BuildEntity(provider ictx.CurrentContextProvider, prototype string) *EntityCreator {
+func BuildEntity(provider corectx.CurrentContextProvider, prototype string) *EntityCreator {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrCore, ErrArgs)
 	}
@@ -73,12 +73,6 @@ func (c *EntityCreator) SetScope(scope ec.Scope) *EntityCreator {
 // SetPersistId 设置实体持久化Id
 func (c *EntityCreator) SetPersistId(id uid.Id) *EntityCreator {
 	c.settings = append(c.settings, ec.With.PersistId(id))
-	return c
-}
-
-// SetComponentNameIndexing 设置是否开启组件名称索引
-func (c *EntityCreator) SetComponentNameIndexing(b bool) *EntityCreator {
-	c.settings = append(c.settings, ec.With.ComponentNameIndexing(b))
 	return c
 }
 
@@ -151,12 +145,13 @@ func (c *EntityCreator) New() (ec.Entity, error) {
 
 	entity := pt.For(service.Current(c.rtCtx), c.prototype).Construct(c.settings...)
 
-	if c.parentId.IsNil() {
-		if err := c.rtCtx.GetEntityManager().AddEntity(entity); err != nil {
-			return nil, err
-		}
-	} else {
-		if err := c.rtCtx.GetEntityTree().AddNode(entity, c.parentId); err != nil {
+	if err := c.rtCtx.GetEntityManager().AddEntity(entity); err != nil {
+		return nil, err
+	}
+
+	if !c.parentId.IsNil() {
+		if err := c.rtCtx.GetEntityTree().AddChild(c.parentId, entity.GetId()); err != nil {
+			entity.Destroy()
 			return nil, err
 		}
 	}

@@ -25,7 +25,7 @@ import (
 	"git.golaxy.org/core/utils/types"
 )
 
-// AddInInterface 定义通用插件接口，支持运行时和服务上下文，通常用于为同类插件的不同实现提供统一的接口
+// AddInInterface 定义通用插件接口，支持安装至运行时上下文和服务上下文，通常用于为同类插件的不同实现提供统一的接口
 func AddInInterface[ADDIN_IFACE any]() AddInInterfaceDefinition[ADDIN_IFACE] {
 	return defineAddInInterface[ADDIN_IFACE]()
 }

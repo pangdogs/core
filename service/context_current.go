@@ -20,14 +20,15 @@
 package service
 
 import (
-	"git.golaxy.org/core/ec/ictx"
 	_ "unsafe"
+
+	"git.golaxy.org/core/utils/corectx"
 )
 
 //go:linkname getServiceContext git.golaxy.org/core/runtime.getServiceContext
-func getServiceContext(provider ictx.ConcurrentContextProvider) Context
+func getServiceContext(provider corectx.ConcurrentContextProvider) Context
 
 // Current 获取服务上下文
-func Current(provider ictx.ConcurrentContextProvider) Context {
+func Current(provider corectx.ConcurrentContextProvider) Context {
 	return getServiceContext(provider)
 }

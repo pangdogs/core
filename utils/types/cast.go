@@ -26,14 +26,17 @@ import (
 	"unsafe"
 )
 
+// Signed 有符号整形
 type Signed interface {
 	~int | ~int8 | ~int16 | ~int32 | ~int64
 }
 
+// Unsigned 无符号整形
 type Unsigned interface {
 	~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr
 }
 
+// Integer 整形
 type Integer interface {
 	Signed | Unsigned
 }

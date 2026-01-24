@@ -20,8 +20,9 @@
 package iface
 
 import (
-	"git.golaxy.org/core/utils/exception"
 	"reflect"
+
+	"git.golaxy.org/core/utils/exception"
 )
 
 // FaceAny face with any

@@ -24,7 +24,7 @@ import (
 	"git.golaxy.org/core/utils/generic"
 )
 
-// ServiceAddInInterface 定义服务插件接口，支持服务上下文，通常用于为同类插件的不同实现提供统一的接口
+// ServiceAddInInterface 定义服务插件接口，支持安装至服务上下文，通常用于为同类插件的不同实现提供统一的接口
 func ServiceAddInInterface[ADDIN_IFACE any]() ServiceAddInInterfaceDefinition[ADDIN_IFACE] {
 	plug := defineAddInInterface[ADDIN_IFACE]()
 

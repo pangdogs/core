@@ -19,8 +19,6 @@
 
 package core
 
-import "git.golaxy.org/core/runtime"
-
 // Deprecated: UnsafeRuntime 访问运行时内部方法
 func UnsafeRuntime(runtime Runtime) _UnsafeRuntime {
 	return _UnsafeRuntime{
@@ -30,11 +28,6 @@ func UnsafeRuntime(runtime Runtime) _UnsafeRuntime {
 
 type _UnsafeRuntime struct {
 	Runtime
-}
-
-// Init 初始化
-func (u _UnsafeRuntime) Init(rtCtx runtime.Context, options RuntimeOptions) {
-	u.init(rtCtx, options)
 }
 
 // GetOptions 获取运行时所有选项

@@ -20,9 +20,10 @@
 package core
 
 import (
-	"git.golaxy.org/core/runtime"
 	"sync"
 	"time"
+
+	"git.golaxy.org/core/runtime"
 )
 
 func (rt *RuntimeBehavior) loopingRealTime() {
@@ -70,10 +71,10 @@ loopEnding:
 	rt.frameLoopEnd()
 }
 
-func (rt *RuntimeBehavior) makeFrameTasks(wg *sync.WaitGroup, curFrames, totalFrames int64, targetFPS float32) {
+func (rt *RuntimeBehavior) makeFrameTasks(wg *sync.WaitGroup, curFrames, totalFrames int64, targetFPS float64) {
 	defer wg.Done()
 
-	updateTicker := time.NewTicker(time.Duration(float64(time.Second) / float64(targetFPS)))
+	updateTicker := time.NewTicker(time.Duration(float64(time.Second) / targetFPS))
 	defer updateTicker.Stop()
 
 	done := make(chan struct{}, 1)
@@ -110,17 +111,17 @@ func (rt *RuntimeBehavior) frameLoop(...any) {
 }
 
 func (rt *RuntimeBehavior) frameLoopBegin() {
-	rt.changeRunningStatus(runtime.RunningStatus_FrameLoopBegin)
-	rt.changeRunningStatus(runtime.RunningStatus_FrameUpdateBegin)
+	rt.emitEventRunningEvent(runtime.RunningEvent_FrameLoopBegin)
+	rt.emitEventRunningEvent(runtime.RunningEvent_FrameUpdateBegin)
 
-	_EmitEventUpdate(&rt.eventUpdate)
-	_EmitEventLateUpdate(&rt.eventLateUpdate)
+	_EmitEventUpdate(&rt.runtimeEventTab)
+	_EmitEventLateUpdate(&rt.runtimeEventTab)
 
-	rt.changeRunningStatus(runtime.RunningStatus_FrameUpdateEnd)
+	rt.emitEventRunningEvent(runtime.RunningEvent_FrameUpdateEnd)
 }
 
 func (rt *RuntimeBehavior) frameLoopEnd() {
-	rt.changeRunningStatus(runtime.RunningStatus_FrameLoopEnd)
+	rt.emitEventRunningEvent(runtime.RunningEvent_FrameLoopEnd)
 
 	frame := runtime.UnsafeFrame(rt.options.Frame)
 	frame.SetCurFrames(frame.GetCurFrames() + 1)

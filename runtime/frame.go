@@ -20,8 +20,9 @@
 package runtime
 
 import (
-	"git.golaxy.org/core/utils/option"
 	"time"
+
+	"git.golaxy.org/core/utils/option"
 )
 
 // NewFrame 创建帧，在运行时初始化时可以设置帧，用于设置运行时帧更新方式，在逻辑运行过程中可以在运行时上下文中获取帧信息。
@@ -36,9 +37,9 @@ type Frame interface {
 	iFrame
 
 	// GetTargetFPS 获取目标FPS
-	GetTargetFPS() float32
+	GetTargetFPS() float64
 	// GetCurFPS 获取当前FPS
-	GetCurFPS() float32
+	GetCurFPS() float64
 	// GetTotalFrames 获取运行帧数上限
 	GetTotalFrames() int64
 	// GetCurFrames 获取当前帧数
@@ -69,7 +70,7 @@ type iFrame interface {
 
 type _FrameBehavior struct {
 	options              FrameOptions
-	curFPS               float32
+	curFPS               float64
 	curFrames            int64
 	runningBeginTime     time.Time
 	runningElapseTime    time.Duration
@@ -82,12 +83,12 @@ type _FrameBehavior struct {
 }
 
 // GetTargetFPS 获取目标FPS
-func (frame *_FrameBehavior) GetTargetFPS() float32 {
+func (frame *_FrameBehavior) GetTargetFPS() float64 {
 	return frame.options.TargetFPS
 }
 
 // GetCurFPS 获取当前FPS
-func (frame *_FrameBehavior) GetCurFPS() float32 {
+func (frame *_FrameBehavior) GetCurFPS() float64 {
 	return frame.curFPS
 }
 
@@ -168,7 +169,7 @@ func (frame *_FrameBehavior) loopBegin() {
 
 	statInterval := now.Sub(frame.statFPSBeginTime).Seconds()
 	if statInterval >= 1 {
-		frame.curFPS = float32(float64(frame.statFPSFrames) / statInterval)
+		frame.curFPS = float64(frame.statFPSFrames) / statInterval
 		frame.statFPSBeginTime = now
 		frame.statFPSFrames = 0
 	}

@@ -21,7 +21,6 @@ package main
 
 import (
 	"bytes"
-	"github.com/spf13/viper"
 	"go/parser"
 	"go/token"
 	"io/ioutil"
@@ -30,6 +29,8 @@ import (
 	"path/filepath"
 	"strings"
 	"unicode"
+
+	"github.com/spf13/viper"
 )
 
 const (

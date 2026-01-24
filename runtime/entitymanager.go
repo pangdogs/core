@@ -21,10 +21,11 @@ package runtime
 
 import (
 	"fmt"
+
 	"git.golaxy.org/core/ec"
-	"git.golaxy.org/core/ec/ictx"
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/service"
+	"git.golaxy.org/core/utils/corectx"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
@@ -33,7 +34,7 @@ import (
 
 // EntityManager 实体管理器接口
 type EntityManager interface {
-	ictx.CurrentContextProvider
+	corectx.CurrentContextProvider
 
 	// AddEntity 添加实体
 	AddEntity(entity ec.Entity) error
@@ -45,68 +46,37 @@ type EntityManager interface {
 	ContainsEntity(id uid.Id) bool
 	// RangeEntities 遍历所有实体
 	RangeEntities(fun generic.Func1[ec.Entity, bool])
+	// EachEntities 遍历每个实体
+	EachEntities(fun generic.Action1[ec.Entity])
 	// ReversedRangeEntities 反向遍历所有实体
 	ReversedRangeEntities(fun generic.Func1[ec.Entity, bool])
+	// ReversedEachEntities 反向遍历每个实体
+	ReversedEachEntities(fun generic.Action1[ec.Entity])
 	// FilterEntities 过滤并获取实体
 	FilterEntities(fun generic.Func1[ec.Entity, bool]) []ec.Entity
-	// GetEntities 获取所有实体
-	GetEntities() []ec.Entity
+	// ListEntities 获取所有实体
+	ListEntities() []ec.Entity
 	// CountEntities 获取实体数量
 	CountEntities() int
 
 	IEntityManagerEventTab
 }
 
-type (
-	_EntityNode = *generic.Node[iface.FaceAny]
-
-	_TreeNode struct {
-		parentAt *generic.Node[iface.FaceAny]
-		children *generic.List[iface.FaceAny]
-	}
-)
+type _TreeNode struct {
+	parent          int
+	attachedIndex   int
+	attachedVersion int64
+	children        generic.FreeList[int]
+}
 
 type _EntityManagerBehavior struct {
-	ctx         Context
-	entityIndex map[uid.Id]_EntityNode
-	entityList  generic.List[iface.FaceAny]
-	treeNodes   map[uid.Id]*_TreeNode
+	ctx             Context
+	entityIdIndex   map[uid.Id]int
+	entityList      generic.FreeList[ec.Entity]
+	entityTreeNodes map[int]*_TreeNode
 
 	entityManagerEventTab
 	entityTreeEventTab
-}
-
-func (mgr *_EntityManagerBehavior) init(ctx Context) {
-	if ctx == nil {
-		exception.Panicf("%w: %w: ctx is nil", ErrEntityManager, exception.ErrArgs)
-	}
-
-	mgr.ctx = ctx
-	mgr.entityIndex = map[uid.Id]_EntityNode{}
-	mgr.treeNodes = map[uid.Id]*_TreeNode{}
-
-	ctx.ActivateEvent(&mgr.entityManagerEventTab, event.EventRecursion_Allow)
-	ctx.ActivateEvent(&mgr.entityTreeEventTab, event.EventRecursion_Allow)
-}
-
-func (mgr *_EntityManagerBehavior) changeRunningStatus(status RunningStatus, args ...any) {
-	switch status {
-	case RunningStatus_Started:
-		mgr.RangeEntities(func(entity ec.Entity) bool {
-			_EmitEventEntityManagerAddEntityWithInterrupt(mgr, func(entityManager EntityManager, entity ec.Entity) bool {
-				return entity.GetState() > ec.EntityState_Alive
-			}, mgr, entity)
-			return true
-		})
-	case RunningStatus_Terminating:
-		mgr.ReversedRangeEntities(func(entity ec.Entity) bool {
-			entity.DestroySelf()
-			return true
-		})
-	case RunningStatus_Terminated:
-		mgr.entityManagerEventTab.Disable()
-		mgr.entityTreeEventTab.Disable()
-	}
 }
 
 // GetCurrentContext 获取当前上下文
@@ -121,99 +91,6 @@ func (mgr *_EntityManagerBehavior) GetConcurrentContext() iface.Cache {
 
 // AddEntity 添加实体
 func (mgr *_EntityManagerBehavior) AddEntity(entity ec.Entity) error {
-	return mgr.addEntity(entity, uid.Nil)
-}
-
-// RemoveEntity 删除实体
-func (mgr *_EntityManagerBehavior) RemoveEntity(id uid.Id) {
-	mgr.removeEntity(id)
-}
-
-// GetEntity 查询实体
-func (mgr *_EntityManagerBehavior) GetEntity(id uid.Id) (ec.Entity, bool) {
-	entityNode, ok := mgr.entityIndex[id]
-	if !ok {
-		return nil, false
-	}
-
-	if entityNode.Escaped() {
-		return nil, false
-	}
-
-	return iface.Cache2Iface[ec.Entity](entityNode.V.Cache), true
-}
-
-// ContainsEntity 实体是否存在
-func (mgr *_EntityManagerBehavior) ContainsEntity(id uid.Id) bool {
-	_, ok := mgr.entityIndex[id]
-	return ok
-}
-
-// RangeEntities 遍历所有实体
-func (mgr *_EntityManagerBehavior) RangeEntities(fun generic.Func1[ec.Entity, bool]) {
-	mgr.entityList.Traversal(func(entityNode *generic.Node[iface.FaceAny]) bool {
-		return fun.UnsafeCall(iface.Cache2Iface[ec.Entity](entityNode.V.Cache))
-	})
-}
-
-// ReversedRangeEntities 反向遍历所有实体
-func (mgr *_EntityManagerBehavior) ReversedRangeEntities(fun generic.Func1[ec.Entity, bool]) {
-	mgr.entityList.ReversedTraversal(func(entityNode *generic.Node[iface.FaceAny]) bool {
-		return fun.UnsafeCall(iface.Cache2Iface[ec.Entity](entityNode.V.Cache))
-	})
-}
-
-// FilterEntities 过滤并获取实体
-func (mgr *_EntityManagerBehavior) FilterEntities(fun generic.Func1[ec.Entity, bool]) []ec.Entity {
-	var entities []ec.Entity
-
-	mgr.entityList.Traversal(func(entityNode *generic.Node[iface.FaceAny]) bool {
-		entity := iface.Cache2Iface[ec.Entity](entityNode.V.Cache)
-
-		if fun.UnsafeCall(entity) {
-			entities = append(entities, entity)
-		}
-
-		return true
-	})
-
-	return entities
-}
-
-// GetEntities 获取所有实体
-func (mgr *_EntityManagerBehavior) GetEntities() []ec.Entity {
-	entities := make([]ec.Entity, 0, mgr.entityList.Len())
-
-	mgr.entityList.Traversal(func(entityNode *generic.Node[iface.FaceAny]) bool {
-		entities = append(entities, iface.Cache2Iface[ec.Entity](entityNode.V.Cache))
-		return true
-	})
-
-	return entities
-}
-
-// CountEntities 获取实体数量
-func (mgr *_EntityManagerBehavior) CountEntities() int {
-	return mgr.entityList.Len()
-}
-
-func (mgr *_EntityManagerBehavior) OnComponentManagerAddComponents(entity ec.Entity, components []ec.Component) {
-	for i := range components {
-		mgr.initComponent(entity, components[i])
-	}
-
-	_EmitEventEntityManagerEntityAddComponents(mgr, mgr, entity, components)
-}
-
-func (mgr *_EntityManagerBehavior) OnComponentManagerRemoveComponent(entity ec.Entity, component ec.Component) {
-	_EmitEventEntityManagerEntityRemoveComponent(mgr, mgr, entity, component)
-}
-
-func (mgr *_EntityManagerBehavior) OnComponentManagerFirstTouchComponent(entity ec.Entity, component ec.Component) {
-	_EmitEventEntityManagerEntityFirstTouchComponent(mgr, mgr, entity, component)
-}
-
-func (mgr *_EntityManagerBehavior) addEntity(entity ec.Entity, parentId uid.Id) error {
 	if entity == nil {
 		exception.Panicf("%w: %w: entity is nil", ErrEntityManager, exception.ErrArgs)
 	}
@@ -231,19 +108,8 @@ func (mgr *_EntityManagerBehavior) addEntity(entity ec.Entity, parentId uid.Id) 
 
 	mgr.initEntity(entity)
 
-	parent, err := mgr.fetchParent(entity, parentId)
-	if err != nil {
-		return err
-	}
-
-	if _, ok := mgr.entityIndex[entity.GetId()]; ok {
+	if _, ok := mgr.entityIdIndex[entity.GetId()]; ok {
 		return fmt.Errorf("%w: entity %q already exists in entity-manager", ErrEntityManager, entity.GetId())
-	}
-
-	if parent != nil {
-		if _, ok := mgr.treeNodes[entity.GetId()]; ok {
-			return fmt.Errorf("%w: entity %q already exists in entity-tree", ErrEntityManager, entity.GetId())
-		}
 	}
 
 	if entity.GetScope() == ec.Scope_Global {
@@ -256,94 +122,151 @@ func (mgr *_EntityManagerBehavior) addEntity(entity ec.Entity, parentId uid.Id) 
 		}
 	}
 
-	mgr.entityIndex[entity.GetId()] = mgr.entityList.PushBack(iface.MakeFaceAny(entity))
+	entitySlot := mgr.entityList.PushBack(entity)
+	mgr.entityIdIndex[entity.GetId()] = entitySlot.Index()
+
+	ec.UnsafeEntity(entity).SetState(ec.EntityState_Enter)
+	ec.UnsafeEntity(entity).SetEnteredHandle(entitySlot.Index(), entitySlot.Version())
+	ec.UnsafeEntity(entity).SetTreeNodeState(ec.TreeNodeState_Freedom)
 
 	mgr.observeEntity(entity)
 
-	ec.UnsafeEntity(entity).SetState(ec.EntityState_Enter)
-
-	ec.UnsafeEntity(entity).SetTreeNodeState(ec.TreeNodeState_Freedom)
-	ec.UnsafeEntity(entity).SetTreeNodeParent(nil)
-
-	if parent != nil {
-		if err := mgr.appendToParentNode(entity, parent); err != nil {
-			exception.Panicf("%w: entity %q append to parent %q failed, %w", ErrEntityManager, entity.GetId(), parent.GetId(), err)
-		}
-	}
-
-	_EmitEventEntityManagerAddEntityWithInterrupt(mgr, func(entityManager EntityManager, entity ec.Entity) bool {
-		return entity.GetState() > ec.EntityState_Alive
-	}, mgr, entity)
-
-	if entity.GetState() > ec.EntityState_Alive {
-		return fmt.Errorf("%w: entity %q removed during activation", ErrEntityManager, entity.GetId())
-	}
-
-	if parent != nil {
-		if err := mgr.attachToParentNode(entity, parent); err != nil {
-			return fmt.Errorf("%w: entity %q attach to parent %q failed, %w", ErrEntityManager, entity.GetId(), parent.GetId(), err)
-		}
-	}
+	_EmitEventEntityManagerAddEntity(mgr, mgr, entity)
 
 	return nil
 }
 
-func (mgr *_EntityManagerBehavior) removeEntity(id uid.Id) {
-	entityNode, ok := mgr.entityIndex[id]
+// RemoveEntity 删除实体
+func (mgr *_EntityManagerBehavior) RemoveEntity(id uid.Id) {
+	slotIdx, ok := mgr.entityIdIndex[id]
 	if !ok {
 		return
 	}
-
-	entity := iface.Cache2Iface[ec.Entity](entityNode.V.Cache)
-
-	if entity.GetState() > ec.EntityState_Alive {
-		return
-	}
-
-	ec.UnsafeEntity(entity).SetState(ec.EntityState_Leave)
-
-	if entity.GetTreeNodeState() != ec.TreeNodeState_Freedom {
-		ec.UnsafeEntity(entity).SetTreeNodeState(ec.TreeNodeState_Detaching)
-	}
-
-	mgr.ReversedRangeChildren(entity.GetId(), func(child ec.Entity) bool {
-		child.DestroySelf()
-		return true
-	})
-
-	mgr.detachFromParentNode(entity)
-
-	_EmitEventEntityManagerRemoveEntity(mgr, mgr, entity)
-
-	mgr.removeFromParentNode(entity)
-
-	delete(mgr.entityIndex, id)
-	entityNode.Escape()
-
-	if entity.GetScope() == ec.Scope_Global {
-		service.Current(mgr).GetEntityManager().RemoveEntity(entity.GetId())
-	}
+	entity := mgr.entityList.Get(slotIdx).V
+	entity.Destroy()
 }
 
-func (mgr *_EntityManagerBehavior) fetchParent(entity ec.Entity, parentId uid.Id) (ec.Entity, error) {
-	if parentId.IsNil() {
-		return nil, nil
-	}
-
-	parent, ok := mgr.GetEntity(parentId)
+// GetEntity 查询实体
+func (mgr *_EntityManagerBehavior) GetEntity(id uid.Id) (ec.Entity, bool) {
+	slotIdx, ok := mgr.entityIdIndex[id]
 	if !ok {
-		return nil, fmt.Errorf("%w: parent %q not exist", ErrEntityManager, parentId)
+		return nil, false
+	}
+	return mgr.entityList.Get(slotIdx).V, true
+}
+
+// ContainsEntity 实体是否存在
+func (mgr *_EntityManagerBehavior) ContainsEntity(id uid.Id) bool {
+	_, ok := mgr.entityIdIndex[id]
+	return ok
+}
+
+// RangeEntities 遍历所有实体
+func (mgr *_EntityManagerBehavior) RangeEntities(fun generic.Func1[ec.Entity, bool]) {
+	mgr.entityList.Traversal(func(slot *generic.FreeSlot[ec.Entity]) bool {
+		return fun.UnsafeCall(slot.V)
+	})
+}
+
+// EachEntities 遍历每个实体
+func (mgr *_EntityManagerBehavior) EachEntities(fun generic.Action1[ec.Entity]) {
+	mgr.entityList.TraversalEach(func(slot *generic.FreeSlot[ec.Entity]) {
+		fun.UnsafeCall(slot.V)
+	})
+}
+
+// ReversedRangeEntities 反向遍历所有实体
+func (mgr *_EntityManagerBehavior) ReversedRangeEntities(fun generic.Func1[ec.Entity, bool]) {
+	mgr.entityList.ReversedTraversal(func(slot *generic.FreeSlot[ec.Entity]) bool {
+		return fun.UnsafeCall(slot.V)
+	})
+}
+
+// ReversedEachEntities 反向遍历每个实体
+func (mgr *_EntityManagerBehavior) ReversedEachEntities(fun generic.Action1[ec.Entity]) {
+	mgr.entityList.ReversedTraversalEach(func(slot *generic.FreeSlot[ec.Entity]) {
+		fun.UnsafeCall(slot.V)
+	})
+}
+
+// FilterEntities 过滤并获取实体
+func (mgr *_EntityManagerBehavior) FilterEntities(fun generic.Func1[ec.Entity, bool]) []ec.Entity {
+	var entities []ec.Entity
+
+	ver := mgr.entityList.Version()
+	mgr.entityList.TraversalEach(func(slot *generic.FreeSlot[ec.Entity]) {
+		if slot.Version() > ver {
+			return
+		}
+		entity := slot.V
+		if fun.UnsafeCall(entity) {
+			entities = append(entities, entity)
+		}
+	})
+
+	return entities
+}
+
+// ListEntities 获取所有实体
+func (mgr *_EntityManagerBehavior) ListEntities() []ec.Entity {
+	return mgr.entityList.ToSlice()
+}
+
+// CountEntities 获取实体数量
+func (mgr *_EntityManagerBehavior) CountEntities() int {
+	return mgr.entityList.Len() - mgr.entityList.OrphanCount()
+}
+
+func (mgr *_EntityManagerBehavior) OnEntityDestroy(entity ec.Entity) {
+	mgr.removeEntityIfVersion(ec.UnsafeEntity(entity).GetEnteredHandle())
+}
+
+func (mgr *_EntityManagerBehavior) OnComponentManagerAddComponents(entity ec.Entity, components []ec.Component) {
+	for i := range components {
+		mgr.initComponent(entity, components[i])
+	}
+	_EmitEventEntityManagerEntityAddComponents(mgr, mgr, entity, components)
+}
+
+func (mgr *_EntityManagerBehavior) OnComponentManagerRemoveComponent(entity ec.Entity, component ec.Component) {
+	_EmitEventEntityManagerEntityRemoveComponent(mgr, mgr, entity, component)
+}
+
+func (mgr *_EntityManagerBehavior) OnComponentManagerComponentEnableChanged(entity ec.Entity, component ec.Component, enable bool) {
+	_EmitEventEntityManagerEntityComponentEnableChanged(mgr, mgr, entity, component, enable)
+}
+
+func (mgr *_EntityManagerBehavior) OnComponentManagerFirstTouchComponent(entity ec.Entity, component ec.Component) {
+	_EmitEventEntityManagerEntityFirstTouchComponent(mgr, mgr, entity, component)
+}
+
+func (mgr *_EntityManagerBehavior) init(ctx Context) {
+	if ctx == nil {
+		exception.Panicf("%w: %w: ctx is nil", ErrEntityManager, exception.ErrArgs)
 	}
 
-	if parent.GetState() > ec.EntityState_Alive {
-		return nil, fmt.Errorf("%w: invalid parent %q state %q", ErrEntityManager, parent.GetId(), parent.GetState())
-	}
+	mgr.ctx = ctx
+	mgr.entityIdIndex = map[uid.Id]int{}
+	mgr.entityTreeNodes = map[int]*_TreeNode{forestNodeIdx: {parent: forestNodeIdx}}
 
-	if parent.GetId() == entity.GetId() {
-		return nil, fmt.Errorf("%w: parent and child %q can't be the same", ErrEntityManager, parent.GetId())
-	}
+	mgr.entityManagerEventTab.SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
+	mgr.entityTreeEventTab.SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
+}
 
-	return parent, nil
+func (mgr *_EntityManagerBehavior) onContextRunningEvent(ctx Context, runningEvent RunningEvent, args ...any) {
+	switch runningEvent {
+	case RunningEvent_Started:
+		mgr.EachEntities(func(entity ec.Entity) {
+			_EmitEventEntityManagerAddEntity(mgr, mgr, entity)
+		})
+	case RunningEvent_Terminating:
+		mgr.ReversedEachEntities(func(entity ec.Entity) {
+			entity.Destroy()
+		})
+	case RunningEvent_Terminated:
+		mgr.entityManagerEventTab.SetEnable(false)
+		mgr.entityTreeEventTab.SetEnable(false)
+	}
 }
 
 func (mgr *_EntityManagerBehavior) initEntity(entity ec.Entity) {
@@ -353,28 +276,71 @@ func (mgr *_EntityManagerBehavior) initEntity(entity ec.Entity) {
 	ec.UnsafeEntity(entity).SetContext(iface.Iface2Cache[Context](mgr.ctx))
 	ec.UnsafeEntity(entity).WithContext(mgr.ctx)
 
-	entity.RangeComponents(func(comp ec.Component) bool {
+	event.UnsafeEvent(entity.EventEntityDestroy()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
+
+	event.UnsafeEvent(entity.EventComponentManagerAddComponents()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
+	event.UnsafeEvent(entity.EventComponentManagerRemoveComponent()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
+	event.UnsafeEvent(entity.EventComponentManagerComponentEnableChanged()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
+	event.UnsafeEvent(entity.EventComponentManagerFirstTouchComponent()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
+
+	event.UnsafeEvent(entity.EventTreeNodeAddChild()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
+	event.UnsafeEvent(entity.EventTreeNodeRemoveChild()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
+	event.UnsafeEvent(entity.EventTreeNodeAttachParent()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
+	event.UnsafeEvent(entity.EventTreeNodeDetachParent()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
+	event.UnsafeEvent(entity.EventTreeNodeMoveTo()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
+
+	entity.EachComponents(func(comp ec.Component) {
 		mgr.initComponent(entity, comp)
-		return true
 	})
 }
 
 func (mgr *_EntityManagerBehavior) initComponent(entity ec.Entity, comp ec.Component) {
+	event.UnsafeEvent(comp.EventComponentEnableChanged()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
+	event.UnsafeEvent(comp.EventComponentDestroy()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
+
 	if ec.UnsafeEntity(entity).GetOptions().ComponentUniqueID {
 		if comp.GetId().IsNil() {
 			ec.UnsafeComponent(comp).SetId(uid.New())
 		}
-	} else {
-		ec.UnsafeComponent(comp).SetId(entity.GetId())
 	}
-	ec.UnsafeComponent(comp).WithContext(entity)
 }
 
 func (mgr *_EntityManagerBehavior) observeEntity(entity ec.Entity) {
+	ec.BindEventEntityDestroy(entity, mgr)
+
 	ec.BindEventComponentManagerAddComponents(entity, mgr)
 	ec.BindEventComponentManagerRemoveComponent(entity, mgr)
+	ec.BindEventComponentManagerComponentEnableChanged(entity, mgr)
 
 	if ec.UnsafeEntity(entity).GetOptions().ComponentAwakeOnFirstTouch {
 		ec.BindEventComponentManagerFirstTouchComponent(entity, mgr)
 	}
+}
+
+func (mgr *_EntityManagerBehavior) removeEntityIfVersion(idx int, ver int64) {
+	entitySlot := mgr.entityList.Get(idx)
+	if !checkEntitySlot(entitySlot, ver) {
+		return
+	}
+
+	entity := entitySlot.V
+
+	ec.UnsafeEntity(entity).SetState(ec.EntityState_Leave)
+
+	_EmitEventEntityManagerRemoveEntity(mgr, mgr, entity)
+
+	ec.UnsafeEntity(entity).SetState(ec.EntityState_Death)
+
+	delete(mgr.entityIdIndex, entity.GetId())
+	mgr.entityList.ReleaseIfVersion(idx, ver)
+
+	if entity.GetScope() == ec.Scope_Global {
+		service.Current(mgr).GetEntityManager().RemoveEntity(entity.GetId())
+	}
+
+	ec.UnsafeEntity(entity).SetState(ec.EntityState_Destroyed)
+}
+
+func checkEntitySlot(slot *generic.FreeSlot[ec.Entity], ver int64) bool {
+	return slot != nil && !slot.Orphaned() && !slot.Freed() && slot.Version() == ver
 }

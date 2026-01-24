@@ -20,27 +20,26 @@
 package pt
 
 import (
+	"context"
+	"reflect"
+	"sync"
+
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/types"
-	"reflect"
-	"slices"
-	"sync"
 )
 
 // ComponentLib 组件原型库
 type ComponentLib interface {
-	// Declare 声明组件原型（可以重复声明）
+	// Declare 声明组件原型
 	Declare(comp any) ec.ComponentPT
-	// Undeclare 取消声明组件原型
-	Undeclare(prototype string)
-	// Get 获取组件原型
+	// Get 查询组件原型
 	Get(prototype string) (ec.ComponentPT, bool)
-	// Range 遍历所有已注册的组件原型
-	Range(fun generic.Func1[ec.ComponentPT, bool])
-	// ReversedRange 反向遍历所有已注册的组件原型
-	ReversedRange(fun generic.Func1[ec.ComponentPT, bool])
+	// List 获取所有组件原型
+	List() []ec.ComponentPT
+	// ListAndWatch 获取并观察所有组件原型的声明
+	ListAndWatch(ctx context.Context) <-chan ec.ComponentPT
 }
 
 var compLib = NewComponentLib()
@@ -53,73 +52,20 @@ func DefaultComponentLib() ComponentLib {
 // NewComponentLib 创建组件原型库
 func NewComponentLib() ComponentLib {
 	return &_ComponentLib{
-		compIndex: map[string]*_Component{},
+		compPTNameIndex: map[string]int{},
+		watchers:        map[*generic.UnboundedChannel[ec.ComponentPT]]struct{}{},
 	}
 }
 
 type _ComponentLib struct {
 	sync.RWMutex
-	compIndex map[string]*_Component
-	compList  []*_Component
+	compPTNameIndex map[string]int
+	compPTList      generic.FreeList[ec.ComponentPT]
+	watchers        map[*generic.UnboundedChannel[ec.ComponentPT]]struct{}
 }
 
-// Declare 声明组件原型（可以重复声明）
+// Declare 声明组件原型
 func (lib *_ComponentLib) Declare(comp any) ec.ComponentPT {
-	return lib.declare(comp)
-}
-
-// Undeclare 取消声明组件原型
-func (lib *_ComponentLib) Undeclare(prototype string) {
-	lib.Lock()
-	defer lib.Unlock()
-
-	delete(lib.compIndex, prototype)
-
-	lib.compList = slices.DeleteFunc(lib.compList, func(pt *_Component) bool {
-		return pt.Prototype() == prototype
-	})
-}
-
-// Get 获取组件原型
-func (lib *_ComponentLib) Get(prototype string) (ec.ComponentPT, bool) {
-	lib.RLock()
-	defer lib.RUnlock()
-
-	compPT, ok := lib.compIndex[prototype]
-	if !ok {
-		return nil, false
-	}
-
-	return compPT, ok
-}
-
-// Range 遍历所有已注册的组件原型
-func (lib *_ComponentLib) Range(fun generic.Func1[ec.ComponentPT, bool]) {
-	lib.RLock()
-	copied := slices.Clone(lib.compList)
-	lib.RUnlock()
-
-	for i := range copied {
-		if !fun.UnsafeCall(copied[i]) {
-			return
-		}
-	}
-}
-
-// ReversedRange 反向遍历所有已注册的组件原型
-func (lib *_ComponentLib) ReversedRange(fun generic.Func1[ec.ComponentPT, bool]) {
-	lib.RLock()
-	copied := slices.Clone(lib.compList)
-	lib.RUnlock()
-
-	for i := len(copied) - 1; i >= 0; i-- {
-		if !fun.UnsafeCall(copied[i]) {
-			return
-		}
-	}
-}
-
-func (lib *_ComponentLib) declare(comp any) ec.ComponentPT {
 	if comp == nil {
 		exception.Panicf("%w: %w: comp is nil", ErrPt, exception.ErrArgs)
 	}
@@ -146,19 +92,70 @@ func (lib *_ComponentLib) declare(comp any) ec.ComponentPT {
 		exception.Panicf("%w: component %q not implement ec.Component", ErrPt, prototype)
 	}
 
-	compPT, ok := lib.compIndex[prototype]
+	compPTIdx, ok := lib.compPTNameIndex[prototype]
 	if ok {
-		return compPT
+		return lib.compPTList.Get(compPTIdx).V
 	}
 
-	compPT = &_Component{
+	compPT := &_Component{
 		prototype:  prototype,
 		instanceRT: compRT,
 	}
 	compPT.builtin = &ec.BuiltinComponent{PT: compPT, Offset: -1}
 
-	lib.compIndex[prototype] = compPT
-	lib.compList = append(lib.compList, compPT)
+	lib.compPTNameIndex[prototype] = lib.compPTList.PushBack(compPT).Index()
+
+	for watcher := range lib.watchers {
+		watcher.In() <- compPT
+	}
 
 	return compPT
+}
+
+// Get 查询组件原型
+func (lib *_ComponentLib) Get(prototype string) (ec.ComponentPT, bool) {
+	lib.RLock()
+	defer lib.RUnlock()
+
+	compPTIdx, ok := lib.compPTNameIndex[prototype]
+	if !ok {
+		return nil, false
+	}
+
+	return lib.compPTList.Get(compPTIdx).V, true
+}
+
+// List 获取所有组件原型
+func (lib *_ComponentLib) List() []ec.ComponentPT {
+	lib.RLock()
+	defer lib.RUnlock()
+
+	return lib.compPTList.ToSlice()
+}
+
+// ListAndWatch 获取并观察所有组件原型的声明
+func (lib *_ComponentLib) ListAndWatch(ctx context.Context) <-chan ec.ComponentPT {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	lib.Lock()
+	defer lib.Unlock()
+
+	watcher := generic.NewUnboundedChannel[ec.ComponentPT]()
+	lib.watchers[watcher] = struct{}{}
+
+	lib.compPTList.TraversalEach(func(slot *generic.FreeSlot[ec.ComponentPT]) {
+		watcher.In() <- slot.V
+	})
+
+	go func() {
+		<-ctx.Done()
+		lib.Lock()
+		defer lib.Unlock()
+		watcher.Close()
+		delete(lib.watchers, watcher)
+	}()
+
+	return watcher.Out()
 }
