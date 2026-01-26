@@ -101,6 +101,7 @@ type ComponentBehavior struct {
 	attachedVersion       int64
 	managedHandles        event.ManagedHandles
 	managedRuntimeHandles [2]event.Handle
+	stringerCache         string
 
 	componentEventTab componentEventTab
 }
@@ -218,7 +219,10 @@ func (comp *ComponentBehavior) GetConcurrentContext() iface.Cache {
 
 // String implements fmt.Stringer
 func (comp *ComponentBehavior) String() string {
-	return fmt.Sprintf(`{"id":%q, "entity_id":%q, "name":%q, "prototype":%q}`, comp.GetId(), comp.GetEntity().GetId(), comp.GetName(), comp.GetBuiltin().PT.Prototype())
+	if comp.stringerCache == "" {
+		comp.stringerCache = fmt.Sprintf(`{"id":%q, "entity_id":%q, "name":%q, "prototype":%q}`, comp.GetId(), comp.GetEntity().GetId(), comp.GetName(), comp.GetBuiltin().PT.Prototype())
+	}
+	return comp.stringerCache
 }
 
 func (comp *ComponentBehavior) init(name string, entity Entity, instance Component) {

@@ -23,6 +23,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"sync"
 
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/utils/async"
@@ -127,6 +128,8 @@ type EntityBehavior struct {
 	enteredVersion        int64
 	managedHandles        event.ManagedHandles
 	managedRuntimeHandles [2]event.Handle
+	stringerOnce          sync.Once
+	stringerCache         string
 
 	entityEventTab                 entityEventTab
 	entityComponentManagerEventTab entityComponentManagerEventTab
@@ -207,7 +210,10 @@ func (entity *EntityBehavior) GetInstanceFaceCache() iface.Cache {
 
 // String implements fmt.Stringer
 func (entity *EntityBehavior) String() string {
-	return fmt.Sprintf(`{"id":%q, "prototype":%q}`, entity.GetId(), entity.GetPT().Prototype())
+	entity.stringerOnce.Do(func() {
+		entity.stringerCache = fmt.Sprintf(`{"id":%q, "prototype":%q}`, entity.GetId(), entity.GetPT().Prototype())
+	})
+	return entity.stringerCache
 }
 
 func (entity *EntityBehavior) init(options EntityOptions) {

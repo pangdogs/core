@@ -22,6 +22,7 @@ package runtime
 import (
 	"fmt"
 	"reflect"
+	"sync"
 	"sync/atomic"
 
 	"git.golaxy.org/core/event"
@@ -109,6 +110,8 @@ type ContextBehavior struct {
 	callee        async.Callee
 	scoped        atomic.Bool
 	gcList        []GC
+	stringerOnce  sync.Once
+	stringerCache string
 
 	contextRunningEventTab contextRunningEventTab
 }
@@ -179,7 +182,10 @@ func (ctx *ContextBehavior) CollectGC(gc GC) {
 
 // String implements fmt.Stringer
 func (ctx *ContextBehavior) String() string {
-	return fmt.Sprintf(`{"id":%q, "name":%q}`, ctx.GetId(), ctx.GetName())
+	ctx.stringerOnce.Do(func() {
+		ctx.stringerCache = fmt.Sprintf(`{"id":%q, "name":%q}`, ctx.GetId(), ctx.GetName())
+	})
+	return ctx.stringerCache
 }
 
 func (ctx *ContextBehavior) init(svcCtx service.Context, options ContextOptions) {

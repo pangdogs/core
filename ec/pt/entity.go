@@ -20,8 +20,10 @@
 package pt
 
 import (
+	"encoding/json"
 	"reflect"
 	"slices"
+	"sync"
 
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/utils/exception"
@@ -38,6 +40,8 @@ type _Entity struct {
 	componentUniqueID          bool
 	meta                       meta.Meta
 	components                 []ec.BuiltinComponent
+	stringerOnce               sync.Once
+	stringerCache              string
 }
 
 // Prototype 实体原型名称
@@ -73,7 +77,7 @@ func (pt *_Entity) Meta() meta.Meta {
 	return pt.meta
 }
 
-// CountComponents // 组件数量
+// CountComponents 组件数量
 func (pt *_Entity) CountComponents() int {
 	return len(pt.components)
 }
@@ -103,6 +107,50 @@ func (pt *_Entity) Construct(settings ...option.Setting[ec.EntityOptions]) ec.En
 	options = option.Append(options, settings...)
 
 	return pt.assemble(ec.UnsafeNewEntity(options))
+}
+
+// String implements fmt.Stringer
+func (pt *_Entity) String() string {
+	pt.stringerOnce.Do(func() {
+		data, err := json.Marshal(pt)
+		if err != nil {
+			exception.Panicf("%w: unexpected failure marshaling entity: %s", ErrPt, err)
+		}
+		pt.stringerCache = string(data)
+	})
+	return pt.stringerCache
+}
+
+type _EntityJSON struct {
+	Prototype                  string                `json:"prototype"`
+	Instance                   string                `json:"instance"`
+	Scope                      string                `json:"scope"`
+	ComponentAwakeOnFirstTouch bool                  `json:"component_awake_on_first_touch"`
+	ComponentUniqueID          bool                  `json:"component_unique_id"`
+	Meta                       map[string]any        `json:"meta"`
+	Components                 []ec.BuiltinComponent `json:"components"`
+}
+
+// MarshalJSON implements json.Marshaler
+func (pt _Entity) MarshalJSON() ([]byte, error) {
+	entityStringer := _EntityJSON{
+		Prototype:                  pt.prototype,
+		Scope:                      pt.scope.String(),
+		ComponentAwakeOnFirstTouch: pt.componentAwakeOnFirstTouch,
+		ComponentUniqueID:          pt.componentUniqueID,
+		Meta:                       pt.meta.ToGoMap(),
+		Components:                 pt.components,
+	}
+	if pt.instanceRT != nil {
+		entityStringer.Instance = pt.instanceRT.Name()
+	}
+
+	data, err := json.Marshal(entityStringer)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
 
 func (pt *_Entity) assemble(entity ec.Entity) ec.Entity {

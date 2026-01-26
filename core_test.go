@@ -41,7 +41,7 @@ func Test_StartService(t *testing.T) {
 	svcCtx := service.NewContext(
 		service.With.Context(ctx),
 		service.With.RunningEventCB(func(ctx service.Context, runningEvent service.RunningEvent, args ...any) {
-			log.Println("service event:", runningEvent)
+			log.Println("service event:", runningEvent, args)
 		}),
 	)
 
@@ -174,19 +174,8 @@ func Test_ServiceRegisterEntityPT(t *testing.T) {
 					ComponentTest2{},
 					ComponentTest3{},
 				)
-			case service.RunningEvent_ComponentPTDeclared:
-				compPT := args[0].(ec.ComponentPT)
-				log.Println("component pt declared:", compPT.Prototype(), compPT.InstanceRT())
-				return
-			case service.RunningEvent_EntityPTDeclared:
-				entityPT := args[0].(ec.EntityPT)
-				log.Println("+ entity pt declared:", entityPT.Prototype(), entityPT.InstanceRT())
-				for _, comp := range entityPT.ListComponents() {
-					log.Println("- builtin component:", comp.Name, comp.PT.Prototype())
-				}
-				return
 			}
-			log.Println("service event:", runningEvent)
+			log.Println("service event:", runningEvent, args)
 		}),
 	)
 
@@ -250,7 +239,7 @@ func Test_ServiceAddIn(t *testing.T) {
 				serviceAddIn1Install(ctx)
 				serviceAddIn2Install(ctx)
 			}
-			log.Println("service event:", runningEvent)
+			log.Println("service event:", runningEvent, args)
 		}),
 	)
 
@@ -288,38 +277,14 @@ func Test_CreateEntity(t *testing.T) {
 								core.BuildEntity(ctx, "Test1").New()
 								core.BuildEntity(ctx, "Test2").New()
 								core.BuildEntity(ctx, "Test3").New()
-							case runtime.RunningEvent_EntityActivating:
-								entity := args[0].(ec.Entity)
-								log.Println("entity activating:", entity.GetId(), entity.GetPT().Prototype())
-								return
-							case runtime.RunningEvent_EntityActivatingDone:
-								entity := args[0].(ec.Entity)
-								log.Println("entity activated:", entity.GetId(), entity.GetPT().Prototype())
-								return
-							case runtime.RunningEvent_EntityDeactivating:
-								entity := args[0].(ec.Entity)
-								log.Println("entity deactivating:", entity.GetId(), entity.GetPT().Prototype())
-								return
-							case runtime.RunningEvent_EntityDeactivatingDone:
-								entity := args[0].(ec.Entity)
-								log.Println("entity deactivated:", entity.GetId(), entity.GetPT().Prototype())
-								return
 							}
-							log.Println("runtime event:", runningEvent)
+							log.Println("runtime event:", runningEvent, args)
 						}),
 					),
 					core.With.Runtime.AutoRun(true),
 				)
-			case service.RunningEvent_EntityRegistered:
-				entity := args[0].(ec.ConcurrentEntity)
-				log.Println("entity registered:", entity.GetId(), entity.GetPT().Prototype())
-				return
-			case service.RunningEvent_EntityUnregistered:
-				entity := args[0].(ec.ConcurrentEntity)
-				log.Println("entity unregistered:", entity.GetId(), entity.GetPT().Prototype())
-				return
 			}
-			log.Println("service event:", runningEvent)
+			log.Println("service event:", runningEvent, args)
 		}),
 	)
 
@@ -464,13 +429,13 @@ func Test_EntityComponentEnable(t *testing.T) {
 							case runtime.RunningEvent_Started:
 								core.BuildEntity(ctx, "Test1").New()
 							}
-							log.Println("runtime event:", runningEvent)
+							log.Println("runtime event:", runningEvent, args)
 						}),
 					),
 					core.With.Runtime.AutoRun(true),
 				)
 			}
-			log.Println("service event:", runningEvent)
+			log.Println("service event:", runningEvent, args)
 		}),
 	)
 
@@ -528,13 +493,13 @@ func Test_EntityDynamicComponent(t *testing.T) {
 							case runtime.RunningEvent_Started:
 								core.BuildEntity(ctx, "Test1").New()
 							}
-							log.Println("runtime event:", runningEvent)
+							log.Println("runtime event:", runningEvent, args)
 						}),
 					),
 					core.With.Runtime.AutoRun(true),
 				)
 			}
-			log.Println("service event:", runningEvent)
+			log.Println("service event:", runningEvent, args)
 		}),
 	)
 
@@ -582,13 +547,13 @@ func Test_RuntimeAddIn(t *testing.T) {
 							case runtime.RunningEvent_Birth:
 								runtimeAddIn1Install(ctx)
 							}
-							log.Println("runtime event:", runningEvent)
+							log.Println("runtime event:", runningEvent, args)
 						}),
 					),
 					core.With.Runtime.AutoRun(true),
 				)
 			}
-			log.Println("service event:", runningEvent)
+			log.Println("service event:", runningEvent, args)
 		}),
 	)
 

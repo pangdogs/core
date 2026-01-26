@@ -1,6 +1,8 @@
 package ec
 
 import (
+	"encoding/json"
+	"fmt"
 	"reflect"
 
 	"git.golaxy.org/core/utils/exception"
@@ -10,6 +12,8 @@ import (
 
 // EntityPT 实体原型接口
 type EntityPT interface {
+	fmt.Stringer
+
 	// Prototype 实体原型名称
 	Prototype() string
 	// InstanceRT 实体实例反射类型
@@ -22,7 +26,7 @@ type EntityPT interface {
 	ComponentUniqueID() bool
 	// Meta 原型Meta信息
 	Meta() meta.Meta
-	// CountComponents // 组件数量
+	// CountComponents 组件数量
 	CountComponents() int
 	// GetComponent 获取组件
 	GetComponent(idx int) BuiltinComponent
@@ -41,8 +45,45 @@ type BuiltinComponent struct {
 	Meta      meta.Meta   // 原型Meta信息
 }
 
+// String implements fmt.Stringer
+func (bc BuiltinComponent) String() string {
+	data, err := json.Marshal(bc)
+	if err != nil {
+		exception.Panicf("%w: unexpected failure marshaling builtin component: %s", ErrEC, err)
+	}
+	return string(data)
+}
+
+type _BuiltinComponentJSON struct {
+	PT        ComponentPT    `json:"pt"`
+	Offset    int            `json:"offset"`
+	Name      string         `json:"name"`
+	Removable bool           `json:"removable"`
+	Meta      map[string]any `json:"meta"`
+}
+
+// MarshalJSON implements json.Marshaler
+func (bc BuiltinComponent) MarshalJSON() ([]byte, error) {
+	builtinComponentStringer := _BuiltinComponentJSON{
+		PT:        bc.PT,
+		Offset:    bc.Offset,
+		Name:      bc.Name,
+		Removable: bc.Removable,
+		Meta:      bc.Meta.ToGoMap(),
+	}
+
+	data, err := json.Marshal(builtinComponentStringer)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
 // ComponentPT 组件原型接口
 type ComponentPT interface {
+	fmt.Stringer
+
 	// Prototype 组件原型名称
 	Prototype() string
 	// InstanceRT 组件实例反射类型
@@ -89,7 +130,7 @@ func (_NoneEntityPT) Meta() meta.Meta {
 	return nil
 }
 
-// CountComponents // 组件数量
+// CountComponents 组件数量
 func (_NoneEntityPT) CountComponents() int {
 	return 0
 }
@@ -111,6 +152,16 @@ func (_NoneEntityPT) Construct(settings ...option.Setting[EntityOptions]) Entity
 	panic("unreachable")
 }
 
+// String implements fmt.Stringer
+func (_NoneEntityPT) String() string {
+	return "null"
+}
+
+// MarshalJSON implements json.Marshaler
+func (_NoneEntityPT) MarshalJSON() ([]byte, error) {
+	return []byte("null"), nil
+}
+
 type _NoneComponentPT struct{}
 
 // Prototype 组件原型名称
@@ -127,4 +178,14 @@ func (_NoneComponentPT) InstanceRT() reflect.Type {
 func (_NoneComponentPT) Construct() Component {
 	exception.Panicf("%w: %w: none prototype", ErrEC, exception.ErrArgs)
 	panic("unreachable")
+}
+
+// String implements fmt.Stringer
+func (_NoneComponentPT) String() string {
+	return "null"
+}
+
+// MarshalJSON implements json.Marshaler
+func (_NoneComponentPT) MarshalJSON() ([]byte, error) {
+	return []byte("null"), nil
 }

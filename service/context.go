@@ -23,6 +23,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"sync"
 	"sync/atomic"
 
 	"git.golaxy.org/core/ec/pt"
@@ -88,6 +89,8 @@ type ContextBehavior struct {
 	reflected     reflect.Value
 	entityManager _EntityManagerBehavior
 	scoped        atomic.Bool
+	stringerOnce  sync.Once
+	stringerCache string
 }
 
 // GetName 获取名称
@@ -117,7 +120,10 @@ func (ctx *ContextBehavior) GetInstanceFaceCache() iface.Cache {
 
 // String implements fmt.Stringer
 func (ctx *ContextBehavior) String() string {
-	return fmt.Sprintf(`{"id":%q, "name":%q}`, ctx.GetId(), ctx.GetName())
+	ctx.stringerOnce.Do(func() {
+		ctx.stringerCache = fmt.Sprintf(`{"id":%q, "name":%q}`, ctx.GetId(), ctx.GetName())
+	})
+	return ctx.stringerCache
 }
 
 func (ctx *ContextBehavior) init(options ContextOptions) {
