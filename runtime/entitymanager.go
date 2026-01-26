@@ -327,6 +327,8 @@ func (mgr *_EntityManagerBehavior) removeEntityIfVersion(idx int, ver int64) {
 
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Leave)
 
+	mgr.removeNodeIfRemoveEntity(entity.GetId())
+
 	_EmitEventEntityManagerRemoveEntity(mgr, mgr, entity)
 
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Death)

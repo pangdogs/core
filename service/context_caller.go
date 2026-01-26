@@ -66,7 +66,7 @@ func getCaller(provider corectx.ConcurrentContextProvider) async.Caller
 
 func checkEntity(entity ec.Entity) error {
 	if entity.GetState() > ec.EntityState_Alive {
-		return fmt.Errorf("%w: entity not alive", ErrContext)
+		return fmt.Errorf("%w: entity is in an unexpected state %q", ErrContext, entity.GetState())
 	}
 	return nil
 }

@@ -22,10 +22,13 @@ package core_test
 import (
 	"context"
 	"log"
+	"strings"
 	"testing"
 	"time"
 
 	"git.golaxy.org/core/utils/assertion"
+	"git.golaxy.org/core/utils/uid"
+	"github.com/elliotchance/pie/v2"
 
 	"git.golaxy.org/core"
 	"git.golaxy.org/core/define"
@@ -174,70 +177,6 @@ func Test_ServiceRegisterEntityPT(t *testing.T) {
 					ComponentTest2{},
 					ComponentTest3{},
 				)
-			}
-			log.Println("service event:", runningEvent, args)
-		}),
-	)
-
-	<-core.NewService(svcCtx).Run()
-}
-
-type ServiceAddIn1 struct{}
-
-func (ServiceAddIn1) Init(ctx service.Context) {
-	log.Println("ServiceAddIn1 Init")
-}
-
-func (ServiceAddIn1) Shut(ctx service.Context) {
-	log.Println("ServiceAddIn1 Shut")
-}
-
-func NewServiceAddIn1(...any) *ServiceAddIn1 {
-	return &ServiceAddIn1{}
-}
-
-var (
-	serviceAddIn1Define    = define.AddIn(NewServiceAddIn1)
-	serviceAddIn1Name      = serviceAddIn1Define.Name
-	serviceAddIn1Install   = serviceAddIn1Define.Install
-	serviceAddIn1Uninstall = serviceAddIn1Define.Uninstall
-	serviceAddIn1Using     = serviceAddIn1Define.Using
-)
-
-type IServiceAddIn2 interface{}
-
-type ServiceAddIn2 struct{}
-
-func (ServiceAddIn2) Init(ctx service.Context) {
-	log.Println("ServiceAddIn2 Init")
-}
-
-func (ServiceAddIn2) Shut(ctx service.Context) {
-	log.Println("ServiceAddIn2 Shut")
-}
-
-func NewServiceAddIn2(...any) IServiceAddIn2 {
-	return &ServiceAddIn2{}
-}
-
-var (
-	serviceAddIn2Define    = define.AddIn(NewServiceAddIn2)
-	serviceAddIn2Name      = serviceAddIn2Define.Name
-	serviceAddIn2Install   = serviceAddIn2Define.Install
-	serviceAddIn2Uninstall = serviceAddIn2Define.Uninstall
-	serviceAddIn2Using     = serviceAddIn2Define.Using
-)
-
-func Test_ServiceAddIn(t *testing.T) {
-	ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
-
-	svcCtx := service.NewContext(
-		service.With.Context(ctx),
-		service.With.RunningEventCB(func(ctx service.Context, runningEvent service.RunningEvent, args ...any) {
-			switch runningEvent {
-			case service.RunningEvent_Birth:
-				serviceAddIn1Install(ctx)
-				serviceAddIn2Install(ctx)
 			}
 			log.Println("service event:", runningEvent, args)
 		}),
@@ -498,6 +437,447 @@ func Test_EntityDynamicComponent(t *testing.T) {
 					),
 					core.With.Runtime.AutoRun(true),
 				)
+			}
+			log.Println("service event:", runningEvent, args)
+		}),
+	)
+
+	<-core.NewService(svcCtx).Run()
+}
+
+type ComponentTestParent struct {
+	ec.ComponentBehavior
+}
+
+func (c *ComponentTestParent) Awake() {
+	ec.BindEventTreeNodeAddChild(c.GetEntity(), c)
+	ec.BindEventTreeNodeRemoveChild(c.GetEntity(), c)
+}
+
+func (c *ComponentTestParent) OnTreeNodeAddChild(entity ec.Entity, childId uid.Id) {
+	log.Printf("OnTreeNodeAddChild %s += %s", entity.GetId(), childId)
+}
+
+func (c *ComponentTestParent) OnTreeNodeRemoveChild(entity ec.Entity, childId uid.Id) {
+	log.Printf("OnTreeNodeRemoveChild %s -= %s", entity.GetId(), childId)
+}
+
+type ComponentTestChild struct {
+	ec.ComponentBehavior
+}
+
+func (c *ComponentTestChild) Awake() {
+	ec.BindEventTreeNodeAttachParent(c.GetEntity(), c)
+	ec.BindEventTreeNodeDetachParent(c.GetEntity(), c)
+}
+
+func (c *ComponentTestChild) OnTreeNodeAttachParent(entity ec.Entity, parentId uid.Id) {
+	log.Printf("OnTreeNodeAttachParent %s -> %s", entity.GetId(), parentId)
+}
+
+func (c *ComponentTestChild) OnTreeNodeDetachParent(entity ec.Entity, parentId uid.Id) {
+	log.Printf("OnTreeNodeDetachParent %s -x %s", entity.GetId(), parentId)
+}
+
+func PrintEntityTreeForest(entityTree runtime.EntityTree) {
+	entityTree.EachChildren(runtime.ForestNodeId, func(entity ec.Entity) {
+		PrintEntityTree(entity)
+	})
+}
+
+func PrintEntityTree(entity ec.Entity, depth ...int) {
+	entityTree := runtime.Current(entity).GetEntityTree()
+	if b, _ := entityTree.IsFreedom(entity.GetId()); b {
+		return
+	}
+
+	root := ""
+
+	isRoot, _ := entityTree.IsRoot(entity.GetId())
+	if isRoot {
+		root = "R"
+	}
+
+	leaf := ""
+
+	isLeaf, _ := entityTree.IsLeaf(entity.GetId())
+	if isLeaf {
+		leaf = "L"
+	}
+
+	_depth := pie.First(depth)
+
+	if isLeaf {
+		log.Printf("%s- [%s] %s%s", strings.Repeat(" ", _depth), entity.GetId(), root, leaf)
+	} else {
+		log.Printf("%s+ [%s] %s%s", strings.Repeat(" ", _depth), entity.GetId(), root, leaf)
+	}
+
+	entityTree.EachChildren(entity.GetId(), func(entity ec.Entity) {
+		PrintEntityTree(entity, _depth+1)
+	})
+}
+
+func Test_EntityTree(t *testing.T) {
+	ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
+
+	svcCtx := service.NewContext(
+		service.With.Context(ctx),
+		service.With.RunningEventCB(func(ctx service.Context, runningEvent service.RunningEvent, args ...any) {
+			switch runningEvent {
+			case service.RunningEvent_Birth:
+				core.BuildEntityPT(ctx, "Test1").
+					AddComponent(ComponentTestParent{}).
+					AddComponent(ComponentTestChild{}).
+					Declare()
+			case service.RunningEvent_Started:
+				core.NewRuntime(
+					runtime.NewContext(ctx,
+						runtime.With.Context.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
+							switch runningEvent {
+							case runtime.RunningEvent_Starting:
+								runtime.BindEventEntityTreeAddNode(ctx.GetEntityTree(), runtime.HandleEventEntityTreeAddNode(func(entityTree runtime.EntityTree, parentId, childId uid.Id) {
+									var children []uid.Id
+
+									entityTree.EachChildren(parentId, func(entity ec.Entity) {
+										children = append(children, entity.GetId())
+									})
+
+									log.Printf("OnEntityTreeAddNode %s %v + %s", parentId, children, childId)
+								}))
+								runtime.BindEventEntityTreeRemoveNode(ctx.GetEntityTree(), runtime.HandleEventEntityTreeRemoveNode(func(entityTree runtime.EntityTree, parentId, childId uid.Id) {
+									var children []uid.Id
+
+									entityTree.EachChildren(parentId, func(entity ec.Entity) {
+										children = append(children, entity.GetId())
+									})
+
+									log.Printf("OnEntityTreeRemoveNode %s %v - %s", parentId, children, childId)
+								}))
+							case runtime.RunningEvent_Started:
+								root, err := core.BuildEntity(ctx, "Test1").New()
+								if err != nil {
+									log.Panicln("new root error:", err)
+								}
+
+								err = ctx.GetEntityTree().MakeRoot(root.GetId())
+								if err != nil {
+									log.Panicln("make root error:", err)
+								}
+
+								child1, err := core.BuildEntity(ctx, "Test1").SetParentId(root.GetId()).New()
+								if err != nil {
+									log.Panicln("new child1 error:", err)
+								}
+
+								child2, err := core.BuildEntity(ctx, "Test1").SetParentId(root.GetId()).New()
+								if err != nil {
+									log.Panicln("new child2 error:", err)
+								}
+
+								child3, err := core.BuildEntity(ctx, "Test1").SetParentId(child1.GetId()).New()
+								if err != nil {
+									log.Panicln("new child3 error:", err)
+								}
+
+								child4, err := core.BuildEntity(ctx, "Test1").SetParentId(child3.GetId()).New()
+								if err != nil {
+									log.Panicln("new child4 error:", err)
+								}
+
+								child5, err := core.BuildEntity(ctx, "Test1").SetParentId(child3.GetId()).New()
+								if err != nil {
+									log.Panicln("new child5 error:", err)
+								}
+
+								child6, err := core.BuildEntity(ctx, "Test1").SetParentId(child3.GetId()).New()
+								if err != nil {
+									log.Panicln("new child6 error:", err)
+								}
+
+								child7, err := core.BuildEntity(ctx, "Test1").SetParentId(runtime.ForestNodeId).New()
+								if err != nil {
+									log.Panicln("new child7 error:", err)
+								}
+
+								child8, err := core.BuildEntity(ctx, "Test1").SetParentId(child2.GetId()).New()
+								if err != nil {
+									log.Panicln("new child8 error:", err)
+								}
+
+								PrintEntityTreeForest(ctx.GetEntityTree())
+
+								log.Println("1. testing detach node")
+
+								err = ctx.GetEntityTree().DetachNode(child2.GetId())
+								if err != nil {
+									log.Panicln("detach child2 error:", err)
+								}
+
+								PrintEntityTreeForest(ctx.GetEntityTree())
+
+								log.Println("2. testing remove node")
+
+								err = ctx.GetEntityTree().RemoveNode(child3.GetId())
+								if err != nil {
+									log.Panicln("remove child3 error:", err)
+								}
+
+								PrintEntityTreeForest(ctx.GetEntityTree())
+
+								log.Println("3. testing move node")
+
+								err = ctx.GetEntityTree().MoveNode(child7.GetId(), child2.GetId())
+								if err != nil {
+									log.Panicln("move child7 error:", err)
+								}
+
+								PrintEntityTreeForest(ctx.GetEntityTree())
+
+								_ = child1
+								_ = child2
+								_ = child3
+								_ = child4
+								_ = child5
+								_ = child6
+								_ = child7
+								_ = child8
+							}
+							log.Println("runtime event:", runningEvent, args)
+						}),
+					),
+					core.With.Runtime.AutoRun(true),
+				)
+			}
+			log.Println("service event:", runningEvent, args)
+		}),
+	)
+
+	<-core.NewService(svcCtx).Run()
+}
+
+type ComponentTestChildDetachInAttaching struct {
+	ec.ComponentBehavior
+}
+
+func (c *ComponentTestChildDetachInAttaching) Awake() {
+	ec.BindEventTreeNodeAttachParent(c.GetEntity(), c)
+	ec.BindEventTreeNodeDetachParent(c.GetEntity(), c)
+}
+
+func (c *ComponentTestChildDetachInAttaching) OnTreeNodeAttachParent(entity ec.Entity, parentId uid.Id) {
+	log.Printf("OnTreeNodeAttachParent %s -> %s", entity.GetId(), parentId)
+
+	err := runtime.Current(entity).GetEntityTree().DetachNode(entity.GetId())
+	if err != nil {
+		log.Printf("OnTreeNodeAttachParent %s DetachNode failed, %s", entity.GetId(), err)
+	}
+}
+
+func (c *ComponentTestChildDetachInAttaching) OnTreeNodeDetachParent(entity ec.Entity, parentId uid.Id) {
+	log.Printf("OnTreeNodeDetachParent %s -x %s", entity.GetId(), parentId)
+}
+
+type ComponentTestChildRemoveInAttaching struct {
+	ec.ComponentBehavior
+}
+
+func (c *ComponentTestChildRemoveInAttaching) Awake() {
+	ec.BindEventTreeNodeAttachParent(c.GetEntity(), c)
+	ec.BindEventTreeNodeDetachParent(c.GetEntity(), c)
+}
+
+func (c *ComponentTestChildRemoveInAttaching) OnTreeNodeAttachParent(entity ec.Entity, parentId uid.Id) {
+	log.Printf("OnTreeNodeAttachParent %s -> %s", entity.GetId(), parentId)
+
+	err := runtime.Current(entity).GetEntityTree().RemoveNode(entity.GetId())
+	if err != nil {
+		log.Printf("OnTreeNodeAttachParent %s RemoveNode failed, %s", entity.GetId(), err)
+	}
+}
+
+func (c *ComponentTestChildRemoveInAttaching) OnTreeNodeDetachParent(entity ec.Entity, parentId uid.Id) {
+	log.Printf("OnTreeNodeDetachParent %s -x %s", entity.GetId(), parentId)
+}
+
+type ComponentTestChildDestroyInAttaching struct {
+	ec.ComponentBehavior
+}
+
+func (c *ComponentTestChildDestroyInAttaching) Awake() {
+	ec.BindEventTreeNodeAttachParent(c.GetEntity(), c)
+	ec.BindEventTreeNodeDetachParent(c.GetEntity(), c)
+}
+
+func (c *ComponentTestChildDestroyInAttaching) OnTreeNodeAttachParent(entity ec.Entity, parentId uid.Id) {
+	log.Printf("OnTreeNodeAttachParent %s -> %s", entity.GetId(), parentId)
+
+	entity.Destroy()
+}
+
+func (c *ComponentTestChildDestroyInAttaching) OnTreeNodeDetachParent(entity ec.Entity, parentId uid.Id) {
+	log.Printf("OnTreeNodeDetachParent %s -x %s", entity.GetId(), parentId)
+}
+
+func Test_EntityTreeSequence(t *testing.T) {
+	ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
+
+	svcCtx := service.NewContext(
+		service.With.Context(ctx),
+		service.With.RunningEventCB(func(ctx service.Context, runningEvent service.RunningEvent, args ...any) {
+			switch runningEvent {
+			case service.RunningEvent_Birth:
+				core.BuildEntityPT(ctx, "Test1").
+					AddComponent(ComponentTestParent{}).
+					AddComponent(ComponentTestChild{}).
+					Declare()
+				core.BuildEntityPT(ctx, "Test2").
+					AddComponent(ComponentTestParent{}).
+					AddComponent(ComponentTestChildDetachInAttaching{}).
+					Declare()
+				core.BuildEntityPT(ctx, "Test3").
+					AddComponent(ComponentTestParent{}).
+					AddComponent(ComponentTestChildRemoveInAttaching{}).
+					Declare()
+				core.BuildEntityPT(ctx, "Test4").
+					AddComponent(ComponentTestParent{}).
+					AddComponent(ComponentTestChildDestroyInAttaching{}).
+					Declare()
+			case service.RunningEvent_Started:
+				core.NewRuntime(
+					runtime.NewContext(ctx,
+						runtime.With.Context.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
+							switch runningEvent {
+							case runtime.RunningEvent_Starting:
+								runtime.BindEventEntityTreeAddNode(ctx.GetEntityTree(), runtime.HandleEventEntityTreeAddNode(func(entityTree runtime.EntityTree, parentId, childId uid.Id) {
+									var children []uid.Id
+
+									entityTree.EachChildren(parentId, func(entity ec.Entity) {
+										children = append(children, entity.GetId())
+									})
+
+									log.Printf("OnEntityTreeAddNode %s %v + %s", parentId, children, childId)
+								}))
+								runtime.BindEventEntityTreeRemoveNode(ctx.GetEntityTree(), runtime.HandleEventEntityTreeRemoveNode(func(entityTree runtime.EntityTree, parentId, childId uid.Id) {
+									var children []uid.Id
+
+									entityTree.EachChildren(parentId, func(entity ec.Entity) {
+										children = append(children, entity.GetId())
+									})
+
+									log.Printf("OnEntityTreeRemoveNode %s %v - %s", parentId, children, childId)
+								}))
+							case runtime.RunningEvent_Started:
+								root, err := core.BuildEntity(ctx, "Test1").New()
+								if err != nil {
+									log.Panicln("new root error:", err)
+								}
+
+								err = ctx.GetEntityTree().MakeRoot(root.GetId())
+								if err != nil {
+									log.Panicln("make root error:", err)
+								}
+
+								log.Println("1. testing child detach in attaching")
+
+								child1, err := core.BuildEntity(ctx, "Test2").SetParentId(root.GetId()).New()
+								if err != nil {
+									log.Panicln("new child1 error:", err)
+								}
+
+								PrintEntityTreeForest(ctx.GetEntityTree())
+
+								log.Println("2. testing child remove in attaching")
+
+								child2, err := core.BuildEntity(ctx, "Test3").SetParentId(root.GetId()).New()
+								if err != nil {
+									log.Panicln("new child2 error:", err)
+								}
+
+								PrintEntityTreeForest(ctx.GetEntityTree())
+
+								log.Println("3. testing child destroy in attaching")
+
+								child3, err := core.BuildEntity(ctx, "Test4").SetParentId(root.GetId()).New()
+								if err != nil {
+									log.Panicln("new child3 error:", err)
+								}
+
+								PrintEntityTreeForest(ctx.GetEntityTree())
+
+								_ = child1
+								_ = child2
+								_ = child3
+							}
+							log.Println("runtime event:", runningEvent, args)
+						}),
+					),
+					core.With.Runtime.AutoRun(true),
+				)
+			}
+			log.Println("service event:", runningEvent, args)
+		}),
+	)
+
+	<-core.NewService(svcCtx).Run()
+}
+
+type ServiceAddIn1 struct{}
+
+func (ServiceAddIn1) Init(ctx service.Context) {
+	log.Println("ServiceAddIn1 Init")
+}
+
+func (ServiceAddIn1) Shut(ctx service.Context) {
+	log.Println("ServiceAddIn1 Shut")
+}
+
+func NewServiceAddIn1(...any) *ServiceAddIn1 {
+	return &ServiceAddIn1{}
+}
+
+var (
+	serviceAddIn1Define    = define.AddIn(NewServiceAddIn1)
+	serviceAddIn1Name      = serviceAddIn1Define.Name
+	serviceAddIn1Install   = serviceAddIn1Define.Install
+	serviceAddIn1Uninstall = serviceAddIn1Define.Uninstall
+	serviceAddIn1Using     = serviceAddIn1Define.Using
+)
+
+type IServiceAddIn2 interface{}
+
+type ServiceAddIn2 struct{}
+
+func (ServiceAddIn2) Init(ctx service.Context) {
+	log.Println("ServiceAddIn2 Init")
+}
+
+func (ServiceAddIn2) Shut(ctx service.Context) {
+	log.Println("ServiceAddIn2 Shut")
+}
+
+func NewServiceAddIn2(...any) IServiceAddIn2 {
+	return &ServiceAddIn2{}
+}
+
+var (
+	serviceAddIn2Define    = define.AddIn(NewServiceAddIn2)
+	serviceAddIn2Name      = serviceAddIn2Define.Name
+	serviceAddIn2Install   = serviceAddIn2Define.Install
+	serviceAddIn2Uninstall = serviceAddIn2Define.Uninstall
+	serviceAddIn2Using     = serviceAddIn2Define.Using
+)
+
+func Test_ServiceAddIn(t *testing.T) {
+	ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
+
+	svcCtx := service.NewContext(
+		service.With.Context(ctx),
+		service.With.RunningEventCB(func(ctx service.Context, runningEvent service.RunningEvent, args ...any) {
+			switch runningEvent {
+			case service.RunningEvent_Birth:
+				serviceAddIn1Install(ctx)
+				serviceAddIn2Install(ctx)
 			}
 			log.Println("service event:", runningEvent, args)
 		}),
