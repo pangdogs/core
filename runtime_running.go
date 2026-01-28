@@ -137,12 +137,14 @@ func (rt *RuntimeBehavior) initAddIn() {
 func (rt *RuntimeBehavior) shutAddIn() {
 	addInManager := runtime.UnsafeContext(rt.ctx).GetAddInManager()
 
-	event.UnbindHandles(rt.managedAddInManagerHandles[:])
+	rt.managedAddInManagerHandles[0].Unbind()
 
 	addInStatusList := addInManager.List()
 	for i := len(addInStatusList) - 1; i >= 0; i-- {
 		addInStatusList[i].Uninstall()
 	}
+
+	rt.managedAddInManagerHandles[1].Unbind()
 }
 
 func (rt *RuntimeBehavior) activateAddIn(status extension.AddInStatus) {
