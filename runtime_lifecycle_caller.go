@@ -30,33 +30,31 @@ type _EntityLifecycleCaller struct {
 	state  ec.EntityState
 }
 
-func (c _EntityLifecycleCaller) CallOnce(fun func(state ec.EntityState)) bool {
-	state := c.entity.GetState()
-	if state != c.state {
-		return false
-	}
-
-	bits := ec.UnsafeEntity(c.entity).GetCallingStateBits()
-	if bits.Is(int(state)) {
-		return true
-	}
-
-	bits.Set(int(state), true)
-	defer bits.Set(int(state), false)
-
-	fun(c.state)
-
-	return c.entity.GetState() == c.state
-}
-
-func (c _EntityLifecycleCaller) Call(fun func(state ec.EntityState)) bool {
+func (c _EntityLifecycleCaller) Call(fun func()) bool {
 	if c.entity.GetState() != c.state {
 		return false
 	}
 
-	fun(c.state)
+	fun()
 
 	return c.entity.GetState() == c.state
+}
+
+func (c _EntityLifecycleCaller) IsProcessed(state ec.EntityState) bool {
+	return ec.UnsafeEntity(c.entity).GetProcessedStateBits().Is(int(state))
+}
+
+func (c _EntityLifecycleCaller) SetProcessed(state ec.EntityState) bool {
+	bits := ec.UnsafeEntity(c.entity).GetProcessedStateBits()
+	if bits.Is(int(state)) {
+		return false
+	}
+	bits.Set(int(state), true)
+	return true
+}
+
+func (c _EntityLifecycleCaller) MarkProcessed() bool {
+	return c.SetProcessed(c.state)
 }
 
 func makeComponentLifecycleCaller(comp ec.Component) _ComponentLifecycleCaller {
@@ -68,31 +66,29 @@ type _ComponentLifecycleCaller struct {
 	state     ec.ComponentState
 }
 
-func (c _ComponentLifecycleCaller) CallOnce(fun func(state ec.ComponentState)) bool {
-	state := c.component.GetState()
-	if state != c.state {
-		return false
-	}
-
-	bits := ec.UnsafeComponent(c.component).GetCallingStateBits()
-	if bits.Is(int(state)) {
-		return true
-	}
-
-	bits.Set(int(state), true)
-	defer bits.Set(int(state), false)
-
-	fun(c.state)
-
-	return c.component.GetState() == c.state
-}
-
-func (c _ComponentLifecycleCaller) Call(fun func(state ec.ComponentState)) bool {
+func (c _ComponentLifecycleCaller) Call(fun func()) bool {
 	if c.component.GetState() != c.state {
 		return false
 	}
 
-	fun(c.state)
+	fun()
 
 	return c.component.GetState() == c.state
+}
+
+func (c _ComponentLifecycleCaller) IsProcessed(state ec.ComponentState) bool {
+	return ec.UnsafeComponent(c.component).GetProcessedStateBits().Is(int(state))
+}
+
+func (c _ComponentLifecycleCaller) SetProcessed(state ec.ComponentState) bool {
+	bits := ec.UnsafeComponent(c.component).GetProcessedStateBits()
+	if bits.Is(int(state)) {
+		return false
+	}
+	bits.Set(int(state), true)
+	return true
+}
+
+func (c _ComponentLifecycleCaller) MarkProcessed() bool {
+	return c.SetProcessed(c.state)
 }

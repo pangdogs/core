@@ -218,7 +218,7 @@ func (mgr *_EntityManagerBehavior) CountEntities() int {
 }
 
 func (mgr *_EntityManagerBehavior) OnEntityDestroy(entity ec.Entity) {
-	mgr.removeEntityIfVersion(ec.UnsafeEntity(entity).GetEnteredHandle())
+	mgr.onEntityDestroyIfVersion(ec.UnsafeEntity(entity).GetEnteredHandle())
 }
 
 func (mgr *_EntityManagerBehavior) OnComponentManagerAddComponents(entity ec.Entity, components []ec.Component) {
@@ -317,7 +317,7 @@ func (mgr *_EntityManagerBehavior) observeEntity(entity ec.Entity) {
 	}
 }
 
-func (mgr *_EntityManagerBehavior) removeEntityIfVersion(idx int, ver int64) {
+func (mgr *_EntityManagerBehavior) onEntityDestroyIfVersion(idx int, ver int64) {
 	entitySlot := mgr.entityList.Get(idx)
 	if !checkEntitySlot(entitySlot, ver) {
 		return
@@ -327,7 +327,7 @@ func (mgr *_EntityManagerBehavior) removeEntityIfVersion(idx int, ver int64) {
 
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Leave)
 
-	mgr.removeNodeIfRemoveEntity(entity.GetId())
+	mgr.onEntityDestroyRemoveNode(entity.GetId())
 
 	_EmitEventEntityManagerRemoveEntity(mgr, mgr, entity)
 

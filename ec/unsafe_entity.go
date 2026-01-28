@@ -75,11 +75,6 @@ func (u _UnsafeEntity) SetReflected(v reflect.Value) {
 	u.setReflected(v)
 }
 
-// GetCallingStateBits 获取调用状态标志位
-func (u _UnsafeEntity) GetCallingStateBits() *generic.Bits16 {
-	return u.getCallingStateBits()
-}
-
 // GetProcessedStateBits 获取已处理状态标志位
 func (u _UnsafeEntity) GetProcessedStateBits() *generic.Bits16 {
 	return u.getProcessedStateBits()

@@ -95,7 +95,6 @@ type iEntity interface {
 	setContext(ctx iface.Cache)
 	setState(state EntityState)
 	setReflected(v reflect.Value)
-	getCallingStateBits() *generic.Bits16
 	getProcessedStateBits() *generic.Bits16
 	getEnteredHandle() (int, int64)
 	setEnteredHandle(idx int, ver int64)
@@ -121,7 +120,6 @@ type EntityBehavior struct {
 	state                 EntityState
 	reflected             reflect.Value
 	treeNodeState         TreeNodeState
-	callingStateBits      generic.Bits16
 	processedStateBits    generic.Bits16
 	reentrancyGuard       generic.ReentrancyGuardBits8
 	enteredIndex          int
@@ -222,8 +220,6 @@ func (entity *EntityBehavior) init(options EntityOptions) {
 	if entity.options.InstanceFace.IsNil() {
 		entity.options.InstanceFace = iface.MakeFaceT[Entity](entity)
 	}
-
-	entity.setState(EntityState_Birth)
 }
 
 func (entity *EntityBehavior) withContext(ctx context.Context) {
@@ -248,12 +244,11 @@ func (entity *EntityBehavior) setContext(ctx iface.Cache) {
 }
 
 func (entity *EntityBehavior) setState(state EntityState) {
-	if entity.processedStateBits.Is(int(state)) {
+	if entity.state >= state {
 		return
 	}
 
 	entity.state = state
-	entity.processedStateBits.Set(int(state), true)
 
 	switch entity.state {
 	case EntityState_Death:
@@ -270,10 +265,6 @@ func (entity *EntityBehavior) setState(state EntityState) {
 
 func (entity *EntityBehavior) setReflected(v reflect.Value) {
 	entity.reflected = v
-}
-
-func (entity *EntityBehavior) getCallingStateBits() *generic.Bits16 {
-	return &entity.callingStateBits
 }
 
 func (entity *EntityBehavior) getProcessedStateBits() *generic.Bits16 {

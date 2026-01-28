@@ -63,11 +63,6 @@ func (u _UnsafeComponent) SetRemovable(b bool) {
 	u.setRemovable(b)
 }
 
-// GetCallingStateBits 获取调用状态标志位
-func (u _UnsafeComponent) GetCallingStateBits() *generic.Bits16 {
-	return u.getCallingStateBits()
-}
-
 // GetProcessedStateBits 获取已处理状态标志位
 func (u _UnsafeComponent) GetProcessedStateBits() *generic.Bits16 {
 	return u.getProcessedStateBits()

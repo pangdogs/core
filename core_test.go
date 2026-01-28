@@ -381,18 +381,18 @@ func Test_EntityComponentEnable(t *testing.T) {
 	<-core.NewService(svcCtx).Run()
 }
 
-type ComponentTestDynamic struct {
+type ComponentTestDynamic1 struct {
 	ec.ComponentBehavior
 
 	test2 *ComponentTest2
 	test3 *ComponentTest3
 }
 
-func (c *ComponentTestDynamic) Awake() {
+func (c *ComponentTestDynamic1) Awake() {
 	log.Printf("Component %s.%s Awake", c.GetEntity().GetId(), c.GetName())
 }
 
-func (c *ComponentTestDynamic) Start() {
+func (c *ComponentTestDynamic1) Start() {
 	log.Printf("Component %s.%s Start", c.GetEntity().GetId(), c.GetName())
 
 	if err := assertion.Inject(c.GetEntity(), c); err != nil {
@@ -402,11 +402,40 @@ func (c *ComponentTestDynamic) Start() {
 	log.Println("Inject:", c.test2, c.test3)
 }
 
-func (c *ComponentTestDynamic) Shut() {
+func (c *ComponentTestDynamic1) Shut() {
 	log.Printf("Component %s.%s Shut", c.GetEntity().GetId(), c.GetName())
 }
 
-func (c *ComponentTestDynamic) Dispose() {
+func (c *ComponentTestDynamic1) Dispose() {
+	log.Printf("Component %s.%s Dispose", c.GetEntity().GetId(), c.GetName())
+}
+
+type ComponentTestDynamic2 struct {
+	ec.ComponentBehavior
+
+	test2 *ComponentTest2
+	test3 *ComponentTest3
+}
+
+func (c *ComponentTestDynamic2) Awake() {
+	log.Printf("Component %s.%s Awake", c.GetEntity().GetId(), c.GetName())
+
+	if err := assertion.Inject(c.GetEntity(), c); err != nil {
+		log.Panicln("Inject error:", err)
+	}
+
+	log.Println("Inject:", c.test2, c.test3)
+}
+
+func (c *ComponentTestDynamic2) Start() {
+	log.Printf("Component %s.%s Start", c.GetEntity().GetId(), c.GetName())
+}
+
+func (c *ComponentTestDynamic2) Shut() {
+	log.Printf("Component %s.%s Shut", c.GetEntity().GetId(), c.GetName())
+}
+
+func (c *ComponentTestDynamic2) Dispose() {
 	log.Printf("Component %s.%s Dispose", c.GetEntity().GetId(), c.GetName())
 }
 
@@ -418,12 +447,18 @@ func Test_EntityDynamicComponent(t *testing.T) {
 		service.With.RunningEventCB(func(ctx service.Context, runningEvent service.RunningEvent, args ...any) {
 			switch runningEvent {
 			case service.RunningEvent_Birth:
+				ctx.GetEntityLib().GetComponentLib().Declare(ComponentTest2{})
 				ctx.GetEntityLib().GetComponentLib().Declare(ComponentTest3{})
 
 				core.BuildEntityPT(ctx, "Test1").
-					AddComponent(ComponentTestDynamic{}).
+					AddComponent(ComponentTestDynamic1{}).
 					AddComponent(ComponentTest2{}).
 					Declare()
+
+				core.BuildEntityPT(ctx, "Test2").
+					AddComponent(ComponentTestDynamic2{}).
+					Declare()
+
 			case service.RunningEvent_Started:
 				core.NewRuntime(
 					runtime.NewContext(ctx,
@@ -431,6 +466,7 @@ func Test_EntityDynamicComponent(t *testing.T) {
 							switch runningEvent {
 							case runtime.RunningEvent_Started:
 								core.BuildEntity(ctx, "Test1").New()
+								core.BuildEntity(ctx, "Test2").New()
 							}
 							log.Println("runtime event:", runningEvent, args)
 						}),
@@ -455,11 +491,11 @@ func (c *ComponentTestParent) Awake() {
 }
 
 func (c *ComponentTestParent) OnTreeNodeAddChild(entity ec.Entity, childId uid.Id) {
-	log.Printf("OnTreeNodeAddChild %s += %s", entity.GetId(), childId)
+	log.Printf("OnTreeNodeAddChild %s <- %s", entity.GetId(), childId)
 }
 
 func (c *ComponentTestParent) OnTreeNodeRemoveChild(entity ec.Entity, childId uid.Id) {
-	log.Printf("OnTreeNodeRemoveChild %s -= %s", entity.GetId(), childId)
+	log.Printf("OnTreeNodeRemoveChild %s x- %s", entity.GetId(), childId)
 }
 
 type ComponentTestChild struct {
@@ -543,7 +579,7 @@ func Test_EntityTree(t *testing.T) {
 										children = append(children, entity.GetId())
 									})
 
-									log.Printf("OnEntityTreeAddNode %s %v + %s", parentId, children, childId)
+									log.Printf("OnEntityTreeAddNode %s: %v + %s", parentId, children, childId)
 								}))
 								runtime.BindEventEntityTreeRemoveNode(ctx.GetEntityTree(), runtime.HandleEventEntityTreeRemoveNode(func(entityTree runtime.EntityTree, parentId, childId uid.Id) {
 									var children []uid.Id
@@ -552,7 +588,10 @@ func Test_EntityTree(t *testing.T) {
 										children = append(children, entity.GetId())
 									})
 
-									log.Printf("OnEntityTreeRemoveNode %s %v - %s", parentId, children, childId)
+									log.Printf("OnEntityTreeRemoveNode %s: %v - %s", parentId, children, childId)
+								}))
+								runtime.BindEventEntityTreeMoveNode(ctx.GetEntityTree(), runtime.HandleEventEntityTreeMoveNode(func(entityTree runtime.EntityTree, childId, fromParentId, toParentId uid.Id) {
+									log.Printf("OnEntityTreeMoveNode %s: %s => %s", childId, fromParentId, toParentId)
 								}))
 							case runtime.RunningEvent_Started:
 								root, err := core.BuildEntity(ctx, "Test1").New()
@@ -605,9 +644,9 @@ func Test_EntityTree(t *testing.T) {
 									log.Panicln("new child8 error:", err)
 								}
 
-								PrintEntityTreeForest(ctx.GetEntityTree())
-
 								log.Println("1. testing detach node")
+
+								PrintEntityTreeForest(ctx.GetEntityTree())
 
 								err = ctx.GetEntityTree().DetachNode(child2.GetId())
 								if err != nil {
@@ -618,6 +657,8 @@ func Test_EntityTree(t *testing.T) {
 
 								log.Println("2. testing remove node")
 
+								PrintEntityTreeForest(ctx.GetEntityTree())
+
 								err = ctx.GetEntityTree().RemoveNode(child3.GetId())
 								if err != nil {
 									log.Panicln("remove child3 error:", err)
@@ -626,6 +667,8 @@ func Test_EntityTree(t *testing.T) {
 								PrintEntityTreeForest(ctx.GetEntityTree())
 
 								log.Println("3. testing move node")
+
+								PrintEntityTreeForest(ctx.GetEntityTree())
 
 								err = ctx.GetEntityTree().MoveNode(child7.GetId(), child2.GetId())
 								if err != nil {
@@ -711,12 +754,65 @@ func (c *ComponentTestChildDestroyInAttaching) Awake() {
 
 func (c *ComponentTestChildDestroyInAttaching) OnTreeNodeAttachParent(entity ec.Entity, parentId uid.Id) {
 	log.Printf("OnTreeNodeAttachParent %s -> %s", entity.GetId(), parentId)
-
 	entity.Destroy()
 }
 
 func (c *ComponentTestChildDestroyInAttaching) OnTreeNodeDetachParent(entity ec.Entity, parentId uid.Id) {
 	log.Printf("OnTreeNodeDetachParent %s -x %s", entity.GetId(), parentId)
+}
+
+type ComponentTestChildDestroyInDetaching struct {
+	ec.ComponentBehavior
+}
+
+func (c *ComponentTestChildDestroyInDetaching) Awake() {
+	ec.BindEventTreeNodeAttachParent(c.GetEntity(), c)
+	ec.BindEventTreeNodeDetachParent(c.GetEntity(), c)
+}
+
+func (c *ComponentTestChildDestroyInDetaching) OnTreeNodeAttachParent(entity ec.Entity, parentId uid.Id) {
+	log.Printf("OnTreeNodeAttachParent %s -> %s", entity.GetId(), parentId)
+}
+
+func (c *ComponentTestChildDestroyInDetaching) OnTreeNodeDetachParent(entity ec.Entity, parentId uid.Id) {
+	log.Printf("OnTreeNodeDetachParent %s -x %s", entity.GetId(), parentId)
+	entity.Destroy()
+}
+
+type ComponentTestParentDestroyInAttaching struct {
+	ec.ComponentBehavior
+}
+
+func (c *ComponentTestParentDestroyInAttaching) Awake() {
+	ec.BindEventTreeNodeAddChild(c.GetEntity(), c)
+	ec.BindEventTreeNodeRemoveChild(c.GetEntity(), c)
+}
+
+func (c *ComponentTestParentDestroyInAttaching) OnTreeNodeAddChild(entity ec.Entity, childId uid.Id) {
+	log.Printf("OnTreeNodeAddChild %s <- %s", entity.GetId(), childId)
+	entity.Destroy()
+}
+
+func (c *ComponentTestParentDestroyInAttaching) OnTreeNodeRemoveChild(entity ec.Entity, childId uid.Id) {
+	log.Printf("OnTreeNodeRemoveChild %s x- %s", entity.GetId(), childId)
+}
+
+type ComponentTestParentDestroyInDetaching struct {
+	ec.ComponentBehavior
+}
+
+func (c *ComponentTestParentDestroyInDetaching) Awake() {
+	ec.BindEventTreeNodeAddChild(c.GetEntity(), c)
+	ec.BindEventTreeNodeRemoveChild(c.GetEntity(), c)
+}
+
+func (c *ComponentTestParentDestroyInDetaching) OnTreeNodeAddChild(entity ec.Entity, childId uid.Id) {
+	log.Printf("OnTreeNodeAddChild %s <- %s", entity.GetId(), childId)
+}
+
+func (c *ComponentTestParentDestroyInDetaching) OnTreeNodeRemoveChild(entity ec.Entity, childId uid.Id) {
+	log.Printf("OnTreeNodeRemoveChild %s x- %s", entity.GetId(), childId)
+	entity.Destroy()
 }
 
 func Test_EntityTreeSequence(t *testing.T) {
@@ -743,6 +839,18 @@ func Test_EntityTreeSequence(t *testing.T) {
 					AddComponent(ComponentTestParent{}).
 					AddComponent(ComponentTestChildDestroyInAttaching{}).
 					Declare()
+				core.BuildEntityPT(ctx, "Test5").
+					AddComponent(ComponentTestParent{}).
+					AddComponent(ComponentTestChildDestroyInDetaching{}).
+					Declare()
+				core.BuildEntityPT(ctx, "Test6").
+					AddComponent(ComponentTestParentDestroyInAttaching{}).
+					AddComponent(ComponentTestChild{}).
+					Declare()
+				core.BuildEntityPT(ctx, "Test7").
+					AddComponent(ComponentTestParentDestroyInDetaching{}).
+					AddComponent(ComponentTestChild{}).
+					Declare()
 			case service.RunningEvent_Started:
 				core.NewRuntime(
 					runtime.NewContext(ctx,
@@ -756,7 +864,7 @@ func Test_EntityTreeSequence(t *testing.T) {
 										children = append(children, entity.GetId())
 									})
 
-									log.Printf("OnEntityTreeAddNode %s %v + %s", parentId, children, childId)
+									log.Printf("OnEntityTreeAddNode %s: %v + %s", parentId, children, childId)
 								}))
 								runtime.BindEventEntityTreeRemoveNode(ctx.GetEntityTree(), runtime.HandleEventEntityTreeRemoveNode(func(entityTree runtime.EntityTree, parentId, childId uid.Id) {
 									var children []uid.Id
@@ -765,7 +873,10 @@ func Test_EntityTreeSequence(t *testing.T) {
 										children = append(children, entity.GetId())
 									})
 
-									log.Printf("OnEntityTreeRemoveNode %s %v - %s", parentId, children, childId)
+									log.Printf("OnEntityTreeRemoveNode %s: %v - %s", parentId, children, childId)
+								}))
+								runtime.BindEventEntityTreeMoveNode(ctx.GetEntityTree(), runtime.HandleEventEntityTreeMoveNode(func(entityTree runtime.EntityTree, childId, fromParentId, toParentId uid.Id) {
+									log.Printf("OnEntityTreeMoveNode %s: %s => %s", childId, fromParentId, toParentId)
 								}))
 							case runtime.RunningEvent_Started:
 								root, err := core.BuildEntity(ctx, "Test1").New()
@@ -780,6 +891,8 @@ func Test_EntityTreeSequence(t *testing.T) {
 
 								log.Println("1. testing child detach in attaching")
 
+								PrintEntityTreeForest(ctx.GetEntityTree())
+
 								child1, err := core.BuildEntity(ctx, "Test2").SetParentId(root.GetId()).New()
 								if err != nil {
 									log.Panicln("new child1 error:", err)
@@ -788,6 +901,8 @@ func Test_EntityTreeSequence(t *testing.T) {
 								PrintEntityTreeForest(ctx.GetEntityTree())
 
 								log.Println("2. testing child remove in attaching")
+
+								PrintEntityTreeForest(ctx.GetEntityTree())
 
 								child2, err := core.BuildEntity(ctx, "Test3").SetParentId(root.GetId()).New()
 								if err != nil {
@@ -798,6 +913,8 @@ func Test_EntityTreeSequence(t *testing.T) {
 
 								log.Println("3. testing child destroy in attaching")
 
+								PrintEntityTreeForest(ctx.GetEntityTree())
+
 								child3, err := core.BuildEntity(ctx, "Test4").SetParentId(root.GetId()).New()
 								if err != nil {
 									log.Panicln("new child3 error:", err)
@@ -805,9 +922,79 @@ func Test_EntityTreeSequence(t *testing.T) {
 
 								PrintEntityTreeForest(ctx.GetEntityTree())
 
+								log.Println("4. testing child destroy in detaching")
+
+								PrintEntityTreeForest(ctx.GetEntityTree())
+
+								child4, err := core.BuildEntity(ctx, "Test5").SetParentId(root.GetId()).New()
+								if err != nil {
+									log.Panicln("new child4 error:", err)
+								}
+
+								PrintEntityTreeForest(ctx.GetEntityTree())
+
+								ctx.GetEntityTree().DetachNode(child4.GetId())
+								log.Printf("%s: state=%s, tree_node_state=%s", child4.GetId(), child4.GetState(), child4.GetTreeNodeState())
+
+								PrintEntityTreeForest(ctx.GetEntityTree())
+
+								log.Println("4. testing parent destroy in attaching")
+
+								PrintEntityTreeForest(ctx.GetEntityTree())
+
+								child5, err := core.BuildEntity(ctx, "Test6").SetParentId(root.GetId()).New()
+								if err != nil {
+									log.Panicln("new child5 error:", err)
+								}
+
+								PrintEntityTreeForest(ctx.GetEntityTree())
+
+								child6, err := core.BuildEntity(ctx, "Test1").SetParentId(child5.GetId()).New()
+								if err != nil {
+									log.Panicln("new child6 error:", err)
+								}
+
+								PrintEntityTreeForest(ctx.GetEntityTree())
+
+								log.Printf("%s: state=%s, tree_node_state=%s", child5.GetId(), child5.GetState(), child5.GetTreeNodeState())
+								log.Printf("%s: state=%s, tree_node_state=%s", child6.GetId(), child6.GetState(), child6.GetTreeNodeState())
+
+								log.Println("5. testing parent destroy in detaching")
+
+								PrintEntityTreeForest(ctx.GetEntityTree())
+
+								child7, err := core.BuildEntity(ctx, "Test7").SetParentId(root.GetId()).New()
+								if err != nil {
+									log.Panicln("new child7 error:", err)
+								}
+
+								PrintEntityTreeForest(ctx.GetEntityTree())
+
+								child8, err := core.BuildEntity(ctx, "Test1").SetParentId(child7.GetId()).New()
+								if err != nil {
+									log.Panicln("new child8 error:", err)
+								}
+
+								PrintEntityTreeForest(ctx.GetEntityTree())
+
+								log.Printf("%s: state=%s, tree_node_state=%s", child7.GetId(), child7.GetState(), child7.GetTreeNodeState())
+								log.Printf("%s: state=%s, tree_node_state=%s", child8.GetId(), child8.GetState(), child8.GetTreeNodeState())
+
+								ctx.GetEntityTree().DetachNode(child8.GetId())
+
+								PrintEntityTreeForest(ctx.GetEntityTree())
+
+								log.Printf("%s: state=%s, tree_node_state=%s", child7.GetId(), child7.GetState(), child7.GetTreeNodeState())
+								log.Printf("%s: state=%s, tree_node_state=%s", child8.GetId(), child8.GetState(), child8.GetTreeNodeState())
+
 								_ = child1
 								_ = child2
 								_ = child3
+								_ = child4
+								_ = child5
+								_ = child6
+								_ = child7
+								_ = child8
 							}
 							log.Println("runtime event:", runningEvent, args)
 						}),

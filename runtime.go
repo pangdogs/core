@@ -158,18 +158,17 @@ func (rt *RuntimeBehavior) onEntityManagerAddEntity(entityManager runtime.Entity
 	{
 		caller := makeEntityLifecycleCaller(entity)
 
-		if !caller.Call(func(ec.EntityState) {
+		if !caller.Call(func() {
 			rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivating, entity)
 		}) {
 			rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivatingAborted, entity)
 			return
 		}
-	}
 
-	{
-		caller := makeEntityLifecycleCaller(entity)
-
-		if !caller.CallOnce(func(ec.EntityState) {
+		if !caller.Call(func() {
+			if !caller.MarkProcessed() {
+				return
+			}
 			if cb, ok := entity.(LifecycleEntityAwake); ok {
 				rt.panicHandlingActivatingEntity(entity, generic.CastAction0(cb.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError()))
 			}
@@ -180,20 +179,22 @@ func (rt *RuntimeBehavior) onEntityManagerAddEntity(entityManager runtime.Entity
 
 		rt.observeEntity(entity)
 
-		if !caller.Call(func(state ec.EntityState) {
+		if !caller.Call(func() {
 			entity.RangeComponents(func(comp ec.Component) bool {
-				rt.panicHandlingActivatingEntity(entity, rt.awakeComponent(comp))
-				return entity.GetState() == state
+				return caller.Call(func() {
+					rt.panicHandlingActivatingEntity(entity, rt.awakeComponent(comp))
+				})
 			})
 		}) {
 			rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivatingAborted, entity)
 			return
 		}
 
-		if !caller.Call(func(state ec.EntityState) {
+		if !caller.Call(func() {
 			entity.RangeComponents(func(comp ec.Component) bool {
-				rt.panicHandlingActivatingEntity(entity, rt.enableAwokeComponent(comp))
-				return entity.GetState() == state
+				return caller.Call(func() {
+					rt.panicHandlingActivatingEntity(entity, rt.enableAwokeComponent(comp))
+				})
 			})
 		}) {
 			rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivatingAborted, entity)
@@ -206,17 +207,21 @@ func (rt *RuntimeBehavior) onEntityManagerAddEntity(entityManager runtime.Entity
 	{
 		caller := makeEntityLifecycleCaller(entity)
 
-		if !caller.Call(func(state ec.EntityState) {
+		if !caller.Call(func() {
 			entity.RangeComponents(func(comp ec.Component) bool {
-				rt.panicHandlingActivatingEntity(entity, rt.startComponent(comp))
-				return entity.GetState() == state
+				return caller.Call(func() {
+					rt.panicHandlingActivatingEntity(entity, rt.startComponent(comp))
+				})
 			})
 		}) {
 			rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivatingAborted, entity)
 			return
 		}
 
-		if !caller.CallOnce(func(ec.EntityState) {
+		if !caller.Call(func() {
+			if !caller.MarkProcessed() {
+				return
+			}
 			if cb, ok := entity.(LifecycleEntityStart); ok {
 				rt.panicHandlingActivatingEntity(entity, generic.CastAction0(cb.Start).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError()))
 			}
@@ -239,40 +244,47 @@ func (rt *RuntimeBehavior) onEntityManagerRemoveEntity(entityManager runtime.Ent
 
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Shut)
 
-	rt.emitEventRunningEvent(runtime.RunningEvent_EntityDeactivating, entity)
-
-	if cb, ok := entity.(LifecycleEntityShut); ok {
-		generic.CastAction0(cb.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
-	}
-
 	entity.EachComponents(func(comp ec.Component) {
-		if !ec.UnsafeComponent(comp).GetProcessedStateBits().Is(int(ec.ComponentState_Awake)) {
+		if comp.GetState() < ec.ComponentState_Awake {
 			return
 		}
-		if ec.UnsafeComponent(comp).GetProcessedStateBits().Is(int(ec.ComponentState_Start)) {
-			ec.UnsafeComponent(comp).SetState(ec.ComponentState_Shut)
-		} else {
-			ec.UnsafeComponent(comp).SetState(ec.ComponentState_Disable)
-		}
+		ec.UnsafeComponent(comp).SetState(ec.ComponentState_Shut)
 	})
 
-	entity.EachComponents(func(comp ec.Component) {
-		rt.shutComponent(comp)
-	})
+	rt.emitEventRunningEvent(runtime.RunningEvent_EntityDeactivating, entity)
+
+	{
+		caller := makeEntityLifecycleCaller(entity)
+
+		if caller.IsProcessed(ec.EntityState_Start) && caller.MarkProcessed() {
+			if cb, ok := entity.(LifecycleEntityShut); ok {
+				generic.CastAction0(cb.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+			}
+		}
+
+		entity.ReversedEachComponents(func(comp ec.Component) {
+			rt.shutComponent(comp)
+		})
+	}
 
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Death)
 
-	entity.EachComponents(func(comp ec.Component) {
-		rt.disableDeathComponent(comp)
-	})
+	{
+		caller := makeEntityLifecycleCaller(entity)
 
-	entity.EachComponents(func(comp ec.Component) {
-		rt.disposeComponent(comp)
-		ec.UnsafeComponent(comp).SetState(ec.ComponentState_Destroyed)
-	})
+		entity.ReversedEachComponents(func(comp ec.Component) {
+			rt.disableDeathComponent(comp)
+		})
 
-	if cb, ok := entity.(LifecycleEntityDispose); ok {
-		generic.CastAction0(cb.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+		entity.ReversedEachComponents(func(comp ec.Component) {
+			rt.disposeComponent(comp, true)
+		})
+
+		if caller.IsProcessed(ec.EntityState_Awake) && caller.MarkProcessed() {
+			if cb, ok := entity.(LifecycleEntityDispose); ok {
+				generic.CastAction0(cb.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+			}
+		}
 	}
 
 	rt.emitEventRunningEvent(runtime.RunningEvent_EntityDeactivatingDone, entity)
@@ -295,51 +307,52 @@ func (rt *RuntimeBehavior) onEntityManagerEntityAddComponents(entityManager runt
 	{
 		caller := makeEntityLifecycleCaller(entity)
 
-		if !caller.Call(func(ec.EntityState) {
+		if !caller.Call(func() {
 			rt.emitEventRunningEvent(runtime.RunningEvent_EntityAddingComponents, entity, components)
 		}) {
 			rt.emitEventRunningEvent(runtime.RunningEvent_EntityAddingComponentsAborted, entity, components)
 			return
 		}
-	}
 
-	{
-		caller := makeEntityLifecycleCaller(entity)
-
-		if !caller.Call(func(state ec.EntityState) {
+		if !caller.Call(func() {
 			for i := range components {
-				if entity.GetState() != state {
+				if !caller.Call(func() {
+					rt.awakeComponent(components[i])
+				}) {
 					return
 				}
-				rt.awakeComponent(components[i])
 			}
 		}) {
 			rt.emitEventRunningEvent(runtime.RunningEvent_EntityAddingComponentsAborted, entity, components)
 			return
 		}
 
-		if !caller.Call(func(state ec.EntityState) {
+		if !caller.Call(func() {
 			for i := range components {
-				if entity.GetState() != state {
+				if !caller.Call(func() {
+					rt.enableAwokeComponent(components[i])
+				}) {
 					return
 				}
-				rt.enableAwokeComponent(components[i])
 			}
 		}) {
 			rt.emitEventRunningEvent(runtime.RunningEvent_EntityAddingComponentsAborted, entity, components)
 			return
 		}
 
-		if !caller.Call(func(state ec.EntityState) {
-			for i := range components {
-				if entity.GetState() != state {
-					return
+		if entity.GetState() >= ec.EntityState_Start {
+			if !caller.Call(func() {
+				for i := range components {
+					if !caller.Call(func() {
+						rt.startComponent(components[i])
+					}) {
+						return
+					}
 				}
-				rt.startComponent(components[i])
+			}) {
+				rt.emitEventRunningEvent(runtime.RunningEvent_EntityAddingComponentsAborted, entity, components)
+				return
 			}
-		}) {
-			rt.emitEventRunningEvent(runtime.RunningEvent_EntityAddingComponentsAborted, entity, components)
-			return
 		}
 	}
 
@@ -348,7 +361,7 @@ func (rt *RuntimeBehavior) onEntityManagerEntityAddComponents(entityManager runt
 
 // onEntityManagerEntityRemoveComponent 事件处理器：实体管理器中的实体删除组件
 func (rt *RuntimeBehavior) onEntityManagerEntityRemoveComponent(entityManager runtime.EntityManager, entity ec.Entity, component ec.Component) {
-	if entity.GetState() < ec.EntityState_Awake || entity.GetState() > ec.EntityState_Death {
+	if entity.GetState() < ec.EntityState_Awake || entity.GetState() > ec.EntityState_Alive {
 		return
 	}
 
@@ -356,44 +369,34 @@ func (rt *RuntimeBehavior) onEntityManagerEntityRemoveComponent(entityManager ru
 		return
 	}
 
-	if !ec.UnsafeComponent(component).GetProcessedStateBits().Is(int(ec.ComponentState_Awake)) {
-		return
-	}
-	if ec.UnsafeComponent(component).GetProcessedStateBits().Is(int(ec.ComponentState_Start)) {
-		ec.UnsafeComponent(component).SetState(ec.ComponentState_Shut)
-	} else {
-		ec.UnsafeComponent(component).SetState(ec.ComponentState_Disable)
-	}
-
 	{
 		caller := makeEntityLifecycleCaller(entity)
 
-		if !caller.Call(func(ec.EntityState) {
+		if !caller.Call(func() {
 			rt.emitEventRunningEvent(runtime.RunningEvent_EntityRemovingComponent, entity, component)
 		}) {
 			rt.emitEventRunningEvent(runtime.RunningEvent_EntityRemovingComponentAborted, entity, component)
 			return
 		}
-	}
 
-	{
-		caller := makeEntityLifecycleCaller(entity)
-
-		if !caller.Call(func(ec.EntityState) {
+		if !caller.Call(func() {
 			rt.shutComponent(component)
 		}) {
+			rt.emitEventRunningEvent(runtime.RunningEvent_EntityRemovingComponentAborted, entity, component)
 			return
 		}
 
-		if !caller.Call(func(ec.EntityState) {
+		if !caller.Call(func() {
 			rt.disableDeathComponent(component)
 		}) {
+			rt.emitEventRunningEvent(runtime.RunningEvent_EntityRemovingComponentAborted, entity, component)
 			return
 		}
 
-		if !caller.Call(func(ec.EntityState) {
-			rt.disposeComponent(component)
+		if !caller.Call(func() {
+			rt.disposeComponent(component, false)
 		}) {
+			rt.emitEventRunningEvent(runtime.RunningEvent_EntityRemovingComponentAborted, entity, component)
 			return
 		}
 	}
@@ -403,7 +406,7 @@ func (rt *RuntimeBehavior) onEntityManagerEntityRemoveComponent(entityManager ru
 
 // onEntityManagerEntityComponentEnableChanged 事件处理器：实体管理器中实体的组件启用状态改变
 func (rt *RuntimeBehavior) onEntityManagerEntityComponentEnableChanged(entityManager runtime.EntityManager, entity ec.Entity, component ec.Component, enable bool) {
-	if entity.GetState() < ec.EntityState_Awake || entity.GetState() > ec.EntityState_Death {
+	if entity.GetState() < ec.EntityState_Awake || entity.GetState() > ec.EntityState_Alive {
 		return
 	}
 
@@ -411,20 +414,20 @@ func (rt *RuntimeBehavior) onEntityManagerEntityComponentEnableChanged(entityMan
 		caller := makeEntityLifecycleCaller(entity)
 
 		if enable {
-			if !caller.Call(func(ec.EntityState) {
+			if !caller.Call(func() {
 				rt.enableComponent(component)
 			}) {
 				return
 			}
 
-			if !caller.Call(func(ec.EntityState) {
+			if !caller.Call(func() {
 				rt.startComponent(component)
 			}) {
 				return
 			}
 
 		} else {
-			if !caller.Call(func(ec.EntityState) {
+			if !caller.Call(func() {
 				rt.disableComponent(component)
 			}) {
 				return
@@ -439,10 +442,12 @@ func (rt *RuntimeBehavior) onEntityManagerEntityFirstTouchComponent(entityManage
 		return
 	}
 
+	ec.UnsafeComponent(component).SetState(ec.ComponentState_Awake)
+
 	{
 		caller := makeEntityLifecycleCaller(entity)
 
-		if !caller.Call(func(ec.EntityState) {
+		if !caller.Call(func() {
 			rt.awakeComponent(component)
 		}) {
 			return
@@ -480,7 +485,10 @@ func (rt *RuntimeBehavior) awakeComponent(comp ec.Component) (err error) {
 	{
 		caller := makeComponentLifecycleCaller(comp)
 
-		if !caller.CallOnce(func(ec.ComponentState) {
+		if !caller.Call(func() {
+			if !caller.MarkProcessed() {
+				return
+			}
 			if cb, ok := comp.(LifecycleComponentAwake); ok {
 				err = generic.CastAction0(cb.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 			}
@@ -507,7 +515,10 @@ func (rt *RuntimeBehavior) enableAwokeComponent(comp ec.Component) (err error) {
 	{
 		caller := makeComponentLifecycleCaller(comp)
 
-		if !caller.CallOnce(func(ec.ComponentState) {
+		if !caller.Call(func() {
+			if !caller.MarkProcessed() {
+				return
+			}
 			if cb, ok := comp.(LifecycleComponentOnEnable); ok {
 				err = generic.CastAction0(cb.OnEnable).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 			}
@@ -536,7 +547,10 @@ func (rt *RuntimeBehavior) startComponent(comp ec.Component) (err error) {
 	{
 		caller := makeComponentLifecycleCaller(comp)
 
-		if !caller.CallOnce(func(ec.ComponentState) {
+		if !caller.Call(func() {
+			if !caller.MarkProcessed() {
+				return
+			}
 			if cb, ok := comp.(LifecycleComponentStart); ok {
 				err = generic.CastAction0(cb.Start).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 			}
@@ -558,9 +572,14 @@ func (rt *RuntimeBehavior) shutComponent(comp ec.Component) {
 	{
 		caller := makeComponentLifecycleCaller(comp)
 
-		if !caller.CallOnce(func(ec.ComponentState) {
-			if cb, ok := comp.(LifecycleComponentShut); ok {
-				generic.CastAction0(cb.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+		if !caller.Call(func() {
+			if caller.IsProcessed(ec.ComponentState_Start) {
+				if !caller.MarkProcessed() {
+					return
+				}
+				if cb, ok := comp.(LifecycleComponentShut); ok {
+					generic.CastAction0(cb.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+				}
 			}
 		}) {
 			return
@@ -575,12 +594,20 @@ func (rt *RuntimeBehavior) disableDeathComponent(comp ec.Component) {
 		return
 	}
 
-	if comp.GetEnable() {
+	{
 		caller := makeComponentLifecycleCaller(comp)
 
-		if !caller.CallOnce(func(ec.ComponentState) {
-			if cb, ok := comp.(LifecycleComponentOnDisable); ok {
-				generic.CastAction0(cb.OnDisable).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+		if !caller.Call(func() {
+			if caller.IsProcessed(ec.ComponentState_Enable) {
+				if !caller.MarkProcessed() {
+					return
+				}
+				if !comp.GetEnable() {
+					return
+				}
+				if cb, ok := comp.(LifecycleComponentOnDisable); ok {
+					generic.CastAction0(cb.OnDisable).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+				}
 			}
 		}) {
 			return
@@ -590,7 +617,7 @@ func (rt *RuntimeBehavior) disableDeathComponent(comp ec.Component) {
 	ec.UnsafeComponent(comp).SetState(ec.ComponentState_Death)
 }
 
-func (rt *RuntimeBehavior) disposeComponent(comp ec.Component) {
+func (rt *RuntimeBehavior) disposeComponent(comp ec.Component, stateDestroyed bool) {
 	if comp.GetState() != ec.ComponentState_Death {
 		return
 	}
@@ -598,30 +625,36 @@ func (rt *RuntimeBehavior) disposeComponent(comp ec.Component) {
 	{
 		caller := makeComponentLifecycleCaller(comp)
 
-		if !caller.CallOnce(func(ec.ComponentState) {
-			if cb, ok := comp.(LifecycleComponentDispose); ok {
-				generic.CastAction0(cb.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+		if !caller.Call(func() {
+			if caller.IsProcessed(ec.ComponentState_Awake) {
+				if !caller.MarkProcessed() {
+					return
+				}
+				if cb, ok := comp.(LifecycleComponentDispose); ok {
+					generic.CastAction0(cb.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+				}
 			}
 		}) {
 			return
 		}
 	}
+
+	if stateDestroyed {
+		ec.UnsafeComponent(comp).SetState(ec.ComponentState_Destroyed)
+	}
 }
 
 func (rt *RuntimeBehavior) enableComponent(comp ec.Component) {
-	if !ec.UnsafeComponent(comp).GetProcessedStateBits().Is(int(ec.ComponentState_Enable)) ||
-		ec.UnsafeComponent(comp).GetProcessedStateBits().Is(int(ec.ComponentState_Disable)) {
-		return
-	}
-
-	if !comp.GetEnable() {
+	if comp.GetState() < ec.ComponentState_Enable || comp.GetState() >= ec.ComponentState_Disable {
 		return
 	}
 
 	{
 		caller := makeComponentLifecycleCaller(comp)
 
-		if !caller.Call(func(ec.ComponentState) {
+		if !caller.Call(func() {
+			caller.SetProcessed(ec.ComponentState_Enable)
+
 			if cb, ok := comp.(LifecycleComponentOnEnable); ok {
 				generic.CastAction0(cb.OnEnable).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 			}
@@ -632,20 +665,11 @@ func (rt *RuntimeBehavior) enableComponent(comp ec.Component) {
 
 	rt.observeComponent(comp)
 
-	if ec.UnsafeComponent(comp).GetProcessedStateBits().Is(int(ec.ComponentState_Alive)) {
-		ec.UnsafeComponent(comp).SetState(ec.ComponentState_Alive)
-	} else {
-		ec.UnsafeComponent(comp).SetState(ec.ComponentState_Start)
-	}
+	ec.UnsafeComponent(comp).SetState(ec.ComponentState_Start)
 }
 
 func (rt *RuntimeBehavior) disableComponent(comp ec.Component) {
-	if !ec.UnsafeComponent(comp).GetProcessedStateBits().Is(int(ec.ComponentState_Enable)) ||
-		ec.UnsafeComponent(comp).GetProcessedStateBits().Is(int(ec.ComponentState_Disable)) {
-		return
-	}
-
-	if comp.GetEnable() {
+	if comp.GetState() < ec.ComponentState_Enable || comp.GetState() >= ec.ComponentState_Disable {
 		return
 	}
 
@@ -654,7 +678,7 @@ func (rt *RuntimeBehavior) disableComponent(comp ec.Component) {
 	{
 		caller := makeComponentLifecycleCaller(comp)
 
-		if !caller.Call(func(ec.ComponentState) {
+		if !caller.Call(func() {
 			if cb, ok := comp.(LifecycleComponentOnDisable); ok {
 				generic.CastAction0(cb.OnDisable).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
 			}

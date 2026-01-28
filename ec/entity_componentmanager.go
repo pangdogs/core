@@ -74,7 +74,7 @@ type iiComponentManager interface {
 	getComponentNameIndex() *generic.SliceMap[string, int]
 	getComponentList() *generic.FreeList[Component]
 	onComponentEnableChangedIfVersion(idx int, ver int64)
-	removeComponentIfVersion(idx int, ver int64)
+	onComponentDestroyIfVersion(idx int, ver int64)
 }
 
 // GetComponent 使用名称查询组件，组件同名时，返回首个组件
@@ -313,7 +313,7 @@ func (entity *EntityBehavior) onComponentEnableChangedIfVersion(idx int, ver int
 	_EmitEventComponentManagerComponentEnableChanged(entity, entity.getInstance(), comp, comp.GetEnable())
 }
 
-func (entity *EntityBehavior) removeComponentIfVersion(idx int, ver int64) {
+func (entity *EntityBehavior) onComponentDestroyIfVersion(idx int, ver int64) {
 	compSlot := entity.componentList.Get(idx)
 	if !checkComponentSlot(compSlot, ver) {
 		return

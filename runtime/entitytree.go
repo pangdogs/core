@@ -130,24 +130,28 @@ func (mgr *_EntityManagerBehavior) AddChild(parentId, childId uid.Id) error {
 		parentEntity = mgr.entityList.Get(parentSlotIdx).V
 	}
 
-	_EmitEventEntityTreeAddNode(mgr, mgr, parentId, childId)
+	{
+		caller := makeTreeNodeCaller(childEntity)
 
-	if childEntity.GetTreeNodeState() != ec.TreeNodeState_Attaching {
-		return nil
-	}
-
-	if parentEntity != nil {
-		ec.UnsafeEntity(parentEntity).EmitEventTreeNodeAddChild(childId)
-
-		if childEntity.GetTreeNodeState() != ec.TreeNodeState_Attaching {
+		if !caller.Call(func() {
+			_EmitEventEntityTreeAddNode(mgr, mgr, parentId, childId)
+		}) {
 			return nil
 		}
-	}
 
-	ec.UnsafeEntity(childEntity).EmitEventTreeNodeAttachParent(parentId)
+		if parentEntity != nil {
+			if !caller.Call(func() {
+				ec.UnsafeEntity(parentEntity).EmitEventTreeNodeAddChild(childId)
+			}) {
+				return nil
+			}
+		}
 
-	if childEntity.GetTreeNodeState() != ec.TreeNodeState_Attaching {
-		return nil
+		if !caller.Call(func() {
+			ec.UnsafeEntity(childEntity).EmitEventTreeNodeAttachParent(parentId)
+		}) {
+			return nil
+		}
 	}
 
 	ec.UnsafeEntity(childEntity).SetTreeNodeState(ec.TreeNodeState_Attached)
@@ -186,27 +190,35 @@ func (mgr *_EntityManagerBehavior) RemoveNode(childId uid.Id) error {
 		parentId = parentEntity.GetId()
 	}
 
-	childTreeNode.children.TraversalEach(func(slot *generic.FreeSlot[int]) {
-		entity := mgr.entityList.Get(slot.V).V
-		mgr.RemoveNode(entity.GetId())
-	})
+	{
+		caller := makeTreeNodeCaller(childEntity)
 
-	_EmitEventEntityTreeRemoveNode(mgr, mgr, parentId, childId)
+		if !caller.Call(func() {
+			childTreeNode.children.ReversedTraversalEach(func(slot *generic.FreeSlot[int]) {
+				entity := mgr.entityList.Get(slot.V).V
+				mgr.RemoveNode(entity.GetId())
+			})
+		}) {
+			return nil
+		}
 
-	if childEntity.GetTreeNodeState() != ec.TreeNodeState_Detaching {
-		return nil
-	}
+		if !caller.Call(func() {
+			ec.UnsafeEntity(childEntity).EmitEventTreeNodeDetachParent(parentId)
+		}) {
+			return nil
+		}
 
-	ec.UnsafeEntity(childEntity).EmitEventTreeNodeDetachParent(parentId)
+		if parentEntity != nil {
+			if !caller.Call(func() {
+				ec.UnsafeEntity(parentEntity).EmitEventTreeNodeRemoveChild(childId)
+			}) {
+				return nil
+			}
+		}
 
-	if childEntity.GetTreeNodeState() != ec.TreeNodeState_Detaching {
-		return nil
-	}
-
-	if parentEntity != nil {
-		ec.UnsafeEntity(parentEntity).EmitEventTreeNodeRemoveChild(childId)
-
-		if childEntity.GetTreeNodeState() != ec.TreeNodeState_Detaching {
+		if !caller.Call(func() {
+			_EmitEventEntityTreeRemoveNode(mgr, mgr, parentId, childId)
+		}) {
 			return nil
 		}
 	}
@@ -278,56 +290,54 @@ func (mgr *_EntityManagerBehavior) MoveNode(childId, parentId uid.Id) error {
 		toParentEntity = mgr.entityList.Get(toParentSlotIdx).V
 	}
 
-	fromParentTreeNode.children.ReleaseIfVersion(childTreeNode.attachedIndex, childTreeNode.attachedVersion)
-	attachedSlot := toParentTreeNode.children.PushBack(childSlotIdx)
-	childTreeNode.parent = toParentSlotIdx
-	childTreeNode.attachedIndex = attachedSlot.Index()
-	childTreeNode.attachedVersion = attachedSlot.Version()
+	{
+		caller := makeTreeNodeCaller(childEntity)
 
-	_EmitEventEntityTreeMoveNode(mgr, mgr, childId, fromParentId, toParentId)
-
-	if childEntity.GetTreeNodeState() != ec.TreeNodeState_Moving {
-		return nil
-	}
-
-	_EmitEventEntityTreeRemoveNode(mgr, mgr, fromParentId, childId)
-
-	if childEntity.GetTreeNodeState() != ec.TreeNodeState_Moving {
-		return nil
-	}
-
-	ec.UnsafeEntity(childEntity).EmitEventTreeNodeDetachParent(fromParentId)
-
-	if childEntity.GetTreeNodeState() != ec.TreeNodeState_Moving {
-		return nil
-	}
-
-	if fromParentEntity != nil {
-		ec.UnsafeEntity(fromParentEntity).EmitEventTreeNodeRemoveChild(childId)
-
-		if childEntity.GetTreeNodeState() != ec.TreeNodeState_Moving {
+		if !caller.Call(func() {
+			ec.UnsafeEntity(childEntity).EmitEventTreeNodeDetachParent(fromParentId)
+		}) {
 			return nil
 		}
-	}
 
-	_EmitEventEntityTreeAddNode(mgr, mgr, toParentId, childId)
+		if fromParentEntity != nil {
+			if !caller.Call(func() {
+				ec.UnsafeEntity(fromParentEntity).EmitEventTreeNodeRemoveChild(childId)
+			}) {
+				return nil
+			}
+		}
 
-	if childEntity.GetTreeNodeState() != ec.TreeNodeState_Moving {
-		return nil
-	}
+		fromParentTreeNode.children.ReleaseIfVersion(childTreeNode.attachedIndex, childTreeNode.attachedVersion)
+		attachedSlot := toParentTreeNode.children.PushBack(childSlotIdx)
+		childTreeNode.parent = toParentSlotIdx
+		childTreeNode.attachedIndex = attachedSlot.Index()
+		childTreeNode.attachedVersion = attachedSlot.Version()
 
-	if toParentEntity != nil {
-		ec.UnsafeEntity(toParentEntity).EmitEventTreeNodeAddChild(childId)
-
-		if childEntity.GetTreeNodeState() != ec.TreeNodeState_Moving {
+		if !caller.Call(func() {
+			_EmitEventEntityTreeMoveNode(mgr, mgr, childId, fromParentId, toParentId)
+		}) {
 			return nil
 		}
-	}
 
-	ec.UnsafeEntity(childEntity).EmitEventTreeNodeMoveTo(fromParentId, toParentId)
+		if toParentEntity != nil {
+			if !caller.Call(func() {
+				ec.UnsafeEntity(toParentEntity).EmitEventTreeNodeAddChild(childId)
+			}) {
+				return nil
+			}
+		}
 
-	if childEntity.GetTreeNodeState() != ec.TreeNodeState_Moving {
-		return nil
+		if !caller.Call(func() {
+			ec.UnsafeEntity(childEntity).EmitEventTreeNodeAttachParent(parentId)
+		}) {
+			return nil
+		}
+
+		if !caller.Call(func() {
+			ec.UnsafeEntity(childEntity).EmitEventTreeNodeMoveTo(fromParentId, toParentId)
+		}) {
+			return nil
+		}
 	}
 
 	ec.UnsafeEntity(childEntity).SetTreeNodeState(ec.TreeNodeState_Attached)
@@ -479,7 +489,7 @@ func (mgr *_EntityManagerBehavior) CountChildren(parentId uid.Id) (int, error) {
 	return treeNode.children.Len() - treeNode.children.OrphanCount(), nil
 }
 
-func (mgr *_EntityManagerBehavior) removeNodeIfRemoveEntity(childId uid.Id) {
+func (mgr *_EntityManagerBehavior) onEntityDestroyRemoveNode(childId uid.Id) {
 	childSlotIdx, childTreeNode := mgr.getTreeNode(childId)
 	if childSlotIdx < 0 {
 		return
@@ -501,18 +511,18 @@ func (mgr *_EntityManagerBehavior) removeNodeIfRemoveEntity(childId uid.Id) {
 		parentId = parentEntity.GetId()
 	}
 
-	childTreeNode.children.TraversalEach(func(slot *generic.FreeSlot[int]) {
+	childTreeNode.children.ReversedTraversalEach(func(slot *generic.FreeSlot[int]) {
 		entity := mgr.entityList.Get(slot.V).V
-		mgr.RemoveNode(entity.GetId())
+		mgr.onEntityDestroyRemoveNode(entity.GetId())
 	})
-
-	_EmitEventEntityTreeRemoveNode(mgr, mgr, parentId, childId)
 
 	ec.UnsafeEntity(childEntity).EmitEventTreeNodeDetachParent(parentId)
 
 	if parentEntity != nil {
 		ec.UnsafeEntity(parentEntity).EmitEventTreeNodeRemoveChild(childId)
 	}
+
+	_EmitEventEntityTreeRemoveNode(mgr, mgr, parentId, childId)
 
 	delete(mgr.entityTreeNodes, childSlotIdx)
 	parentTreeNode.children.ReleaseIfVersion(childTreeNode.attachedIndex, childTreeNode.attachedVersion)
@@ -536,4 +546,23 @@ func (mgr *_EntityManagerBehavior) getTreeNode(entityId uid.Id) (int, *_TreeNode
 	}
 
 	return slotIdx, treeNode
+}
+
+func makeTreeNodeCaller(entity ec.Entity) _TreeNodeCaller {
+	return _TreeNodeCaller{entity: entity, state: entity.GetTreeNodeState()}
+}
+
+type _TreeNodeCaller struct {
+	entity ec.Entity
+	state  ec.TreeNodeState
+}
+
+func (c _TreeNodeCaller) Call(fun func()) bool {
+	if c.entity.GetTreeNodeState() != c.state {
+		return false
+	}
+
+	fun()
+
+	return c.entity.GetTreeNodeState() == c.state
 }

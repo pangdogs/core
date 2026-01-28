@@ -69,7 +69,6 @@ type iComponent interface {
 	setState(state ComponentState)
 	setReflected(v reflect.Value)
 	setRemovable(b bool)
-	getCallingStateBits() *generic.Bits16
 	getProcessedStateBits() *generic.Bits16
 	getAttachedHandle() (int, int64)
 	setAttachedHandle(idx int, ver int64)
@@ -94,7 +93,6 @@ type ComponentBehavior struct {
 	reflected             reflect.Value
 	removable             bool
 	enable                bool
-	callingStateBits      generic.Bits16
 	processedStateBits    generic.Bits16
 	reentrancyGuard       generic.ReentrancyGuardBits8
 	attachedIndex         int
@@ -165,11 +163,11 @@ func (comp *ComponentBehavior) SetEnable(b bool) {
 		}
 		comp.enable = b
 
-		_EmitEventComponentEnableChanged(comp, comp.instance, b)
-
 		if comp.entity != nil {
 			comp.entity.onComponentEnableChangedIfVersion(comp.attachedIndex, comp.attachedVersion)
 		}
+
+		_EmitEventComponentEnableChanged(comp, comp.instance, b)
 	})
 }
 
@@ -189,11 +187,11 @@ func (comp *ComponentBehavior) Destroy() {
 			return
 		}
 
-		_EmitEventComponentDestroy(comp, comp.instance)
-
 		if comp.entity != nil {
-			comp.entity.removeComponentIfVersion(comp.attachedIndex, comp.attachedVersion)
+			comp.entity.onComponentDestroyIfVersion(comp.attachedIndex, comp.attachedVersion)
 		}
+
+		_EmitEventComponentDestroy(comp, comp.instance)
 	})
 }
 
@@ -231,7 +229,6 @@ func (comp *ComponentBehavior) init(name string, entity Entity, instance Compone
 	comp.instance = instance
 	comp.removable = true
 	comp.enable = true
-	comp.setState(ComponentState_Birth)
 }
 
 func (comp *ComponentBehavior) setId(id uid.Id) {
@@ -244,16 +241,27 @@ func (comp *ComponentBehavior) setBuiltin(builtin *BuiltinComponent) {
 
 func (comp *ComponentBehavior) setState(state ComponentState) {
 	switch state {
-	case ComponentState_Idle, ComponentState_Alive:
-		break
+	case ComponentState_Idle:
+		switch comp.state {
+		case ComponentState_Enable, ComponentState_Start, ComponentState_Alive:
+			break
+		default:
+			return
+		}
+	case ComponentState_Start:
+		switch comp.state {
+		case ComponentState_Enable, ComponentState_Idle:
+			break
+		default:
+			return
+		}
 	default:
-		if comp.processedStateBits.Is(int(state)) {
+		if comp.state >= state {
 			return
 		}
 	}
 
 	comp.state = state
-	comp.processedStateBits.Set(int(state), true)
 
 	switch comp.state {
 	case ComponentState_Death:
@@ -270,10 +278,6 @@ func (comp *ComponentBehavior) setReflected(v reflect.Value) {
 
 func (comp *ComponentBehavior) setRemovable(b bool) {
 	comp.removable = b
-}
-
-func (comp *ComponentBehavior) getCallingStateBits() *generic.Bits16 {
-	return &comp.callingStateBits
 }
 
 func (comp *ComponentBehavior) getProcessedStateBits() *generic.Bits16 {
