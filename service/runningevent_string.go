@@ -18,14 +18,14 @@ func _() {
 	_ = x[RunningEvent_AddInDeactivating-7]
 	_ = x[RunningEvent_AddInDeactivatingDone-8]
 	_ = x[RunningEvent_EntityPTDeclared-9]
-	_ = x[RunningEvent_EntityRegistered-10]
-	_ = x[RunningEvent_EntityUnregistered-11]
-	_ = x[RunningEvent_ComponentPTDeclared-12]
+	_ = x[RunningEvent_ComponentPTDeclared-10]
+	_ = x[RunningEvent_EntityRegistered-11]
+	_ = x[RunningEvent_EntityUnregistered-12]
 }
 
-const _RunningEvent_name = "RunningEvent_BirthRunningEvent_StartingRunningEvent_StartedRunningEvent_TerminatingRunningEvent_TerminatedRunningEvent_AddInActivatingRunningEvent_AddInActivatingDoneRunningEvent_AddInDeactivatingRunningEvent_AddInDeactivatingDoneRunningEvent_EntityPTDeclaredRunningEvent_EntityRegisteredRunningEvent_EntityUnregisteredRunningEvent_ComponentPTDeclared"
+const _RunningEvent_name = "RunningEvent_BirthRunningEvent_StartingRunningEvent_StartedRunningEvent_TerminatingRunningEvent_TerminatedRunningEvent_AddInActivatingRunningEvent_AddInActivatingDoneRunningEvent_AddInDeactivatingRunningEvent_AddInDeactivatingDoneRunningEvent_EntityPTDeclaredRunningEvent_ComponentPTDeclaredRunningEvent_EntityRegisteredRunningEvent_EntityUnregistered"
 
-var _RunningEvent_index = [...]uint16{0, 18, 39, 59, 83, 106, 134, 166, 196, 230, 259, 288, 319, 351}
+var _RunningEvent_index = [...]uint16{0, 18, 39, 59, 83, 106, 134, 166, 196, 230, 259, 291, 320, 351}
 
 func (i RunningEvent) String() string {
 	idx := int(i) - 0
