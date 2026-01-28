@@ -28,8 +28,8 @@ import (
 	"git.golaxy.org/core/utils/types"
 )
 
-// MakeEventTabId 创建事件表Id
-func MakeEventTabId(eventTab any) uint64 {
+// GenEventTabId 生成事件表Id
+func GenEventTabId(eventTab any) uint64 {
 	if eventTab == nil {
 		exception.Panicf("%w: %w: eventTab is nil", ErrEvent, exception.ErrArgs)
 	}
@@ -52,19 +52,19 @@ func MakeEventTabId(eventTab any) uint64 {
 	return uint64(hash.Sum32()) << 32
 }
 
-// MakeEventTabIdT 创建事件表Id
-func MakeEventTabIdT[T any]() uint64 {
-	return MakeEventTabId(types.ZeroT[T]())
+// GenEventTabIdT 生成事件表Id
+func GenEventTabIdT[T any]() uint64 {
+	return GenEventTabId(types.ZeroT[T]())
 }
 
-// MakeEventId 创建事件Id
-func MakeEventId(eventTab any, pos int32) uint64 {
-	return MakeEventTabId(eventTab) + uint64(pos)
+// GenEventId 生成事件Id
+func GenEventId(eventTab any, pos int32) uint64 {
+	return GenEventTabId(eventTab) + uint64(pos)
 }
 
-// MakeEventIdT 创建事件Id
-func MakeEventIdT[T any](pos int32) uint64 {
-	return MakeEventId(types.ZeroT[T](), pos)
+// GenEventIdT 生成事件Id
+func GenEventIdT[T any](pos int32) uint64 {
+	return GenEventId(types.ZeroT[T](), pos)
 }
 
 var (
@@ -74,7 +74,7 @@ var (
 
 // DeclareEventTabId 声明事件表Id
 func DeclareEventTabId(eventTab any) uint64 {
-	id := MakeEventTabId(eventTab)
+	id := GenEventTabId(eventTab)
 	if name, loaded := declareEventTabs.LoadOrStore(id, types.FullNameRT(reflect.TypeOf(eventTab).Elem())); loaded {
 		exception.Panicf("%w: event_tab(%d) has already been declared by %q", ErrEvent, id, name)
 	}
@@ -88,7 +88,7 @@ func DeclareEventTabIdT[T any]() uint64 {
 
 // DeclareEventId 声明事件Id
 func DeclareEventId(eventTab any, pos int32) uint64 {
-	id := MakeEventTabId(eventTab) + uint64(pos)
+	id := GenEventTabId(eventTab) + uint64(pos)
 	if name, loaded := declareEvents.LoadOrStore(id, types.FullNameRT(reflect.TypeOf(eventTab).Elem())); loaded {
 		exception.Panicf("%w: event(%d) has already been declared by %q", ErrEvent, id, name)
 	}
