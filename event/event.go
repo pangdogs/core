@@ -45,7 +45,7 @@ var (
 type IEvent interface {
 	ctrl() IEventCtrl
 	emit(fun generic.Func1[iface.Cache, bool])
-	newHandle(subscriberFace iface.FaceAny, priority int32) Handle
+	addSubscriber(subscriberFace iface.FaceAny, priority int32) Handle
 	removeSubscriber(subscriber any)
 }
 
@@ -175,7 +175,7 @@ func (event *Event) emit(fun generic.Func1[iface.Cache, bool]) {
 	})
 }
 
-func (event *Event) newHandle(subscriberFace iface.FaceAny, priority int32) Handle {
+func (event *Event) addSubscriber(subscriberFace iface.FaceAny, priority int32) Handle {
 	if event.disabled {
 		exception.Panicf("%w: event disabled", ErrEvent)
 	}

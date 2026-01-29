@@ -43,13 +43,3 @@ func (u _UnsafeEvent) Ctrl() IEventCtrl {
 func (u _UnsafeEvent) Emit(fun func(subscriber iface.Cache) bool) {
 	u.emit(fun)
 }
-
-// NewHandle 创建事件句柄
-func (u _UnsafeEvent) NewHandle(subscriberFace iface.FaceAny, priority int32) Handle {
-	return u.newHandle(subscriberFace, priority)
-}
-
-// RemoveSubscriber 删除订阅者
-func (u _UnsafeEvent) RemoveSubscriber(subscriber any) {
-	u.removeSubscriber(subscriber)
-}
