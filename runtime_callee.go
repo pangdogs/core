@@ -27,8 +27,8 @@ import (
 )
 
 var (
-	ErrProcessQueueClosed = fmt.Errorf("%w: process queue is closed", ErrRuntime) // 任务处理流水线关闭
-	ErrProcessQueueFull   = fmt.Errorf("%w: process queue is full", ErrRuntime)   // 任务处理流水线已满
+	ErrTaskQueueClosed = fmt.Errorf("%w: task queue is closed", ErrRuntime) // 任务处理流水线关闭
+	ErrTaskQueueFull   = fmt.Errorf("%w: task queue is full", ErrRuntime)   // 任务处理流水线已满
 )
 
 // PushCallAsync 将调用函数压入接受者的任务处理流水线，返回AsyncRet。
@@ -63,20 +63,20 @@ func (rt *RuntimeBehavior) PushCallDelegateVoidAsync(fun generic.DelegateVoidVar
 	})
 }
 
-func (rt *RuntimeBehavior) pushCallTask(task _Task) async.AsyncRet {
+func (rt *RuntimeBehavior) pushCallTask(task _Task) (asyncRet async.AsyncRet) {
 	task.typ = _TaskType_Call
 	task.asyncRet = async.MakeAsyncRet()
 
 	defer func() {
 		if panicInfo := recover(); panicInfo != nil {
-			async.Return(task.asyncRet, async.MakeRet(nil, ErrProcessQueueClosed))
+			asyncRet = async.Return(task.asyncRet, async.MakeRet(nil, ErrTaskQueueClosed))
 		}
 	}()
 
 	select {
-	case rt.processQueue <- task:
+	case rt.taskQueue <- task:
 		return task.asyncRet
 	default:
-		return async.Return(task.asyncRet, async.MakeRet(nil, ErrProcessQueueFull))
+		return async.Return(task.asyncRet, async.MakeRet(nil, ErrTaskQueueFull))
 	}
 }

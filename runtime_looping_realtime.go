@@ -39,7 +39,7 @@ func (rt *RuntimeBehavior) loopingRealTime() {
 loop:
 	for rt.frameLoopBegin(); ; {
 		select {
-		case task := <-rt.processQueue:
+		case task := <-rt.taskQueue:
 			rt.runTask(task)
 
 		case <-gcTicker.C:
@@ -51,12 +51,12 @@ loop:
 	}
 
 	wg.Wait()
-	close(rt.processQueue)
+	close(rt.taskQueue)
 
 loopEnding:
 	for {
 		select {
-		case task, ok := <-rt.processQueue:
+		case task, ok := <-rt.taskQueue:
 			if !ok {
 				break loopEnding
 			}
@@ -88,7 +88,7 @@ func (rt *RuntimeBehavior) makeFrameTasks(wg *sync.WaitGroup, curFrames, totalFr
 		select {
 		case <-updateTicker.C:
 			select {
-			case rt.processQueue <- _Task{typ: _TaskType_Frame, action: rt.frameLoop, done: done}:
+			case rt.taskQueue <- _Task{typ: _TaskType_Frame, action: rt.frameLoop, done: done}:
 				select {
 				case <-done:
 					curFrames++

@@ -20,8 +20,6 @@
 package core
 
 import (
-	"context"
-
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/runtime"
@@ -38,7 +36,7 @@ func (rt *RuntimeBehavior) Run() async.AsyncRet {
 
 	select {
 	case <-ctx.Done():
-		exception.Panicf("%w: %w", ErrRuntime, context.Canceled)
+		exception.Panicf("%w: %w", ErrRuntime, ctx.Err())
 	case <-ctx.Terminated():
 		exception.Panicf("%w: terminated", ErrRuntime)
 	default:

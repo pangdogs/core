@@ -73,7 +73,7 @@ type RuntimeBehavior struct {
 	ctx                                                  runtime.Context
 	options                                              RuntimeOptions
 	isRunning                                            atomic.Bool
-	processQueue                                         chan _Task
+	taskQueue                                            chan _Task
 	handleEventEntityManagerAddEntity                    runtime.EventEntityManagerAddEntity
 	handleEventEntityManagerRemoveEntity                 runtime.EventEntityManagerRemoveEntity
 	handleEventEntityManagerEntityAddComponents          runtime.EventEntityManagerEntityAddComponents
@@ -116,7 +116,7 @@ func (rt *RuntimeBehavior) init(rtCtx runtime.Context, options RuntimeOptions) {
 		rt.options.InstanceFace = iface.MakeFaceT[Runtime](rt)
 	}
 
-	rt.processQueue = make(chan _Task, rt.options.ProcessQueueCapacity)
+	rt.taskQueue = make(chan _Task, rt.options.TaskQueueCapacity)
 
 	runtime.UnsafeContext(rtCtx).SetFrame(rt.options.Frame)
 	runtime.UnsafeContext(rtCtx).SetCallee(rt.getInstance())

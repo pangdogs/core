@@ -20,7 +20,6 @@
 package core
 
 import (
-	"context"
 	"sync"
 	"time"
 
@@ -39,7 +38,7 @@ func (svc *ServiceBehavior) Run() async.AsyncRet {
 
 	select {
 	case <-ctx.Done():
-		exception.Panicf("%w: %w", ErrService, context.Canceled)
+		exception.Panicf("%w: %w", ErrService, ctx.Err())
 	case <-ctx.Terminated():
 		exception.Panicf("%w: terminated", ErrService)
 	default:

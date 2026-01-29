@@ -95,7 +95,7 @@ func (asyncRet AsyncRetT[T]) Wait(ctx context.Context) RetT[T] {
 		}
 		return ret
 	case <-ctx.Done():
-		return MakeRetT[T](types.ZeroT[T](), context.Canceled)
+		return MakeRetT[T](types.ZeroT[T](), ctx.Err())
 	}
 }
 
@@ -108,8 +108,12 @@ func (asyncRet AsyncRetT[T]) Context(ctx context.Context) context.Context {
 	ctx, cancel := context.WithCancel(ctx)
 
 	go func() {
-		<-asyncRet
-		cancel()
+		select {
+		case <-ctx.Done():
+			return
+		case <-asyncRet:
+			cancel()
+		}
 	}()
 
 	return ctx

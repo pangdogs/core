@@ -30,7 +30,7 @@ func (rt *RuntimeBehavior) loopingNoFrame() {
 loop:
 	for {
 		select {
-		case task := <-rt.processQueue:
+		case task := <-rt.taskQueue:
 			rt.runTask(task)
 
 		case <-gcTicker.C:
@@ -41,12 +41,12 @@ loop:
 		}
 	}
 
-	close(rt.processQueue)
+	close(rt.taskQueue)
 
 loopEnding:
 	for {
 		select {
-		case task, ok := <-rt.processQueue:
+		case task, ok := <-rt.taskQueue:
 			if !ok {
 				break loopEnding
 			}
