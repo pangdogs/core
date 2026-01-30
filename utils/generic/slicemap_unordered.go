@@ -25,16 +25,7 @@ import (
 	"git.golaxy.org/core/utils/types"
 )
 
-func NewUnorderedSliceMap[K comparable, V any](kvs ...UnorderedKV[K, V]) *UnorderedSliceMap[K, V] {
-	m := make(UnorderedSliceMap[K, V], 0, len(kvs))
-	for i := range kvs {
-		kv := kvs[i]
-		m.Add(kv.K, kv.V)
-	}
-	return &m
-}
-
-func NewUnorderedSliceMapVal[K comparable, V any](kvs ...UnorderedKV[K, V]) UnorderedSliceMap[K, V] {
+func NewUnorderedSliceMap[K comparable, V any](kvs ...UnorderedKV[K, V]) UnorderedSliceMap[K, V] {
 	m := make(UnorderedSliceMap[K, V], 0, len(kvs))
 	for i := range kvs {
 		kv := kvs[i]
@@ -43,15 +34,7 @@ func NewUnorderedSliceMapVal[K comparable, V any](kvs ...UnorderedKV[K, V]) Unor
 	return m
 }
 
-func NewUnorderedSliceMapFromGoMap[K comparable, V any](dict map[K]V) *UnorderedSliceMap[K, V] {
-	m := make(UnorderedSliceMap[K, V], 0, len(dict))
-	for k, v := range dict {
-		m.Add(k, v)
-	}
-	return &m
-}
-
-func NewUnorderedSliceMapValFromGoMap[K comparable, V any](dict map[K]V) UnorderedSliceMap[K, V] {
+func NewUnorderedSliceMapFromGoMap[K comparable, V any](dict map[K]V) UnorderedSliceMap[K, V] {
 	m := make(UnorderedSliceMap[K, V], 0, len(dict))
 	for k, v := range dict {
 		m.Add(k, v)

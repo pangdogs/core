@@ -56,7 +56,7 @@ func (descr *ComponentDescriptor) SetRemovable(b bool) *ComponentDescriptor {
 }
 
 func (descr *ComponentDescriptor) SetMeta(dict map[string]any) *ComponentDescriptor {
-	descr.Meta = meta.NewVal(dict)
+	descr.Meta = meta.New(dict)
 	return descr
 }
 

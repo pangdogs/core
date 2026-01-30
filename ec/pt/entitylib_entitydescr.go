@@ -71,7 +71,7 @@ func (descr *EntityDescriptor) SetComponentUniqueID(b bool) *EntityDescriptor {
 }
 
 func (descr *EntityDescriptor) SetMeta(dict map[string]any) *EntityDescriptor {
-	descr.Meta = meta.NewVal(dict)
+	descr.Meta = meta.New(dict)
 	return descr
 }
 

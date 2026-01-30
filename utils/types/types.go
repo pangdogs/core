@@ -56,20 +56,20 @@ func NewT[T any]() *T {
 	return &zero
 }
 
-// NewCopied 新建拷贝值
-func NewCopied(src any) reflect.Value {
-	return NewCopiedRT(reflect.ValueOf(src))
+// PointerTo 转指针
+func PointerTo(src any) reflect.Value {
+	return PointerToRT(reflect.ValueOf(src))
 }
 
-// NewCopiedRT 新建拷贝值
-func NewCopiedRT(src reflect.Value) reflect.Value {
-	copied := reflect.New(src.Type())
-	copied.Elem().Set(src)
-	return copied
+// PointerToRT 转指针
+func PointerToRT(src reflect.Value) reflect.Value {
+	val := reflect.New(src.Type())
+	val.Elem().Set(src)
+	return val
 }
 
-// NewCopiedT 新建拷贝值
-func NewCopiedT[T any](src T) *T {
+// PointerToT 转指针
+func PointerToT[T any](src T) *T {
 	return &src
 }
 

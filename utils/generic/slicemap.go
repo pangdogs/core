@@ -26,16 +26,7 @@ import (
 	"git.golaxy.org/core/utils/types"
 )
 
-func NewSliceMap[K cmp.Ordered, V any](kvs ...KV[K, V]) *SliceMap[K, V] {
-	m := make(SliceMap[K, V], 0, len(kvs))
-	for i := range kvs {
-		kv := kvs[i]
-		m.Add(kv.K, kv.V)
-	}
-	return &m
-}
-
-func NewSliceMapVal[K cmp.Ordered, V any](kvs ...KV[K, V]) SliceMap[K, V] {
+func NewSliceMap[K cmp.Ordered, V any](kvs ...KV[K, V]) SliceMap[K, V] {
 	m := make(SliceMap[K, V], 0, len(kvs))
 	for i := range kvs {
 		kv := kvs[i]
@@ -44,15 +35,7 @@ func NewSliceMapVal[K cmp.Ordered, V any](kvs ...KV[K, V]) SliceMap[K, V] {
 	return m
 }
 
-func NewSliceMapFromGoMap[K cmp.Ordered, V any](dict map[K]V) *SliceMap[K, V] {
-	m := make(SliceMap[K, V], 0, len(dict))
-	for k, v := range dict {
-		m.Add(k, v)
-	}
-	return &m
-}
-
-func NewSliceMapValFromGoMap[K cmp.Ordered, V any](dict map[K]V) SliceMap[K, V] {
+func NewSliceMapFromGoMap[K cmp.Ordered, V any](dict map[K]V) SliceMap[K, V] {
 	m := make(SliceMap[K, V], 0, len(dict))
 	for k, v := range dict {
 		m.Add(k, v)

@@ -93,7 +93,7 @@ func (c *EntityCreator) SetMeta(dict map[string]any) *EntityCreator {
 	if c.meta == nil {
 		c.settings = append(c.settings, c.withMeta())
 	}
-	c.meta = meta.NewVal(dict)
+	c.meta = meta.New(dict)
 	return c
 }
 
@@ -122,7 +122,7 @@ func (c *EntityCreator) MergeMetaIfAbsent(dict map[string]any) *EntityCreator {
 // AssignMeta 赋值Meta信息
 func (c *EntityCreator) AssignMeta(m meta.Meta) *EntityCreator {
 	if m == nil {
-		m = meta.NewVal(nil)
+		m = meta.New(nil)
 	}
 	if c.meta == nil {
 		c.settings = append(c.settings, c.withMeta())
