@@ -92,7 +92,6 @@ func TimeAfterAsync(ctx context.Context, dur time.Duration) async.AsyncRet {
 		case <-timer.C:
 			async.YieldReturn(ctx, asyncRet, async.VoidRet)
 		case <-ctx.Done():
-			break
 		}
 
 		async.YieldBreak(asyncRet)
@@ -117,7 +116,6 @@ func TimeAtAsync(ctx context.Context, at time.Time) async.AsyncRet {
 		case <-timer.C:
 			async.YieldReturn(ctx, asyncRet, async.VoidRet)
 		case <-ctx.Done():
-			break
 		}
 
 		async.YieldBreak(asyncRet)
