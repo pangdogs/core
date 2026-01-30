@@ -71,3 +71,13 @@ func (es *EventStream[T]) Publish(event T) {
 		subscriber.In() <- event
 	}
 }
+
+func (es *EventStream[T]) Clear() {
+	es.mutex.Lock()
+	defer es.mutex.Unlock()
+
+	for subscriber := range es.subscribers {
+		subscriber.Close()
+	}
+	es.subscribers = nil
+}
