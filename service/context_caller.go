@@ -79,12 +79,12 @@ func checkEntity(entity ec.Entity) error {
 func (ctx *ContextBehavior) CallAsync(entityId uid.Id, fun generic.FuncVar1[ec.Entity, any, async.Ret], args ...any) async.AsyncRet {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
-		return async.Return(async.MakeAsyncRet(), async.MakeRet(nil, err))
+		return async.Return(async.NewAsyncRet(), async.NewRet(nil, err))
 	}
 
 	return getCaller(entity).CallAsync(func(...any) async.Ret {
 		if err := checkEntity(entity); err != nil {
-			return async.MakeRet(nil, err)
+			return async.NewRet(nil, err)
 		}
 		return fun.UnsafeCall(entity, args...)
 	})
@@ -98,12 +98,12 @@ func (ctx *ContextBehavior) CallAsync(entityId uid.Id, fun generic.FuncVar1[ec.E
 func (ctx *ContextBehavior) CallDelegateAsync(entityId uid.Id, fun generic.DelegateVar1[ec.Entity, any, async.Ret], args ...any) async.AsyncRet {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
-		return async.Return(async.MakeAsyncRet(), async.MakeRet(nil, err))
+		return async.Return(async.NewAsyncRet(), async.NewRet(nil, err))
 	}
 
 	return getCaller(entity).CallAsync(func(...any) async.Ret {
 		if err := checkEntity(entity); err != nil {
-			return async.MakeRet(nil, err)
+			return async.NewRet(nil, err)
 		}
 		return fun.UnsafeCall(nil, entity, args...)
 	})
@@ -117,12 +117,12 @@ func (ctx *ContextBehavior) CallDelegateAsync(entityId uid.Id, fun generic.Deleg
 func (ctx *ContextBehavior) CallVoidAsync(entityId uid.Id, fun generic.ActionVar1[ec.Entity, any], args ...any) async.AsyncRet {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
-		return async.Return(async.MakeAsyncRet(), async.MakeRet(nil, err))
+		return async.Return(async.NewAsyncRet(), async.NewRet(nil, err))
 	}
 
 	return getCaller(entity).CallAsync(func(...any) async.Ret {
 		if err := checkEntity(entity); err != nil {
-			return async.MakeRet(nil, err)
+			return async.NewRet(nil, err)
 		}
 		fun.UnsafeCall(entity, args...)
 		return async.VoidRet
@@ -137,12 +137,12 @@ func (ctx *ContextBehavior) CallVoidAsync(entityId uid.Id, fun generic.ActionVar
 func (ctx *ContextBehavior) CallDelegateVoidAsync(entityId uid.Id, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) async.AsyncRet {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
-		return async.Return(async.MakeAsyncRet(), async.MakeRet(nil, err))
+		return async.Return(async.NewAsyncRet(), async.NewRet(nil, err))
 	}
 
 	return getCaller(entity).CallAsync(func(...any) async.Ret {
 		if err := checkEntity(entity); err != nil {
-			return async.MakeRet(nil, err)
+			return async.NewRet(nil, err)
 		}
 		fun.UnsafeCall(nil, entity, args...)
 		return async.VoidRet

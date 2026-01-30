@@ -36,14 +36,14 @@ import (
 type ServiceAddInManager interface {
 	AddInManager
 
-	ListAndWatch(ctx context.Context) <-chan any
+	// EventStream 插件事件流
+	EventStream(ctx context.Context) <-chan any
 }
 
 // NewServiceAddInManager 创建服务插件管理器
 func NewServiceAddInManager() ServiceAddInManager {
 	return &_ServiceAddInManager{
 		addInNameIndex: map[string]int{},
-		watchers:       map[*generic.UnboundedChannel[any]]struct{}{},
 	}
 }
 
@@ -51,7 +51,7 @@ type _ServiceAddInManager struct {
 	sync.RWMutex
 	addInNameIndex map[string]int
 	addInList      generic.FreeList[*_ServiceAddInStatus]
-	watchers       map[*generic.UnboundedChannel[any]]struct{}
+	eventStream    generic.EventStream[any]
 }
 
 // GetAddInManager 获取插件管理器
@@ -84,7 +84,7 @@ func (mgr *_ServiceAddInManager) Install(addInFace iface.FaceAny, name ...string
 		reflected:    reflect.ValueOf(addInFace.Iface),
 	}
 	for i := range status.waitState {
-		status.waitState[i] = async.MakeAsyncRet()
+		status.waitState[i] = async.NewAsyncRet()
 	}
 	slot := mgr.addInList.PushBack(status)
 	status.idx = slot.Index()
@@ -93,9 +93,7 @@ func (mgr *_ServiceAddInManager) Install(addInFace iface.FaceAny, name ...string
 
 	async.YieldBreakT(status.waitState[AddInState_Loaded])
 
-	for watcher := range mgr.watchers {
-		watcher.In() <- &EventServiceInstallAddIn{Status: status}
-	}
+	mgr.eventStream.Publish(&EventServiceInstallAddIn{Status: status})
 
 	return status
 }
@@ -127,17 +125,17 @@ func (mgr *_ServiceAddInManager) List() []AddInStatus {
 	mgr.RLock()
 	defer mgr.RUnlock()
 
-	status := make([]AddInStatus, 0, mgr.addInList.Len())
+	statuses := make([]AddInStatus, 0, mgr.addInList.Len())
 
 	mgr.addInList.TraversalEach(func(slot *generic.FreeSlot[*_ServiceAddInStatus]) {
-		status = append(status, slot.V)
+		statuses = append(statuses, slot.V)
 	})
 
-	return status
+	return statuses
 }
 
-// ListAndWatch 获取并观察所有插件变化
-func (mgr *_ServiceAddInManager) ListAndWatch(ctx context.Context) <-chan any {
+// EventStream 插件事件流
+func (mgr *_ServiceAddInManager) EventStream(ctx context.Context) <-chan any {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -145,28 +143,13 @@ func (mgr *_ServiceAddInManager) ListAndWatch(ctx context.Context) <-chan any {
 	mgr.Lock()
 	defer mgr.Unlock()
 
-	watcher := generic.NewUnboundedChannel[any]()
-	mgr.watchers[watcher] = struct{}{}
-
-	statusList := make([]AddInStatus, 0, mgr.addInList.Len())
+	statuses := make([]AddInStatus, 0, mgr.addInList.Len())
 
 	mgr.addInList.TraversalEach(func(slot *generic.FreeSlot[*_ServiceAddInStatus]) {
-		statusList = append(statusList, slot.V)
+		statuses = append(statuses, slot.V)
 	})
 
-	watcher.In() <- &EventServiceAddInSnapshot{
-		StatusList: statusList,
-	}
-
-	go func() {
-		<-ctx.Done()
-		mgr.Lock()
-		defer mgr.Unlock()
-		watcher.Close()
-		delete(mgr.watchers, watcher)
-	}()
-
-	return watcher.Out()
+	return mgr.eventStream.Subscribe(ctx, &EventServiceAddInSnapshot{Statuses: statuses})
 }
 
 func (mgr *_ServiceAddInManager) uninstallIfVersion(idx int, ver int64) {

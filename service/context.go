@@ -37,7 +37,7 @@ import (
 
 // NewContext 创建服务上下文
 func NewContext(settings ...option.Setting[ContextOptions]) Context {
-	return UnsafeNewContext(option.Make(With.Default(), settings...))
+	return UnsafeNewContext(option.New(With.Default(), settings...))
 }
 
 // Deprecated: UnsafeNewContext 内部创建服务上下文
@@ -130,7 +130,7 @@ func (ctx *ContextBehavior) init(options ContextOptions) {
 	ctx.options = options
 
 	if ctx.options.InstanceFace.IsNil() {
-		ctx.options.InstanceFace = iface.MakeFaceT[Context](ctx)
+		ctx.options.InstanceFace = iface.NewFaceT[Context](ctx)
 	}
 
 	if ctx.options.Context == nil {

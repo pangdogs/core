@@ -60,7 +60,7 @@ func (c *EntityCreator) SetInstanceFace(face iface.Face[ec.Entity]) *EntityCreat
 
 // SetInstance 设置实例，用于扩展实体能力
 func (c *EntityCreator) SetInstance(instance ec.Entity) *EntityCreator {
-	c.settings = append(c.settings, ec.With.InstanceFace(iface.MakeFaceT(instance)))
+	c.settings = append(c.settings, ec.With.InstanceFace(iface.NewFaceT(instance)))
 	return c
 }
 
@@ -93,7 +93,7 @@ func (c *EntityCreator) SetMeta(dict map[string]any) *EntityCreator {
 	if c.meta == nil {
 		c.settings = append(c.settings, c.withMeta())
 	}
-	c.meta = meta.M(dict)
+	c.meta = meta.NewVal(dict)
 	return c
 }
 
@@ -122,7 +122,7 @@ func (c *EntityCreator) MergeMetaIfAbsent(dict map[string]any) *EntityCreator {
 // AssignMeta 赋值Meta信息
 func (c *EntityCreator) AssignMeta(m meta.Meta) *EntityCreator {
 	if m == nil {
-		m = meta.M(nil)
+		m = meta.NewVal(nil)
 	}
 	if c.meta == nil {
 		c.settings = append(c.settings, c.withMeta())

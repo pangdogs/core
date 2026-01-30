@@ -78,12 +78,7 @@ func (s *_ServiceAddInStatus) State() AddInState {
 
 // Uninstall 卸载
 func (s *_ServiceAddInStatus) Uninstall() {
-	s.mgr.Lock()
-	defer s.mgr.Unlock()
-
-	for watcher := range s.mgr.watchers {
-		watcher.In() <- &EventServiceUninstallAddIn{Status: s}
-	}
+	s.mgr.eventStream.Publish(&EventServiceUninstallAddIn{Status: s})
 }
 
 // WaitState 等待状态完成

@@ -34,7 +34,7 @@ func (rt *RuntimeBehavior) loopingRealTime() {
 	frame := rt.options.Frame
 
 	wg.Add(1)
-	go rt.makeFrameTasks(wg, frame.GetCurFrames()+1, frame.GetTotalFrames(), frame.GetTargetFPS())
+	go rt.scheduleFrameTasks(wg, frame.GetCurFrames()+1, frame.GetTotalFrames(), frame.GetTargetFPS())
 
 loop:
 	for rt.frameLoopBegin(); ; {
@@ -71,7 +71,7 @@ loopEnding:
 	rt.frameLoopEnd()
 }
 
-func (rt *RuntimeBehavior) makeFrameTasks(wg *sync.WaitGroup, curFrames, totalFrames int64, targetFPS float64) {
+func (rt *RuntimeBehavior) scheduleFrameTasks(wg *sync.WaitGroup, curFrames, totalFrames int64, targetFPS float64) {
 	defer wg.Done()
 
 	updateTicker := time.NewTicker(time.Duration(float64(time.Second) / targetFPS))

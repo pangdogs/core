@@ -110,13 +110,13 @@ func (mgr *_RuntimeAddInManager) Get(name string) (AddInStatus, bool) {
 
 // List 获取所有插件
 func (mgr *_RuntimeAddInManager) List() []AddInStatus {
-	status := make([]AddInStatus, 0, mgr.addInList.Len())
+	statuses := make([]AddInStatus, 0, mgr.addInList.Len())
 
 	mgr.addInList.TraversalEach(func(slot *generic.FreeSlot[*_RuntimeAddInStatus]) {
-		status = append(status, slot.V)
+		statuses = append(statuses, slot.V)
 	})
 
-	return status
+	return statuses
 }
 
 func (mgr *_RuntimeAddInManager) uninstallIfVersion(idx int, ver int64) {

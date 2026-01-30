@@ -31,5 +31,5 @@ type EventServiceUninstallAddIn struct {
 
 // EventServiceAddInSnapshot 服务插件快照事件
 type EventServiceAddInSnapshot struct {
-	StatusList []AddInStatus
+	Statuses []AddInStatus
 }

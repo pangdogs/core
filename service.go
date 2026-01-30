@@ -31,7 +31,7 @@ import (
 
 // NewService 创建服务
 func NewService(svcCtx service.Context, settings ...option.Setting[ServiceOptions]) Service {
-	return UnsafeNewService(svcCtx, option.Make(With.Service.Default(), settings...))
+	return UnsafeNewService(svcCtx, option.New(With.Service.Default(), settings...))
 }
 
 // Deprecated: UnsafeNewService 内部创建服务
@@ -92,7 +92,7 @@ func (svc *ServiceBehavior) init(svcCtx service.Context, options ServiceOptions)
 	svc.options = options
 
 	if svc.options.InstanceFace.IsNil() {
-		svc.options.InstanceFace = iface.MakeFaceT[Service](svc)
+		svc.options.InstanceFace = iface.NewFaceT[Service](svc)
 	}
 
 	svc.emitEventRunningEvent(service.RunningEvent_Birth)

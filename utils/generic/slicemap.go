@@ -26,15 +26,6 @@ import (
 	"git.golaxy.org/core/utils/types"
 )
 
-func MakeSliceMap[K cmp.Ordered, V any](kvs ...KV[K, V]) SliceMap[K, V] {
-	m := make(SliceMap[K, V], 0, len(kvs))
-	for i := range kvs {
-		kv := kvs[i]
-		m.Add(kv.K, kv.V)
-	}
-	return m
-}
-
 func NewSliceMap[K cmp.Ordered, V any](kvs ...KV[K, V]) *SliceMap[K, V] {
 	m := make(SliceMap[K, V], 0, len(kvs))
 	for i := range kvs {
@@ -44,10 +35,11 @@ func NewSliceMap[K cmp.Ordered, V any](kvs ...KV[K, V]) *SliceMap[K, V] {
 	return &m
 }
 
-func MakeSliceMapFromGoMap[K cmp.Ordered, V any](dict map[K]V) SliceMap[K, V] {
-	m := make(SliceMap[K, V], 0, len(dict))
-	for k, v := range dict {
-		m.Add(k, v)
+func NewSliceMapVal[K cmp.Ordered, V any](kvs ...KV[K, V]) SliceMap[K, V] {
+	m := make(SliceMap[K, V], 0, len(kvs))
+	for i := range kvs {
+		kv := kvs[i]
+		m.Add(kv.K, kv.V)
 	}
 	return m
 }
@@ -58,6 +50,14 @@ func NewSliceMapFromGoMap[K cmp.Ordered, V any](dict map[K]V) *SliceMap[K, V] {
 		m.Add(k, v)
 	}
 	return &m
+}
+
+func NewSliceMapValFromGoMap[K cmp.Ordered, V any](dict map[K]V) SliceMap[K, V] {
+	m := make(SliceMap[K, V], 0, len(dict))
+	for k, v := range dict {
+		m.Add(k, v)
+	}
+	return m
 }
 
 type KV[K cmp.Ordered, V any] struct {

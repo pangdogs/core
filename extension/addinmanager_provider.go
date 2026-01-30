@@ -53,7 +53,7 @@ func Install[T any](provider AddInProvider, addIn T, name ...string) AddInStatus
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrExtension, exception.ErrArgs)
 	}
-	return provider.GetAddInManager().Install(iface.MakeFaceAny(addIn), name...)
+	return provider.GetAddInManager().Install(iface.NewFaceAny(addIn), name...)
 }
 
 // Uninstall 卸载插件

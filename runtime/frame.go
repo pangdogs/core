@@ -28,7 +28,7 @@ import (
 // NewFrame 创建帧，在运行时初始化时可以设置帧，用于设置运行时帧更新方式，在逻辑运行过程中可以在运行时上下文中获取帧信息。
 func NewFrame(settings ...option.Setting[FrameOptions]) Frame {
 	frame := &_FrameBehavior{}
-	frame.init(option.Make(With.Frame.Default(), settings...))
+	frame.init(option.New(With.Frame.Default(), settings...))
 	return frame
 }
 

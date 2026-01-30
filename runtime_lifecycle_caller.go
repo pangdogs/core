@@ -21,7 +21,7 @@ package core
 
 import "git.golaxy.org/core/ec"
 
-func makeEntityLifecycleCaller(entity ec.Entity) _EntityLifecycleCaller {
+func newEntityLifecycleCaller(entity ec.Entity) _EntityLifecycleCaller {
 	return _EntityLifecycleCaller{entity: entity, state: entity.GetState()}
 }
 
@@ -57,7 +57,7 @@ func (c _EntityLifecycleCaller) MarkProcessed() bool {
 	return c.SetProcessed(c.state)
 }
 
-func makeComponentLifecycleCaller(comp ec.Component) _ComponentLifecycleCaller {
+func newComponentLifecycleCaller(comp ec.Component) _ComponentLifecycleCaller {
 	return _ComponentLifecycleCaller{component: comp, state: comp.GetState()}
 }
 

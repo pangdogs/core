@@ -43,8 +43,8 @@ type EntityLib interface {
 	Get(prototype string) (ec.EntityPT, bool)
 	// List 获取所有实体原型
 	List() []ec.EntityPT
-	// ListAndWatch 获取并观察所有实体原型的声明
-	ListAndWatch(ctx context.Context) <-chan ec.EntityPT
+	// EventStream 组件声明事件流
+	EventStream(ctx context.Context) <-chan ec.EntityPT
 }
 
 // NewEntityLib 创建实体原型库
@@ -56,7 +56,6 @@ func NewEntityLib(compLib ComponentLib) EntityLib {
 	return &_EntityLib{
 		compLib:       compLib,
 		entityPTIndex: map[string]int{},
-		watchers:      map[*generic.UnboundedChannel[ec.EntityPT]]struct{}{},
 	}
 }
 
@@ -65,7 +64,7 @@ type _EntityLib struct {
 	compLib       ComponentLib
 	entityPTIndex map[string]int
 	entityPTList  generic.FreeList[ec.EntityPT]
-	watchers      map[*generic.UnboundedChannel[ec.EntityPT]]struct{}
+	eventStream   generic.EventStream[ec.EntityPT]
 }
 
 // GetEntityLib 获取实体原型库
@@ -179,9 +178,7 @@ func (lib *_EntityLib) Declare(prototype any, comps ...any) ec.EntityPT {
 
 	lib.entityPTIndex[entityDescr.Prototype] = lib.entityPTList.PushBack(entityPT).Index()
 
-	for watcher := range lib.watchers {
-		watcher.In() <- entityPT
-	}
+	lib.eventStream.Publish(entityPT)
 
 	return entityPT
 }
@@ -207,8 +204,8 @@ func (lib *_EntityLib) List() []ec.EntityPT {
 	return lib.entityPTList.ToSlice()
 }
 
-// ListAndWatch 获取并观察所有实体原型的声明
-func (lib *_EntityLib) ListAndWatch(ctx context.Context) <-chan ec.EntityPT {
+// EventStream 组件声明事件流
+func (lib *_EntityLib) EventStream(ctx context.Context) <-chan ec.EntityPT {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -216,20 +213,5 @@ func (lib *_EntityLib) ListAndWatch(ctx context.Context) <-chan ec.EntityPT {
 	lib.Lock()
 	defer lib.Unlock()
 
-	watcher := generic.NewUnboundedChannel[ec.EntityPT]()
-	lib.watchers[watcher] = struct{}{}
-
-	lib.entityPTList.TraversalEach(func(slot *generic.FreeSlot[ec.EntityPT]) {
-		watcher.In() <- slot.V
-	})
-
-	go func() {
-		<-ctx.Done()
-		lib.Lock()
-		defer lib.Unlock()
-		watcher.Close()
-		delete(lib.watchers, watcher)
-	}()
-
-	return watcher.Out()
+	return lib.eventStream.Subscribe(ctx, lib.entityPTList.ToSlice()...)
 }

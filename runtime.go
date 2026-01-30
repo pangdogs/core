@@ -36,7 +36,7 @@ import (
 
 // NewRuntime 创建运行时
 func NewRuntime(rtCtx runtime.Context, settings ...option.Setting[RuntimeOptions]) Runtime {
-	return UnsafeNewRuntime(rtCtx, option.Make(With.Runtime.Default(), settings...))
+	return UnsafeNewRuntime(rtCtx, option.New(With.Runtime.Default(), settings...))
 }
 
 // Deprecated: UnsafeNewRuntime 内部创建运行时
@@ -113,7 +113,7 @@ func (rt *RuntimeBehavior) init(rtCtx runtime.Context, options RuntimeOptions) {
 	rt.options = options
 
 	if rt.options.InstanceFace.IsNil() {
-		rt.options.InstanceFace = iface.MakeFaceT[Runtime](rt)
+		rt.options.InstanceFace = iface.NewFaceT[Runtime](rt)
 	}
 
 	rt.taskQueue = make(chan _Task, rt.options.TaskQueueCapacity)
@@ -156,7 +156,7 @@ func (rt *RuntimeBehavior) onEntityManagerAddEntity(entityManager runtime.Entity
 	})
 
 	{
-		caller := makeEntityLifecycleCaller(entity)
+		caller := newEntityLifecycleCaller(entity)
 
 		if !caller.Call(func() {
 			rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivating, entity)
@@ -205,7 +205,7 @@ func (rt *RuntimeBehavior) onEntityManagerAddEntity(entityManager runtime.Entity
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Start)
 
 	{
-		caller := makeEntityLifecycleCaller(entity)
+		caller := newEntityLifecycleCaller(entity)
 
 		if !caller.Call(func() {
 			entity.RangeComponents(func(comp ec.Component) bool {
@@ -254,7 +254,7 @@ func (rt *RuntimeBehavior) onEntityManagerRemoveEntity(entityManager runtime.Ent
 	rt.emitEventRunningEvent(runtime.RunningEvent_EntityDeactivating, entity)
 
 	{
-		caller := makeEntityLifecycleCaller(entity)
+		caller := newEntityLifecycleCaller(entity)
 
 		if caller.IsProcessed(ec.EntityState_Start) && caller.MarkProcessed() {
 			if cb, ok := entity.(LifecycleEntityShut); ok {
@@ -270,7 +270,7 @@ func (rt *RuntimeBehavior) onEntityManagerRemoveEntity(entityManager runtime.Ent
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Death)
 
 	{
-		caller := makeEntityLifecycleCaller(entity)
+		caller := newEntityLifecycleCaller(entity)
 
 		entity.ReversedEachComponents(func(comp ec.Component) {
 			rt.disableDeathComponent(comp)
@@ -305,7 +305,7 @@ func (rt *RuntimeBehavior) onEntityManagerEntityAddComponents(entityManager runt
 	}
 
 	{
-		caller := makeEntityLifecycleCaller(entity)
+		caller := newEntityLifecycleCaller(entity)
 
 		if !caller.Call(func() {
 			rt.emitEventRunningEvent(runtime.RunningEvent_EntityAddingComponents, entity, components)
@@ -370,7 +370,7 @@ func (rt *RuntimeBehavior) onEntityManagerEntityRemoveComponent(entityManager ru
 	}
 
 	{
-		caller := makeEntityLifecycleCaller(entity)
+		caller := newEntityLifecycleCaller(entity)
 
 		if !caller.Call(func() {
 			rt.emitEventRunningEvent(runtime.RunningEvent_EntityRemovingComponent, entity, component)
@@ -411,7 +411,7 @@ func (rt *RuntimeBehavior) onEntityManagerEntityComponentEnableChanged(entityMan
 	}
 
 	{
-		caller := makeEntityLifecycleCaller(entity)
+		caller := newEntityLifecycleCaller(entity)
 
 		if enable {
 			if !caller.Call(func() {
@@ -445,7 +445,7 @@ func (rt *RuntimeBehavior) onEntityManagerEntityFirstTouchComponent(entityManage
 	ec.UnsafeComponent(component).SetState(ec.ComponentState_Awake)
 
 	{
-		caller := makeEntityLifecycleCaller(entity)
+		caller := newEntityLifecycleCaller(entity)
 
 		if !caller.Call(func() {
 			rt.awakeComponent(component)
@@ -483,7 +483,7 @@ func (rt *RuntimeBehavior) awakeComponent(comp ec.Component) (err error) {
 	}
 
 	{
-		caller := makeComponentLifecycleCaller(comp)
+		caller := newComponentLifecycleCaller(comp)
 
 		if !caller.Call(func() {
 			if !caller.MarkProcessed() {
@@ -513,7 +513,7 @@ func (rt *RuntimeBehavior) enableAwokeComponent(comp ec.Component) (err error) {
 	}
 
 	{
-		caller := makeComponentLifecycleCaller(comp)
+		caller := newComponentLifecycleCaller(comp)
 
 		if !caller.Call(func() {
 			if !caller.MarkProcessed() {
@@ -545,7 +545,7 @@ func (rt *RuntimeBehavior) startComponent(comp ec.Component) (err error) {
 	}
 
 	{
-		caller := makeComponentLifecycleCaller(comp)
+		caller := newComponentLifecycleCaller(comp)
 
 		if !caller.Call(func() {
 			if !caller.MarkProcessed() {
@@ -570,7 +570,7 @@ func (rt *RuntimeBehavior) shutComponent(comp ec.Component) {
 	}
 
 	{
-		caller := makeComponentLifecycleCaller(comp)
+		caller := newComponentLifecycleCaller(comp)
 
 		if !caller.Call(func() {
 			if caller.IsProcessed(ec.ComponentState_Start) {
@@ -595,7 +595,7 @@ func (rt *RuntimeBehavior) disableDeathComponent(comp ec.Component) {
 	}
 
 	{
-		caller := makeComponentLifecycleCaller(comp)
+		caller := newComponentLifecycleCaller(comp)
 
 		if !caller.Call(func() {
 			if caller.IsProcessed(ec.ComponentState_Enable) {
@@ -623,7 +623,7 @@ func (rt *RuntimeBehavior) disposeComponent(comp ec.Component, stateDestroyed bo
 	}
 
 	{
-		caller := makeComponentLifecycleCaller(comp)
+		caller := newComponentLifecycleCaller(comp)
 
 		if !caller.Call(func() {
 			if caller.IsProcessed(ec.ComponentState_Awake) {
@@ -650,7 +650,7 @@ func (rt *RuntimeBehavior) enableComponent(comp ec.Component) {
 	}
 
 	{
-		caller := makeComponentLifecycleCaller(comp)
+		caller := newComponentLifecycleCaller(comp)
 
 		if !caller.Call(func() {
 			caller.SetProcessed(ec.ComponentState_Enable)
@@ -676,7 +676,7 @@ func (rt *RuntimeBehavior) disableComponent(comp ec.Component) {
 	rt.unobserveComponent(comp)
 
 	{
-		caller := makeComponentLifecycleCaller(comp)
+		caller := newComponentLifecycleCaller(comp)
 
 		if !caller.Call(func() {
 			if cb, ok := comp.(LifecycleComponentOnDisable); ok {

@@ -120,7 +120,7 @@ func (svc *ServiceBehavior) onAfterContextRunningEvent(ctx service.Context, runn
 
 func (svc *ServiceBehavior) initEntityPT() {
 	go func() {
-		for entityPT := range svc.ctx.GetEntityLib().ListAndWatch(svc.ctx) {
+		for entityPT := range svc.ctx.GetEntityLib().EventStream(svc.ctx) {
 			svc.emitEventRunningEvent(service.RunningEvent_EntityPTDeclared, entityPT)
 		}
 	}()
@@ -128,7 +128,7 @@ func (svc *ServiceBehavior) initEntityPT() {
 
 func (svc *ServiceBehavior) initComponentPT() {
 	go func() {
-		for compPT := range svc.ctx.GetEntityLib().GetComponentLib().ListAndWatch(svc.ctx) {
+		for compPT := range svc.ctx.GetEntityLib().GetComponentLib().EventStream(svc.ctx) {
 			svc.emitEventRunningEvent(service.RunningEvent_ComponentPTDeclared, compPT)
 		}
 	}()
@@ -139,10 +139,10 @@ func (svc *ServiceBehavior) initAddIn() {
 	wg.Add(1)
 
 	go func() {
-		for event := range service.UnsafeContext(svc.ctx).GetAddInManager().ListAndWatch(svc.ctx.Terminated().Context(nil)) {
+		for event := range service.UnsafeContext(svc.ctx).GetAddInManager().EventStream(svc.ctx.Terminated().Context(nil)) {
 			switch e := event.(type) {
 			case *extension.EventServiceAddInSnapshot:
-				for _, status := range e.StatusList {
+				for _, status := range e.Statuses {
 					svc.activateAddIn(status)
 				}
 				wg.Done()

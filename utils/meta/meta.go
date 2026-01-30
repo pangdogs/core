@@ -19,32 +19,23 @@
 
 package meta
 
-import "git.golaxy.org/core/utils/generic"
+import (
+	"git.golaxy.org/core/utils/generic"
+	"git.golaxy.org/core/utils/types"
+)
 
 type Meta = generic.SliceMap[string, any]
-
-func Make(dict map[string]any) Meta {
-	return generic.MakeSliceMapFromGoMap(dict)
-}
-
-func M(dict map[string]any) Meta {
-	return Make(dict)
-}
 
 func New(dict map[string]any) *Meta {
 	return generic.NewSliceMapFromGoMap(dict)
 }
 
-func N(dict map[string]any) *Meta {
-	return New(dict)
+func NewVal(dict map[string]any) Meta {
+	return generic.NewSliceMapValFromGoMap(dict)
 }
 
 func Build() *MetaCreator {
 	return &MetaCreator{}
-}
-
-func B() *MetaCreator {
-	return Build()
 }
 
 type MetaCreator struct {
@@ -90,11 +81,10 @@ func (c *MetaCreator) Clear() *MetaCreator {
 	return c
 }
 
-func (c *MetaCreator) Make() Meta {
-	return c.meta.Clone()
+func (c *MetaCreator) New() *Meta {
+	return types.NewCopiedT(c.meta.Clone())
 }
 
-func (c *MetaCreator) New() *Meta {
-	m := c.meta.Clone()
-	return &m
+func (c *MetaCreator) NewVal() Meta {
+	return c.meta.Clone()
 }

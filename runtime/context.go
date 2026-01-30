@@ -39,7 +39,7 @@ import (
 
 // NewContext 创建运行时上下文
 func NewContext(svcCtx service.Context, settings ...option.Setting[ContextOptions]) Context {
-	return UnsafeNewContext(svcCtx, option.Make(With.Context.Default(), settings...))
+	return UnsafeNewContext(svcCtx, option.New(With.Context.Default(), settings...))
 }
 
 // Deprecated: UnsafeNewContext 内部创建运行时上下文
@@ -196,7 +196,7 @@ func (ctx *ContextBehavior) init(svcCtx service.Context, options ContextOptions)
 	ctx.options = options
 
 	if ctx.options.InstanceFace.IsNil() {
-		ctx.options.InstanceFace = iface.MakeFaceT[Context](ctx)
+		ctx.options.InstanceFace = iface.NewFaceT[Context](ctx)
 	}
 
 	if ctx.options.Context == nil {

@@ -48,7 +48,7 @@ func GoAsync(ctx context.Context, fun generic.FuncVar1[context.Context, any, asy
 		ctx = context.Background()
 	}
 
-	asyncRet := async.MakeAsyncRet()
+	asyncRet := async.NewAsyncRet()
 
 	go func() {
 		ret, panicErr := fun.SafeCall(ctx, args...)
@@ -67,10 +67,10 @@ func GoVoidAsync(ctx context.Context, fun generic.ActionVar1[context.Context, an
 		ctx = context.Background()
 	}
 
-	asyncRet := async.MakeAsyncRet()
+	asyncRet := async.NewAsyncRet()
 
 	go func() {
-		async.Return(asyncRet, async.MakeRet(nil, fun.SafeCall(ctx, args...)))
+		async.Return(asyncRet, async.NewRet(nil, fun.SafeCall(ctx, args...)))
 	}()
 
 	return asyncRet
@@ -82,7 +82,7 @@ func TimeAfterAsync(ctx context.Context, dur time.Duration) async.AsyncRet {
 		ctx = context.Background()
 	}
 
-	asyncRet := async.MakeAsyncRet()
+	asyncRet := async.NewAsyncRet()
 
 	go func() {
 		timer := time.NewTimer(dur)
@@ -107,7 +107,7 @@ func TimeAtAsync(ctx context.Context, at time.Time) async.AsyncRet {
 		ctx = context.Background()
 	}
 
-	asyncRet := async.MakeAsyncRet()
+	asyncRet := async.NewAsyncRet()
 
 	go func() {
 		timer := time.NewTimer(time.Until(at))
@@ -132,7 +132,7 @@ func TimeTickAsync(ctx context.Context, dur time.Duration) async.AsyncRet {
 		ctx = context.Background()
 	}
 
-	asyncRet := async.MakeAsyncRet()
+	asyncRet := async.NewAsyncRet()
 
 	go func() {
 		tick := time.NewTicker(dur)
@@ -171,7 +171,7 @@ func ReadChanAsyncT[T any](ctx context.Context, ch <-chan T) async.AsyncRet {
 		exception.Panicf("%w: %w: ch is nil", ErrCore, ErrArgs)
 	}
 
-	asyncRet := async.MakeAsyncRet()
+	asyncRet := async.NewAsyncRet()
 
 	go func() {
 	loop:
@@ -181,7 +181,7 @@ func ReadChanAsyncT[T any](ctx context.Context, ch <-chan T) async.AsyncRet {
 				if !ok {
 					break loop
 				}
-				if !async.YieldReturn(ctx, asyncRet, async.MakeRet(v, nil)) {
+				if !async.YieldReturn(ctx, asyncRet, async.NewRet(v, nil)) {
 					break loop
 				}
 			case <-ctx.Done():

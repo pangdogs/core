@@ -131,7 +131,7 @@ func (mgr *_EntityManagerBehavior) AddChild(parentId, childId uid.Id) error {
 	}
 
 	{
-		caller := makeTreeNodeCaller(childEntity)
+		caller := newTreeNodeCaller(childEntity)
 
 		if !caller.Call(func() {
 			_EmitEventEntityTreeAddNode(mgr, mgr, parentId, childId)
@@ -191,7 +191,7 @@ func (mgr *_EntityManagerBehavior) RemoveNode(childId uid.Id) error {
 	}
 
 	{
-		caller := makeTreeNodeCaller(childEntity)
+		caller := newTreeNodeCaller(childEntity)
 
 		if !caller.Call(func() {
 			childTreeNode.children.ReversedTraversalEach(func(slot *generic.FreeSlot[int]) {
@@ -291,7 +291,7 @@ func (mgr *_EntityManagerBehavior) MoveNode(childId, parentId uid.Id) error {
 	}
 
 	{
-		caller := makeTreeNodeCaller(childEntity)
+		caller := newTreeNodeCaller(childEntity)
 
 		if !caller.Call(func() {
 			ec.UnsafeEntity(childEntity).EmitEventTreeNodeDetachParent(fromParentId)
@@ -548,7 +548,7 @@ func (mgr *_EntityManagerBehavior) getTreeNode(entityId uid.Id) (int, *_TreeNode
 	return slotIdx, treeNode
 }
 
-func makeTreeNodeCaller(entity ec.Entity) _TreeNodeCaller {
+func newTreeNodeCaller(entity ec.Entity) _TreeNodeCaller {
 	return _TreeNodeCaller{entity: entity, state: entity.GetTreeNodeState()}
 }
 

@@ -22,16 +22,16 @@ package async
 import "fmt"
 
 var (
-	VoidRet = MakeRet(nil, nil) // 空返回值
+	VoidRet = NewRet(nil, nil) // 空返回值
 )
 
-// MakeRet 创建调用结果
-func MakeRet(val any, err error) Ret {
-	return MakeRetT(val, err)
+// NewRet 创建调用结果
+func NewRet(val any, err error) Ret {
+	return NewRetT(val, err)
 }
 
-// MakeRetT 创建调用结果
-func MakeRetT[T any](val T, err error) RetT[T] {
+// NewRetT 创建调用结果
+func NewRetT[T any](val T, err error) RetT[T] {
 	return RetT[T]{
 		Value: val,
 		Error: err,

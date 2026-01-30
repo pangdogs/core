@@ -97,9 +97,9 @@ func (pt *_Entity) ListComponents() []ec.BuiltinComponent {
 
 // Construct 创建实体
 func (pt *_Entity) Construct(settings ...option.Setting[ec.EntityOptions]) ec.Entity {
-	options := option.Make(ec.With.Default())
+	options := option.New(ec.With.Default())
 	if pt.instanceRT != nil {
-		options.InstanceFace = iface.MakeFaceT(reflect.New(pt.instanceRT).Interface().(ec.Entity))
+		options.InstanceFace = iface.NewFaceT(reflect.New(pt.instanceRT).Interface().(ec.Entity))
 	}
 	options.Scope = pt.scope
 	options.ComponentAwakeOnFirstTouch = pt.componentAwakeOnFirstTouch

@@ -57,7 +57,7 @@ func (ad AwaitDirector) Any(fun generic.FuncVar2[runtime.Context, async.Ret, any
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	awaitRet := async.MakeAsyncRet()
+	awaitRet := async.NewAsyncRet()
 
 	if len(ad.asyncRets) <= 0 {
 		return async.Return(awaitRet, async.VoidRet)
@@ -111,7 +111,7 @@ func (ad AwaitDirector) Any(fun generic.FuncVar2[runtime.Context, async.Ret, any
 			return
 		}
 
-		async.Return(awaitRet, async.MakeRet(nil, ErrAllAsyncRetExceeded))
+		async.Return(awaitRet, async.NewRet(nil, ErrAllAsyncRetExceeded))
 	}()
 
 	return awaitRet
@@ -123,7 +123,7 @@ func (ad AwaitDirector) AnyVoid(fun generic.ActionVar2[runtime.Context, async.Re
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	awaitRet := async.MakeAsyncRet()
+	awaitRet := async.NewAsyncRet()
 
 	if len(ad.asyncRets) <= 0 {
 		return async.Return(awaitRet, async.VoidRet)
@@ -177,7 +177,7 @@ func (ad AwaitDirector) AnyVoid(fun generic.ActionVar2[runtime.Context, async.Re
 			return
 		}
 
-		async.Return(awaitRet, async.MakeRet(nil, ErrAllAsyncRetExceeded))
+		async.Return(awaitRet, async.NewRet(nil, ErrAllAsyncRetExceeded))
 	}()
 
 	return awaitRet
@@ -189,7 +189,7 @@ func (ad AwaitDirector) OK(fun generic.FuncVar2[runtime.Context, async.Ret, any,
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	awaitRet := async.MakeAsyncRet()
+	awaitRet := async.NewAsyncRet()
 
 	if len(ad.asyncRets) <= 0 {
 		return async.Return(awaitRet, async.VoidRet)
@@ -246,7 +246,7 @@ func (ad AwaitDirector) OK(fun generic.FuncVar2[runtime.Context, async.Ret, any,
 			return
 		}
 
-		async.Return(awaitRet, async.MakeRet(nil, ErrAllAsyncRetExceeded))
+		async.Return(awaitRet, async.NewRet(nil, ErrAllAsyncRetExceeded))
 	}()
 
 	return awaitRet
@@ -258,7 +258,7 @@ func (ad AwaitDirector) OKVoid(fun generic.ActionVar2[runtime.Context, async.Ret
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	awaitRet := async.MakeAsyncRet()
+	awaitRet := async.NewAsyncRet()
 
 	if len(ad.asyncRets) <= 0 {
 		return async.Return(awaitRet, async.VoidRet)
@@ -315,7 +315,7 @@ func (ad AwaitDirector) OKVoid(fun generic.ActionVar2[runtime.Context, async.Ret
 			return
 		}
 
-		async.Return(awaitRet, async.MakeRet(nil, ErrAllAsyncRetExceeded))
+		async.Return(awaitRet, async.NewRet(nil, ErrAllAsyncRetExceeded))
 	}()
 
 	return awaitRet
@@ -327,7 +327,7 @@ func (ad AwaitDirector) All(fun generic.FuncVar2[runtime.Context, []async.Ret, a
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	awaitRet := async.MakeAsyncRet()
+	awaitRet := async.NewAsyncRet()
 
 	if len(ad.asyncRets) <= 0 {
 		return async.Return(awaitRet, async.VoidRet)
@@ -364,7 +364,7 @@ func (ad AwaitDirector) AllVoid(fun generic.ActionVar2[runtime.Context, []async.
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	awaitRet := async.MakeAsyncRet()
+	awaitRet := async.NewAsyncRet()
 
 	if len(ad.asyncRets) <= 0 {
 		return async.Return(awaitRet, async.VoidRet)
@@ -401,7 +401,7 @@ func (ad AwaitDirector) Transform(fun generic.FuncVar2[runtime.Context, async.Re
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	awaitRet := async.MakeAsyncRet()
+	awaitRet := async.NewAsyncRet()
 
 	if len(ad.asyncRets) <= 0 {
 		async.YieldBreak(awaitRet)
@@ -440,7 +440,7 @@ func (ad AwaitDirector) Foreach(fun generic.ActionVar2[runtime.Context, async.Re
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	awaitRet := async.MakeAsyncRet()
+	awaitRet := async.NewAsyncRet()
 
 	if len(ad.asyncRets) <= 0 {
 		return async.Return(awaitRet, async.VoidRet)

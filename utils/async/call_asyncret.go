@@ -25,13 +25,13 @@ import (
 	"git.golaxy.org/core/utils/types"
 )
 
-// MakeAsyncRet 创建异步调用结果
-func MakeAsyncRet() chan Ret {
-	return MakeAsyncRetT[any]()
+// NewAsyncRet 创建异步调用结果
+func NewAsyncRet() chan Ret {
+	return NewAsyncRetT[any]()
 }
 
-// MakeAsyncRetT 创建异步调用结果
-func MakeAsyncRetT[T any]() chan RetT[T] {
+// NewAsyncRetT 创建异步调用结果
+func NewAsyncRetT[T any]() chan RetT[T] {
 	return make(chan RetT[T], 1)
 }
 
@@ -91,15 +91,15 @@ func (asyncRet AsyncRetT[T]) Wait(ctx context.Context) RetT[T] {
 	select {
 	case ret, ok := <-asyncRet:
 		if !ok {
-			return MakeRetT[T](types.ZeroT[T](), ErrAsyncRetClosed)
+			return NewRetT[T](types.ZeroT[T](), ErrAsyncRetClosed)
 		}
 		return ret
 	case <-ctx.Done():
-		return MakeRetT[T](types.ZeroT[T](), ctx.Err())
+		return NewRetT[T](types.ZeroT[T](), ctx.Err())
 	}
 }
 
-// Context 转为上下文，丢弃异步调用结果
+// Context 转为上下文，只等待异步调用结束，丢弃返回的调用结果
 func (asyncRet AsyncRetT[T]) Context(ctx context.Context) context.Context {
 	if ctx == nil {
 		ctx = context.Background()

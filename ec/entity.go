@@ -38,7 +38,7 @@ import (
 
 // NewEntity 创建实体
 func NewEntity(settings ...option.Setting[EntityOptions]) Entity {
-	return UnsafeNewEntity(option.Make(With.Default(), settings...))
+	return UnsafeNewEntity(option.New(With.Default(), settings...))
 }
 
 // Deprecated: UnsafeNewEntity 内部创建实体
@@ -218,13 +218,13 @@ func (entity *EntityBehavior) init(options EntityOptions) {
 	entity.options = options
 
 	if entity.options.InstanceFace.IsNil() {
-		entity.options.InstanceFace = iface.MakeFaceT[Entity](entity)
+		entity.options.InstanceFace = iface.NewFaceT[Entity](entity)
 	}
 }
 
 func (entity *EntityBehavior) withContext(ctx context.Context) {
 	entity.Context, entity.terminate = context.WithCancel(ctx)
-	entity.terminated = async.MakeAsyncRet()
+	entity.terminated = async.NewAsyncRet()
 }
 
 func (entity *EntityBehavior) getOptions() *EntityOptions {

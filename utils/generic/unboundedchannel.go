@@ -1,5 +1,7 @@
 package generic
 
+import "sync/atomic"
+
 func NewUnboundedChannel[T any]() *UnboundedChannel[T] {
 	c := &UnboundedChannel[T]{
 		in:  make(chan T),
@@ -12,6 +14,7 @@ func NewUnboundedChannel[T any]() *UnboundedChannel[T] {
 type UnboundedChannel[T any] struct {
 	in, out chan T
 	queue   FreeList[T]
+	count   atomic.Int64
 }
 
 func (c *UnboundedChannel[T]) In() chan<- T {
@@ -26,6 +29,10 @@ func (c *UnboundedChannel[T]) Close() {
 	close(c.in)
 }
 
+func (c *UnboundedChannel[T]) Len() int {
+	return int(c.count.Load())
+}
+
 func (c *UnboundedChannel[T]) dispatch() {
 	in := c.in
 	var out chan T
@@ -36,11 +43,13 @@ func (c *UnboundedChannel[T]) dispatch() {
 		case v, ok := <-in:
 			if ok {
 				c.queue.PushBack(v)
+				c.count.Add(1)
 			} else {
 				in = nil
 			}
 		case out <- v:
 			c.queue.PopFront()
+			c.count.Add(-1)
 		}
 
 		if c.queue.Len() > 0 {

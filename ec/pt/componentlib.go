@@ -38,8 +38,8 @@ type ComponentLib interface {
 	Get(prototype string) (ec.ComponentPT, bool)
 	// List 获取所有组件原型
 	List() []ec.ComponentPT
-	// ListAndWatch 获取并观察所有组件原型的声明
-	ListAndWatch(ctx context.Context) <-chan ec.ComponentPT
+	// EventStream 组件声明事件流
+	EventStream(ctx context.Context) <-chan ec.ComponentPT
 }
 
 var compLib = NewComponentLib()
@@ -53,7 +53,6 @@ func DefaultComponentLib() ComponentLib {
 func NewComponentLib() ComponentLib {
 	return &_ComponentLib{
 		compPTNameIndex: map[string]int{},
-		watchers:        map[*generic.UnboundedChannel[ec.ComponentPT]]struct{}{},
 	}
 }
 
@@ -61,7 +60,7 @@ type _ComponentLib struct {
 	sync.RWMutex
 	compPTNameIndex map[string]int
 	compPTList      generic.FreeList[ec.ComponentPT]
-	watchers        map[*generic.UnboundedChannel[ec.ComponentPT]]struct{}
+	eventStream     generic.EventStream[ec.ComponentPT]
 }
 
 // Declare 声明组件原型
@@ -105,9 +104,7 @@ func (lib *_ComponentLib) Declare(comp any) ec.ComponentPT {
 
 	lib.compPTNameIndex[prototype] = lib.compPTList.PushBack(compPT).Index()
 
-	for watcher := range lib.watchers {
-		watcher.In() <- compPT
-	}
+	lib.eventStream.Publish(compPT)
 
 	return compPT
 }
@@ -133,8 +130,8 @@ func (lib *_ComponentLib) List() []ec.ComponentPT {
 	return lib.compPTList.ToSlice()
 }
 
-// ListAndWatch 获取并观察所有组件原型的声明
-func (lib *_ComponentLib) ListAndWatch(ctx context.Context) <-chan ec.ComponentPT {
+// EventStream 组件声明事件流
+func (lib *_ComponentLib) EventStream(ctx context.Context) <-chan ec.ComponentPT {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -142,20 +139,5 @@ func (lib *_ComponentLib) ListAndWatch(ctx context.Context) <-chan ec.ComponentP
 	lib.Lock()
 	defer lib.Unlock()
 
-	watcher := generic.NewUnboundedChannel[ec.ComponentPT]()
-	lib.watchers[watcher] = struct{}{}
-
-	lib.compPTList.TraversalEach(func(slot *generic.FreeSlot[ec.ComponentPT]) {
-		watcher.In() <- slot.V
-	})
-
-	go func() {
-		<-ctx.Done()
-		lib.Lock()
-		defer lib.Unlock()
-		watcher.Close()
-		delete(lib.watchers, watcher)
-	}()
-
-	return watcher.Out()
+	return lib.eventStream.Subscribe(ctx, lib.compPTList.ToSlice()...)
 }

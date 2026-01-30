@@ -101,7 +101,7 @@ func (ctx *ContextBehavior) init(parentCtx context.Context, autoRecover bool, re
 	ctx.autoRecover = autoRecover
 	ctx.reportError = reportError
 	ctx.Context, ctx.terminate = context.WithCancel(ctx.parentCtx)
-	ctx.terminated = async.MakeAsyncRet()
+	ctx.terminated = async.NewAsyncRet()
 }
 
 func (ctx *ContextBehavior) returnTerminated() {

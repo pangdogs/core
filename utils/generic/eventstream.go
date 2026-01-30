@@ -17,38 +17,57 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package option
+package generic
 
 import (
-	"git.golaxy.org/core/utils/generic"
+	"context"
+	"sync"
 )
 
-type Setting[T any] generic.Action1[*T]
-
-func (s Setting[T]) Apply(options *T) {
-	generic.CastAction1(s).UnsafeCall(options)
+func NewEventStream[T any]() *EventStream[T] {
+	return &EventStream[T]{}
 }
 
-func New[T any](defaults Setting[T], settings ...Setting[T]) (options T) {
-	defaults.Apply(&options)
-
-	for i := range settings {
-		settings[i].Apply(&options)
-	}
-
-	return
+type EventStream[T any] struct {
+	mutex       sync.RWMutex
+	subscribers map[*UnboundedChannel[T]]struct{}
 }
 
-func Append[T any](options T, settings ...Setting[T]) T {
-	for i := range settings {
-		settings[i].Apply(&options)
+func (es *EventStream[T]) Subscribe(ctx context.Context, catchUp ...T) <-chan T {
+	if ctx == nil {
+		ctx = context.Background()
 	}
-	return options
+
+	es.mutex.Lock()
+	defer es.mutex.Unlock()
+
+	subscriber := NewUnboundedChannel[T]()
+
+	for _, e := range catchUp {
+		subscriber.In() <- e
+	}
+
+	if es.subscribers == nil {
+		es.subscribers = map[*UnboundedChannel[T]]struct{}{}
+	}
+	es.subscribers[subscriber] = struct{}{}
+
+	go func() {
+		<-ctx.Done()
+		es.mutex.Lock()
+		defer es.mutex.Unlock()
+		subscriber.Close()
+		delete(es.subscribers, subscriber)
+	}()
+
+	return subscriber.Out()
 }
 
-func Change[T any](options T, settings ...Setting[T]) T {
-	for i := range settings {
-		settings[i].Apply(&options)
+func (es *EventStream[T]) Publish(event T) {
+	es.mutex.RLock()
+	defer es.mutex.RUnlock()
+
+	for subscriber := range es.subscribers {
+		subscriber.In() <- event
 	}
-	return options
 }
