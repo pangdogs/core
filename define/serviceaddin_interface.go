@@ -26,16 +26,18 @@ import (
 
 // ServiceAddInInterface 定义服务插件接口，支持安装至服务上下文，通常用于为同类插件的不同实现提供统一的接口
 func ServiceAddInInterface[ADDIN_IFACE any]() ServiceAddInInterfaceDefinition[ADDIN_IFACE] {
-	plug := defineAddInInterface[ADDIN_IFACE]()
+	addIn := defineAddInInterface[ADDIN_IFACE]()
 
 	return ServiceAddInInterfaceDefinition[ADDIN_IFACE]{
-		Name:  plug.Name,
-		Using: func(svcCtx service.Context) ADDIN_IFACE { return plug.Using(svcCtx) },
+		Name:    addIn.Name,
+		Resolve: func(svcCtx service.Context) ADDIN_IFACE { return addIn.Resolve(svcCtx) },
+		Lookup:  func(svcCtx service.Context) (ADDIN_IFACE, bool) { return addIn.Lookup(svcCtx) },
 	}
 }
 
 // ServiceAddInInterfaceDefinition 服务插件接口定义
 type ServiceAddInInterfaceDefinition[ADDIN_IFACE any] struct {
-	Name  string                                      // 插件名称
-	Using generic.Func1[service.Context, ADDIN_IFACE] // 使用插件
+	Name    string                                                // 插件名称
+	Resolve generic.Func1[service.Context, ADDIN_IFACE]           // 解析插件
+	Lookup  generic.FuncPair1[service.Context, ADDIN_IFACE, bool] // 查找插件
 }

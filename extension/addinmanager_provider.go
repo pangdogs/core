@@ -22,6 +22,7 @@ package extension
 import (
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/iface"
+	"git.golaxy.org/core/utils/types"
 )
 
 // AddInProvider 插件提供者
@@ -30,8 +31,8 @@ type AddInProvider interface {
 	GetAddInManager() AddInManager
 }
 
-// Using 使用插件
-func Using[T any](provider AddInProvider, name string) T {
+// Resolve 解析插件
+func Resolve[T any](provider AddInProvider, name string) T {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrExtension, exception.ErrArgs)
 	}
@@ -46,6 +47,20 @@ func Using[T any](provider AddInProvider, name string) T {
 	}
 
 	return iface.Cache2Iface[T](status.InstanceFace().Cache)
+}
+
+// Lookup 查找插件
+func Lookup[T any](provider AddInProvider, name string) (T, bool) {
+	if provider == nil {
+		return types.ZeroT[T](), false
+	}
+
+	status, ok := provider.GetAddInManager().Get(name)
+	if !ok {
+		return types.ZeroT[T](), false
+	}
+
+	return iface.Cache2Iface[T](status.InstanceFace().Cache), true
 }
 
 // Install 安装插件

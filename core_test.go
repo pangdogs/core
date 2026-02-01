@@ -1024,11 +1024,7 @@ func NewServiceAddIn1(...any) *ServiceAddIn1 {
 }
 
 var (
-	serviceAddIn1Define    = define.AddIn(NewServiceAddIn1)
-	serviceAddIn1Name      = serviceAddIn1Define.Name
-	serviceAddIn1Install   = serviceAddIn1Define.Install
-	serviceAddIn1Uninstall = serviceAddIn1Define.Uninstall
-	serviceAddIn1Using     = serviceAddIn1Define.Using
+	serviceAddIn1 = define.AddIn(NewServiceAddIn1)
 )
 
 type IServiceAddIn2 interface{}
@@ -1048,11 +1044,7 @@ func NewServiceAddIn2(...any) IServiceAddIn2 {
 }
 
 var (
-	serviceAddIn2Define    = define.AddIn(NewServiceAddIn2)
-	serviceAddIn2Name      = serviceAddIn2Define.Name
-	serviceAddIn2Install   = serviceAddIn2Define.Install
-	serviceAddIn2Uninstall = serviceAddIn2Define.Uninstall
-	serviceAddIn2Using     = serviceAddIn2Define.Using
+	serviceAddIn2 = define.AddIn(NewServiceAddIn2)
 )
 
 func Test_ServiceAddIn(t *testing.T) {
@@ -1063,8 +1055,8 @@ func Test_ServiceAddIn(t *testing.T) {
 		service.With.RunningEventCB(func(ctx service.Context, runningEvent service.RunningEvent, args ...any) {
 			switch runningEvent {
 			case service.RunningEvent_Birth:
-				serviceAddIn1Install(ctx)
-				serviceAddIn2Install(ctx)
+				serviceAddIn1.Install(ctx)
+				serviceAddIn2.Install(ctx)
 			}
 			log.Println("service event:", runningEvent, args)
 		}),
@@ -1092,11 +1084,7 @@ func NewRuntimeAddIn1(...any) *RuntimeAddIn1 {
 }
 
 var (
-	runtimeAddIn1Define    = define.AddIn(NewRuntimeAddIn1)
-	runtimeAddIn1Name      = runtimeAddIn1Define.Name
-	runtimeAddIn1Install   = runtimeAddIn1Define.Install
-	runtimeAddIn1Uninstall = runtimeAddIn1Define.Uninstall
-	runtimeAddIn1Using     = runtimeAddIn1Define.Using
+	runtimeAddIn1 = define.AddIn(NewRuntimeAddIn1)
 )
 
 func Test_RuntimeAddIn(t *testing.T) {
@@ -1112,7 +1100,7 @@ func Test_RuntimeAddIn(t *testing.T) {
 						runtime.With.Context.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
 							switch runningEvent {
 							case runtime.RunningEvent_Birth:
-								runtimeAddIn1Install(ctx)
+								runtimeAddIn1.Install(ctx)
 							}
 							log.Println("runtime event:", runningEvent, args)
 						}),

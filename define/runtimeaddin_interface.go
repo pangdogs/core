@@ -26,16 +26,18 @@ import (
 
 // RuntimeAddInInterface 定义运行时插件接口，支持安装至运行时上下文，通常用于为同类插件的不同实现提供统一的接口
 func RuntimeAddInInterface[ADDIN_IFACE any]() RuntimeAddInInterfaceDefinition[ADDIN_IFACE] {
-	plug := defineAddInInterface[ADDIN_IFACE]()
+	addIn := defineAddInInterface[ADDIN_IFACE]()
 
 	return RuntimeAddInInterfaceDefinition[ADDIN_IFACE]{
-		Name:  plug.Name,
-		Using: func(rtCtx runtime.Context) ADDIN_IFACE { return plug.Using(rtCtx) },
+		Name:    addIn.Name,
+		Resolve: func(rtCtx runtime.Context) ADDIN_IFACE { return addIn.Resolve(rtCtx) },
+		Lookup:  func(rtCtx runtime.Context) (ADDIN_IFACE, bool) { return addIn.Lookup(rtCtx) },
 	}
 }
 
 // RuntimeAddInInterfaceDefinition 运行时插件接口定义
 type RuntimeAddInInterfaceDefinition[ADDIN_IFACE any] struct {
-	Name  string                                      // 插件名称
-	Using generic.Func1[runtime.Context, ADDIN_IFACE] // 使用插件
+	Name    string                                                // 插件名称
+	Resolve generic.Func1[runtime.Context, ADDIN_IFACE]           // 解析插件
+	Lookup  generic.FuncPair1[runtime.Context, ADDIN_IFACE, bool] // 查找插件
 }

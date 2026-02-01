@@ -32,8 +32,9 @@ func AddInInterface[ADDIN_IFACE any]() AddInInterfaceDefinition[ADDIN_IFACE] {
 
 // AddInInterfaceDefinition 通用插件接口定义
 type AddInInterfaceDefinition[ADDIN_IFACE any] struct {
-	Name  string                                              // 插件名称
-	Using generic.Func1[extension.AddInProvider, ADDIN_IFACE] // 使用插件
+	Name    string                                                        // 插件名称
+	Resolve generic.Func1[extension.AddInProvider, ADDIN_IFACE]           // 解析插件
+	Lookup  generic.FuncPair1[extension.AddInProvider, ADDIN_IFACE, bool] // 查找插件
 }
 
 func defineAddInInterface[ADDIN_IFACE any]() AddInInterfaceDefinition[ADDIN_IFACE] {
@@ -41,8 +42,11 @@ func defineAddInInterface[ADDIN_IFACE any]() AddInInterfaceDefinition[ADDIN_IFAC
 
 	return AddInInterfaceDefinition[ADDIN_IFACE]{
 		Name: name,
-		Using: func(provider extension.AddInProvider) ADDIN_IFACE {
-			return extension.Using[ADDIN_IFACE](provider, name)
+		Resolve: func(provider extension.AddInProvider) ADDIN_IFACE {
+			return extension.Resolve[ADDIN_IFACE](provider, name)
+		},
+		Lookup: func(provider extension.AddInProvider) (ADDIN_IFACE, bool) {
+			return extension.Lookup[ADDIN_IFACE](provider, name)
 		},
 	}
 }
