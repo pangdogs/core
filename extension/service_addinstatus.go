@@ -20,7 +20,9 @@
 package extension
 
 import (
+	"fmt"
 	"reflect"
+	"sync"
 	"sync/atomic"
 
 	"git.golaxy.org/core/utils/async"
@@ -54,6 +56,8 @@ type _ServiceAddInStatus struct {
 	waitState              [AddInState_Unloaded + 1]chan async.Ret
 	doInstallingOnceMark   atomic.Bool
 	doUninstallingOnceMark atomic.Bool
+	stringerOnce           sync.Once
+	stringerCache          string
 }
 
 // Name 插件名称
@@ -79,6 +83,14 @@ func (s *_ServiceAddInStatus) State() AddInState {
 // Uninstall 卸载
 func (s *_ServiceAddInStatus) Uninstall() {
 	s.mgr.eventStream.Publish(&EventServiceUninstallAddIn{Status: s})
+}
+
+// String implements fmt.Stringer
+func (s *_ServiceAddInStatus) String() string {
+	s.stringerOnce.Do(func() {
+		s.stringerCache = fmt.Sprintf(`{"name":%q,"instance":%q}`, s.name, s.reflected.Type())
+	})
+	return s.stringerCache
 }
 
 // WaitState 等待状态完成

@@ -142,7 +142,7 @@ func (pt _Entity) MarshalJSON() ([]byte, error) {
 		Components:                 pt.components,
 	}
 	if pt.instanceRT != nil {
-		entityStringer.Instance = pt.instanceRT.Name()
+		entityStringer.Instance = pt.instanceRT.String()
 	}
 
 	data, err := json.Marshal(entityStringer)

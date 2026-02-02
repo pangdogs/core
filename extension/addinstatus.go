@@ -20,6 +20,7 @@
 package extension
 
 import (
+	"fmt"
 	"reflect"
 
 	"git.golaxy.org/core/utils/iface"
@@ -27,6 +28,8 @@ import (
 
 // AddInStatus 插件状态信息
 type AddInStatus interface {
+	fmt.Stringer
+
 	// Name 插件名称
 	Name() string
 	// InstanceFace 插件实例

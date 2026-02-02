@@ -121,7 +121,7 @@ func (ctx *ContextBehavior) GetInstanceFaceCache() iface.Cache {
 // String implements fmt.Stringer
 func (ctx *ContextBehavior) String() string {
 	ctx.stringerOnce.Do(func() {
-		ctx.stringerCache = fmt.Sprintf(`{"id":%q, "name":%q}`, ctx.GetId(), ctx.GetName())
+		ctx.stringerCache = fmt.Sprintf(`{"id":%q,"name":%q}`, ctx.GetId(), ctx.GetName())
 	})
 	return ctx.stringerCache
 }

@@ -218,7 +218,7 @@ func (comp *ComponentBehavior) GetConcurrentContext() iface.Cache {
 // String implements fmt.Stringer
 func (comp *ComponentBehavior) String() string {
 	if comp.stringerCache == "" {
-		comp.stringerCache = fmt.Sprintf(`{"id":%q, "entity_id":%q, "name":%q, "prototype":%q}`, comp.GetId(), comp.GetEntity().GetId(), comp.GetName(), comp.GetBuiltin().PT.Prototype())
+		comp.stringerCache = fmt.Sprintf(`{"id":%q,"entity_id":%q,"name":%q,"prototype":%q}`, comp.GetId(), comp.GetEntity().GetId(), comp.GetName(), comp.GetBuiltin().PT.Prototype())
 	}
 	return comp.stringerCache
 }

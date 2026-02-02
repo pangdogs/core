@@ -209,7 +209,7 @@ func (entity *EntityBehavior) GetInstanceFaceCache() iface.Cache {
 // String implements fmt.Stringer
 func (entity *EntityBehavior) String() string {
 	entity.stringerOnce.Do(func() {
-		entity.stringerCache = fmt.Sprintf(`{"id":%q, "prototype":%q}`, entity.GetId(), entity.GetPT().Prototype())
+		entity.stringerCache = fmt.Sprintf(`{"id":%q,"prototype":%q}`, entity.GetId(), entity.GetPT().Prototype())
 	})
 	return entity.stringerCache
 }

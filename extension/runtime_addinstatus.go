@@ -20,6 +20,7 @@
 package extension
 
 import (
+	"fmt"
 	"reflect"
 
 	"git.golaxy.org/core/event"
@@ -54,6 +55,7 @@ type _RuntimeAddInStatus struct {
 	idx                   int
 	ver                   int64
 	managedRuntimeHandles [1]event.Handle
+	stringerCache         string
 }
 
 // Name 插件名称
@@ -81,6 +83,14 @@ func (s *_RuntimeAddInStatus) Uninstall() {
 	s.reentrancyGuard.Call(runtimeAddInStatusReentrancyGuard_Uninstall, func() {
 		s.mgr.uninstallIfVersion(s.idx, s.ver)
 	})
+}
+
+// String implements fmt.Stringer
+func (s *_RuntimeAddInStatus) String() string {
+	if s.stringerCache == "" {
+		s.stringerCache = fmt.Sprintf(`{"name":%q,"instance":%q}`, s.name, s.reflected.Type())
+	}
+	return s.stringerCache
 }
 
 func (s *_RuntimeAddInStatus) setState(state AddInState) {
