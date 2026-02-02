@@ -14,18 +14,18 @@ func _() {
 	_ = x[RunningEvent_Terminating-3]
 	_ = x[RunningEvent_Terminated-4]
 	_ = x[RunningEvent_AddInActivating-5]
-	_ = x[RunningEvent_AddInActivatingDone-6]
+	_ = x[RunningEvent_AddInActivated-6]
 	_ = x[RunningEvent_AddInDeactivating-7]
-	_ = x[RunningEvent_AddInDeactivatingDone-8]
+	_ = x[RunningEvent_AddInDeactivated-8]
 	_ = x[RunningEvent_EntityPTDeclared-9]
 	_ = x[RunningEvent_ComponentPTDeclared-10]
 	_ = x[RunningEvent_EntityRegistered-11]
 	_ = x[RunningEvent_EntityUnregistered-12]
 }
 
-const _RunningEvent_name = "RunningEvent_BirthRunningEvent_StartingRunningEvent_StartedRunningEvent_TerminatingRunningEvent_TerminatedRunningEvent_AddInActivatingRunningEvent_AddInActivatingDoneRunningEvent_AddInDeactivatingRunningEvent_AddInDeactivatingDoneRunningEvent_EntityPTDeclaredRunningEvent_ComponentPTDeclaredRunningEvent_EntityRegisteredRunningEvent_EntityUnregistered"
+const _RunningEvent_name = "RunningEvent_BirthRunningEvent_StartingRunningEvent_StartedRunningEvent_TerminatingRunningEvent_TerminatedRunningEvent_AddInActivatingRunningEvent_AddInActivatedRunningEvent_AddInDeactivatingRunningEvent_AddInDeactivatedRunningEvent_EntityPTDeclaredRunningEvent_ComponentPTDeclaredRunningEvent_EntityRegisteredRunningEvent_EntityUnregistered"
 
-var _RunningEvent_index = [...]uint16{0, 18, 39, 59, 83, 106, 134, 166, 196, 230, 259, 291, 320, 351}
+var _RunningEvent_index = [...]uint16{0, 18, 39, 59, 83, 106, 134, 161, 191, 220, 249, 281, 310, 341}
 
 func (i RunningEvent) String() string {
 	idx := int(i) - 0

@@ -161,7 +161,7 @@ func (rt *RuntimeBehavior) onEntityManagerAddEntity(entityManager runtime.Entity
 		if !caller.Call(func() {
 			rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivating, entity)
 		}) {
-			rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivatingAborted, entity)
+			rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivationAborted, entity)
 			return
 		}
 
@@ -173,7 +173,7 @@ func (rt *RuntimeBehavior) onEntityManagerAddEntity(entityManager runtime.Entity
 				rt.panicHandlingActivatingEntity(entity, generic.CastAction0(cb.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError()))
 			}
 		}) {
-			rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivatingAborted, entity)
+			rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivationAborted, entity)
 			return
 		}
 
@@ -186,7 +186,7 @@ func (rt *RuntimeBehavior) onEntityManagerAddEntity(entityManager runtime.Entity
 				})
 			})
 		}) {
-			rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivatingAborted, entity)
+			rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivationAborted, entity)
 			return
 		}
 
@@ -197,7 +197,7 @@ func (rt *RuntimeBehavior) onEntityManagerAddEntity(entityManager runtime.Entity
 				})
 			})
 		}) {
-			rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivatingAborted, entity)
+			rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivationAborted, entity)
 			return
 		}
 	}
@@ -214,7 +214,7 @@ func (rt *RuntimeBehavior) onEntityManagerAddEntity(entityManager runtime.Entity
 				})
 			})
 		}) {
-			rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivatingAborted, entity)
+			rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivationAborted, entity)
 			return
 		}
 
@@ -226,14 +226,14 @@ func (rt *RuntimeBehavior) onEntityManagerAddEntity(entityManager runtime.Entity
 				rt.panicHandlingActivatingEntity(entity, generic.CastAction0(cb.Start).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError()))
 			}
 		}) {
-			rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivatingAborted, entity)
+			rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivationAborted, entity)
 			return
 		}
 	}
 
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Alive)
 
-	rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivatingDone, entity)
+	rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivated, entity)
 }
 
 // onEntityManagerRemoveEntity 事件处理器：实体管理器删除实体
@@ -287,7 +287,7 @@ func (rt *RuntimeBehavior) onEntityManagerRemoveEntity(entityManager runtime.Ent
 		}
 	}
 
-	rt.emitEventRunningEvent(runtime.RunningEvent_EntityDeactivatingDone, entity)
+	rt.emitEventRunningEvent(runtime.RunningEvent_EntityDeactivated, entity)
 }
 
 // onEntityManagerEntityAddComponents 事件处理器：实体管理器中的实体添加组件
@@ -310,7 +310,7 @@ func (rt *RuntimeBehavior) onEntityManagerEntityAddComponents(entityManager runt
 		if !caller.Call(func() {
 			rt.emitEventRunningEvent(runtime.RunningEvent_EntityAddingComponents, entity, components)
 		}) {
-			rt.emitEventRunningEvent(runtime.RunningEvent_EntityAddingComponentsAborted, entity, components)
+			rt.emitEventRunningEvent(runtime.RunningEvent_EntityComponentsAdditionAborted, entity, components)
 			return
 		}
 
@@ -323,7 +323,7 @@ func (rt *RuntimeBehavior) onEntityManagerEntityAddComponents(entityManager runt
 				}
 			}
 		}) {
-			rt.emitEventRunningEvent(runtime.RunningEvent_EntityAddingComponentsAborted, entity, components)
+			rt.emitEventRunningEvent(runtime.RunningEvent_EntityComponentsAdditionAborted, entity, components)
 			return
 		}
 
@@ -336,7 +336,7 @@ func (rt *RuntimeBehavior) onEntityManagerEntityAddComponents(entityManager runt
 				}
 			}
 		}) {
-			rt.emitEventRunningEvent(runtime.RunningEvent_EntityAddingComponentsAborted, entity, components)
+			rt.emitEventRunningEvent(runtime.RunningEvent_EntityComponentsAdditionAborted, entity, components)
 			return
 		}
 
@@ -350,13 +350,13 @@ func (rt *RuntimeBehavior) onEntityManagerEntityAddComponents(entityManager runt
 					}
 				}
 			}) {
-				rt.emitEventRunningEvent(runtime.RunningEvent_EntityAddingComponentsAborted, entity, components)
+				rt.emitEventRunningEvent(runtime.RunningEvent_EntityComponentsAdditionAborted, entity, components)
 				return
 			}
 		}
 	}
 
-	rt.emitEventRunningEvent(runtime.RunningEvent_EntityAddingComponentsDone, entity, components)
+	rt.emitEventRunningEvent(runtime.RunningEvent_EntityComponentsAdded, entity, components)
 }
 
 // onEntityManagerEntityRemoveComponent 事件处理器：实体管理器中的实体删除组件
@@ -375,33 +375,33 @@ func (rt *RuntimeBehavior) onEntityManagerEntityRemoveComponent(entityManager ru
 		if !caller.Call(func() {
 			rt.emitEventRunningEvent(runtime.RunningEvent_EntityRemovingComponent, entity, component)
 		}) {
-			rt.emitEventRunningEvent(runtime.RunningEvent_EntityRemovingComponentAborted, entity, component)
+			rt.emitEventRunningEvent(runtime.RunningEvent_EntityComponentRemoved, entity, component)
 			return
 		}
 
 		if !caller.Call(func() {
 			rt.shutComponent(component)
 		}) {
-			rt.emitEventRunningEvent(runtime.RunningEvent_EntityRemovingComponentAborted, entity, component)
+			rt.emitEventRunningEvent(runtime.RunningEvent_EntityComponentRemoved, entity, component)
 			return
 		}
 
 		if !caller.Call(func() {
 			rt.disableDeathComponent(component)
 		}) {
-			rt.emitEventRunningEvent(runtime.RunningEvent_EntityRemovingComponentAborted, entity, component)
+			rt.emitEventRunningEvent(runtime.RunningEvent_EntityComponentRemoved, entity, component)
 			return
 		}
 
 		if !caller.Call(func() {
 			rt.disposeComponent(component, false)
 		}) {
-			rt.emitEventRunningEvent(runtime.RunningEvent_EntityRemovingComponentAborted, entity, component)
+			rt.emitEventRunningEvent(runtime.RunningEvent_EntityComponentRemoved, entity, component)
 			return
 		}
 	}
 
-	rt.emitEventRunningEvent(runtime.RunningEvent_EntityRemovingComponentDone, entity, component)
+	rt.emitEventRunningEvent(runtime.RunningEvent_EntityComponentRemovalAborted, entity, component)
 }
 
 // onEntityManagerEntityComponentEnableChanged 事件处理器：实体管理器中实体的组件启用状态改变

@@ -24,33 +24,33 @@ package runtime
 type RunningEvent int32
 
 const (
-	RunningEvent_Birth                          RunningEvent = iota // 出生
-	RunningEvent_Starting                                           // 开始启动
-	RunningEvent_Started                                            // 已启动
-	RunningEvent_FrameLoopBegin                                     // 帧循环开始
-	RunningEvent_FrameUpdateBegin                                   // 帧更新开始
-	RunningEvent_FrameUpdateEnd                                     // 帧更新结束
-	RunningEvent_FrameLoopEnd                                       // 帧循环结束
-	RunningEvent_RunCallBegin                                       // Call开始执行
-	RunningEvent_RunCallEnd                                         // Call结束执行
-	RunningEvent_RunGCBegin                                         // GC开始执行
-	RunningEvent_RunGCEnd                                           // GC结束执行
-	RunningEvent_Terminating                                        // 开始停止
-	RunningEvent_Terminated                                         // 已停止
-	RunningEvent_AddInActivating                                    // 开始激活插件
-	RunningEvent_AddInActivatingAborted                             // 中止激活插件
-	RunningEvent_AddInActivatingDone                                // 已激活插件
-	RunningEvent_AddInDeactivating                                  // 开始去激活插件
-	RunningEvent_AddInDeactivatingDone                              // 已去激活插件
-	RunningEvent_EntityActivating                                   // 开始激活实体
-	RunningEvent_EntityActivatingAborted                            // 中止激活实体
-	RunningEvent_EntityActivatingDone                               // 已激活实体
-	RunningEvent_EntityDeactivating                                 // 开始去激活实体
-	RunningEvent_EntityDeactivatingDone                             // 已去激活实体
-	RunningEvent_EntityAddingComponents                             // 实体开始添加组件
-	RunningEvent_EntityAddingComponentsAborted                      // 实体中止添加组件
-	RunningEvent_EntityAddingComponentsDone                         // 实体已添加组件
-	RunningEvent_EntityRemovingComponent                            // 实体开始删除组件
-	RunningEvent_EntityRemovingComponentAborted                     // 实体中止删除组件
-	RunningEvent_EntityRemovingComponentDone                        // 实体已删除组件
+	RunningEvent_Birth                           RunningEvent = iota // 出生
+	RunningEvent_Starting                                            // 开始启动
+	RunningEvent_Started                                             // 已启动
+	RunningEvent_FrameLoopBegin                                      // 帧循环开始
+	RunningEvent_FrameUpdateBegin                                    // 帧更新开始
+	RunningEvent_FrameUpdateEnd                                      // 帧更新结束
+	RunningEvent_FrameLoopEnd                                        // 帧循环结束
+	RunningEvent_RunCallBegin                                        // Call开始执行
+	RunningEvent_RunCallEnd                                          // Call结束执行
+	RunningEvent_RunGCBegin                                          // GC开始执行
+	RunningEvent_RunGCEnd                                            // GC结束执行
+	RunningEvent_Terminating                                         // 开始停止
+	RunningEvent_Terminated                                          // 已停止
+	RunningEvent_AddInActivating                                     // 开始激活插件
+	RunningEvent_AddInActivationAborted                              // 中止激活插件
+	RunningEvent_AddInActivated                                      // 已激活插件
+	RunningEvent_AddInDeactivating                                   // 开始去激活插件
+	RunningEvent_AddInDeactivated                                    // 已去激活插件
+	RunningEvent_EntityActivating                                    // 开始激活实体
+	RunningEvent_EntityActivationAborted                             // 中止激活实体
+	RunningEvent_EntityActivated                                     // 已激活实体
+	RunningEvent_EntityDeactivating                                  // 开始去激活实体
+	RunningEvent_EntityDeactivated                                   // 已去激活实体
+	RunningEvent_EntityAddingComponents                              // 实体开始添加组件
+	RunningEvent_EntityComponentsAdditionAborted                     // 实体中止添加组件
+	RunningEvent_EntityComponentsAdded                               // 实体已添加组件
+	RunningEvent_EntityRemovingComponent                             // 实体开始删除组件
+	RunningEvent_EntityComponentRemoved                              // 实体中止删除组件
+	RunningEvent_EntityComponentRemovalAborted                       // 实体已删除组件
 )

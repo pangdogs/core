@@ -22,26 +22,26 @@ func _() {
 	_ = x[RunningEvent_Terminating-11]
 	_ = x[RunningEvent_Terminated-12]
 	_ = x[RunningEvent_AddInActivating-13]
-	_ = x[RunningEvent_AddInActivatingAborted-14]
-	_ = x[RunningEvent_AddInActivatingDone-15]
+	_ = x[RunningEvent_AddInActivationAborted-14]
+	_ = x[RunningEvent_AddInActivated-15]
 	_ = x[RunningEvent_AddInDeactivating-16]
-	_ = x[RunningEvent_AddInDeactivatingDone-17]
+	_ = x[RunningEvent_AddInDeactivated-17]
 	_ = x[RunningEvent_EntityActivating-18]
-	_ = x[RunningEvent_EntityActivatingAborted-19]
-	_ = x[RunningEvent_EntityActivatingDone-20]
+	_ = x[RunningEvent_EntityActivationAborted-19]
+	_ = x[RunningEvent_EntityActivated-20]
 	_ = x[RunningEvent_EntityDeactivating-21]
-	_ = x[RunningEvent_EntityDeactivatingDone-22]
+	_ = x[RunningEvent_EntityDeactivated-22]
 	_ = x[RunningEvent_EntityAddingComponents-23]
-	_ = x[RunningEvent_EntityAddingComponentsAborted-24]
-	_ = x[RunningEvent_EntityAddingComponentsDone-25]
+	_ = x[RunningEvent_EntityComponentsAdditionAborted-24]
+	_ = x[RunningEvent_EntityComponentsAdded-25]
 	_ = x[RunningEvent_EntityRemovingComponent-26]
-	_ = x[RunningEvent_EntityRemovingComponentAborted-27]
-	_ = x[RunningEvent_EntityRemovingComponentDone-28]
+	_ = x[RunningEvent_EntityComponentRemoved-27]
+	_ = x[RunningEvent_EntityComponentRemovalAborted-28]
 }
 
-const _RunningEvent_name = "RunningEvent_BirthRunningEvent_StartingRunningEvent_StartedRunningEvent_FrameLoopBeginRunningEvent_FrameUpdateBeginRunningEvent_FrameUpdateEndRunningEvent_FrameLoopEndRunningEvent_RunCallBeginRunningEvent_RunCallEndRunningEvent_RunGCBeginRunningEvent_RunGCEndRunningEvent_TerminatingRunningEvent_TerminatedRunningEvent_AddInActivatingRunningEvent_AddInActivatingAbortedRunningEvent_AddInActivatingDoneRunningEvent_AddInDeactivatingRunningEvent_AddInDeactivatingDoneRunningEvent_EntityActivatingRunningEvent_EntityActivatingAbortedRunningEvent_EntityActivatingDoneRunningEvent_EntityDeactivatingRunningEvent_EntityDeactivatingDoneRunningEvent_EntityAddingComponentsRunningEvent_EntityAddingComponentsAbortedRunningEvent_EntityAddingComponentsDoneRunningEvent_EntityRemovingComponentRunningEvent_EntityRemovingComponentAbortedRunningEvent_EntityRemovingComponentDone"
+const _RunningEvent_name = "RunningEvent_BirthRunningEvent_StartingRunningEvent_StartedRunningEvent_FrameLoopBeginRunningEvent_FrameUpdateBeginRunningEvent_FrameUpdateEndRunningEvent_FrameLoopEndRunningEvent_RunCallBeginRunningEvent_RunCallEndRunningEvent_RunGCBeginRunningEvent_RunGCEndRunningEvent_TerminatingRunningEvent_TerminatedRunningEvent_AddInActivatingRunningEvent_AddInActivationAbortedRunningEvent_AddInActivatedRunningEvent_AddInDeactivatingRunningEvent_AddInDeactivatedRunningEvent_EntityActivatingRunningEvent_EntityActivationAbortedRunningEvent_EntityActivatedRunningEvent_EntityDeactivatingRunningEvent_EntityDeactivatedRunningEvent_EntityAddingComponentsRunningEvent_EntityComponentsAdditionAbortedRunningEvent_EntityComponentsAddedRunningEvent_EntityRemovingComponentRunningEvent_EntityComponentRemovedRunningEvent_EntityComponentRemovalAborted"
 
-var _RunningEvent_index = [...]uint16{0, 18, 39, 59, 86, 115, 142, 167, 192, 215, 238, 259, 283, 306, 334, 369, 401, 431, 465, 494, 530, 563, 594, 629, 664, 706, 745, 781, 824, 864}
+var _RunningEvent_index = [...]uint16{0, 18, 39, 59, 86, 115, 142, 167, 192, 215, 238, 259, 283, 306, 334, 369, 396, 426, 455, 484, 520, 548, 579, 609, 644, 688, 722, 758, 793, 835}
 
 func (i RunningEvent) String() string {
 	idx := int(i) - 0

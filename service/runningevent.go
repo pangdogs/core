@@ -24,17 +24,17 @@ package service
 type RunningEvent int32
 
 const (
-	RunningEvent_Birth                 RunningEvent = iota // 出生
-	RunningEvent_Starting                                  // 开始启动
-	RunningEvent_Started                                   // 已启动
-	RunningEvent_Terminating                               // 开始停止
-	RunningEvent_Terminated                                // 已停止
-	RunningEvent_AddInActivating                           // 开始激活插件
-	RunningEvent_AddInActivatingDone                       // 已激活插件
-	RunningEvent_AddInDeactivating                         // 开始去激活插件
-	RunningEvent_AddInDeactivatingDone                     // 已去激活插件
-	RunningEvent_EntityPTDeclared                          // 实体原型已声明
-	RunningEvent_ComponentPTDeclared                       // 组件原型已声明
-	RunningEvent_EntityRegistered                          // 实体已注册
-	RunningEvent_EntityUnregistered                        // 实体已注销
+	RunningEvent_Birth               RunningEvent = iota // 出生
+	RunningEvent_Starting                                // 开始启动
+	RunningEvent_Started                                 // 已启动
+	RunningEvent_Terminating                             // 开始停止
+	RunningEvent_Terminated                              // 已停止
+	RunningEvent_AddInActivating                         // 开始激活插件
+	RunningEvent_AddInActivated                          // 已激活插件
+	RunningEvent_AddInDeactivating                       // 开始去激活插件
+	RunningEvent_AddInDeactivated                        // 已去激活插件
+	RunningEvent_EntityPTDeclared                        // 实体原型已声明
+	RunningEvent_ComponentPTDeclared                     // 组件原型已声明
+	RunningEvent_EntityRegistered                        // 实体已注册
+	RunningEvent_EntityUnregistered                      // 实体已注销
 )

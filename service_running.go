@@ -187,7 +187,7 @@ func (svc *ServiceBehavior) activateAddIn(status extension.AddInStatus) {
 
 	extension.UnsafeServiceAddInStatus(svcAddInStatus).SetState(extension.AddInState_Loaded, extension.AddInState_Running)
 
-	svc.emitEventRunningEvent(service.RunningEvent_AddInActivatingDone, status)
+	svc.emitEventRunningEvent(service.RunningEvent_AddInActivated, status)
 }
 
 func (svc *ServiceBehavior) deactivateAddIn(status extension.AddInStatus) {
@@ -207,5 +207,5 @@ func (svc *ServiceBehavior) deactivateAddIn(status extension.AddInStatus) {
 
 	extension.UnsafeServiceAddInStatus(svcAddInStatus).SetState(extension.AddInState_Running, extension.AddInState_Unloaded)
 
-	svc.emitEventRunningEvent(service.RunningEvent_AddInDeactivatingDone, status)
+	svc.emitEventRunningEvent(service.RunningEvent_AddInDeactivated, status)
 }

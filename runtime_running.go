@@ -153,7 +153,7 @@ func (rt *RuntimeBehavior) activateAddIn(status extension.AddInStatus) {
 	rt.emitEventRunningEvent(runtime.RunningEvent_AddInActivating, status)
 
 	if status.State() != extension.AddInState_Loaded {
-		rt.emitEventRunningEvent(runtime.RunningEvent_AddInActivatingAborted, status)
+		rt.emitEventRunningEvent(runtime.RunningEvent_AddInActivationAborted, status)
 		return
 	}
 
@@ -164,14 +164,14 @@ func (rt *RuntimeBehavior) activateAddIn(status extension.AddInStatus) {
 	}
 
 	if status.State() != extension.AddInState_Loaded {
-		rt.emitEventRunningEvent(runtime.RunningEvent_AddInActivatingAborted, status)
+		rt.emitEventRunningEvent(runtime.RunningEvent_AddInActivationAborted, status)
 		return
 	}
 
 	addInStatus := status.(extension.RuntimeAddInStatus)
 	extension.UnsafeRuntimeAddInStatus(addInStatus).SetState(extension.AddInState_Running)
 
-	rt.emitEventRunningEvent(runtime.RunningEvent_AddInActivatingDone, status)
+	rt.emitEventRunningEvent(runtime.RunningEvent_AddInActivated, status)
 
 	if status.State() != extension.AddInState_Running {
 		return
@@ -197,7 +197,7 @@ func (rt *RuntimeBehavior) deactivateAddIn(status extension.AddInStatus) {
 		generic.CastAction1(cb.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
 	}
 
-	rt.emitEventRunningEvent(runtime.RunningEvent_AddInDeactivatingDone, status)
+	rt.emitEventRunningEvent(runtime.RunningEvent_AddInDeactivated, status)
 }
 
 func (rt *RuntimeBehavior) loopStart() []event.Handle {
