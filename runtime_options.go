@@ -22,7 +22,6 @@ package core
 import (
 	"time"
 
-	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
@@ -38,8 +37,8 @@ type RuntimeOptions struct {
 	InstanceFace                    iface.Face[Runtime] // 实例，用于扩展运行时能力
 	AutoRun                         bool                // 是否开启自动运行
 	ContinueOnActivatingEntityPanic bool                // 激活实体时发生panic是否继续，不继续将会主动删除实体
-	TaskQueueCapacity               int                 // 任务处理流水线大小
-	Frame                           runtime.Frame       // 帧，设置为nil表示不使用帧更新特性
+	Frame                           FrameOptions        // 帧配置
+	TaskQueue                       TaskQueueOptions    // 任务处理流水线配置
 	GCInterval                      time.Duration       // GC间隔时长
 	CustomGC                        CustomGC            // 自定义GC
 }
@@ -52,8 +51,8 @@ func (_RuntimeOption) Default() option.Setting[RuntimeOptions] {
 		With.Runtime.InstanceFace(iface.Face[Runtime]{}).Apply(options)
 		With.Runtime.AutoRun(false).Apply(options)
 		With.Runtime.ContinueOnActivatingEntityPanic(false).Apply(options)
-		With.Runtime.TaskQueueCapacity(128).Apply(options)
-		With.Runtime.Frame(nil).Apply(options)
+		With.Runtime.Frame(With.Frame.Default()).Apply(options)
+		With.Runtime.TaskQueue(With.TaskQueue.Default()).Apply(options)
 		With.Runtime.GCInterval(10 * time.Second).Apply(options)
 		With.Runtime.CustomGC(nil).Apply(options)
 	}
@@ -80,20 +79,17 @@ func (_RuntimeOption) ContinueOnActivatingEntityPanic(b bool) option.Setting[Run
 	}
 }
 
-// TaskQueueCapacity 任务处理流水线大小
-func (_RuntimeOption) TaskQueueCapacity(cap int) option.Setting[RuntimeOptions] {
+// Frame 帧配置
+func (_RuntimeOption) Frame(settings ...option.Setting[FrameOptions]) option.Setting[RuntimeOptions] {
 	return func(options *RuntimeOptions) {
-		if cap <= 0 {
-			exception.Panicf("%w: %w: TaskQueueCapacity less equal 0 is invalid", ErrRuntime, ErrArgs)
-		}
-		options.TaskQueueCapacity = cap
+		options.Frame = option.Append(options.Frame, settings...)
 	}
 }
 
-// Frame 运行时的帧，设置为nil表示不使用帧更新特性
-func (_RuntimeOption) Frame(frame runtime.Frame) option.Setting[RuntimeOptions] {
+// TaskQueue 任务处理流水线配置
+func (_RuntimeOption) TaskQueue(settings ...option.Setting[TaskQueueOptions]) option.Setting[RuntimeOptions] {
 	return func(options *RuntimeOptions) {
-		options.Frame = frame
+		options.TaskQueue = option.Append(options.TaskQueue, settings...)
 	}
 }
 

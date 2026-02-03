@@ -39,6 +39,11 @@ func (u _UnsafeContext) Init(parentCtx context.Context, autoRecover bool, report
 	u.init(parentCtx, autoRecover, reportError)
 }
 
+// CloseWaitGroup 关闭等待组
+func (u _UnsafeContext) CloseWaitGroup() {
+	u.closeWaitGroup()
+}
+
 // ReturnTerminated 返回已停止
 func (u _UnsafeContext) ReturnTerminated() {
 	u.returnTerminated()

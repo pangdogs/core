@@ -52,6 +52,7 @@ func UnsafeNewService(svcCtx service.Context, options ServiceOptions) Service {
 type Service interface {
 	iService
 	iWorker
+	iServiceStats
 	reinterpret.InstanceProvider
 
 	// GetContext 获取服务上下文

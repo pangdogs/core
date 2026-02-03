@@ -17,50 +17,23 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package runtime
+package core
 
-// Deprecated: UnsafeFrame 访问帧内部方法
-func UnsafeFrame(frame Frame) _UnsafeFrame {
-	return _UnsafeFrame{
-		Frame: frame,
+// ServiceStats 服务统计信息
+type ServiceStats struct {
+	WaitGroupPending  int64 // 等待组任务数量
+	WaitGroupIsClosed bool  // 等待组是否已关闭
+}
+
+type iServiceStats interface {
+	// GetStats 获取服务统计信息
+	GetStats() ServiceStats
+}
+
+// GetStats 获取服务统计信息
+func (svc *ServiceBehavior) GetStats() ServiceStats {
+	return ServiceStats{
+		WaitGroupPending:  svc.ctx.GetWaitGroup().Pending(),
+		WaitGroupIsClosed: svc.ctx.GetWaitGroup().IsClosed(),
 	}
-}
-
-type _UnsafeFrame struct {
-	Frame
-}
-
-// SetCurFrames 设置当前帧号
-func (u _UnsafeFrame) SetCurFrames(v int64) {
-	u.setCurFrames(v)
-}
-
-// RunningBegin 开始运行
-func (u _UnsafeFrame) RunningBegin() {
-	u.runningBegin()
-}
-
-// RunningEnd 运行结束
-func (u _UnsafeFrame) RunningEnd() {
-	u.runningEnd()
-}
-
-// LoopBegin 开始帧循环
-func (u _UnsafeFrame) LoopBegin() {
-	u.loopBegin()
-}
-
-// LoopEnd 帧循环结束
-func (u _UnsafeFrame) LoopEnd() {
-	u.loopEnd()
-}
-
-// UpdateBegin 开始帧更新
-func (u _UnsafeFrame) UpdateBegin() {
-	u.updateBegin()
-}
-
-// UpdateEnd 帧更新结束
-func (u _UnsafeFrame) UpdateEnd() {
-	u.updateEnd()
 }

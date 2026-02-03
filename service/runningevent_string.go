@@ -11,21 +11,22 @@ func _() {
 	_ = x[RunningEvent_Birth-0]
 	_ = x[RunningEvent_Starting-1]
 	_ = x[RunningEvent_Started-2]
-	_ = x[RunningEvent_Terminating-3]
-	_ = x[RunningEvent_Terminated-4]
-	_ = x[RunningEvent_AddInActivating-5]
-	_ = x[RunningEvent_AddInActivated-6]
-	_ = x[RunningEvent_AddInDeactivating-7]
-	_ = x[RunningEvent_AddInDeactivated-8]
-	_ = x[RunningEvent_EntityPTDeclared-9]
-	_ = x[RunningEvent_ComponentPTDeclared-10]
-	_ = x[RunningEvent_EntityRegistered-11]
-	_ = x[RunningEvent_EntityUnregistered-12]
+	_ = x[RunningEvent_Heartbeat-3]
+	_ = x[RunningEvent_Terminating-4]
+	_ = x[RunningEvent_Terminated-5]
+	_ = x[RunningEvent_AddInActivating-6]
+	_ = x[RunningEvent_AddInActivated-7]
+	_ = x[RunningEvent_AddInDeactivating-8]
+	_ = x[RunningEvent_AddInDeactivated-9]
+	_ = x[RunningEvent_EntityPTDeclared-10]
+	_ = x[RunningEvent_ComponentPTDeclared-11]
+	_ = x[RunningEvent_EntityRegistered-12]
+	_ = x[RunningEvent_EntityUnregistered-13]
 }
 
-const _RunningEvent_name = "RunningEvent_BirthRunningEvent_StartingRunningEvent_StartedRunningEvent_TerminatingRunningEvent_TerminatedRunningEvent_AddInActivatingRunningEvent_AddInActivatedRunningEvent_AddInDeactivatingRunningEvent_AddInDeactivatedRunningEvent_EntityPTDeclaredRunningEvent_ComponentPTDeclaredRunningEvent_EntityRegisteredRunningEvent_EntityUnregistered"
+const _RunningEvent_name = "RunningEvent_BirthRunningEvent_StartingRunningEvent_StartedRunningEvent_HeartbeatRunningEvent_TerminatingRunningEvent_TerminatedRunningEvent_AddInActivatingRunningEvent_AddInActivatedRunningEvent_AddInDeactivatingRunningEvent_AddInDeactivatedRunningEvent_EntityPTDeclaredRunningEvent_ComponentPTDeclaredRunningEvent_EntityRegisteredRunningEvent_EntityUnregistered"
 
-var _RunningEvent_index = [...]uint16{0, 18, 39, 59, 83, 106, 134, 161, 191, 220, 249, 281, 310, 341}
+var _RunningEvent_index = [...]uint16{0, 18, 39, 59, 81, 105, 128, 156, 183, 213, 242, 271, 303, 332, 363}
 
 func (i RunningEvent) String() string {
 	idx := int(i) - 0

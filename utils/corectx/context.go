@@ -21,10 +21,24 @@ package corectx
 
 import (
 	"context"
-	"sync"
 
 	"git.golaxy.org/core/utils/async"
+	"git.golaxy.org/core/utils/generic"
 )
+
+// WaitGroup 等待组
+type WaitGroup interface {
+	// Join 添加任务
+	Join(delta int64) bool
+	// Done 任务完成
+	Done()
+	// Wait 等待所有任务完成
+	Wait()
+	// IsClosed 是否已关闭
+	IsClosed() bool
+	// Pending 等待任务数量
+	Pending() int64
+}
 
 // Context 上下文
 type Context interface {
@@ -38,7 +52,7 @@ type Context interface {
 	// GetReportError 在开启panic时自动恢复时，将会恢复并将错误写入此error channel
 	GetReportError() chan error
 	// GetWaitGroup 获取等待组
-	GetWaitGroup() *sync.WaitGroup
+	GetWaitGroup() WaitGroup
 	// Terminate 停止
 	Terminate() async.AsyncRet
 	// Terminated 已停止
@@ -47,6 +61,7 @@ type Context interface {
 
 type iContext interface {
 	init(parentCtx context.Context, autoRecover bool, reportError chan error)
+	closeWaitGroup()
 	returnTerminated()
 }
 
@@ -56,9 +71,9 @@ type ContextBehavior struct {
 	parentCtx   context.Context
 	autoRecover bool
 	reportError chan error
+	barrier     generic.Barrier
 	terminate   context.CancelFunc
 	terminated  chan async.Ret
-	wg          sync.WaitGroup
 }
 
 // GetParentContext 获取父上下文
@@ -77,8 +92,8 @@ func (ctx *ContextBehavior) GetReportError() chan error {
 }
 
 // GetWaitGroup 获取等待组
-func (ctx *ContextBehavior) GetWaitGroup() *sync.WaitGroup {
-	return &ctx.wg
+func (ctx *ContextBehavior) GetWaitGroup() WaitGroup {
+	return &ctx.barrier
 }
 
 // Terminate 停止
@@ -102,6 +117,10 @@ func (ctx *ContextBehavior) init(parentCtx context.Context, autoRecover bool, re
 	ctx.reportError = reportError
 	ctx.Context, ctx.terminate = context.WithCancel(ctx.parentCtx)
 	ctx.terminated = async.NewAsyncRet()
+}
+
+func (ctx *ContextBehavior) closeWaitGroup() {
+	ctx.barrier.Close()
 }
 
 func (ctx *ContextBehavior) returnTerminated() {

@@ -27,6 +27,7 @@ const (
 	RunningEvent_Birth               RunningEvent = iota // 出生
 	RunningEvent_Starting                                // 开始启动
 	RunningEvent_Started                                 // 已启动
+	RunningEvent_Heartbeat                               // 心跳
 	RunningEvent_Terminating                             // 开始停止
 	RunningEvent_Terminated                              // 已停止
 	RunningEvent_AddInActivating                         // 开始激活插件

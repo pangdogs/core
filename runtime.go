@@ -57,6 +57,7 @@ func UnsafeNewRuntime(rtCtx runtime.Context, options RuntimeOptions) Runtime {
 type Runtime interface {
 	iRuntime
 	iWorker
+	iRuntimeStats
 	corectx.CurrentContextProvider
 	corectx.ConcurrentContextProvider
 	reinterpret.InstanceProvider
@@ -73,7 +74,8 @@ type RuntimeBehavior struct {
 	ctx                                                  runtime.Context
 	options                                              RuntimeOptions
 	isRunning                                            atomic.Bool
-	taskQueue                                            chan _Task
+	frame                                                *_FrameBehavior
+	taskQueue                                            _TaskQueueBehavior
 	handleEventEntityManagerAddEntity                    runtime.EventEntityManagerAddEntity
 	handleEventEntityManagerRemoveEntity                 runtime.EventEntityManagerRemoveEntity
 	handleEventEntityManagerEntityAddComponents          runtime.EventEntityManagerEntityAddComponents
@@ -116,9 +118,15 @@ func (rt *RuntimeBehavior) init(rtCtx runtime.Context, options RuntimeOptions) {
 		rt.options.InstanceFace = iface.NewFaceT[Runtime](rt)
 	}
 
-	rt.taskQueue = make(chan _Task, rt.options.TaskQueueCapacity)
+	if rt.options.Frame.Enable {
+		rt.frame = &_FrameBehavior{}
+		rt.frame.init(rt.options.Frame.TargetFPS, rt.options.Frame.TotalFrames)
+		runtime.UnsafeContext(rtCtx).SetFrame(rt.frame)
+	} else {
+		runtime.UnsafeContext(rtCtx).SetFrame(nil)
+	}
 
-	runtime.UnsafeContext(rtCtx).SetFrame(rt.options.Frame)
+	rt.taskQueue.init(rt.options.TaskQueue.Unbounded, rt.options.TaskQueue.Capacity)
 	runtime.UnsafeContext(rtCtx).SetCallee(rt.getInstance())
 
 	rt.runtimeEventTab.SetPanicHandling(rtCtx.GetAutoRecover(), rtCtx.GetReportError())

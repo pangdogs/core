@@ -210,7 +210,7 @@ func Test_CreateEntity(t *testing.T) {
 			case service.RunningEvent_Started:
 				core.NewRuntime(
 					runtime.NewContext(ctx,
-						runtime.With.Context.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
+						runtime.With.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
 							switch runningEvent {
 							case runtime.RunningEvent_Started:
 								core.BuildEntity(ctx, "Test1").New()
@@ -363,7 +363,7 @@ func Test_EntityComponentEnable(t *testing.T) {
 			case service.RunningEvent_Started:
 				core.NewRuntime(
 					runtime.NewContext(ctx,
-						runtime.With.Context.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
+						runtime.With.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
 							switch runningEvent {
 							case runtime.RunningEvent_Started:
 								core.BuildEntity(ctx, "Test1").New()
@@ -462,7 +462,7 @@ func Test_EntityDynamicComponent(t *testing.T) {
 			case service.RunningEvent_Started:
 				core.NewRuntime(
 					runtime.NewContext(ctx,
-						runtime.With.Context.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
+						runtime.With.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
 							switch runningEvent {
 							case runtime.RunningEvent_Started:
 								core.BuildEntity(ctx, "Test1").New()
@@ -569,7 +569,7 @@ func Test_EntityTree(t *testing.T) {
 			case service.RunningEvent_Started:
 				core.NewRuntime(
 					runtime.NewContext(ctx,
-						runtime.With.Context.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
+						runtime.With.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
 							switch runningEvent {
 							case runtime.RunningEvent_Starting:
 								runtime.BindEventEntityTreeAddNode(ctx.GetEntityTree(), runtime.HandleEventEntityTreeAddNode(func(entityTree runtime.EntityTree, parentId, childId uid.Id) {
@@ -854,7 +854,7 @@ func Test_EntityTreeSequence(t *testing.T) {
 			case service.RunningEvent_Started:
 				core.NewRuntime(
 					runtime.NewContext(ctx,
-						runtime.With.Context.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
+						runtime.With.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
 							switch runningEvent {
 							case runtime.RunningEvent_Starting:
 								runtime.BindEventEntityTreeAddNode(ctx.GetEntityTree(), runtime.HandleEventEntityTreeAddNode(func(entityTree runtime.EntityTree, parentId, childId uid.Id) {
@@ -1097,7 +1097,7 @@ func Test_RuntimeAddIn(t *testing.T) {
 			case service.RunningEvent_Started:
 				core.NewRuntime(
 					runtime.NewContext(ctx,
-						runtime.With.Context.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
+						runtime.With.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
 							switch runningEvent {
 							case runtime.RunningEvent_Birth:
 								runtimeAddIn1.Install(ctx)

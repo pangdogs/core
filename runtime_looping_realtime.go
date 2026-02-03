@@ -30,16 +30,17 @@ func (rt *RuntimeBehavior) loopingRealTime() {
 	gcTicker := time.NewTicker(rt.options.GCInterval)
 	defer gcTicker.Stop()
 
-	wg := &sync.WaitGroup{}
-	frame := rt.options.Frame
+	var wg sync.WaitGroup
 
 	wg.Add(1)
-	go rt.scheduleFrameTasks(wg, frame.GetCurFrames()+1, frame.GetTotalFrames(), frame.GetTargetFPS())
+	go rt.scheduleFrameTasks(&wg, rt.frame.GetCurFrames()+1, rt.frame.GetTotalFrames(), rt.frame.GetTargetFPS())
+
+	taskOut := rt.taskQueue.out()
 
 loop:
 	for rt.frameLoopBegin(); ; {
 		select {
-		case task := <-rt.taskQueue:
+		case task := <-taskOut:
 			rt.runTask(task)
 
 		case <-gcTicker.C:
@@ -51,12 +52,12 @@ loop:
 	}
 
 	wg.Wait()
-	close(rt.taskQueue)
+	rt.taskQueue.close()
 
 loopEnding:
 	for {
 		select {
-		case task, ok := <-rt.taskQueue:
+		case task, ok := <-taskOut:
 			if !ok {
 				break loopEnding
 			}
@@ -87,17 +88,8 @@ func (rt *RuntimeBehavior) scheduleFrameTasks(wg *sync.WaitGroup, curFrames, tot
 
 		select {
 		case <-updateTicker.C:
-			select {
-			case rt.taskQueue <- _Task{typ: _TaskType_Frame, action: rt.frameLoop, done: done}:
-				select {
-				case <-done:
-					curFrames++
-					continue
-				case <-rt.ctx.Done():
-					return
-				}
-			case <-rt.ctx.Done():
-				return
+			if rt.taskQueue.pushFrame(rt.ctx, rt.frameLoop, done) {
+				curFrames++
 			}
 		case <-rt.ctx.Done():
 			return
@@ -122,7 +114,5 @@ func (rt *RuntimeBehavior) frameLoopBegin() {
 
 func (rt *RuntimeBehavior) frameLoopEnd() {
 	rt.emitEventRunningEvent(runtime.RunningEvent_FrameLoopEnd)
-
-	frame := runtime.UnsafeFrame(rt.options.Frame)
-	frame.SetCurFrames(frame.GetCurFrames() + 1)
+	rt.frame.setCurFrames(rt.frame.GetCurFrames() + 1)
 }

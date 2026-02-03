@@ -47,12 +47,12 @@ type ContextOptions struct {
 	RunningEventCB RunningEventCB                // 运行事件回调
 }
 
-var With _Option
+var With _ContextOption
 
-type _Option struct{}
+type _ContextOption struct{}
 
 // Default 默认值
-func (_Option) Default() option.Setting[ContextOptions] {
+func (_ContextOption) Default() option.Setting[ContextOptions] {
 	return func(options *ContextOptions) {
 		With.InstanceFace(iface.Face[Context]{}).Apply(options)
 		With.Context(nil).Apply(options)
@@ -66,21 +66,21 @@ func (_Option) Default() option.Setting[ContextOptions] {
 }
 
 // InstanceFace 实例，用于扩展服务上下文能力
-func (_Option) InstanceFace(face iface.Face[Context]) option.Setting[ContextOptions] {
+func (_ContextOption) InstanceFace(face iface.Face[Context]) option.Setting[ContextOptions] {
 	return func(options *ContextOptions) {
 		options.InstanceFace = face
 	}
 }
 
 // Context 父Context
-func (_Option) Context(ctx context.Context) option.Setting[ContextOptions] {
+func (_ContextOption) Context(ctx context.Context) option.Setting[ContextOptions] {
 	return func(options *ContextOptions) {
 		options.Context = ctx
 	}
 }
 
 // PanicHandling panic时的处理方式
-func (_Option) PanicHandling(autoRecover bool, reportError chan error) option.Setting[ContextOptions] {
+func (_ContextOption) PanicHandling(autoRecover bool, reportError chan error) option.Setting[ContextOptions] {
 	return func(options *ContextOptions) {
 		options.AutoRecover = autoRecover
 		options.ReportError = reportError
@@ -88,35 +88,35 @@ func (_Option) PanicHandling(autoRecover bool, reportError chan error) option.Se
 }
 
 // Name 服务名称
-func (_Option) Name(name string) option.Setting[ContextOptions] {
+func (_ContextOption) Name(name string) option.Setting[ContextOptions] {
 	return func(options *ContextOptions) {
 		options.Name = name
 	}
 }
 
 // PersistId 服务持久化Id
-func (_Option) PersistId(id uid.Id) option.Setting[ContextOptions] {
+func (_ContextOption) PersistId(id uid.Id) option.Setting[ContextOptions] {
 	return func(options *ContextOptions) {
 		options.PersistId = id
 	}
 }
 
 // EntityLib 实体原型库
-func (_Option) EntityLib(lib pt.EntityLib) option.Setting[ContextOptions] {
+func (_ContextOption) EntityLib(lib pt.EntityLib) option.Setting[ContextOptions] {
 	return func(options *ContextOptions) {
 		options.EntityLib = lib
 	}
 }
 
 // AddInManager 插件管理器
-func (_Option) AddInManager(mgr extension.ServiceAddInManager) option.Setting[ContextOptions] {
+func (_ContextOption) AddInManager(mgr extension.ServiceAddInManager) option.Setting[ContextOptions] {
 	return func(options *ContextOptions) {
 		options.AddInManager = mgr
 	}
 }
 
 // RunningEventCB 运行事件回调
-func (_Option) RunningEventCB(cb RunningEventCB) option.Setting[ContextOptions] {
+func (_ContextOption) RunningEventCB(cb RunningEventCB) option.Setting[ContextOptions] {
 	return func(options *ContextOptions) {
 		options.RunningEventCB = cb
 	}

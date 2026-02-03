@@ -39,8 +39,6 @@ func (svc *ServiceBehavior) Run() async.AsyncRet {
 	select {
 	case <-ctx.Done():
 		exception.Panicf("%w: %w", ErrService, ctx.Err())
-	case <-ctx.Terminated():
-		exception.Panicf("%w: terminated", ErrService)
 	default:
 	}
 
@@ -48,8 +46,13 @@ func (svc *ServiceBehavior) Run() async.AsyncRet {
 		exception.Panicf("%w: already running", ErrService)
 	}
 
-	if parentCtx, ok := svc.ctx.GetParentContext().(corectx.Context); ok {
-		parentCtx.GetWaitGroup().Add(1)
+	if parentCtx, ok := ctx.GetParentContext().(corectx.Context); ok {
+		if !parentCtx.GetWaitGroup().Join(1) {
+			ctx.Terminate()
+			corectx.UnsafeContext(ctx).CloseWaitGroup()
+			corectx.UnsafeContext(ctx).ReturnTerminated()
+			return ctx.Terminated()
+		}
 	}
 
 	go svc.running()
@@ -73,18 +76,22 @@ func (svc *ServiceBehavior) running() {
 	svc.emitEventRunningEvent(service.RunningEvent_Starting)
 	svc.emitEventRunningEvent(service.RunningEvent_Started)
 
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+
 loop:
 	for {
 		select {
 		case <-ctx.Done():
 			break loop
-		default:
-			time.Sleep(1 * time.Second)
+		case <-ticker.C:
+			svc.emitEventRunningEvent(service.RunningEvent_Heartbeat)
 		}
 	}
 
 	svc.emitEventRunningEvent(service.RunningEvent_Terminating)
 
+	corectx.UnsafeContext(ctx).CloseWaitGroup()
 	ctx.GetWaitGroup().Wait()
 
 	svc.emitEventRunningEvent(service.RunningEvent_Terminated)
@@ -135,9 +142,9 @@ func (svc *ServiceBehavior) initComponentPT() {
 }
 
 func (svc *ServiceBehavior) initAddIn() {
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
+	var wg sync.WaitGroup
 
+	wg.Add(1)
 	go func() {
 		for event := range service.UnsafeContext(svc.ctx).GetAddInManager().EventStream(svc.ctx.Terminated().Context(nil)) {
 			switch e := event.(type) {

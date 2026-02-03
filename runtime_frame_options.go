@@ -17,17 +17,19 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package runtime
+package core
 
 import (
 	"math"
 
+	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/option"
 )
 
 // FrameOptions 帧的所有选项
 type FrameOptions struct {
+	Enable      bool    // 是否启用帧
 	TargetFPS   float64 // 目标FPS
 	TotalFrames int64   // 运行帧数上限
 }
@@ -37,8 +39,16 @@ type _FrameOption struct{}
 // Default 默认值
 func (_FrameOption) Default() option.Setting[FrameOptions] {
 	return func(options *FrameOptions) {
+		With.Frame.Enable(true).Apply(options)
 		With.Frame.TargetFPS(30).Apply(options)
 		With.Frame.TotalFrames(0).Apply(options)
+	}
+}
+
+// Enable 是否启用帧
+func (_FrameOption) Enable(b bool) option.Setting[FrameOptions] {
+	return func(options *FrameOptions) {
+		options.Enable = b
 	}
 }
 
@@ -46,7 +56,7 @@ func (_FrameOption) Default() option.Setting[FrameOptions] {
 func (_FrameOption) TargetFPS(fps float64) option.Setting[FrameOptions] {
 	return func(options *FrameOptions) {
 		if fps <= 0 {
-			exception.Panicf("%w: %w: TargetFPS less equal 0 is invalid", ErrFrame, exception.ErrArgs)
+			exception.Panicf("%w: %w: TargetFPS less equal 0 is invalid", runtime.ErrFrame, exception.ErrArgs)
 		}
 		options.TargetFPS = math.Round(fps)
 	}
@@ -56,7 +66,7 @@ func (_FrameOption) TargetFPS(fps float64) option.Setting[FrameOptions] {
 func (_FrameOption) TotalFrames(v int64) option.Setting[FrameOptions] {
 	return func(options *FrameOptions) {
 		if v < 0 {
-			exception.Panicf("%w: %w: TotalFrames less 0 is invalid", ErrFrame, exception.ErrArgs)
+			exception.Panicf("%w: %w: TotalFrames less 0 is invalid", runtime.ErrFrame, exception.ErrArgs)
 		}
 		options.TotalFrames = v
 	}

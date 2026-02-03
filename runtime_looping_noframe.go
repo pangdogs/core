@@ -27,10 +27,12 @@ func (rt *RuntimeBehavior) loopingNoFrame() {
 	gcTicker := time.NewTicker(rt.options.GCInterval)
 	defer gcTicker.Stop()
 
+	taskOut := rt.taskQueue.out()
+
 loop:
 	for {
 		select {
-		case task := <-rt.taskQueue:
+		case task := <-taskOut:
 			rt.runTask(task)
 
 		case <-gcTicker.C:
@@ -41,12 +43,12 @@ loop:
 		}
 	}
 
-	close(rt.taskQueue)
+	rt.taskQueue.close()
 
 loopEnding:
 	for {
 		select {
-		case task, ok := <-rt.taskQueue:
+		case task, ok := <-taskOut:
 			if !ok {
 				break loopEnding
 			}
