@@ -87,7 +87,7 @@ type ContextBehavior struct {
 	corectx.ContextBehavior
 	options       ContextOptions
 	reflected     reflect.Value
-	entityManager _EntityManagerBehavior
+	entityManager _EntityManager
 	scoped        atomic.Bool
 	stringerOnce  sync.Once
 	stringerCache string

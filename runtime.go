@@ -74,7 +74,7 @@ type RuntimeBehavior struct {
 	ctx                                                  runtime.Context
 	options                                              RuntimeOptions
 	isRunning                                            atomic.Bool
-	frame                                                *_FrameBehavior
+	frame                                                *_Frame
 	taskQueue                                            _TaskQueueBehavior
 	handleEventEntityManagerAddEntity                    runtime.EventEntityManagerAddEntity
 	handleEventEntityManagerRemoveEntity                 runtime.EventEntityManagerRemoveEntity
@@ -119,7 +119,7 @@ func (rt *RuntimeBehavior) init(rtCtx runtime.Context, options RuntimeOptions) {
 	}
 
 	if rt.options.Frame.Enable {
-		rt.frame = &_FrameBehavior{}
+		rt.frame = &_Frame{}
 		rt.frame.init(rt.options.Frame.TargetFPS, rt.options.Frame.TotalFrames)
 		runtime.UnsafeContext(rtCtx).SetFrame(rt.frame)
 	} else {

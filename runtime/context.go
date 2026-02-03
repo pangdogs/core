@@ -105,7 +105,7 @@ type ContextBehavior struct {
 	options       ContextOptions
 	reflected     reflect.Value
 	frame         Frame
-	entityManager _EntityManagerBehavior
+	entityManager _EntityManager
 	callee        async.Callee
 	scoped        atomic.Bool
 	gcList        []GC

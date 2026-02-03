@@ -41,12 +41,12 @@ type EntityManager interface {
 	RemoveEntity(id uid.Id)
 }
 
-type _EntityManagerBehavior struct {
+type _EntityManager struct {
 	ctx      Context
 	entities sync.Map
 }
 
-func (mgr *_EntityManagerBehavior) init(ctx Context) {
+func (mgr *_EntityManager) init(ctx Context) {
 	if ctx == nil {
 		exception.Panicf("%w: %w: ctx is nil", ErrEntityManager, exception.ErrArgs)
 	}
@@ -55,12 +55,12 @@ func (mgr *_EntityManagerBehavior) init(ctx Context) {
 }
 
 // GetContext 获取服务上下文
-func (mgr *_EntityManagerBehavior) GetContext() Context {
+func (mgr *_EntityManager) GetContext() Context {
 	return mgr.ctx
 }
 
 // GetEntity 查询实体
-func (mgr *_EntityManagerBehavior) GetEntity(id uid.Id) (ec.ConcurrentEntity, bool) {
+func (mgr *_EntityManager) GetEntity(id uid.Id) (ec.ConcurrentEntity, bool) {
 	v, ok := mgr.entities.Load(id)
 	if !ok {
 		return nil, false
@@ -70,7 +70,7 @@ func (mgr *_EntityManagerBehavior) GetEntity(id uid.Id) (ec.ConcurrentEntity, bo
 }
 
 // GetOrAddEntity 查询或添加实体
-func (mgr *_EntityManagerBehavior) GetOrAddEntity(entity ec.ConcurrentEntity) (ec.ConcurrentEntity, bool, error) {
+func (mgr *_EntityManager) GetOrAddEntity(entity ec.ConcurrentEntity) (ec.ConcurrentEntity, bool, error) {
 	if entity == nil {
 		return nil, false, fmt.Errorf("%w: %w: entity is nil", ErrEntityManager, exception.ErrArgs)
 	}
@@ -98,7 +98,7 @@ func (mgr *_EntityManagerBehavior) GetOrAddEntity(entity ec.ConcurrentEntity) (e
 }
 
 // RemoveEntity 删除实体
-func (mgr *_EntityManagerBehavior) RemoveEntity(id uid.Id) {
+func (mgr *_EntityManager) RemoveEntity(id uid.Id) {
 	entity, loaded := mgr.entities.LoadAndDelete(id)
 	if !loaded {
 		return
