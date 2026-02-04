@@ -89,6 +89,7 @@ func (s *FreeSlot[T]) Freed() bool {
 
 // FreeList 自由链表
 type FreeList[T any] struct {
+	_           noCopy
 	slots       []FreeSlot[T]
 	head        int
 	tail        int

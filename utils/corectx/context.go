@@ -36,8 +36,8 @@ type WaitGroup interface {
 	Wait()
 	// IsClosed 是否已关闭
 	IsClosed() bool
-	// Pending 等待任务数量
-	Pending() int64
+	// Count 等待任务数量
+	Count() int64
 }
 
 // Context 上下文

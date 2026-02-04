@@ -12,6 +12,7 @@ func NewUnboundedChannel[T any]() *UnboundedChannel[T] {
 }
 
 type UnboundedChannel[T any] struct {
+	_       noCopy
 	in, out chan T
 	queue   FreeList[T]
 	count   atomic.Int64

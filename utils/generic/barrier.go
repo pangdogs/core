@@ -22,12 +22,9 @@ package generic
 import (
 	"sync"
 	"sync/atomic"
+
+	"git.golaxy.org/core/utils/exception"
 )
-
-type noCopy struct{}
-
-func (*noCopy) Lock()   {}
-func (*noCopy) Unlock() {}
 
 type Barrier struct {
 	_                   noCopy
@@ -40,7 +37,7 @@ type Barrier struct {
 func (b *Barrier) Join(delta int64) bool {
 	b.initOnce.Do(b.init)
 	if delta == 0 {
-		return false
+		exception.Panic("Barrier: delta must not be zero")
 	}
 	if delta > 0 && b.closed.Load() {
 		return false
@@ -48,13 +45,13 @@ func (b *Barrier) Join(delta int64) bool {
 	n := b.n.Add(delta)
 	if delta > 0 {
 		if b.closed.Load() {
-			if b.n.Add(-delta) == 0 {
+			if b.n.Add(-delta) <= 0 {
 				b.closeOnce.Do(b.close)
 			}
 			return false
 		}
 	} else {
-		if n == 0 {
+		if n <= 0 {
 			b.closed.Store(true)
 			b.closeOnce.Do(b.close)
 		}
@@ -74,7 +71,7 @@ func (b *Barrier) Wait() {
 func (b *Barrier) Close() {
 	b.initOnce.Do(b.init)
 	if b.closed.CompareAndSwap(false, true) {
-		if b.n.Add(-1) == 0 {
+		if b.n.Add(-1) <= 0 {
 			b.closeOnce.Do(b.close)
 		}
 	}
@@ -85,7 +82,7 @@ func (b *Barrier) IsClosed() bool {
 	return b.closed.Load()
 }
 
-func (b *Barrier) Pending() int64 {
+func (b *Barrier) Count() int64 {
 	b.initOnce.Do(b.init)
 	return b.n.Load()
 }

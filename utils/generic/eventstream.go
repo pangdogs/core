@@ -29,8 +29,9 @@ func NewEventStream[T any]() *EventStream[T] {
 }
 
 type EventStream[T any] struct {
+	_           noCopy
 	mutex       sync.RWMutex
-	subscribers map[*UnboundedChannel[T]]struct{}
+	subscribers map[*UnboundedChannel[T]]chan struct{}
 }
 
 func (es *EventStream[T]) Subscribe(ctx context.Context, catchUp ...T) <-chan T {
@@ -48,16 +49,27 @@ func (es *EventStream[T]) Subscribe(ctx context.Context, catchUp ...T) <-chan T 
 	}
 
 	if es.subscribers == nil {
-		es.subscribers = map[*UnboundedChannel[T]]struct{}{}
+		es.subscribers = map[*UnboundedChannel[T]]chan struct{}{}
 	}
-	es.subscribers[subscriber] = struct{}{}
+
+	closed := make(chan struct{})
+	es.subscribers[subscriber] = closed
 
 	go func() {
-		<-ctx.Done()
+		select {
+		case <-ctx.Done():
+		case <-closed:
+		}
 		es.mutex.Lock()
 		defer es.mutex.Unlock()
-		subscriber.Close()
-		delete(es.subscribers, subscriber)
+		if es.subscribers == nil {
+			return
+		}
+		if _, ok := es.subscribers[subscriber]; ok {
+			subscriber.Close()
+			close(closed)
+			delete(es.subscribers, subscriber)
+		}
 	}()
 
 	return subscriber.Out()
@@ -76,8 +88,9 @@ func (es *EventStream[T]) Clear() {
 	es.mutex.Lock()
 	defer es.mutex.Unlock()
 
-	for subscriber := range es.subscribers {
+	for subscriber, closed := range es.subscribers {
 		subscriber.Close()
+		close(closed)
 	}
 	es.subscribers = nil
 }

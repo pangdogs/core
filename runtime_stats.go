@@ -21,8 +21,8 @@ package core
 
 // RuntimeStats 运行时统计信息
 type RuntimeStats struct {
-	WaitGroupPending        int64 // 等待组任务数量
-	WaitGroupIsClosed       bool  // 等待组是否已关闭
+	WaitGroupCount          int64 // 等待组任务数量
+	WaitGroupClosed         bool  // 等待组是否已关闭
 	TaskQueueCallEnqueued   int64 // 任务队列调用任务入队数量
 	TaskQueueCallCompleted  int64 // 任务队列调用任务完成数量
 	TaskQueueFrameEnqueued  int64 // 任务队列帧任务入队数量
@@ -37,8 +37,8 @@ type iRuntimeStats interface {
 // GetStats 获取运行时统计信息
 func (rt *RuntimeBehavior) GetStats() RuntimeStats {
 	return RuntimeStats{
-		WaitGroupPending:        rt.ctx.GetWaitGroup().Pending(),
-		WaitGroupIsClosed:       rt.ctx.GetWaitGroup().IsClosed(),
+		WaitGroupCount:          rt.ctx.GetWaitGroup().Count(),
+		WaitGroupClosed:         rt.ctx.GetWaitGroup().IsClosed(),
 		TaskQueueCallEnqueued:   rt.taskQueue.callEnqueued.Load(),
 		TaskQueueCallCompleted:  rt.taskQueue.callCompleted.Load(),
 		TaskQueueFrameEnqueued:  rt.taskQueue.frameEnqueued.Load(),

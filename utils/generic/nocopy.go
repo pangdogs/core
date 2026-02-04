@@ -17,23 +17,10 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package core
+package generic
 
-// ServiceStats 服务统计信息
-type ServiceStats struct {
-	WaitGroupCount  int64 // 等待组任务数量
-	WaitGroupClosed bool  // 等待组是否已关闭
-}
+type noCopy struct{}
 
-type iServiceStats interface {
-	// GetStats 获取服务统计信息
-	GetStats() ServiceStats
-}
+func (*noCopy) Lock() {}
 
-// GetStats 获取服务统计信息
-func (svc *ServiceBehavior) GetStats() ServiceStats {
-	return ServiceStats{
-		WaitGroupCount:  svc.ctx.GetWaitGroup().Count(),
-		WaitGroupClosed: svc.ctx.GetWaitGroup().IsClosed(),
-	}
-}
+func (*noCopy) Unlock() {}
