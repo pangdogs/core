@@ -221,6 +221,7 @@ func Test_CreateEntity(t *testing.T) {
 						}),
 					),
 					core.With.Runtime.AutoRun(true),
+					core.With.Runtime.Frame(core.With.Frame.Enable(false)),
 				)
 			}
 			log.Println("service event:", runningEvent, args)
@@ -372,6 +373,7 @@ func Test_EntityComponentEnable(t *testing.T) {
 						}),
 					),
 					core.With.Runtime.AutoRun(true),
+					core.With.Runtime.Frame(core.With.Frame.Enable(false)),
 				)
 			}
 			log.Println("service event:", runningEvent, args)
@@ -472,6 +474,7 @@ func Test_EntityDynamicComponent(t *testing.T) {
 						}),
 					),
 					core.With.Runtime.AutoRun(true),
+					core.With.Runtime.Frame(core.With.Frame.Enable(false)),
 				)
 			}
 			log.Println("service event:", runningEvent, args)
@@ -690,6 +693,7 @@ func Test_EntityTree(t *testing.T) {
 						}),
 					),
 					core.With.Runtime.AutoRun(true),
+					core.With.Runtime.Frame(core.With.Frame.Enable(false)),
 				)
 			}
 			log.Println("service event:", runningEvent, args)
@@ -1000,9 +1004,108 @@ func Test_EntityTreeSequence(t *testing.T) {
 						}),
 					),
 					core.With.Runtime.AutoRun(true),
+					core.With.Runtime.Frame(core.With.Frame.Enable(false)),
 				)
 			}
 			log.Println("service event:", runningEvent, args)
+		}),
+	)
+
+	<-core.NewService(svcCtx).Run()
+}
+
+type ComponentTestFrameUpdate struct {
+	ec.ComponentBehavior
+}
+
+func (c *ComponentTestFrameUpdate) Update() {
+	frame := runtime.Current(c).GetFrame()
+	log.Printf("Component %s.%s Update, fps: %.2f", c.GetEntity().GetId(), c.GetName(), frame.GetCurFPS())
+}
+
+func (c *ComponentTestFrameUpdate) LateUpdate() {
+	log.Printf("Component %s.%s LateUpdate", c.GetEntity().GetId(), c.GetName())
+}
+
+func Test_CreateEntityFrameUpdate(t *testing.T) {
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+
+	svcCtx := service.NewContext(
+		service.With.Context(ctx),
+		service.With.RunningEventCB(func(ctx service.Context, runningEvent service.RunningEvent, args ...any) {
+			switch runningEvent {
+			case service.RunningEvent_Birth:
+				core.BuildEntityPT(ctx, "Test1").
+					AddComponent(ComponentTestFrameUpdate{}).
+					Declare()
+			case service.RunningEvent_Started:
+				core.NewRuntime(
+					runtime.NewContext(ctx,
+						runtime.With.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
+							switch runningEvent {
+							case runtime.RunningEvent_Started:
+								for range 10 {
+									core.BuildEntity(ctx, "Test1").New()
+								}
+							}
+							log.Println("runtime event:", runningEvent, args)
+						}),
+					),
+					core.With.Runtime.AutoRun(true),
+				)
+			}
+			log.Println("service event:", runningEvent, args)
+		}),
+	)
+
+	<-core.NewService(svcCtx).Run()
+}
+
+type ComponentTestStressFrameUpdate struct {
+	ec.ComponentBehavior
+	count int
+}
+
+func (c *ComponentTestStressFrameUpdate) Update() {
+	c.count++
+}
+
+func (c *ComponentTestStressFrameUpdate) LateUpdate() {
+	c.count++
+}
+
+func Test_CreateEntityStressFrameUpdate(t *testing.T) {
+	ctx, _ := context.WithTimeout(context.Background(), 120*time.Second)
+
+	svcCtx := service.NewContext(
+		service.With.Context(ctx),
+		service.With.RunningEventCB(func(ctx service.Context, runningEvent service.RunningEvent, args ...any) {
+			switch runningEvent {
+			case service.RunningEvent_Birth:
+				core.BuildEntityPT(ctx, "Test1").
+					AddComponent(ComponentTestStressFrameUpdate{}).
+					Declare()
+			case service.RunningEvent_Started:
+				core.NewRuntime(
+					runtime.NewContext(ctx,
+						runtime.With.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
+							switch runningEvent {
+							case runtime.RunningEvent_FrameLoopBegin:
+								for range 200 {
+									core.BuildEntity(ctx, "Test1").New()
+								}
+							case runtime.RunningEvent_RunGCBegin:
+								log.Printf("fps: %.2f, running_elapse_time: %.3f, last_loop_elapse_time: %.3f, entities: %d",
+									ctx.GetFrame().GetCurFPS(),
+									ctx.GetFrame().GetRunningElapseTime().Seconds(),
+									ctx.GetFrame().GetLastLoopElapseTime().Seconds(),
+									ctx.GetEntityManager().CountEntities())
+							}
+						}),
+					),
+					core.With.Runtime.AutoRun(true),
+				)
+			}
 		}),
 	)
 
@@ -1106,6 +1209,7 @@ func Test_RuntimeAddIn(t *testing.T) {
 						}),
 					),
 					core.With.Runtime.AutoRun(true),
+					core.With.Runtime.Frame(core.With.Frame.Enable(false)),
 				)
 			}
 			log.Println("service event:", runningEvent, args)
