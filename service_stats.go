@@ -33,7 +33,7 @@ type iServiceStats interface {
 // GetStats 获取服务统计信息
 func (svc *ServiceBehavior) GetStats() ServiceStats {
 	return ServiceStats{
-		WaitGroupCount:  svc.ctx.GetWaitGroup().Count(),
-		WaitGroupClosed: svc.ctx.GetWaitGroup().IsClosed(),
+		WaitGroupCount:  svc.ctx.WaitGroup().Count(),
+		WaitGroupClosed: svc.ctx.WaitGroup().Closed(),
 	}
 }

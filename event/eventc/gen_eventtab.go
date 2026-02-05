@@ -175,9 +175,9 @@ func (eventTab *%[1]s) SetPanicHandling(autoRecover bool, reportError chan error
 func (eventTab *%[1]s) SetRecursion(recursion %[4]sEventRecursion) {%[3]s
 }
 
-func (eventTab *%[1]s) SetEnable(b bool) {
+func (eventTab *%[1]s) SetEnabled(b bool) {
 	for i := range *eventTab {
-		(*eventTab)[i].SetEnable(b)
+		(*eventTab)[i].SetEnabled(b)
 	}
 }
 

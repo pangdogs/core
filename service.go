@@ -55,8 +55,8 @@ type Service interface {
 	iServiceStats
 	reinterpret.InstanceProvider
 
-	// GetContext 获取服务上下文
-	GetContext() service.Context
+	// Context 获取服务上下文
+	Context() service.Context
 }
 
 type iService interface {
@@ -70,13 +70,13 @@ type ServiceBehavior struct {
 	isRunning atomic.Bool
 }
 
-// GetContext 获取服务上下文
-func (svc *ServiceBehavior) GetContext() service.Context {
+// Context 获取服务上下文
+func (svc *ServiceBehavior) Context() service.Context {
 	return svc.ctx
 }
 
-// GetInstanceFaceCache 支持重新解释类型
-func (svc *ServiceBehavior) GetInstanceFaceCache() iface.Cache {
+// InstanceFaceCache 支持重新解释类型
+func (svc *ServiceBehavior) InstanceFaceCache() iface.Cache {
 	return svc.options.InstanceFace.Cache
 }
 
@@ -85,7 +85,7 @@ func (svc *ServiceBehavior) init(svcCtx service.Context, options ServiceOptions)
 		exception.Panicf("%w: %w: svcCtx is nil", ErrService, ErrArgs)
 	}
 
-	if !service.UnsafeContext(svcCtx).GetScoped().CompareAndSwap(false, true) {
+	if !service.UnsafeContext(svcCtx).Scoped().CompareAndSwap(false, true) {
 		exception.Panicf("%w: %w: svcCtx is already bound to another service scope", ErrService, ErrArgs)
 	}
 

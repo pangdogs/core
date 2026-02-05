@@ -226,8 +226,8 @@ func (entity *EntityBehavior) AddComponent(name string, components ...Component)
 			return fmt.Errorf("%w: %w: component is nil", ErrEC, exception.ErrArgs)
 		}
 
-		if comp.GetState() != ComponentState_Birth {
-			return fmt.Errorf("%w: invalid component state %q", ErrEC, comp.GetState())
+		if comp.State() != ComponentState_Birth {
+			return fmt.Errorf("%w: invalid component state %q", ErrEC, comp.State())
 		}
 	}
 
@@ -250,7 +250,7 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 	entity.componentList.TraversalAt(func(slot *generic.FreeSlot[Component]) bool {
 		comp := slot.V
 
-		if comp.GetName() != name {
+		if comp.Name() != name {
 			return false
 		}
 
@@ -310,7 +310,7 @@ func (entity *EntityBehavior) onComponentEnableChangedIfVersion(idx int, ver int
 
 	comp := slot.V
 
-	_EmitEventComponentManagerComponentEnableChanged(entity, entity.getInstance(), comp, comp.GetEnable())
+	_EmitEventComponentManagerComponentEnableChanged(entity, entity.getInstance(), comp, comp.Enabled())
 }
 
 func (entity *EntityBehavior) onComponentDestroyIfVersion(idx int, ver int64) {
@@ -321,7 +321,7 @@ func (entity *EntityBehavior) onComponentDestroyIfVersion(idx int, ver int64) {
 
 	comp := compSlot.V
 
-	if !comp.GetRemovable() {
+	if !comp.Removable() {
 		return
 	}
 
@@ -331,7 +331,7 @@ func (entity *EntityBehavior) onComponentDestroyIfVersion(idx int, ver int64) {
 
 	comp.setState(ComponentState_Death)
 
-	nameIdx, ok := entity.componentNameIndex.Get(comp.GetName())
+	nameIdx, ok := entity.componentNameIndex.Get(comp.Name())
 	if ok && nameIdx == idx {
 		var nextSlot *generic.FreeSlot[Component]
 
@@ -339,16 +339,16 @@ func (entity *EntityBehavior) onComponentDestroyIfVersion(idx int, ver int64) {
 			if slot == compSlot {
 				return true
 			}
-			if slot.V.GetName() == comp.GetName() {
+			if slot.V.Name() == comp.Name() {
 				nextSlot = slot
 			}
 			return false
 		}, idx)
 
 		if nextSlot != nil {
-			entity.componentNameIndex.Add(nextSlot.V.GetName(), nextSlot.Index())
+			entity.componentNameIndex.Add(nextSlot.V.Name(), nextSlot.Index())
 		} else {
-			entity.componentNameIndex.Delete(comp.GetName())
+			entity.componentNameIndex.Delete(comp.Name())
 		}
 	}
 
@@ -369,7 +369,7 @@ func (entity *EntityBehavior) getComponentSlotById(id uid.Id) (*generic.FreeSlot
 	var compSlot *generic.FreeSlot[Component]
 
 	entity.componentList.Traversal(func(slot *generic.FreeSlot[Component]) bool {
-		if slot.V.GetId() == id {
+		if slot.V.Id() == id {
 			compSlot = slot
 			return false
 		}
@@ -383,7 +383,7 @@ func (entity *EntityBehavior) getComponentSlotByPT(prototype string) (*generic.F
 	var compSlot *generic.FreeSlot[Component]
 
 	entity.componentList.Traversal(func(slot *generic.FreeSlot[Component]) bool {
-		if slot.V.GetBuiltin().PT.Prototype() == prototype {
+		if slot.V.Builtin().PT.Prototype() == prototype {
 			compSlot = slot
 			return false
 		}
@@ -400,7 +400,7 @@ func (entity *EntityBehavior) addComponent(name string, component Component) {
 
 	if at, ok := entity.getComponentSlot(name); ok {
 		entity.componentList.TraversalAt(func(slot *generic.FreeSlot[Component]) bool {
-			if slot.V.GetName() == name {
+			if slot.V.Name() == name {
 				at = slot
 				return true
 			}
@@ -419,7 +419,7 @@ func (entity *EntityBehavior) addComponent(name string, component Component) {
 }
 
 func (entity *EntityBehavior) touchComponent(comp Component) Component {
-	if entity.options.ComponentAwakeOnFirstTouch && comp.GetState() == ComponentState_Attach {
+	if entity.options.ComponentAwakeOnFirstTouch && comp.State() == ComponentState_Attach {
 		_EmitEventComponentManagerFirstTouchComponent(entity, entity.getInstance(), comp)
 	}
 

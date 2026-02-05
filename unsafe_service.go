@@ -30,7 +30,7 @@ type _UnsafeService struct {
 	Service
 }
 
-// GetOptions 获取服务所有选项
-func (u _UnsafeService) GetOptions() *ServiceOptions {
+// Options 获取服务所有选项
+func (u _UnsafeService) Options() *ServiceOptions {
 	return u.getOptions()
 }

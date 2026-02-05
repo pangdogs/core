@@ -27,8 +27,8 @@ import (
 
 // AddInProvider 插件提供者
 type AddInProvider interface {
-	// GetAddInManager 获取插件管理器
-	GetAddInManager() AddInManager
+	// AddInManager 获取插件管理器
+	AddInManager() AddInManager
 }
 
 // Resolve 解析插件
@@ -37,7 +37,7 @@ func Resolve[T any](provider AddInProvider, name string) T {
 		exception.Panicf("%w: %w: provider is nil", ErrExtension, exception.ErrArgs)
 	}
 
-	status, ok := provider.GetAddInManager().Get(name)
+	status, ok := provider.AddInManager().Get(name)
 	if !ok {
 		exception.Panicf("%w: addIn %q not installed", ErrExtension, name)
 	}
@@ -55,7 +55,7 @@ func Lookup[T any](provider AddInProvider, name string) (T, bool) {
 		return types.ZeroT[T](), false
 	}
 
-	status, ok := provider.GetAddInManager().Get(name)
+	status, ok := provider.AddInManager().Get(name)
 	if !ok {
 		return types.ZeroT[T](), false
 	}
@@ -68,7 +68,7 @@ func Install[T any](provider AddInProvider, addIn T, name ...string) AddInStatus
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrExtension, exception.ErrArgs)
 	}
-	return provider.GetAddInManager().Install(iface.NewFaceAny(addIn), name...)
+	return provider.AddInManager().Install(iface.NewFaceAny(addIn), name...)
 }
 
 // Uninstall 卸载插件
@@ -76,5 +76,5 @@ func Uninstall(provider AddInProvider, name string) {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrExtension, exception.ErrArgs)
 	}
-	provider.GetAddInManager().Uninstall(name)
+	provider.AddInManager().Uninstall(name)
 }

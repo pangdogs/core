@@ -34,8 +34,8 @@ type WaitGroup interface {
 	Done()
 	// Wait 等待所有任务完成
 	Wait()
-	// IsClosed 是否已关闭
-	IsClosed() bool
+	// Closed 是否已关闭
+	Closed() bool
 	// Count 等待任务数量
 	Count() int64
 }
@@ -45,14 +45,14 @@ type Context interface {
 	iContext
 	context.Context
 
-	// GetParentContext 获取父上下文
-	GetParentContext() context.Context
-	// GetAutoRecover panic时是否自动恢复
-	GetAutoRecover() bool
-	// GetReportError 在开启panic时自动恢复时，将会恢复并将错误写入此error channel
-	GetReportError() chan error
-	// GetWaitGroup 获取等待组
-	GetWaitGroup() WaitGroup
+	// ParentContext 获取父上下文
+	ParentContext() context.Context
+	// AutoRecover panic时是否自动恢复
+	AutoRecover() bool
+	// ReportError 在开启panic时自动恢复时，将会恢复并将错误写入此error channel
+	ReportError() chan error
+	// WaitGroup 获取等待组
+	WaitGroup() WaitGroup
 	// Terminate 停止
 	Terminate() async.AsyncRet
 	// Terminated 已停止
@@ -76,23 +76,23 @@ type ContextBehavior struct {
 	terminated  chan async.Ret
 }
 
-// GetParentContext 获取父上下文
-func (ctx *ContextBehavior) GetParentContext() context.Context {
+// ParentContext 获取父上下文
+func (ctx *ContextBehavior) ParentContext() context.Context {
 	return ctx.parentCtx
 }
 
-// GetAutoRecover panic时是否自动恢复
-func (ctx *ContextBehavior) GetAutoRecover() bool {
+// AutoRecover panic时是否自动恢复
+func (ctx *ContextBehavior) AutoRecover() bool {
 	return ctx.autoRecover
 }
 
-// GetReportError 在开启panic时自动恢复时，将会恢复并将错误写入此error channel
-func (ctx *ContextBehavior) GetReportError() chan error {
+// ReportError 在开启panic时自动恢复时，将会恢复并将错误写入此error channel
+func (ctx *ContextBehavior) ReportError() chan error {
 	return ctx.reportError
 }
 
-// GetWaitGroup 获取等待组
-func (ctx *ContextBehavior) GetWaitGroup() WaitGroup {
+// WaitGroup 获取等待组
+func (ctx *ContextBehavior) WaitGroup() WaitGroup {
 	return &ctx.barrier
 }
 

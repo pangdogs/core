@@ -36,10 +36,10 @@ func (c *CombineEventTab) SetRecursion(recursion EventRecursion) {
 	}
 }
 
-// SetEnable 设置事件是否启用
-func (c *CombineEventTab) SetEnable(b bool) {
+// SetEnabled 设置事件是否启用
+func (c *CombineEventTab) SetEnabled(b bool) {
 	for _, tab := range *c {
-		tab.Ctrl().SetEnable(b)
+		tab.Ctrl().SetEnabled(b)
 	}
 }
 

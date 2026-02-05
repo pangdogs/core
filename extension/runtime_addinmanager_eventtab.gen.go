@@ -52,9 +52,9 @@ func (eventTab *runtimeAddInManagerEventTab) SetRecursion(recursion event.EventR
 	(*eventTab)[2].SetRecursion(event.EventRecursion_Allow)
 }
 
-func (eventTab *runtimeAddInManagerEventTab) SetEnable(b bool) {
+func (eventTab *runtimeAddInManagerEventTab) SetEnabled(b bool) {
 	for i := range *eventTab {
-		(*eventTab)[i].SetEnable(b)
+		(*eventTab)[i].SetEnabled(b)
 	}
 }
 

@@ -31,8 +31,8 @@ import (
 
 // EntityManager 实体管理器接口
 type EntityManager interface {
-	// GetContext 获取服务上下文
-	GetContext() Context
+	// Context 获取服务上下文
+	Context() Context
 	// GetEntity 查询实体
 	GetEntity(id uid.Id) (ec.ConcurrentEntity, bool)
 	// GetOrAddEntity 查询或添加实体
@@ -54,8 +54,8 @@ func (mgr *_EntityManager) init(ctx Context) {
 	mgr.ctx = ctx
 }
 
-// GetContext 获取服务上下文
-func (mgr *_EntityManager) GetContext() Context {
+// Context 获取服务上下文
+func (mgr *_EntityManager) Context() Context {
 	return mgr.ctx
 }
 
@@ -75,11 +75,11 @@ func (mgr *_EntityManager) GetOrAddEntity(entity ec.ConcurrentEntity) (ec.Concur
 		return nil, false, fmt.Errorf("%w: %w: entity is nil", ErrEntityManager, exception.ErrArgs)
 	}
 
-	if entity.GetId().IsNil() {
+	if entity.Id().IsNil() {
 		return nil, false, fmt.Errorf("%w: entity id is nil", ErrEntityManager)
 	}
 
-	if entity.GetConcurrentContext() == iface.NilCache {
+	if entity.ConcurrentContext() == iface.NilCache {
 		return nil, false, fmt.Errorf("%w: entity context is nil", ErrEntityManager)
 	}
 
@@ -89,7 +89,7 @@ func (mgr *_EntityManager) GetOrAddEntity(entity ec.ConcurrentEntity) (ec.Concur
 	default:
 	}
 
-	actual, loaded := mgr.entities.LoadOrStore(entity.GetId(), entity)
+	actual, loaded := mgr.entities.LoadOrStore(entity.Id(), entity)
 	if !loaded {
 		mgr.ctx.emitEventRunningEvent(RunningEvent_EntityRegistered, entity)
 	}

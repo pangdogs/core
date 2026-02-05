@@ -94,8 +94,8 @@ func (mgr *_EntityManager) AddChild(parentId, childId uid.Id) error {
 
 		parentEntity := mgr.entityList.Get(parentSlotIdx).V
 
-		if parentEntity.GetState() < ec.EntityState_Awake || parentEntity.GetState() > ec.EntityState_Alive {
-			return fmt.Errorf("%w: parent entity %q is in an unexpected state %q", ErrEntityTree, parentId, parentEntity.GetState())
+		if parentEntity.State() < ec.EntityState_Awake || parentEntity.State() > ec.EntityState_Alive {
+			return fmt.Errorf("%w: parent entity %q is in an unexpected state %q", ErrEntityTree, parentId, parentEntity.State())
 		}
 	}
 
@@ -109,12 +109,12 @@ func (mgr *_EntityManager) AddChild(parentId, childId uid.Id) error {
 
 	childEntity := mgr.entityList.Get(childSlotIdx).V
 
-	if childEntity.GetState() < ec.EntityState_Awake || childEntity.GetState() > ec.EntityState_Alive {
-		return fmt.Errorf("%w: child entity %q is in an unexpected state %q", ErrEntityTree, childId, childEntity.GetState())
+	if childEntity.State() < ec.EntityState_Awake || childEntity.State() > ec.EntityState_Alive {
+		return fmt.Errorf("%w: child entity %q is in an unexpected state %q", ErrEntityTree, childId, childEntity.State())
 	}
 
-	if childEntity.GetTreeNodeState() != ec.TreeNodeState_Freedom {
-		return fmt.Errorf("%w: child entity %q is in an unexpected tree node state %q", ErrEntityTree, childId, childEntity.GetTreeNodeState())
+	if childEntity.TreeNodeState() != ec.TreeNodeState_Freedom {
+		return fmt.Errorf("%w: child entity %q is in an unexpected tree node state %q", ErrEntityTree, childId, childEntity.TreeNodeState())
 	}
 
 	ec.UnsafeEntity(childEntity).SetTreeNodeState(ec.TreeNodeState_Attaching)
@@ -171,12 +171,12 @@ func (mgr *_EntityManager) RemoveNode(childId uid.Id) error {
 
 	childEntity := mgr.entityList.Get(childSlotIdx).V
 
-	if childEntity.GetState() < ec.EntityState_Awake || childEntity.GetState() > ec.EntityState_Alive {
-		return fmt.Errorf("%w: child entity %q is in an unexpected state %q", ErrEntityTree, childId, childEntity.GetState())
+	if childEntity.State() < ec.EntityState_Awake || childEntity.State() > ec.EntityState_Alive {
+		return fmt.Errorf("%w: child entity %q is in an unexpected state %q", ErrEntityTree, childId, childEntity.State())
 	}
 
-	if childEntity.GetTreeNodeState() != ec.TreeNodeState_Attached {
-		return fmt.Errorf("%w: child entity %q has an unexpected tree node state %q", ErrEntityTree, childId, childEntity.GetTreeNodeState())
+	if childEntity.TreeNodeState() != ec.TreeNodeState_Attached {
+		return fmt.Errorf("%w: child entity %q has an unexpected tree node state %q", ErrEntityTree, childId, childEntity.TreeNodeState())
 	}
 
 	ec.UnsafeEntity(childEntity).SetTreeNodeState(ec.TreeNodeState_Detaching)
@@ -187,7 +187,7 @@ func (mgr *_EntityManager) RemoveNode(childId uid.Id) error {
 	if childTreeNode.parent >= 0 {
 		parentTreeNode = mgr.entityTreeNodes[childTreeNode.parent]
 		parentEntity = mgr.entityList.Get(childTreeNode.parent).V
-		parentId = parentEntity.GetId()
+		parentId = parentEntity.Id()
 	}
 
 	{
@@ -196,7 +196,7 @@ func (mgr *_EntityManager) RemoveNode(childId uid.Id) error {
 		if !caller.Call(func() {
 			childTreeNode.children.ReversedTraversalEach(func(slot *generic.FreeSlot[int]) {
 				entity := mgr.entityList.Get(slot.V).V
-				mgr.RemoveNode(entity.GetId())
+				mgr.RemoveNode(entity.Id())
 			})
 		}) {
 			return nil
@@ -250,8 +250,8 @@ func (mgr *_EntityManager) MoveNode(childId, parentId uid.Id) error {
 
 		toParentEntity := mgr.entityList.Get(toParentSlotIdx).V
 
-		if toParentEntity.GetState() < ec.EntityState_Awake || toParentEntity.GetState() > ec.EntityState_Alive {
-			return fmt.Errorf("%w: parent entity %q is in an unexpected state %q", ErrEntityTree, parentId, toParentEntity.GetState())
+		if toParentEntity.State() < ec.EntityState_Awake || toParentEntity.State() > ec.EntityState_Alive {
+			return fmt.Errorf("%w: parent entity %q is in an unexpected state %q", ErrEntityTree, parentId, toParentEntity.State())
 		}
 	}
 
@@ -265,12 +265,12 @@ func (mgr *_EntityManager) MoveNode(childId, parentId uid.Id) error {
 
 	childEntity := mgr.entityList.Get(childSlotIdx).V
 
-	if childEntity.GetState() < ec.EntityState_Awake || childEntity.GetState() > ec.EntityState_Alive {
-		return fmt.Errorf("%w: child entity %q is in an unexpected state %q", ErrEntityTree, childId, childEntity.GetState())
+	if childEntity.State() < ec.EntityState_Awake || childEntity.State() > ec.EntityState_Alive {
+		return fmt.Errorf("%w: child entity %q is in an unexpected state %q", ErrEntityTree, childId, childEntity.State())
 	}
 
-	if childEntity.GetTreeNodeState() != ec.TreeNodeState_Attached {
-		return fmt.Errorf("%w: child entity %q has an unexpected tree node state %q", ErrEntityTree, childId, childEntity.GetTreeNodeState())
+	if childEntity.TreeNodeState() != ec.TreeNodeState_Attached {
+		return fmt.Errorf("%w: child entity %q has an unexpected tree node state %q", ErrEntityTree, childId, childEntity.TreeNodeState())
 	}
 
 	ec.UnsafeEntity(childEntity).SetTreeNodeState(ec.TreeNodeState_Moving)
@@ -281,7 +281,7 @@ func (mgr *_EntityManager) MoveNode(childId, parentId uid.Id) error {
 	if childTreeNode.parent >= 0 {
 		fromParentTreeNode = mgr.entityTreeNodes[childTreeNode.parent]
 		fromParentEntity = mgr.entityList.Get(childTreeNode.parent).V
-		fromParentId = fromParentEntity.GetId()
+		fromParentId = fromParentEntity.Id()
 	}
 
 	toParentId := parentId
@@ -508,12 +508,12 @@ func (mgr *_EntityManager) onEntityDestroyRemoveNode(childId uid.Id) {
 	if childTreeNode.parent >= 0 {
 		parentTreeNode = mgr.entityTreeNodes[childTreeNode.parent]
 		parentEntity = mgr.entityList.Get(childTreeNode.parent).V
-		parentId = parentEntity.GetId()
+		parentId = parentEntity.Id()
 	}
 
 	childTreeNode.children.ReversedTraversalEach(func(slot *generic.FreeSlot[int]) {
 		entity := mgr.entityList.Get(slot.V).V
-		mgr.onEntityDestroyRemoveNode(entity.GetId())
+		mgr.onEntityDestroyRemoveNode(entity.Id())
 	})
 
 	ec.UnsafeEntity(childEntity).EmitEventTreeNodeDetachParent(parentId)
@@ -549,7 +549,7 @@ func (mgr *_EntityManager) getTreeNode(entityId uid.Id) (int, *_TreeNode) {
 }
 
 func newTreeNodeCaller(entity ec.Entity) _TreeNodeCaller {
-	return _TreeNodeCaller{entity: entity, state: entity.GetTreeNodeState()}
+	return _TreeNodeCaller{entity: entity, state: entity.TreeNodeState()}
 }
 
 type _TreeNodeCaller struct {
@@ -558,11 +558,11 @@ type _TreeNodeCaller struct {
 }
 
 func (c _TreeNodeCaller) Call(fun func()) bool {
-	if c.entity.GetTreeNodeState() != c.state {
+	if c.entity.TreeNodeState() != c.state {
 		return false
 	}
 
 	fun()
 
-	return c.entity.GetTreeNodeState() == c.state
+	return c.entity.TreeNodeState() == c.state
 }

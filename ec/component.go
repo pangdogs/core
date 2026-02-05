@@ -36,24 +36,24 @@ type Component interface {
 	corectx.CurrentContextProvider
 	fmt.Stringer
 
-	// GetId 获取组件Id
-	GetId() uid.Id
-	// GetBuiltin 获取实体原型中的组件信息
-	GetBuiltin() BuiltinComponent
-	// GetName 获取组件名称
-	GetName() string
-	// GetEntity 获取组件依附的实体
-	GetEntity() Entity
-	// GetState 获取组件状态
-	GetState() ComponentState
-	// GetReflected 获取反射值
-	GetReflected() reflect.Value
-	// GetRemovable 是否可以删除
-	GetRemovable() bool
-	// GetEnable 获取组件是否启用
-	GetEnable() bool
-	// SetEnable 设置组件是否启用
-	SetEnable(b bool)
+	// Id 获取组件Id
+	Id() uid.Id
+	// Builtin 获取实体原型中的组件信息
+	Builtin() BuiltinComponent
+	// Name 获取组件名称
+	Name() string
+	// Entity 获取组件依附的实体
+	Entity() Entity
+	// State 获取组件状态
+	State() ComponentState
+	// Reflected 获取反射值
+	Reflected() reflect.Value
+	// Removable 是否可以删除
+	Removable() bool
+	// Enabled 获取组件是否启用
+	Enabled() bool
+	// SetEnabled 设置组件是否启用
+	SetEnabled(b bool)
 	// Managed 托管事件句柄
 	Managed() *event.ManagedHandles
 	// Destroy 销毁
@@ -92,7 +92,7 @@ type ComponentBehavior struct {
 	state                 ComponentState
 	reflected             reflect.Value
 	removable             bool
-	enable                bool
+	enabled               bool
 	processedStateBits    generic.Bits16
 	reentrancyGuard       generic.ReentrancyGuardBits8
 	attachedIndex         int
@@ -104,36 +104,36 @@ type ComponentBehavior struct {
 	componentEventTab componentEventTab
 }
 
-// GetId 获取组件Id
-func (comp *ComponentBehavior) GetId() uid.Id {
+// Id 获取组件Id
+func (comp *ComponentBehavior) Id() uid.Id {
 	return comp.id
 }
 
-// GetBuiltin 获取实体原型中的组件信息
-func (comp *ComponentBehavior) GetBuiltin() BuiltinComponent {
+// Builtin 获取实体原型中的组件信息
+func (comp *ComponentBehavior) Builtin() BuiltinComponent {
 	if comp.builtin == nil {
 		return *noneBuiltinComponent
 	}
 	return *comp.builtin
 }
 
-// GetName 获取组件名称
-func (comp *ComponentBehavior) GetName() string {
+// Name 获取组件名称
+func (comp *ComponentBehavior) Name() string {
 	return comp.name
 }
 
-// GetEntity 获取组件依附的实体
-func (comp *ComponentBehavior) GetEntity() Entity {
+// Entity 获取组件依附的实体
+func (comp *ComponentBehavior) Entity() Entity {
 	return comp.entity
 }
 
-// GetState 获取组件状态
-func (comp *ComponentBehavior) GetState() ComponentState {
+// State 获取组件状态
+func (comp *ComponentBehavior) State() ComponentState {
 	return comp.state
 }
 
-// GetReflected 获取反射值
-func (comp *ComponentBehavior) GetReflected() reflect.Value {
+// Reflected 获取反射值
+func (comp *ComponentBehavior) Reflected() reflect.Value {
 	if comp.reflected.IsValid() {
 		return comp.reflected
 	}
@@ -141,27 +141,27 @@ func (comp *ComponentBehavior) GetReflected() reflect.Value {
 	return comp.reflected
 }
 
-// GetRemovable 是否可以删除
-func (comp *ComponentBehavior) GetRemovable() bool {
+// Removable 是否可以删除
+func (comp *ComponentBehavior) Removable() bool {
 	return comp.removable
 }
 
-// GetEnable 获取组件是否启用
-func (comp *ComponentBehavior) GetEnable() bool {
-	return comp.enable
+// Enabled 获取组件是否启用
+func (comp *ComponentBehavior) Enabled() bool {
+	return comp.enabled
 }
 
-// SetEnable 设置组件是否启用
-func (comp *ComponentBehavior) SetEnable(b bool) {
+// SetEnabled 设置组件是否启用
+func (comp *ComponentBehavior) SetEnabled(b bool) {
 	comp.reentrancyGuard.Call(componentReentrancyGuard_SetEnable, func() {
 		if comp.state > ComponentState_Alive {
 			return
 		}
 
-		if comp.enable == b {
+		if comp.enabled == b {
 			return
 		}
-		comp.enable = b
+		comp.enabled = b
 
 		if comp.entity != nil {
 			comp.entity.onComponentEnableChangedIfVersion(comp.attachedIndex, comp.attachedVersion)
@@ -183,7 +183,7 @@ func (comp *ComponentBehavior) Destroy() {
 			return
 		}
 
-		if !comp.GetRemovable() {
+		if !comp.Removable() {
 			return
 		}
 
@@ -205,20 +205,20 @@ func (comp *ComponentBehavior) EventComponentDestroy() event.IEvent {
 	return comp.componentEventTab.EventComponentDestroy()
 }
 
-// GetCurrentContext 获取当前上下文
-func (comp *ComponentBehavior) GetCurrentContext() iface.Cache {
-	return comp.entity.GetCurrentContext()
+// CurrentContext 获取当前上下文
+func (comp *ComponentBehavior) CurrentContext() iface.Cache {
+	return comp.entity.CurrentContext()
 }
 
-// GetConcurrentContext 获取多线程安全的上下文
-func (comp *ComponentBehavior) GetConcurrentContext() iface.Cache {
-	return comp.entity.GetConcurrentContext()
+// ConcurrentContext 获取多线程安全的上下文
+func (comp *ComponentBehavior) ConcurrentContext() iface.Cache {
+	return comp.entity.ConcurrentContext()
 }
 
 // String implements fmt.Stringer
 func (comp *ComponentBehavior) String() string {
 	if comp.stringerCache == "" {
-		comp.stringerCache = fmt.Sprintf(`{"id":%q,"entity_id":%q,"name":%q,"prototype":%q}`, comp.GetId(), comp.GetEntity().GetId(), comp.GetName(), comp.GetBuiltin().PT.Prototype())
+		comp.stringerCache = fmt.Sprintf(`{"id":%q,"entity_id":%q,"name":%q,"prototype":%q}`, comp.Id(), comp.Entity().Id(), comp.Name(), comp.Builtin().PT.Prototype())
 	}
 	return comp.stringerCache
 }
@@ -228,7 +228,7 @@ func (comp *ComponentBehavior) init(name string, entity Entity, instance Compone
 	comp.entity = entity
 	comp.instance = instance
 	comp.removable = true
-	comp.enable = true
+	comp.enabled = true
 }
 
 func (comp *ComponentBehavior) setId(id uid.Id) {
@@ -265,7 +265,7 @@ func (comp *ComponentBehavior) setState(state ComponentState) {
 
 	switch comp.state {
 	case ComponentState_Death:
-		comp.componentEventTab.SetEnable(false)
+		comp.componentEventTab.SetEnabled(false)
 	case ComponentState_Destroyed:
 		comp.managedHandles.UnbindAllEventHandles()
 		comp.managedUnbindRuntimeHandles()

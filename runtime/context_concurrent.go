@@ -41,10 +41,10 @@ type ConcurrentContext interface {
 	async.Caller
 	fmt.Stringer
 
-	// GetName 获取名称
-	GetName() string
-	// GetId 获取运行时Id
-	GetId() uid.Id
+	// Name 获取名称
+	Name() string
+	// Id 获取运行时Id
+	Id() uid.Id
 }
 
 type iConcurrentContext interface {
@@ -60,14 +60,14 @@ func Concurrent(provider corectx.ConcurrentContextProvider) ConcurrentContext {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrContext, exception.ErrArgs)
 	}
-	return iface.Cache2Iface[Context](provider.GetConcurrentContext())
+	return iface.Cache2Iface[Context](provider.ConcurrentContext())
 }
 
 func getServiceContext(provider corectx.ConcurrentContextProvider) service.Context {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrContext, exception.ErrArgs)
 	}
-	ctx := iface.Cache2Iface[Context](provider.GetConcurrentContext())
+	ctx := iface.Cache2Iface[Context](provider.ConcurrentContext())
 	if ctx == nil {
 		return nil
 	}
@@ -78,5 +78,5 @@ func getCaller(provider corectx.ConcurrentContextProvider) async.Caller {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrContext, exception.ErrArgs)
 	}
-	return iface.Cache2Iface[Context](provider.GetConcurrentContext())
+	return iface.Cache2Iface[Context](provider.ConcurrentContext())
 }

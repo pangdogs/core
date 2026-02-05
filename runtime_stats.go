@@ -37,8 +37,8 @@ type iRuntimeStats interface {
 // GetStats 获取运行时统计信息
 func (rt *RuntimeBehavior) GetStats() RuntimeStats {
 	return RuntimeStats{
-		WaitGroupCount:          rt.ctx.GetWaitGroup().Count(),
-		WaitGroupClosed:         rt.ctx.GetWaitGroup().IsClosed(),
+		WaitGroupCount:          rt.ctx.WaitGroup().Count(),
+		WaitGroupClosed:         rt.ctx.WaitGroup().Closed(),
 		TaskQueueCallEnqueued:   rt.taskQueue.callEnqueued.Load(),
 		TaskQueueCallCompleted:  rt.taskQueue.callCompleted.Load(),
 		TaskQueueFrameEnqueued:  rt.taskQueue.frameEnqueued.Load(),

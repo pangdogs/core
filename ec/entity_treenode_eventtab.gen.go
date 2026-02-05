@@ -58,9 +58,9 @@ func (eventTab *entityTreeNodeEventTab) SetRecursion(recursion event.EventRecurs
 	(*eventTab)[4].SetRecursion(event.EventRecursion_Allow)
 }
 
-func (eventTab *entityTreeNodeEventTab) SetEnable(b bool) {
+func (eventTab *entityTreeNodeEventTab) SetEnabled(b bool) {
 	for i := range *eventTab {
-		(*eventTab)[i].SetEnable(b)
+		(*eventTab)[i].SetEnabled(b)
 	}
 }
 

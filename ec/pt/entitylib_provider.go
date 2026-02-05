@@ -26,8 +26,8 @@ import (
 
 // EntityPTProvider 实体原型提供者
 type EntityPTProvider interface {
-	// GetEntityLib 获取实体原型库
-	GetEntityLib() EntityLib
+	// EntityLib 获取实体原型库
+	EntityLib() EntityLib
 }
 
 // For 查询实体原型
@@ -36,7 +36,7 @@ func For(provider EntityPTProvider, prototype string) ec.EntityPT {
 		exception.Panicf("%w: %w: provider is nil", ErrPt, exception.ErrArgs)
 	}
 
-	entity, ok := provider.GetEntityLib().Get(prototype)
+	entity, ok := provider.EntityLib().Get(prototype)
 	if !ok {
 		exception.Panicf("%w: entity %q was not declared", ErrPt, prototype)
 	}

@@ -38,53 +38,53 @@ type _Frame struct {
 	statFPSFrames        int64
 }
 
-// GetTargetFPS 获取目标FPS
-func (frame *_Frame) GetTargetFPS() float64 {
+// TargetFPS 获取目标FPS
+func (frame *_Frame) TargetFPS() float64 {
 	return frame.targetFPS
 }
 
-// GetCurFPS 获取当前FPS
-func (frame *_Frame) GetCurFPS() float64 {
+// CurFPS 获取当前FPS
+func (frame *_Frame) CurFPS() float64 {
 	return frame.curFPS
 }
 
-// GetTotalFrames 获取运行帧数上限
-func (frame *_Frame) GetTotalFrames() int64 {
+// TotalFrames 获取运行帧数上限
+func (frame *_Frame) TotalFrames() int64 {
 	return frame.totalFrames
 }
 
-// GetCurFrames 获取当前帧数
-func (frame *_Frame) GetCurFrames() int64 {
+// CurFrames 获取当前帧数
+func (frame *_Frame) CurFrames() int64 {
 	return frame.curFrames
 }
 
-// GetRunningBeginTime 获取运行开始时间
-func (frame *_Frame) GetRunningBeginTime() time.Time {
+// RunningBeginTime 获取运行开始时间
+func (frame *_Frame) RunningBeginTime() time.Time {
 	return frame.runningBeginTime
 }
 
-// GetRunningElapseTime 获取运行持续时间
-func (frame *_Frame) GetRunningElapseTime() time.Duration {
+// RunningElapseTime 获取运行持续时间
+func (frame *_Frame) RunningElapseTime() time.Duration {
 	return frame.runningElapseTime
 }
 
-// GetLoopBeginTime 获取当前帧循环开始时间（包含异步调用）
-func (frame *_Frame) GetLoopBeginTime() time.Time {
+// LoopBeginTime 获取当前帧循环开始时间（包含异步调用）
+func (frame *_Frame) LoopBeginTime() time.Time {
 	return frame.loopBeginTime
 }
 
-// GetLastLoopElapseTime 获取上一帧循环耗时（包含异步调用）
-func (frame *_Frame) GetLastLoopElapseTime() time.Duration {
+// LastLoopElapseTime 获取上一帧循环耗时（包含异步调用）
+func (frame *_Frame) LastLoopElapseTime() time.Duration {
 	return frame.lastLoopElapseTime
 }
 
-// GetUpdateBeginTime 获取当前帧更新开始时间
-func (frame *_Frame) GetUpdateBeginTime() time.Time {
+// UpdateBeginTime 获取当前帧更新开始时间
+func (frame *_Frame) UpdateBeginTime() time.Time {
 	return frame.updateBeginTime
 }
 
-// GetLastUpdateElapseTime 获取上一次帧更新耗时
-func (frame *_Frame) GetLastUpdateElapseTime() time.Duration {
+// LastUpdateElapseTime 获取上一次帧更新耗时
+func (frame *_Frame) LastUpdateElapseTime() time.Duration {
 	return frame.lastUpdateElapseTime
 }
 

@@ -66,8 +66,8 @@ type Event struct {
 	emitted     int64
 }
 
-// GetPanicHandling 获取panic时的处理方式
-func (event *Event) GetPanicHandling() (autoRecover bool, reportError chan error) {
+// PanicHandling 获取panic时的处理方式
+func (event *Event) PanicHandling() (autoRecover bool, reportError chan error) {
 	return event.autoRecover, event.reportError
 }
 
@@ -77,8 +77,8 @@ func (event *Event) SetPanicHandling(autoRecover bool, reportError chan error) {
 	event.reportError = reportError
 }
 
-// GetRecursion 获取发生事件递归时的处理方式
-func (event *Event) GetRecursion() EventRecursion {
+// Recursion 获取发生事件递归时的处理方式
+func (event *Event) Recursion() EventRecursion {
 	return event.recursion
 }
 
@@ -87,13 +87,13 @@ func (event *Event) SetRecursion(recursion EventRecursion) {
 	event.recursion = recursion
 }
 
-// GetEnable 获取事件是否启用
-func (event *Event) GetEnable() bool {
+// Enabled 获取事件是否启用
+func (event *Event) Enabled() bool {
 	return !event.disabled
 }
 
-// SetEnable 设置事件是否启用
-func (event *Event) SetEnable(b bool) {
+// SetEnabled 设置事件是否启用
+func (event *Event) SetEnabled(b bool) {
 	if !event.disabled == b {
 		return
 	}

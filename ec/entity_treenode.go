@@ -27,8 +27,8 @@ import (
 type iTreeNode interface {
 	iiTreeNode
 
-	// GetTreeNodeState 获取实体树节点状态
-	GetTreeNodeState() TreeNodeState
+	// TreeNodeState 获取实体树节点状态
+	TreeNodeState() TreeNodeState
 
 	IEntityTreeNodeEventTab
 }
@@ -42,8 +42,8 @@ type iiTreeNode interface {
 	emitEventTreeNodeMoveTo(fromParentId, toParentId uid.Id)
 }
 
-// GetTreeNodeState 获取实体树节点状态
-func (entity *EntityBehavior) GetTreeNodeState() TreeNodeState {
+// TreeNodeState 获取实体树节点状态
+func (entity *EntityBehavior) TreeNodeState() TreeNodeState {
 	return entity.treeNodeState
 }
 

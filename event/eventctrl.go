@@ -25,8 +25,8 @@ type IEventCtrl interface {
 	SetPanicHandling(autoRecover bool, reportError chan error)
 	// SetRecursion 设置发生事件递归时的处理方式
 	SetRecursion(recursion EventRecursion)
-	// SetEnable 设置事件是否启用
-	SetEnable(b bool)
+	// SetEnabled 设置事件是否启用
+	SetEnabled(b bool)
 	// UnbindAll 解绑定所有订阅者
 	UnbindAll()
 }

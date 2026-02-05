@@ -33,8 +33,8 @@ func (handle Handle) Unbind() {
 	}
 }
 
-// IsBound 是否已绑定事件
-func (handle Handle) IsBound() bool {
+// Bound 是否已绑定事件
+func (handle Handle) Bound() bool {
 	if handle.event == nil {
 		return false
 	}

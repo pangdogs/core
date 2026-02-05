@@ -45,8 +45,8 @@ func (u _UnsafeEntity) WithContext(ctx context.Context) {
 	u.withContext(ctx)
 }
 
-// GetOptions 获取实体所有选项
-func (u _UnsafeEntity) GetOptions() *EntityOptions {
+// Options 获取实体所有选项
+func (u _UnsafeEntity) Options() *EntityOptions {
 	return u.getOptions()
 }
 
@@ -75,13 +75,13 @@ func (u _UnsafeEntity) SetReflected(v reflect.Value) {
 	u.setReflected(v)
 }
 
-// GetProcessedStateBits 获取已处理状态标志位
-func (u _UnsafeEntity) GetProcessedStateBits() *generic.Bits16 {
+// ProcessedStateBits 获取已处理状态标志位
+func (u _UnsafeEntity) ProcessedStateBits() *generic.Bits16 {
 	return u.getProcessedStateBits()
 }
 
-// GetEnteredHandle 获取加入运行时时的句柄
-func (u _UnsafeEntity) GetEnteredHandle() (int, int64) {
+// EnteredHandle 获取加入运行时时的句柄
+func (u _UnsafeEntity) EnteredHandle() (int, int64) {
 	return u.getEnteredHandle()
 }
 
@@ -105,18 +105,18 @@ func (u _UnsafeEntity) ManagedUnbindRuntimeHandles() {
 	u.managedUnbindRuntimeHandles()
 }
 
-// GetVersion 获取实体组件变化版本号
-func (u _UnsafeEntity) GetVersion() int64 {
+// Version 获取实体组件变化版本号
+func (u _UnsafeEntity) Version() int64 {
 	return u.getVersion()
 }
 
-// GetComponentNameIndex 获取实体组件名称索引
-func (u _UnsafeEntity) GetComponentNameIndex() *generic.SliceMap[string, int] {
+// ComponentNameIndex 获取实体组件名称索引
+func (u _UnsafeEntity) ComponentNameIndex() *generic.SliceMap[string, int] {
 	return u.getComponentNameIndex()
 }
 
-// GetComponentList 获取实体组件链表
-func (u _UnsafeEntity) GetComponentList() *generic.FreeList[Component] {
+// ComponentList 获取实体组件链表
+func (u _UnsafeEntity) ComponentList() *generic.FreeList[Component] {
 	return u.getComponentList()
 }
 

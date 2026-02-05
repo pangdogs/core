@@ -32,13 +32,13 @@ import (
 
 // CallAsync 异步执行代码，有返回值
 func CallAsync(provider corectx.ConcurrentContextProvider, fun generic.FuncVar1[runtime.Context, any, async.Ret], args ...any) async.AsyncRet {
-	ctx := runtime.UnsafeConcurrentContext(runtime.Concurrent(provider)).GetContext()
+	ctx := runtime.UnsafeConcurrentContext(runtime.Concurrent(provider)).Context()
 	return ctx.CallAsync(func(...any) async.Ret { return fun.UnsafeCall(ctx, args...) })
 }
 
 // CallVoidAsync 异步执行代码，无返回值
 func CallVoidAsync(provider corectx.ConcurrentContextProvider, fun generic.ActionVar1[runtime.Context, any], args ...any) async.AsyncRet {
-	ctx := runtime.UnsafeConcurrentContext(runtime.Concurrent(provider)).GetContext()
+	ctx := runtime.UnsafeConcurrentContext(runtime.Concurrent(provider)).Context()
 	return ctx.CallVoidAsync(func(...any) { fun.UnsafeCall(ctx, args...) })
 }
 

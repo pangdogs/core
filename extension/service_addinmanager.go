@@ -54,8 +54,8 @@ type _ServiceAddInManager struct {
 	eventStream    generic.EventStream[any]
 }
 
-// GetAddInManager 获取插件管理器
-func (mgr *_ServiceAddInManager) GetAddInManager() AddInManager {
+// AddInManager 获取插件管理器
+func (mgr *_ServiceAddInManager) AddInManager() AddInManager {
 	return mgr
 }
 

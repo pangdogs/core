@@ -137,5 +137,5 @@ func (c *EntityPTCreator) Declare() {
 	if c.descr == nil {
 		exception.Panicf("%w: descr is nil", ErrCore)
 	}
-	c.svcCtx.GetEntityLib().Declare(c.descr, c.comps...)
+	c.svcCtx.EntityLib().Declare(c.descr, c.comps...)
 }

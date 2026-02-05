@@ -44,8 +44,8 @@ func (rt *RuntimeBehavior) Run() async.AsyncRet {
 		exception.Panicf("%w: already running", ErrRuntime)
 	}
 
-	if parentCtx, ok := ctx.GetParentContext().(corectx.Context); ok {
-		if !parentCtx.GetWaitGroup().Join(1) {
+	if parentCtx, ok := ctx.ParentContext().(corectx.Context); ok {
+		if !parentCtx.WaitGroup().Join(1) {
 			ctx.Terminate()
 			corectx.UnsafeContext(ctx).CloseWaitGroup()
 			corectx.UnsafeContext(ctx).ReturnTerminated()
@@ -84,12 +84,12 @@ func (rt *RuntimeBehavior) running() {
 	rt.loopStop(handles)
 
 	corectx.UnsafeContext(ctx).CloseWaitGroup()
-	ctx.GetWaitGroup().Wait()
+	ctx.WaitGroup().Wait()
 
 	rt.emitEventRunningEvent(runtime.RunningEvent_Terminated)
 
-	if parentCtx, ok := ctx.GetParentContext().(corectx.Context); ok {
-		parentCtx.GetWaitGroup().Done()
+	if parentCtx, ok := ctx.ParentContext().(corectx.Context); ok {
+		parentCtx.WaitGroup().Done()
 	}
 
 	corectx.UnsafeContext(ctx).ReturnTerminated()
@@ -126,7 +126,7 @@ func (rt *RuntimeBehavior) onAfterContextRunningEvent(ctx runtime.Context, runni
 }
 
 func (rt *RuntimeBehavior) initAddIn() {
-	addInManager := runtime.UnsafeContext(rt.ctx).GetAddInManager()
+	addInManager := runtime.UnsafeContext(rt.ctx).AddInManager()
 
 	rt.managedAddInManagerHandles[0] = extension.BindEventRuntimeInstallAddIn(addInManager, extension.HandleEventRuntimeInstallAddIn(rt.activateAddIn))
 	rt.managedAddInManagerHandles[1] = extension.BindEventRuntimeUninstallAddIn(addInManager, extension.HandleEventRuntimeUninstallAddIn(rt.deactivateAddIn))
@@ -138,7 +138,7 @@ func (rt *RuntimeBehavior) initAddIn() {
 }
 
 func (rt *RuntimeBehavior) shutAddIn() {
-	addInManager := runtime.UnsafeContext(rt.ctx).GetAddInManager()
+	addInManager := runtime.UnsafeContext(rt.ctx).AddInManager()
 
 	rt.managedAddInManagerHandles[0].Unbind()
 
@@ -163,9 +163,9 @@ func (rt *RuntimeBehavior) activateAddIn(status extension.AddInStatus) {
 	}
 
 	if cb, ok := status.InstanceFace().Iface.(LifecycleAddInInit); ok {
-		generic.CastAction2(cb.Init).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), service.Current(rt), rt.ctx)
+		generic.CastAction2(cb.Init).Call(rt.ctx.AutoRecover(), rt.ctx.ReportError(), service.Current(rt), rt.ctx)
 	} else if cb, ok := status.InstanceFace().Iface.(LifecycleRuntimeAddInInit); ok {
-		generic.CastAction1(cb.Init).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
+		generic.CastAction1(cb.Init).Call(rt.ctx.AutoRecover(), rt.ctx.ReportError(), rt.ctx)
 	}
 
 	if status.State() != extension.AddInState_Loaded {
@@ -197,9 +197,9 @@ func (rt *RuntimeBehavior) deactivateAddIn(status extension.AddInStatus) {
 	rt.emitEventRunningEvent(runtime.RunningEvent_AddInDeactivating, status)
 
 	if cb, ok := status.InstanceFace().Iface.(LifecycleAddInShut); ok {
-		generic.CastAction2(cb.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), service.Current(rt), rt.ctx)
+		generic.CastAction2(cb.Shut).Call(rt.ctx.AutoRecover(), rt.ctx.ReportError(), service.Current(rt), rt.ctx)
 	} else if cb, ok := status.InstanceFace().Iface.(LifecycleRuntimeAddInShut); ok {
-		generic.CastAction1(cb.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.ctx)
+		generic.CastAction1(cb.Shut).Call(rt.ctx.AutoRecover(), rt.ctx.ReportError(), rt.ctx)
 	}
 
 	rt.emitEventRunningEvent(runtime.RunningEvent_AddInDeactivated, status)
@@ -213,12 +213,12 @@ func (rt *RuntimeBehavior) loopStart() []event.Handle {
 	}
 
 	return []event.Handle{
-		runtime.BindEventEntityManagerAddEntity(ctx.GetEntityManager(), rt.handleEventEntityManagerAddEntity),
-		runtime.BindEventEntityManagerRemoveEntity(ctx.GetEntityManager(), rt.handleEventEntityManagerRemoveEntity),
-		runtime.BindEventEntityManagerEntityAddComponents(ctx.GetEntityManager(), rt.handleEventEntityManagerEntityAddComponents),
-		runtime.BindEventEntityManagerEntityRemoveComponent(ctx.GetEntityManager(), rt.handleEventEntityManagerEntityRemoveComponent),
-		runtime.BindEventEntityManagerEntityComponentEnableChanged(ctx.GetEntityManager(), rt.handleEventEntityManagerEntityComponentEnableChanged),
-		runtime.BindEventEntityManagerEntityFirstTouchComponent(ctx.GetEntityManager(), rt.handleEventEntityManagerEntityFirstTouchComponent),
+		runtime.BindEventEntityManagerAddEntity(ctx.EntityManager(), rt.handleEventEntityManagerAddEntity),
+		runtime.BindEventEntityManagerRemoveEntity(ctx.EntityManager(), rt.handleEventEntityManagerRemoveEntity),
+		runtime.BindEventEntityManagerEntityAddComponents(ctx.EntityManager(), rt.handleEventEntityManagerEntityAddComponents),
+		runtime.BindEventEntityManagerEntityRemoveComponent(ctx.EntityManager(), rt.handleEventEntityManagerEntityRemoveComponent),
+		runtime.BindEventEntityManagerEntityComponentEnableChanged(ctx.EntityManager(), rt.handleEventEntityManagerEntityComponentEnableChanged),
+		runtime.BindEventEntityManagerEntityFirstTouchComponent(ctx.EntityManager(), rt.handleEventEntityManagerEntityFirstTouchComponent),
 	}
 }
 
@@ -242,10 +242,10 @@ func (rt *RuntimeBehavior) runTask(task _Task) {
 	switch task.typ {
 	case _TaskType_Call:
 		rt.emitEventRunningEvent(runtime.RunningEvent_RunCallBegin)
-		task.run(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+		task.run(rt.ctx.AutoRecover(), rt.ctx.ReportError())
 		rt.emitEventRunningEvent(runtime.RunningEvent_RunCallEnd)
 	case _TaskType_Frame:
-		task.run(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+		task.run(rt.ctx.AutoRecover(), rt.ctx.ReportError())
 	}
 	rt.taskQueue.complete(task.typ)
 }

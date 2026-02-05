@@ -46,8 +46,8 @@ func (svc *ServiceBehavior) Run() async.AsyncRet {
 		exception.Panicf("%w: already running", ErrService)
 	}
 
-	if parentCtx, ok := ctx.GetParentContext().(corectx.Context); ok {
-		if !parentCtx.GetWaitGroup().Join(1) {
+	if parentCtx, ok := ctx.ParentContext().(corectx.Context); ok {
+		if !parentCtx.WaitGroup().Join(1) {
 			ctx.Terminate()
 			corectx.UnsafeContext(ctx).CloseWaitGroup()
 			corectx.UnsafeContext(ctx).ReturnTerminated()
@@ -92,12 +92,12 @@ loop:
 	svc.emitEventRunningEvent(service.RunningEvent_Terminating)
 
 	corectx.UnsafeContext(ctx).CloseWaitGroup()
-	ctx.GetWaitGroup().Wait()
+	ctx.WaitGroup().Wait()
 
 	svc.emitEventRunningEvent(service.RunningEvent_Terminated)
 
-	if parentCtx, ok := ctx.GetParentContext().(corectx.Context); ok {
-		parentCtx.GetWaitGroup().Done()
+	if parentCtx, ok := ctx.ParentContext().(corectx.Context); ok {
+		parentCtx.WaitGroup().Done()
 	}
 
 	corectx.UnsafeContext(ctx).ReturnTerminated()
@@ -127,7 +127,7 @@ func (svc *ServiceBehavior) onAfterContextRunningEvent(ctx service.Context, runn
 
 func (svc *ServiceBehavior) initEntityPT() {
 	go func() {
-		for entityPT := range svc.ctx.GetEntityLib().EventStream(svc.ctx) {
+		for entityPT := range svc.ctx.EntityLib().EventStream(svc.ctx) {
 			svc.emitEventRunningEvent(service.RunningEvent_EntityPTDeclared, entityPT)
 		}
 	}()
@@ -135,7 +135,7 @@ func (svc *ServiceBehavior) initEntityPT() {
 
 func (svc *ServiceBehavior) initComponentPT() {
 	go func() {
-		for compPT := range svc.ctx.GetEntityLib().GetComponentLib().EventStream(svc.ctx) {
+		for compPT := range svc.ctx.EntityLib().ComponentLib().EventStream(svc.ctx) {
 			svc.emitEventRunningEvent(service.RunningEvent_ComponentPTDeclared, compPT)
 		}
 	}()
@@ -146,7 +146,7 @@ func (svc *ServiceBehavior) initAddIn() {
 
 	wg.Add(1)
 	go func() {
-		for event := range service.UnsafeContext(svc.ctx).GetAddInManager().EventStream(svc.ctx.Terminated().Context(nil)) {
+		for event := range service.UnsafeContext(svc.ctx).AddInManager().EventStream(svc.ctx.Terminated().Context(nil)) {
 			switch e := event.(type) {
 			case *extension.EventServiceAddInSnapshot:
 				for _, status := range e.Statuses {
@@ -170,7 +170,7 @@ func (svc *ServiceBehavior) initAddIn() {
 }
 
 func (svc *ServiceBehavior) shutAddIn() {
-	for _, status := range pie.Reverse(service.UnsafeContext(svc.ctx).GetAddInManager().List()) {
+	for _, status := range pie.Reverse(service.UnsafeContext(svc.ctx).AddInManager().List()) {
 		svcAddInStatus := status.(extension.ServiceAddInStatus)
 		svcAddInStatus.Uninstall()
 		<-svcAddInStatus.WaitState(extension.AddInState_Unloaded)
@@ -187,9 +187,9 @@ func (svc *ServiceBehavior) activateAddIn(status extension.AddInStatus) {
 	svc.emitEventRunningEvent(service.RunningEvent_AddInActivating, status)
 
 	if cb, ok := status.InstanceFace().Iface.(LifecycleAddInInit); ok {
-		generic.CastAction2(cb.Init).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
+		generic.CastAction2(cb.Init).Call(svc.ctx.AutoRecover(), svc.ctx.ReportError(), svc.ctx, nil)
 	} else if cb, ok := status.InstanceFace().Iface.(LifecycleServiceAddInInit); ok {
-		generic.CastAction1(cb.Init).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx)
+		generic.CastAction1(cb.Init).Call(svc.ctx.AutoRecover(), svc.ctx.ReportError(), svc.ctx)
 	}
 
 	extension.UnsafeServiceAddInStatus(svcAddInStatus).SetState(extension.AddInState_Loaded, extension.AddInState_Running)
@@ -207,9 +207,9 @@ func (svc *ServiceBehavior) deactivateAddIn(status extension.AddInStatus) {
 	svc.emitEventRunningEvent(service.RunningEvent_AddInDeactivating, status)
 
 	if cb, ok := status.InstanceFace().Iface.(LifecycleAddInShut); ok {
-		generic.CastAction2(cb.Shut).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx, nil)
+		generic.CastAction2(cb.Shut).Call(svc.ctx.AutoRecover(), svc.ctx.ReportError(), svc.ctx, nil)
 	} else if cb, ok := status.InstanceFace().Iface.(LifecycleServiceAddInShut); ok {
-		generic.CastAction1(cb.Shut).Call(svc.ctx.GetAutoRecover(), svc.ctx.GetReportError(), svc.ctx)
+		generic.CastAction1(cb.Shut).Call(svc.ctx.AutoRecover(), svc.ctx.ReportError(), svc.ctx)
 	}
 
 	extension.UnsafeServiceAddInStatus(svcAddInStatus).SetState(extension.AddInState_Running, extension.AddInState_Unloaded)

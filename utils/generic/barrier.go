@@ -77,7 +77,7 @@ func (b *Barrier) Close() {
 	}
 }
 
-func (b *Barrier) IsClosed() bool {
+func (b *Barrier) Closed() bool {
 	b.initOnce.Do(b.init)
 	return b.closed.Load()
 }

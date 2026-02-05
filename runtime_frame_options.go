@@ -29,7 +29,7 @@ import (
 
 // FrameOptions 帧的所有选项
 type FrameOptions struct {
-	Enable      bool    // 是否启用帧
+	Enabled     bool    // 是否启用帧
 	TargetFPS   float64 // 目标FPS
 	TotalFrames int64   // 运行帧数上限
 }
@@ -39,16 +39,16 @@ type _FrameOption struct{}
 // Default 默认值
 func (_FrameOption) Default() option.Setting[FrameOptions] {
 	return func(options *FrameOptions) {
-		With.Frame.Enable(true).Apply(options)
+		With.Frame.Enabled(true).Apply(options)
 		With.Frame.TargetFPS(30).Apply(options)
 		With.Frame.TotalFrames(0).Apply(options)
 	}
 }
 
-// Enable 是否启用帧
-func (_FrameOption) Enable(b bool) option.Setting[FrameOptions] {
+// Enabled 是否启用帧
+func (_FrameOption) Enabled(b bool) option.Setting[FrameOptions] {
 	return func(options *FrameOptions) {
-		options.Enable = b
+		options.Enabled = b
 	}
 }
 

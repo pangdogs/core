@@ -35,10 +35,10 @@ type ConcurrentEntity interface {
 	corectx.ConcurrentContextProvider
 	fmt.Stringer
 
-	// GetId 获取实体Id
-	GetId() uid.Id
-	// GetPT 获取实体原型信息
-	GetPT() EntityPT
+	// Id 获取实体Id
+	Id() uid.Id
+	// PT 获取实体原型信息
+	PT() EntityPT
 }
 
 type iContext interface {

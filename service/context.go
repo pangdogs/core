@@ -64,14 +64,14 @@ type Context interface {
 	Caller
 	fmt.Stringer
 
-	// GetName 获取名称
-	GetName() string
-	// GetId 获取服务Id
-	GetId() uid.Id
-	// GetReflected 获取反射值
-	GetReflected() reflect.Value
-	// GetEntityManager 获取实体管理器
-	GetEntityManager() EntityManager
+	// Name 获取名称
+	Name() string
+	// Id 获取服务Id
+	Id() uid.Id
+	// Reflected 获取反射值
+	Reflected() reflect.Value
+	// EntityManager 获取实体管理器
+	EntityManager() EntityManager
 }
 
 type iContext interface {
@@ -93,35 +93,35 @@ type ContextBehavior struct {
 	stringerCache string
 }
 
-// GetName 获取名称
-func (ctx *ContextBehavior) GetName() string {
+// Name 获取名称
+func (ctx *ContextBehavior) Name() string {
 	return ctx.options.Name
 }
 
-// GetId 获取服务Id
-func (ctx *ContextBehavior) GetId() uid.Id {
+// Id 获取服务Id
+func (ctx *ContextBehavior) Id() uid.Id {
 	return ctx.options.PersistId
 }
 
-// GetReflected 获取反射值
-func (ctx *ContextBehavior) GetReflected() reflect.Value {
+// Reflected 获取反射值
+func (ctx *ContextBehavior) Reflected() reflect.Value {
 	return ctx.reflected
 }
 
-// GetEntityManager 获取实体管理器
-func (ctx *ContextBehavior) GetEntityManager() EntityManager {
+// EntityManager 获取实体管理器
+func (ctx *ContextBehavior) EntityManager() EntityManager {
 	return &ctx.entityManager
 }
 
-// GetInstanceFaceCache 支持重新解释类型
-func (ctx *ContextBehavior) GetInstanceFaceCache() iface.Cache {
+// InstanceFaceCache 支持重新解释类型
+func (ctx *ContextBehavior) InstanceFaceCache() iface.Cache {
 	return ctx.options.InstanceFace.Cache
 }
 
 // String implements fmt.Stringer
 func (ctx *ContextBehavior) String() string {
 	ctx.stringerOnce.Do(func() {
-		ctx.stringerCache = fmt.Sprintf(`{"id":%q,"name":%q}`, ctx.GetId(), ctx.GetName())
+		ctx.stringerCache = fmt.Sprintf(`{"id":%q,"name":%q}`, ctx.Id(), ctx.Name())
 	})
 	return ctx.stringerCache
 }
@@ -159,7 +159,7 @@ func (ctx *ContextBehavior) getOptions() *ContextOptions {
 }
 
 func (ctx *ContextBehavior) emitEventRunningEvent(runningEvent RunningEvent, args ...any) {
-	ctx.options.RunningEventCB.Call(ctx.GetAutoRecover(), ctx.GetReportError(), ctx.getInstance(), runningEvent, args...)
+	ctx.options.RunningEventCB.Call(ctx.AutoRecover(), ctx.ReportError(), ctx.getInstance(), runningEvent, args...)
 }
 
 func (ctx *ContextBehavior) getScoped() *atomic.Bool {

@@ -33,7 +33,7 @@ func (rt *RuntimeBehavior) loopingRealTime() {
 	var wg sync.WaitGroup
 
 	wg.Add(1)
-	go rt.scheduleFrameTasks(&wg, rt.frame.GetCurFrames()+1, rt.frame.GetTotalFrames(), rt.frame.GetTargetFPS())
+	go rt.scheduleFrameTasks(&wg, rt.frame.CurFrames()+1, rt.frame.TotalFrames(), rt.frame.TargetFPS())
 
 	taskOut := rt.taskQueue.out()
 
@@ -114,5 +114,5 @@ func (rt *RuntimeBehavior) frameLoopBegin() {
 
 func (rt *RuntimeBehavior) frameLoopEnd() {
 	rt.emitEventRunningEvent(runtime.RunningEvent_FrameLoopEnd)
-	rt.frame.setCurFrames(rt.frame.GetCurFrames() + 1)
+	rt.frame.setCurFrames(rt.frame.CurFrames() + 1)
 }

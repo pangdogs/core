@@ -87,18 +87,18 @@ type RuntimeBehavior struct {
 	runtimeEventTab runtimeEventTab
 }
 
-// GetCurrentContext 获取当前上下文
-func (rt *RuntimeBehavior) GetCurrentContext() iface.Cache {
-	return rt.ctx.GetCurrentContext()
+// CurrentContext 获取当前上下文
+func (rt *RuntimeBehavior) CurrentContext() iface.Cache {
+	return rt.ctx.CurrentContext()
 }
 
-// GetConcurrentContext 获取多线程安全的上下文
-func (rt *RuntimeBehavior) GetConcurrentContext() iface.Cache {
-	return rt.ctx.GetConcurrentContext()
+// ConcurrentContext 获取多线程安全的上下文
+func (rt *RuntimeBehavior) ConcurrentContext() iface.Cache {
+	return rt.ctx.ConcurrentContext()
 }
 
-// GetInstanceFaceCache 支持重新解释类型
-func (rt *RuntimeBehavior) GetInstanceFaceCache() iface.Cache {
+// InstanceFaceCache 支持重新解释类型
+func (rt *RuntimeBehavior) InstanceFaceCache() iface.Cache {
 	return rt.options.InstanceFace.Cache
 }
 
@@ -107,7 +107,7 @@ func (rt *RuntimeBehavior) init(rtCtx runtime.Context, options RuntimeOptions) {
 		exception.Panicf("%w: %w: rtCtx is nil", ErrRuntime, ErrArgs)
 	}
 
-	if !runtime.UnsafeContext(rtCtx).GetScoped().CompareAndSwap(false, true) {
+	if !runtime.UnsafeContext(rtCtx).Scoped().CompareAndSwap(false, true) {
 		exception.Panicf("%w: %w: rtCtx is already bound to another runtime scope", ErrRuntime, ErrArgs)
 	}
 
@@ -118,7 +118,7 @@ func (rt *RuntimeBehavior) init(rtCtx runtime.Context, options RuntimeOptions) {
 		rt.options.InstanceFace = iface.NewFaceT[Runtime](rt)
 	}
 
-	if rt.options.Frame.Enable {
+	if rt.options.Frame.Enabled {
 		rt.frame = &_Frame{}
 		rt.frame.init(rt.options.Frame.TargetFPS, rt.options.Frame.TotalFrames)
 		runtime.UnsafeContext(rtCtx).SetFrame(rt.frame)
@@ -129,7 +129,7 @@ func (rt *RuntimeBehavior) init(rtCtx runtime.Context, options RuntimeOptions) {
 	rt.taskQueue.init(rt.options.TaskQueue.Unbounded, rt.options.TaskQueue.Capacity)
 	runtime.UnsafeContext(rtCtx).SetCallee(rt.getInstance())
 
-	rt.runtimeEventTab.SetPanicHandling(rtCtx.GetAutoRecover(), rtCtx.GetReportError())
+	rt.runtimeEventTab.SetPanicHandling(rtCtx.AutoRecover(), rtCtx.ReportError())
 
 	rt.handleEventEntityManagerAddEntity = runtime.HandleEventEntityManagerAddEntity(rt.onEntityManagerAddEntity)
 	rt.handleEventEntityManagerRemoveEntity = runtime.HandleEventEntityManagerRemoveEntity(rt.onEntityManagerRemoveEntity)
@@ -150,14 +150,14 @@ func (rt *RuntimeBehavior) getOptions() *RuntimeOptions {
 
 // onEntityManagerAddEntity 事件处理器：实体管理器添加实体
 func (rt *RuntimeBehavior) onEntityManagerAddEntity(entityManager runtime.EntityManager, entity ec.Entity) {
-	if entity.GetState() != ec.EntityState_Enter {
+	if entity.State() != ec.EntityState_Enter {
 		return
 	}
 
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Awake)
 
 	entity.EachComponents(func(comp ec.Component) {
-		if comp.GetState() != ec.ComponentState_Attach {
+		if comp.State() != ec.ComponentState_Attach {
 			return
 		}
 		ec.UnsafeComponent(comp).SetState(ec.ComponentState_Awake)
@@ -178,7 +178,7 @@ func (rt *RuntimeBehavior) onEntityManagerAddEntity(entityManager runtime.Entity
 				return
 			}
 			if cb, ok := entity.(LifecycleEntityAwake); ok {
-				rt.panicHandlingActivatingEntity(entity, generic.CastAction0(cb.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError()))
+				rt.panicHandlingActivatingEntity(entity, generic.CastAction0(cb.Awake).Call(rt.ctx.AutoRecover(), rt.ctx.ReportError()))
 			}
 		}) {
 			rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivationAborted, entity)
@@ -231,7 +231,7 @@ func (rt *RuntimeBehavior) onEntityManagerAddEntity(entityManager runtime.Entity
 				return
 			}
 			if cb, ok := entity.(LifecycleEntityStart); ok {
-				rt.panicHandlingActivatingEntity(entity, generic.CastAction0(cb.Start).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError()))
+				rt.panicHandlingActivatingEntity(entity, generic.CastAction0(cb.Start).Call(rt.ctx.AutoRecover(), rt.ctx.ReportError()))
 			}
 		}) {
 			rt.emitEventRunningEvent(runtime.RunningEvent_EntityActivationAborted, entity)
@@ -246,14 +246,14 @@ func (rt *RuntimeBehavior) onEntityManagerAddEntity(entityManager runtime.Entity
 
 // onEntityManagerRemoveEntity 事件处理器：实体管理器删除实体
 func (rt *RuntimeBehavior) onEntityManagerRemoveEntity(entityManager runtime.EntityManager, entity ec.Entity) {
-	if entity.GetState() != ec.EntityState_Leave {
+	if entity.State() != ec.EntityState_Leave {
 		return
 	}
 
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Shut)
 
 	entity.EachComponents(func(comp ec.Component) {
-		if comp.GetState() < ec.ComponentState_Awake {
+		if comp.State() < ec.ComponentState_Awake {
 			return
 		}
 		ec.UnsafeComponent(comp).SetState(ec.ComponentState_Shut)
@@ -266,7 +266,7 @@ func (rt *RuntimeBehavior) onEntityManagerRemoveEntity(entityManager runtime.Ent
 
 		if caller.IsProcessed(ec.EntityState_Start) && caller.MarkProcessed() {
 			if cb, ok := entity.(LifecycleEntityShut); ok {
-				generic.CastAction0(cb.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+				generic.CastAction0(cb.Shut).Call(rt.ctx.AutoRecover(), rt.ctx.ReportError())
 			}
 		}
 
@@ -290,7 +290,7 @@ func (rt *RuntimeBehavior) onEntityManagerRemoveEntity(entityManager runtime.Ent
 
 		if caller.IsProcessed(ec.EntityState_Awake) && caller.MarkProcessed() {
 			if cb, ok := entity.(LifecycleEntityDispose); ok {
-				generic.CastAction0(cb.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+				generic.CastAction0(cb.Dispose).Call(rt.ctx.AutoRecover(), rt.ctx.ReportError())
 			}
 		}
 	}
@@ -300,13 +300,13 @@ func (rt *RuntimeBehavior) onEntityManagerRemoveEntity(entityManager runtime.Ent
 
 // onEntityManagerEntityAddComponents 事件处理器：实体管理器中的实体添加组件
 func (rt *RuntimeBehavior) onEntityManagerEntityAddComponents(entityManager runtime.EntityManager, entity ec.Entity, components []ec.Component) {
-	if entity.GetState() < ec.EntityState_Awake || entity.GetState() > ec.EntityState_Alive {
+	if entity.State() < ec.EntityState_Awake || entity.State() > ec.EntityState_Alive {
 		return
 	}
 
 	for i := range components {
 		comp := components[i]
-		if comp.GetState() != ec.ComponentState_Attach {
+		if comp.State() != ec.ComponentState_Attach {
 			continue
 		}
 		ec.UnsafeComponent(comp).SetState(ec.ComponentState_Awake)
@@ -348,7 +348,7 @@ func (rt *RuntimeBehavior) onEntityManagerEntityAddComponents(entityManager runt
 			return
 		}
 
-		if entity.GetState() >= ec.EntityState_Start {
+		if entity.State() >= ec.EntityState_Start {
 			if !caller.Call(func() {
 				for i := range components {
 					if !caller.Call(func() {
@@ -369,11 +369,11 @@ func (rt *RuntimeBehavior) onEntityManagerEntityAddComponents(entityManager runt
 
 // onEntityManagerEntityRemoveComponent 事件处理器：实体管理器中的实体删除组件
 func (rt *RuntimeBehavior) onEntityManagerEntityRemoveComponent(entityManager runtime.EntityManager, entity ec.Entity, component ec.Component) {
-	if entity.GetState() < ec.EntityState_Awake || entity.GetState() > ec.EntityState_Alive {
+	if entity.State() < ec.EntityState_Awake || entity.State() > ec.EntityState_Alive {
 		return
 	}
 
-	if component.GetState() != ec.ComponentState_Detach {
+	if component.State() != ec.ComponentState_Detach {
 		return
 	}
 
@@ -414,7 +414,7 @@ func (rt *RuntimeBehavior) onEntityManagerEntityRemoveComponent(entityManager ru
 
 // onEntityManagerEntityComponentEnableChanged 事件处理器：实体管理器中实体的组件启用状态改变
 func (rt *RuntimeBehavior) onEntityManagerEntityComponentEnableChanged(entityManager runtime.EntityManager, entity ec.Entity, component ec.Component, enable bool) {
-	if entity.GetState() < ec.EntityState_Awake || entity.GetState() > ec.EntityState_Alive {
+	if entity.State() < ec.EntityState_Awake || entity.State() > ec.EntityState_Alive {
 		return
 	}
 
@@ -446,7 +446,7 @@ func (rt *RuntimeBehavior) onEntityManagerEntityComponentEnableChanged(entityMan
 
 // onEntityManagerEntityFirstTouchComponent 事件处理器：实体管理器中的实体首次访问组件
 func (rt *RuntimeBehavior) onEntityManagerEntityFirstTouchComponent(entityManager runtime.EntityManager, entity ec.Entity, component ec.Component) {
-	if entity.GetState() < ec.EntityState_Awake || entity.GetState() > ec.EntityState_Alive {
+	if entity.State() < ec.EntityState_Awake || entity.State() > ec.EntityState_Alive {
 		return
 	}
 
@@ -486,7 +486,7 @@ func (rt *RuntimeBehavior) unobserveComponent(comp ec.Component) {
 }
 
 func (rt *RuntimeBehavior) awakeComponent(comp ec.Component) (err error) {
-	if comp.GetState() != ec.ComponentState_Awake {
+	if comp.State() != ec.ComponentState_Awake {
 		return
 	}
 
@@ -498,7 +498,7 @@ func (rt *RuntimeBehavior) awakeComponent(comp ec.Component) (err error) {
 				return
 			}
 			if cb, ok := comp.(LifecycleComponentAwake); ok {
-				err = generic.CastAction0(cb.Awake).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+				err = generic.CastAction0(cb.Awake).Call(rt.ctx.AutoRecover(), rt.ctx.ReportError())
 			}
 		}) {
 			return
@@ -511,11 +511,11 @@ func (rt *RuntimeBehavior) awakeComponent(comp ec.Component) (err error) {
 }
 
 func (rt *RuntimeBehavior) enableAwokeComponent(comp ec.Component) (err error) {
-	if comp.GetState() != ec.ComponentState_Enable {
+	if comp.State() != ec.ComponentState_Enable {
 		return
 	}
 
-	if !comp.GetEnable() {
+	if !comp.Enabled() {
 		ec.UnsafeComponent(comp).SetState(ec.ComponentState_Idle)
 		return
 	}
@@ -528,14 +528,14 @@ func (rt *RuntimeBehavior) enableAwokeComponent(comp ec.Component) (err error) {
 				return
 			}
 			if cb, ok := comp.(LifecycleComponentOnEnable); ok {
-				err = generic.CastAction0(cb.OnEnable).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+				err = generic.CastAction0(cb.OnEnable).Call(rt.ctx.AutoRecover(), rt.ctx.ReportError())
 			}
 		}) {
 			return
 		}
 	}
 
-	if !comp.GetEnable() {
+	if !comp.Enabled() {
 		ec.UnsafeComponent(comp).SetState(ec.ComponentState_Idle)
 		return
 	}
@@ -548,7 +548,7 @@ func (rt *RuntimeBehavior) enableAwokeComponent(comp ec.Component) (err error) {
 }
 
 func (rt *RuntimeBehavior) startComponent(comp ec.Component) (err error) {
-	if comp.GetState() != ec.ComponentState_Start {
+	if comp.State() != ec.ComponentState_Start {
 		return
 	}
 
@@ -560,7 +560,7 @@ func (rt *RuntimeBehavior) startComponent(comp ec.Component) (err error) {
 				return
 			}
 			if cb, ok := comp.(LifecycleComponentStart); ok {
-				err = generic.CastAction0(cb.Start).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+				err = generic.CastAction0(cb.Start).Call(rt.ctx.AutoRecover(), rt.ctx.ReportError())
 			}
 		}) {
 			return
@@ -573,7 +573,7 @@ func (rt *RuntimeBehavior) startComponent(comp ec.Component) (err error) {
 }
 
 func (rt *RuntimeBehavior) shutComponent(comp ec.Component) {
-	if comp.GetState() != ec.ComponentState_Shut {
+	if comp.State() != ec.ComponentState_Shut {
 		return
 	}
 
@@ -586,7 +586,7 @@ func (rt *RuntimeBehavior) shutComponent(comp ec.Component) {
 					return
 				}
 				if cb, ok := comp.(LifecycleComponentShut); ok {
-					generic.CastAction0(cb.Shut).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+					generic.CastAction0(cb.Shut).Call(rt.ctx.AutoRecover(), rt.ctx.ReportError())
 				}
 			}
 		}) {
@@ -598,7 +598,7 @@ func (rt *RuntimeBehavior) shutComponent(comp ec.Component) {
 }
 
 func (rt *RuntimeBehavior) disableDeathComponent(comp ec.Component) {
-	if comp.GetState() != ec.ComponentState_Disable {
+	if comp.State() != ec.ComponentState_Disable {
 		return
 	}
 
@@ -610,11 +610,11 @@ func (rt *RuntimeBehavior) disableDeathComponent(comp ec.Component) {
 				if !caller.MarkProcessed() {
 					return
 				}
-				if !comp.GetEnable() {
+				if !comp.Enabled() {
 					return
 				}
 				if cb, ok := comp.(LifecycleComponentOnDisable); ok {
-					generic.CastAction0(cb.OnDisable).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+					generic.CastAction0(cb.OnDisable).Call(rt.ctx.AutoRecover(), rt.ctx.ReportError())
 				}
 			}
 		}) {
@@ -626,7 +626,7 @@ func (rt *RuntimeBehavior) disableDeathComponent(comp ec.Component) {
 }
 
 func (rt *RuntimeBehavior) disposeComponent(comp ec.Component, stateDestroyed bool) {
-	if comp.GetState() != ec.ComponentState_Death {
+	if comp.State() != ec.ComponentState_Death {
 		return
 	}
 
@@ -639,7 +639,7 @@ func (rt *RuntimeBehavior) disposeComponent(comp ec.Component, stateDestroyed bo
 					return
 				}
 				if cb, ok := comp.(LifecycleComponentDispose); ok {
-					generic.CastAction0(cb.Dispose).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+					generic.CastAction0(cb.Dispose).Call(rt.ctx.AutoRecover(), rt.ctx.ReportError())
 				}
 			}
 		}) {
@@ -653,7 +653,7 @@ func (rt *RuntimeBehavior) disposeComponent(comp ec.Component, stateDestroyed bo
 }
 
 func (rt *RuntimeBehavior) enableComponent(comp ec.Component) {
-	if comp.GetState() < ec.ComponentState_Enable || comp.GetState() >= ec.ComponentState_Disable {
+	if comp.State() < ec.ComponentState_Enable || comp.State() >= ec.ComponentState_Disable {
 		return
 	}
 
@@ -664,7 +664,7 @@ func (rt *RuntimeBehavior) enableComponent(comp ec.Component) {
 			caller.SetProcessed(ec.ComponentState_Enable)
 
 			if cb, ok := comp.(LifecycleComponentOnEnable); ok {
-				generic.CastAction0(cb.OnEnable).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+				generic.CastAction0(cb.OnEnable).Call(rt.ctx.AutoRecover(), rt.ctx.ReportError())
 			}
 		}) {
 			return
@@ -677,7 +677,7 @@ func (rt *RuntimeBehavior) enableComponent(comp ec.Component) {
 }
 
 func (rt *RuntimeBehavior) disableComponent(comp ec.Component) {
-	if comp.GetState() < ec.ComponentState_Enable || comp.GetState() >= ec.ComponentState_Disable {
+	if comp.State() < ec.ComponentState_Enable || comp.State() >= ec.ComponentState_Disable {
 		return
 	}
 
@@ -688,7 +688,7 @@ func (rt *RuntimeBehavior) disableComponent(comp ec.Component) {
 
 		if !caller.Call(func() {
 			if cb, ok := comp.(LifecycleComponentOnDisable); ok {
-				generic.CastAction0(cb.OnDisable).Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError())
+				generic.CastAction0(cb.OnDisable).Call(rt.ctx.AutoRecover(), rt.ctx.ReportError())
 			}
 		}) {
 			return

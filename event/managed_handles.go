@@ -38,7 +38,7 @@ type ManagedHandles struct {
 // AddEventHandles 托管事件句柄
 func (m *ManagedHandles) AddEventHandles(handles ...Handle) {
 	for _, handle := range handles {
-		if handle.IsBound() {
+		if handle.Bound() {
 			m.handleList.PushFront(handle)
 			m.untaggedHandleCount++
 		}
@@ -83,7 +83,7 @@ func (m *ManagedHandles) AddTaggedEventHandles(tag string, handles ...Handle) {
 	if ok {
 		span := &m.taggedHandleIndex[spanIdx]
 		for _, handle := range handles {
-			if handle.IsBound() {
+			if handle.Bound() {
 				m.handleList.InsertAfter(handle, span.V.head+span.V.count-1)
 				span.V.count++
 			}
@@ -93,7 +93,7 @@ func (m *ManagedHandles) AddTaggedEventHandles(tag string, handles ...Handle) {
 
 	var span *generic.KV[string, _TaggedHandleSpan]
 	for _, handle := range handles {
-		if handle.IsBound() {
+		if handle.Bound() {
 			if span == nil {
 				slot := m.handleList.PushBack(handle)
 				m.taggedHandleIndex.Add(tag, _TaggedHandleSpan{head: slot.Index(), count: 1})
@@ -162,7 +162,7 @@ func (m *ManagedHandles) UnbindAllEventHandles() {
 func (m *ManagedHandles) ClearAllUnboundEventHandles() {
 	if count := m.untaggedHandleCount; count > 0 {
 		m.handleList.Traversal(func(slot *generic.FreeSlot[Handle]) bool {
-			if !slot.V.IsBound() {
+			if !slot.V.Bound() {
 				slot.Free()
 				m.untaggedHandleCount--
 			}
@@ -176,7 +176,7 @@ func (m *ManagedHandles) ClearAllUnboundEventHandles() {
 		count := span.V.count
 
 		m.handleList.TraversalAt(func(slot *generic.FreeSlot[Handle]) bool {
-			if !slot.V.IsBound() {
+			if !slot.V.Bound() {
 				slot.Free()
 				span.V.count--
 

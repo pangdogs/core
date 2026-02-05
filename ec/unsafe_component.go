@@ -63,13 +63,13 @@ func (u _UnsafeComponent) SetRemovable(b bool) {
 	u.setRemovable(b)
 }
 
-// GetProcessedStateBits 获取已处理状态标志位
-func (u _UnsafeComponent) GetProcessedStateBits() *generic.Bits16 {
+// ProcessedStateBits 获取已处理状态标志位
+func (u _UnsafeComponent) ProcessedStateBits() *generic.Bits16 {
 	return u.getProcessedStateBits()
 }
 
-// GetAttachedHandle 获取加入实体时的句柄
-func (u _UnsafeComponent) GetAttachedHandle() (int, int64) {
+// AttachedHandle 获取加入实体时的句柄
+func (u _UnsafeComponent) AttachedHandle() (int, int64) {
 	return u.getAttachedHandle()
 }
 

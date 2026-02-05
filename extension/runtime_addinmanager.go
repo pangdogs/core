@@ -49,8 +49,8 @@ type _RuntimeAddInManager struct {
 	runtimeAddInManagerEventTab
 }
 
-// GetAddInManager 获取插件管理器
-func (mgr *_RuntimeAddInManager) GetAddInManager() AddInManager {
+// AddInManager 获取插件管理器
+func (mgr *_RuntimeAddInManager) AddInManager() AddInManager {
 	return mgr
 }
 

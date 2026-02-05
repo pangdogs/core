@@ -23,10 +23,11 @@ import "git.golaxy.org/core/utils/iface"
 
 // InstanceProvider 支持重新解释类型
 type InstanceProvider interface {
-	GetInstanceFaceCache() iface.Cache
+	// InstanceFaceCache 获取实例接口缓存
+	InstanceFaceCache() iface.Cache
 }
 
 // Cast 重新解释类型
 func Cast[T any](cp InstanceProvider) T {
-	return iface.Cache2Iface[T](cp.GetInstanceFaceCache())
+	return iface.Cache2Iface[T](cp.InstanceFaceCache())
 }

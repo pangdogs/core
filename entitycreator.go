@@ -145,12 +145,12 @@ func (c *EntityCreator) New() (ec.Entity, error) {
 
 	entity := pt.For(service.Current(c.rtCtx), c.prototype).Construct(c.settings...)
 
-	if err := c.rtCtx.GetEntityManager().AddEntity(entity); err != nil {
+	if err := c.rtCtx.EntityManager().AddEntity(entity); err != nil {
 		return nil, err
 	}
 
 	if !c.parentId.IsNil() {
-		if err := c.rtCtx.GetEntityTree().AddChild(c.parentId, entity.GetId()); err != nil {
+		if err := c.rtCtx.EntityTree().AddChild(c.parentId, entity.Id()); err != nil {
 			entity.Destroy()
 			return nil, err
 		}

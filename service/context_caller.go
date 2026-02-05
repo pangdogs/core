@@ -65,8 +65,8 @@ type Caller interface {
 func getCaller(provider corectx.ConcurrentContextProvider) async.Caller
 
 func checkEntity(entity ec.Entity) error {
-	if entity.GetState() > ec.EntityState_Alive {
-		return fmt.Errorf("%w: entity is in an unexpected state %q", ErrContext, entity.GetState())
+	if entity.State() > ec.EntityState_Alive {
+		return fmt.Errorf("%w: entity is in an unexpected state %q", ErrContext, entity.State())
 	}
 	return nil
 }
@@ -154,5 +154,5 @@ func (ctx *ContextBehavior) getEntity(id uid.Id) (ec.Entity, error) {
 	if !ok {
 		return nil, fmt.Errorf("%w: entity not exist", ErrContext)
 	}
-	return ec.UnsafeConcurrentEntity(entity).GetEntity(), nil
+	return ec.UnsafeConcurrentEntity(entity).Entity(), nil
 }

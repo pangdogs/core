@@ -170,13 +170,13 @@ retry:
 
 			if name != "" {
 				comp := entity.GetComponent(name)
-				if comp != nil && comp.GetReflected().Type().AssignableTo(field.Type) {
+				if comp != nil && comp.Reflected().Type().AssignableTo(field.Type) {
 					if field.IsExported() {
-						target.Field(i).Set(comp.GetReflected())
+						target.Field(i).Set(comp.Reflected())
 					} else {
 						ptr := unsafe.Pointer(target.Field(i).UnsafeAddr())
 						fieldPtr := reflect.NewAt(field.Type, ptr).Elem()
-						fieldPtr.Set(comp.GetReflected())
+						fieldPtr.Set(comp.Reflected())
 					}
 					continue
 				}
@@ -184,18 +184,18 @@ retry:
 
 			if prototype != "" {
 				comp := entity.GetComponentByPT(prototype)
-				if comp != nil && comp.GetReflected().Type().AssignableTo(field.Type) {
+				if comp != nil && comp.Reflected().Type().AssignableTo(field.Type) {
 					if field.IsExported() {
-						target.Field(i).Set(comp.GetReflected())
+						target.Field(i).Set(comp.Reflected())
 					} else {
 						ptr := unsafe.Pointer(target.Field(i).UnsafeAddr())
 						fieldPtr := reflect.NewAt(field.Type, ptr).Elem()
-						fieldPtr.Set(comp.GetReflected())
+						fieldPtr.Set(comp.Reflected())
 					}
 					continue
 				}
 
-				compPT, ok := service.Current(entity).GetEntityLib().GetComponentLib().Get(prototype)
+				compPT, ok := service.Current(entity).EntityLib().ComponentLib().Get(prototype)
 				if ok {
 					sep := strings.LastIndexByte(prototype, '.')
 					if sep >= 0 {
@@ -206,11 +206,11 @@ retry:
 						}
 
 						if field.IsExported() {
-							target.Field(i).Set(comp.GetReflected())
+							target.Field(i).Set(comp.Reflected())
 						} else {
 							ptr := unsafe.Pointer(target.Field(i).UnsafeAddr())
 							fieldPtr := reflect.NewAt(field.Type, ptr).Elem()
-							fieldPtr.Set(comp.GetReflected())
+							fieldPtr.Set(comp.Reflected())
 						}
 
 						continue

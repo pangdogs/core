@@ -68,18 +68,18 @@ type Context interface {
 	GCCollector
 	fmt.Stringer
 
-	// GetName 获取名称
-	GetName() string
-	// GetId 获取运行时Id
-	GetId() uid.Id
-	// GetReflected 获取反射值
-	GetReflected() reflect.Value
-	// GetFrame 获取帧
-	GetFrame() Frame
-	// GetEntityManager 获取实体管理器
-	GetEntityManager() EntityManager
-	// GetEntityTree 获取实体树
-	GetEntityTree() EntityTree
+	// Name 获取名称
+	Name() string
+	// Id 获取运行时Id
+	Id() uid.Id
+	// Reflected 获取反射值
+	Reflected() reflect.Value
+	// Frame 获取帧
+	Frame() Frame
+	// EntityManager 获取实体管理器
+	EntityManager() EntityManager
+	// EntityTree 获取实体树
+	EntityTree() EntityTree
 	// Managed 托管事件句柄
 	Managed() *event.ManagedHandles
 
@@ -116,33 +116,33 @@ type ContextBehavior struct {
 	contextRunningEventTab contextRunningEventTab
 }
 
-// GetName 获取名称
-func (ctx *ContextBehavior) GetName() string {
+// Name 获取名称
+func (ctx *ContextBehavior) Name() string {
 	return ctx.options.Name
 }
 
-// GetId 获取运行时Id
-func (ctx *ContextBehavior) GetId() uid.Id {
+// Id 获取运行时Id
+func (ctx *ContextBehavior) Id() uid.Id {
 	return ctx.options.PersistId
 }
 
-// GetReflected 获取反射值
-func (ctx *ContextBehavior) GetReflected() reflect.Value {
+// Reflected 获取反射值
+func (ctx *ContextBehavior) Reflected() reflect.Value {
 	return ctx.reflected
 }
 
-// GetFrame 获取帧
-func (ctx *ContextBehavior) GetFrame() Frame {
+// Frame 获取帧
+func (ctx *ContextBehavior) Frame() Frame {
 	return ctx.frame
 }
 
-// GetEntityManager 获取实体管理器
-func (ctx *ContextBehavior) GetEntityManager() EntityManager {
+// EntityManager 获取实体管理器
+func (ctx *ContextBehavior) EntityManager() EntityManager {
 	return &ctx.entityManager
 }
 
-// GetEntityTree 获取主实体树
-func (ctx *ContextBehavior) GetEntityTree() EntityTree {
+// EntityTree 获取主实体树
+func (ctx *ContextBehavior) EntityTree() EntityTree {
 	return &ctx.entityManager
 }
 
@@ -156,18 +156,18 @@ func (ctx *ContextBehavior) EventContextRunningEvent() event.IEvent {
 	return ctx.contextRunningEventTab.EventContextRunningEvent()
 }
 
-// GetCurrentContext 获取当前上下文
-func (ctx *ContextBehavior) GetCurrentContext() iface.Cache {
+// CurrentContext 获取当前上下文
+func (ctx *ContextBehavior) CurrentContext() iface.Cache {
 	return iface.Iface2Cache[Context](ctx.options.InstanceFace.Iface)
 }
 
-// GetConcurrentContext 获取多线程安全的上下文
-func (ctx *ContextBehavior) GetConcurrentContext() iface.Cache {
+// ConcurrentContext 获取多线程安全的上下文
+func (ctx *ContextBehavior) ConcurrentContext() iface.Cache {
 	return iface.Iface2Cache[Context](ctx.options.InstanceFace.Iface)
 }
 
-// GetInstanceFaceCache 支持重新解释类型
-func (ctx *ContextBehavior) GetInstanceFaceCache() iface.Cache {
+// InstanceFaceCache 支持重新解释类型
+func (ctx *ContextBehavior) InstanceFaceCache() iface.Cache {
 	return ctx.options.InstanceFace.Cache
 }
 
@@ -183,7 +183,7 @@ func (ctx *ContextBehavior) CollectGC(gc GC) {
 // String implements fmt.Stringer
 func (ctx *ContextBehavior) String() string {
 	ctx.stringerOnce.Do(func() {
-		ctx.stringerCache = fmt.Sprintf(`{"id":%q,"name":%q}`, ctx.GetId(), ctx.GetName())
+		ctx.stringerCache = fmt.Sprintf(`{"id":%q,"name":%q}`, ctx.Id(), ctx.Name())
 	})
 	return ctx.stringerCache
 }
@@ -215,13 +215,13 @@ func (ctx *ContextBehavior) init(svcCtx service.Context, options ContextOptions)
 
 	ctx.svcCtx = svcCtx
 	ctx.reflected = reflect.ValueOf(ctx.getInstance())
-	ctx.contextRunningEventTab.SetPanicHandling(ctx.GetAutoRecover(), ctx.GetReportError())
+	ctx.contextRunningEventTab.SetPanicHandling(ctx.AutoRecover(), ctx.ReportError())
 
 	ctx.entityManager.init(ctx.getInstance())
 
-	event.UnsafeEvent(ctx.getAddInManager().EventRuntimeInstallAddIn()).Ctrl().SetPanicHandling(ctx.GetAutoRecover(), ctx.GetReportError())
-	event.UnsafeEvent(ctx.getAddInManager().EventRuntimeUninstallAddIn()).Ctrl().SetPanicHandling(ctx.GetAutoRecover(), ctx.GetReportError())
-	event.UnsafeEvent(ctx.getAddInManager().EventRuntimeAddInStateChanged()).Ctrl().SetPanicHandling(ctx.GetAutoRecover(), ctx.GetReportError())
+	event.UnsafeEvent(ctx.getAddInManager().EventRuntimeInstallAddIn()).Ctrl().SetPanicHandling(ctx.AutoRecover(), ctx.ReportError())
+	event.UnsafeEvent(ctx.getAddInManager().EventRuntimeUninstallAddIn()).Ctrl().SetPanicHandling(ctx.AutoRecover(), ctx.ReportError())
+	event.UnsafeEvent(ctx.getAddInManager().EventRuntimeAddInStateChanged()).Ctrl().SetPanicHandling(ctx.AutoRecover(), ctx.ReportError())
 
 	if ctx.options.RunningEventCB != nil {
 		BindEventContextRunningEvent(ctx, HandleEventContextRunningEvent(ctx.options.RunningEventCB))
@@ -238,7 +238,7 @@ func (ctx *ContextBehavior) emitEventRunningEvent(runningEvent RunningEvent, arg
 
 	switch runningEvent {
 	case RunningEvent_Terminated:
-		ctx.contextRunningEventTab.SetEnable(false)
+		ctx.contextRunningEventTab.SetEnabled(false)
 		ctx.managed.UnbindAllEventHandles()
 	}
 }

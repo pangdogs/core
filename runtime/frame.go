@@ -25,24 +25,24 @@ import (
 
 // Frame 帧，在运行时初始化时可以设置帧，用于设置运行时帧更新方式，在逻辑运行过程中可以在运行时上下文中获取帧信息
 type Frame interface {
-	// GetTargetFPS 获取目标FPS
-	GetTargetFPS() float64
-	// GetCurFPS 获取当前FPS
-	GetCurFPS() float64
-	// GetTotalFrames 获取运行帧数上限
-	GetTotalFrames() int64
-	// GetCurFrames 获取当前帧数
-	GetCurFrames() int64
-	// GetRunningBeginTime 获取运行开始时间
-	GetRunningBeginTime() time.Time
-	// GetRunningElapseTime 获取运行持续时间
-	GetRunningElapseTime() time.Duration
-	// GetLoopBeginTime 获取当前帧循环开始时间（包含异步调用）
-	GetLoopBeginTime() time.Time
-	// GetLastLoopElapseTime 获取上一帧循环耗时（包含异步调用）
-	GetLastLoopElapseTime() time.Duration
-	// GetUpdateBeginTime 获取当前帧更新开始时间
-	GetUpdateBeginTime() time.Time
-	// GetLastUpdateElapseTime 获取上一次帧更新耗时
-	GetLastUpdateElapseTime() time.Duration
+	// TargetFPS 获取目标FPS
+	TargetFPS() float64
+	// CurFPS 获取当前FPS
+	CurFPS() float64
+	// TotalFrames 获取运行帧数上限
+	TotalFrames() int64
+	// CurFrames 获取当前帧数
+	CurFrames() int64
+	// RunningBeginTime 获取运行开始时间
+	RunningBeginTime() time.Time
+	// RunningElapseTime 获取运行持续时间
+	RunningElapseTime() time.Duration
+	// LoopBeginTime 获取当前帧循环开始时间（包含异步调用）
+	LoopBeginTime() time.Time
+	// LastLoopElapseTime 获取上一帧循环耗时（包含异步调用）
+	LastLoopElapseTime() time.Duration
+	// UpdateBeginTime 获取当前帧更新开始时间
+	UpdateBeginTime() time.Time
+	// LastUpdateElapseTime 获取上一次帧更新耗时
+	LastUpdateElapseTime() time.Duration
 }

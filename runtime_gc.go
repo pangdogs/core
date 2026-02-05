@@ -25,5 +25,5 @@ import (
 
 func (rt *RuntimeBehavior) gc() {
 	runtime.UnsafeContext(rt.ctx).GC()
-	rt.options.CustomGC.Call(rt.ctx.GetAutoRecover(), rt.ctx.GetReportError(), rt.getInstance())
+	rt.options.CustomGC.Call(rt.ctx.AutoRecover(), rt.ctx.ReportError(), rt.getInstance())
 }

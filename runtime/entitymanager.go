@@ -79,14 +79,14 @@ type _EntityManager struct {
 	entityTreeEventTab
 }
 
-// GetCurrentContext 获取当前上下文
-func (mgr *_EntityManager) GetCurrentContext() iface.Cache {
-	return mgr.ctx.GetCurrentContext()
+// CurrentContext 获取当前上下文
+func (mgr *_EntityManager) CurrentContext() iface.Cache {
+	return mgr.ctx.CurrentContext()
 }
 
-// GetConcurrentContext 获取多线程安全的上下文
-func (mgr *_EntityManager) GetConcurrentContext() iface.Cache {
-	return mgr.ctx.GetConcurrentContext()
+// ConcurrentContext 获取多线程安全的上下文
+func (mgr *_EntityManager) ConcurrentContext() iface.Cache {
+	return mgr.ctx.ConcurrentContext()
 }
 
 // AddEntity 添加实体
@@ -95,35 +95,35 @@ func (mgr *_EntityManager) AddEntity(entity ec.Entity) error {
 		exception.Panicf("%w: %w: entity is nil", ErrEntityManager, exception.ErrArgs)
 	}
 
-	if entity.GetState() != ec.EntityState_Birth {
-		return fmt.Errorf("%w: invalid entity %q state %q", ErrEntityManager, entity.GetId(), entity.GetState())
+	if entity.State() != ec.EntityState_Birth {
+		return fmt.Errorf("%w: invalid entity %q state %q", ErrEntityManager, entity.Id(), entity.State())
 	}
 
-	switch entity.GetScope() {
+	switch entity.Scope() {
 	case ec.Scope_Local, ec.Scope_Global:
 		break
 	default:
-		return fmt.Errorf("%w: invalid entity %q scope %q", ErrEntityManager, entity.GetId(), entity.GetScope())
+		return fmt.Errorf("%w: invalid entity %q scope %q", ErrEntityManager, entity.Id(), entity.Scope())
 	}
 
 	mgr.initEntity(entity)
 
-	if _, ok := mgr.entityIdIndex[entity.GetId()]; ok {
-		return fmt.Errorf("%w: entity %q already exists in entity-manager", ErrEntityManager, entity.GetId())
+	if _, ok := mgr.entityIdIndex[entity.Id()]; ok {
+		return fmt.Errorf("%w: entity %q already exists in entity-manager", ErrEntityManager, entity.Id())
 	}
 
-	if entity.GetScope() == ec.Scope_Global {
-		_, loaded, err := service.Current(mgr).GetEntityManager().GetOrAddEntity(entity)
+	if entity.Scope() == ec.Scope_Global {
+		_, loaded, err := service.Current(mgr).EntityManager().GetOrAddEntity(entity)
 		if err != nil {
-			return fmt.Errorf("%w: entity %q add to service entity-manager failed, %w", ErrEntityManager, entity.GetId(), err)
+			return fmt.Errorf("%w: entity %q add to service entity-manager failed, %w", ErrEntityManager, entity.Id(), err)
 		}
 		if loaded {
-			return fmt.Errorf("%w: entity %q already exists in service entity-manager", ErrEntityManager, entity.GetId())
+			return fmt.Errorf("%w: entity %q already exists in service entity-manager", ErrEntityManager, entity.Id())
 		}
 	}
 
 	entitySlot := mgr.entityList.PushBack(entity)
-	mgr.entityIdIndex[entity.GetId()] = entitySlot.Index()
+	mgr.entityIdIndex[entity.Id()] = entitySlot.Index()
 
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Enter)
 	ec.UnsafeEntity(entity).SetEnteredHandle(entitySlot.Index(), entitySlot.Version())
@@ -218,7 +218,7 @@ func (mgr *_EntityManager) CountEntities() int {
 }
 
 func (mgr *_EntityManager) OnEntityDestroy(entity ec.Entity) {
-	mgr.onEntityDestroyIfVersion(ec.UnsafeEntity(entity).GetEnteredHandle())
+	mgr.onEntityDestroyIfVersion(ec.UnsafeEntity(entity).EnteredHandle())
 }
 
 func (mgr *_EntityManager) OnComponentManagerAddComponents(entity ec.Entity, components []ec.Component) {
@@ -249,8 +249,8 @@ func (mgr *_EntityManager) init(ctx Context) {
 	mgr.entityIdIndex = map[uid.Id]int{}
 	mgr.entityTreeNodes = map[int]*_TreeNode{forestNodeIdx: {parent: forestNodeIdx}}
 
-	mgr.entityManagerEventTab.SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
-	mgr.entityTreeEventTab.SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
+	mgr.entityManagerEventTab.SetPanicHandling(mgr.ctx.AutoRecover(), mgr.ctx.ReportError())
+	mgr.entityTreeEventTab.SetPanicHandling(mgr.ctx.AutoRecover(), mgr.ctx.ReportError())
 }
 
 func (mgr *_EntityManager) onContextRunningEvent(ctx Context, runningEvent RunningEvent, args ...any) {
@@ -264,30 +264,30 @@ func (mgr *_EntityManager) onContextRunningEvent(ctx Context, runningEvent Runni
 			entity.Destroy()
 		})
 	case RunningEvent_Terminated:
-		mgr.entityManagerEventTab.SetEnable(false)
-		mgr.entityTreeEventTab.SetEnable(false)
+		mgr.entityManagerEventTab.SetEnabled(false)
+		mgr.entityTreeEventTab.SetEnabled(false)
 	}
 }
 
 func (mgr *_EntityManager) initEntity(entity ec.Entity) {
-	if entity.GetId().IsNil() {
+	if entity.Id().IsNil() {
 		ec.UnsafeEntity(entity).SetId(uid.New())
 	}
 	ec.UnsafeEntity(entity).SetContext(iface.Iface2Cache[Context](mgr.ctx))
 	ec.UnsafeEntity(entity).WithContext(mgr.ctx)
 
-	event.UnsafeEvent(entity.EventEntityDestroy()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
+	event.UnsafeEvent(entity.EventEntityDestroy()).Ctrl().SetPanicHandling(mgr.ctx.AutoRecover(), mgr.ctx.ReportError())
 
-	event.UnsafeEvent(entity.EventComponentManagerAddComponents()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
-	event.UnsafeEvent(entity.EventComponentManagerRemoveComponent()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
-	event.UnsafeEvent(entity.EventComponentManagerComponentEnableChanged()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
-	event.UnsafeEvent(entity.EventComponentManagerFirstTouchComponent()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
+	event.UnsafeEvent(entity.EventComponentManagerAddComponents()).Ctrl().SetPanicHandling(mgr.ctx.AutoRecover(), mgr.ctx.ReportError())
+	event.UnsafeEvent(entity.EventComponentManagerRemoveComponent()).Ctrl().SetPanicHandling(mgr.ctx.AutoRecover(), mgr.ctx.ReportError())
+	event.UnsafeEvent(entity.EventComponentManagerComponentEnableChanged()).Ctrl().SetPanicHandling(mgr.ctx.AutoRecover(), mgr.ctx.ReportError())
+	event.UnsafeEvent(entity.EventComponentManagerFirstTouchComponent()).Ctrl().SetPanicHandling(mgr.ctx.AutoRecover(), mgr.ctx.ReportError())
 
-	event.UnsafeEvent(entity.EventTreeNodeAddChild()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
-	event.UnsafeEvent(entity.EventTreeNodeRemoveChild()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
-	event.UnsafeEvent(entity.EventTreeNodeAttachParent()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
-	event.UnsafeEvent(entity.EventTreeNodeDetachParent()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
-	event.UnsafeEvent(entity.EventTreeNodeMoveTo()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
+	event.UnsafeEvent(entity.EventTreeNodeAddChild()).Ctrl().SetPanicHandling(mgr.ctx.AutoRecover(), mgr.ctx.ReportError())
+	event.UnsafeEvent(entity.EventTreeNodeRemoveChild()).Ctrl().SetPanicHandling(mgr.ctx.AutoRecover(), mgr.ctx.ReportError())
+	event.UnsafeEvent(entity.EventTreeNodeAttachParent()).Ctrl().SetPanicHandling(mgr.ctx.AutoRecover(), mgr.ctx.ReportError())
+	event.UnsafeEvent(entity.EventTreeNodeDetachParent()).Ctrl().SetPanicHandling(mgr.ctx.AutoRecover(), mgr.ctx.ReportError())
+	event.UnsafeEvent(entity.EventTreeNodeMoveTo()).Ctrl().SetPanicHandling(mgr.ctx.AutoRecover(), mgr.ctx.ReportError())
 
 	entity.EachComponents(func(comp ec.Component) {
 		mgr.initComponent(entity, comp)
@@ -295,11 +295,11 @@ func (mgr *_EntityManager) initEntity(entity ec.Entity) {
 }
 
 func (mgr *_EntityManager) initComponent(entity ec.Entity, comp ec.Component) {
-	event.UnsafeEvent(comp.EventComponentEnableChanged()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
-	event.UnsafeEvent(comp.EventComponentDestroy()).Ctrl().SetPanicHandling(mgr.ctx.GetAutoRecover(), mgr.ctx.GetReportError())
+	event.UnsafeEvent(comp.EventComponentEnableChanged()).Ctrl().SetPanicHandling(mgr.ctx.AutoRecover(), mgr.ctx.ReportError())
+	event.UnsafeEvent(comp.EventComponentDestroy()).Ctrl().SetPanicHandling(mgr.ctx.AutoRecover(), mgr.ctx.ReportError())
 
-	if ec.UnsafeEntity(entity).GetOptions().ComponentUniqueID {
-		if comp.GetId().IsNil() {
+	if ec.UnsafeEntity(entity).Options().ComponentUniqueID {
+		if comp.Id().IsNil() {
 			ec.UnsafeComponent(comp).SetId(uid.New())
 		}
 	}
@@ -312,7 +312,7 @@ func (mgr *_EntityManager) observeEntity(entity ec.Entity) {
 	ec.BindEventComponentManagerRemoveComponent(entity, mgr)
 	ec.BindEventComponentManagerComponentEnableChanged(entity, mgr)
 
-	if ec.UnsafeEntity(entity).GetOptions().ComponentAwakeOnFirstTouch {
+	if ec.UnsafeEntity(entity).Options().ComponentAwakeOnFirstTouch {
 		ec.BindEventComponentManagerFirstTouchComponent(entity, mgr)
 	}
 }
@@ -327,17 +327,17 @@ func (mgr *_EntityManager) onEntityDestroyIfVersion(idx int, ver int64) {
 
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Leave)
 
-	mgr.onEntityDestroyRemoveNode(entity.GetId())
+	mgr.onEntityDestroyRemoveNode(entity.Id())
 
 	_EmitEventEntityManagerRemoveEntity(mgr, mgr, entity)
 
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Death)
 
-	delete(mgr.entityIdIndex, entity.GetId())
+	delete(mgr.entityIdIndex, entity.Id())
 	mgr.entityList.ReleaseIfVersion(idx, ver)
 
-	if entity.GetScope() == ec.Scope_Global {
-		service.Current(mgr).GetEntityManager().RemoveEntity(entity.GetId())
+	if entity.Scope() == ec.Scope_Global {
+		service.Current(mgr).EntityManager().RemoveEntity(entity.Id())
 	}
 
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Destroyed)

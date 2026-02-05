@@ -66,18 +66,18 @@ type Entity interface {
 	reinterpret.InstanceProvider
 	fmt.Stringer
 
-	// GetId 获取实体Id
-	GetId() uid.Id
-	// GetPT 获取实体原型信息
-	GetPT() EntityPT
-	// GetScope 获取可访问作用域
-	GetScope() Scope
-	// GetState 获取实体状态
-	GetState() EntityState
-	// GetReflected 获取反射值
-	GetReflected() reflect.Value
-	// GetMeta 获取Meta信息
-	GetMeta() meta.Meta
+	// Id 获取实体Id
+	Id() uid.Id
+	// PT 获取实体原型信息
+	PT() EntityPT
+	// Scope 获取可访问作用域
+	Scope() Scope
+	// State 获取实体状态
+	State() EntityState
+	// Reflected 获取反射值
+	Reflected() reflect.Value
+	// Meta 获取Meta信息
+	Meta() meta.Meta
 	// Managed 托管事件句柄
 	Managed() *event.ManagedHandles
 	// Destroy 销毁
@@ -134,31 +134,31 @@ type EntityBehavior struct {
 	entityTreeNodeEventTab         entityTreeNodeEventTab
 }
 
-// GetId 获取实体Id
-func (entity *EntityBehavior) GetId() uid.Id {
+// Id 获取实体Id
+func (entity *EntityBehavior) Id() uid.Id {
 	return entity.options.PersistId
 }
 
-// GetPT 获取实体原型
-func (entity *EntityBehavior) GetPT() EntityPT {
+// PT 获取实体原型
+func (entity *EntityBehavior) PT() EntityPT {
 	if entity.prototype == nil {
 		return noneEntityPT
 	}
 	return entity.prototype
 }
 
-// GetScope 获取可访问作用域
-func (entity *EntityBehavior) GetScope() Scope {
+// Scope 获取可访问作用域
+func (entity *EntityBehavior) Scope() Scope {
 	return entity.options.Scope
 }
 
-// GetState 获取实体状态
-func (entity *EntityBehavior) GetState() EntityState {
+// State 获取实体状态
+func (entity *EntityBehavior) State() EntityState {
 	return entity.state
 }
 
-// GetReflected 获取反射值
-func (entity *EntityBehavior) GetReflected() reflect.Value {
+// Reflected 获取反射值
+func (entity *EntityBehavior) Reflected() reflect.Value {
 	if entity.reflected.IsValid() {
 		return entity.reflected
 	}
@@ -166,8 +166,8 @@ func (entity *EntityBehavior) GetReflected() reflect.Value {
 	return entity.reflected
 }
 
-// GetMeta 获取Meta信息
-func (entity *EntityBehavior) GetMeta() meta.Meta {
+// Meta 获取Meta信息
+func (entity *EntityBehavior) Meta() meta.Meta {
 	return entity.options.Meta
 }
 
@@ -191,25 +191,25 @@ func (entity *EntityBehavior) EventEntityDestroy() event.IEvent {
 	return entity.entityEventTab.EventEntityDestroy()
 }
 
-// GetCurrentContext 获取当前上下文
-func (entity *EntityBehavior) GetCurrentContext() iface.Cache {
+// CurrentContext 获取当前上下文
+func (entity *EntityBehavior) CurrentContext() iface.Cache {
 	return entity.context
 }
 
-// GetConcurrentContext 解析线程安全的上下文
-func (entity *EntityBehavior) GetConcurrentContext() iface.Cache {
+// ConcurrentContext 解析线程安全的上下文
+func (entity *EntityBehavior) ConcurrentContext() iface.Cache {
 	return entity.context
 }
 
-// GetInstanceFaceCache 支持重新解释类型
-func (entity *EntityBehavior) GetInstanceFaceCache() iface.Cache {
+// InstanceFaceCache 支持重新解释类型
+func (entity *EntityBehavior) InstanceFaceCache() iface.Cache {
 	return entity.options.InstanceFace.Cache
 }
 
 // String implements fmt.Stringer
 func (entity *EntityBehavior) String() string {
 	entity.stringerOnce.Do(func() {
-		entity.stringerCache = fmt.Sprintf(`{"id":%q,"prototype":%q}`, entity.GetId(), entity.GetPT().Prototype())
+		entity.stringerCache = fmt.Sprintf(`{"id":%q,"prototype":%q}`, entity.Id(), entity.PT().Prototype())
 	})
 	return entity.stringerCache
 }
@@ -253,9 +253,9 @@ func (entity *EntityBehavior) setState(state EntityState) {
 	switch entity.state {
 	case EntityState_Death:
 		entity.terminate()
-		entity.entityEventTab.SetEnable(false)
-		entity.entityComponentManagerEventTab.SetEnable(false)
-		entity.entityTreeNodeEventTab.SetEnable(false)
+		entity.entityEventTab.SetEnabled(false)
+		entity.entityComponentManagerEventTab.SetEnabled(false)
+		entity.entityTreeNodeEventTab.SetEnabled(false)
 	case EntityState_Destroyed:
 		entity.managedHandles.UnbindAllEventHandles()
 		entity.managedUnbindRuntimeHandles()

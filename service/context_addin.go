@@ -23,8 +23,8 @@ import (
 	"git.golaxy.org/core/extension"
 )
 
-// GetAddInManager 获取插件管理器
-func (ctx *ContextBehavior) GetAddInManager() extension.AddInManager {
+// AddInManager 获取插件管理器
+func (ctx *ContextBehavior) AddInManager() extension.AddInManager {
 	return ctx.options.AddInManager
 }
 

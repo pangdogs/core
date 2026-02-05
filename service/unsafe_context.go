@@ -36,8 +36,8 @@ type _UnsafeContext struct {
 	Context
 }
 
-// GetOptions 获取服务上下文所有选项
-func (u _UnsafeContext) GetOptions() *ContextOptions {
+// Options 获取服务上下文所有选项
+func (u _UnsafeContext) Options() *ContextOptions {
 	return u.getOptions()
 }
 
@@ -46,12 +46,12 @@ func (u _UnsafeContext) EmitEventRunningEvent(runningEvent RunningEvent, args ..
 	u.emitEventRunningEvent(runningEvent, args...)
 }
 
-// GetAddInManager 获取插件管理器
-func (u _UnsafeContext) GetAddInManager() extension.ServiceAddInManager {
+// AddInManager 获取插件管理器
+func (u _UnsafeContext) AddInManager() extension.ServiceAddInManager {
 	return u.getAddInManager()
 }
 
-// GetScoped 获取作用域状态
-func (u _UnsafeContext) GetScoped() *atomic.Bool {
+// Scoped 获取作用域状态
+func (u _UnsafeContext) Scoped() *atomic.Bool {
 	return u.getScoped()
 }

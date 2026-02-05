@@ -22,7 +22,7 @@ package core
 import "git.golaxy.org/core/ec"
 
 func newEntityLifecycleCaller(entity ec.Entity) _EntityLifecycleCaller {
-	return _EntityLifecycleCaller{entity: entity, state: entity.GetState()}
+	return _EntityLifecycleCaller{entity: entity, state: entity.State()}
 }
 
 type _EntityLifecycleCaller struct {
@@ -31,21 +31,21 @@ type _EntityLifecycleCaller struct {
 }
 
 func (c _EntityLifecycleCaller) Call(fun func()) bool {
-	if c.entity.GetState() != c.state {
+	if c.entity.State() != c.state {
 		return false
 	}
 
 	fun()
 
-	return c.entity.GetState() == c.state
+	return c.entity.State() == c.state
 }
 
 func (c _EntityLifecycleCaller) IsProcessed(state ec.EntityState) bool {
-	return ec.UnsafeEntity(c.entity).GetProcessedStateBits().Is(int(state))
+	return ec.UnsafeEntity(c.entity).ProcessedStateBits().Is(int(state))
 }
 
 func (c _EntityLifecycleCaller) SetProcessed(state ec.EntityState) bool {
-	bits := ec.UnsafeEntity(c.entity).GetProcessedStateBits()
+	bits := ec.UnsafeEntity(c.entity).ProcessedStateBits()
 	if bits.Is(int(state)) {
 		return false
 	}
@@ -58,7 +58,7 @@ func (c _EntityLifecycleCaller) MarkProcessed() bool {
 }
 
 func newComponentLifecycleCaller(comp ec.Component) _ComponentLifecycleCaller {
-	return _ComponentLifecycleCaller{component: comp, state: comp.GetState()}
+	return _ComponentLifecycleCaller{component: comp, state: comp.State()}
 }
 
 type _ComponentLifecycleCaller struct {
@@ -67,21 +67,21 @@ type _ComponentLifecycleCaller struct {
 }
 
 func (c _ComponentLifecycleCaller) Call(fun func()) bool {
-	if c.component.GetState() != c.state {
+	if c.component.State() != c.state {
 		return false
 	}
 
 	fun()
 
-	return c.component.GetState() == c.state
+	return c.component.State() == c.state
 }
 
 func (c _ComponentLifecycleCaller) IsProcessed(state ec.ComponentState) bool {
-	return ec.UnsafeComponent(c.component).GetProcessedStateBits().Is(int(state))
+	return ec.UnsafeComponent(c.component).ProcessedStateBits().Is(int(state))
 }
 
 func (c _ComponentLifecycleCaller) SetProcessed(state ec.ComponentState) bool {
-	bits := ec.UnsafeComponent(c.component).GetProcessedStateBits()
+	bits := ec.UnsafeComponent(c.component).ProcessedStateBits()
 	if bits.Is(int(state)) {
 		return false
 	}

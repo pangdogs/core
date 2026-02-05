@@ -30,7 +30,7 @@ type _UnsafeRuntime struct {
 	Runtime
 }
 
-// GetOptions 获取运行时所有选项
-func (u _UnsafeRuntime) GetOptions() *RuntimeOptions {
+// Options 获取运行时所有选项
+func (u _UnsafeRuntime) Options() *RuntimeOptions {
 	return u.getOptions()
 }
