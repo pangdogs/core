@@ -30,12 +30,12 @@ type RuntimeStats struct {
 }
 
 type iRuntimeStats interface {
-	// GetStats 获取运行时统计信息
-	GetStats() RuntimeStats
+	// Stats 获取运行时统计信息
+	Stats() RuntimeStats
 }
 
-// GetStats 获取运行时统计信息
-func (rt *RuntimeBehavior) GetStats() RuntimeStats {
+// Stats 获取运行时统计信息
+func (rt *RuntimeBehavior) Stats() RuntimeStats {
 	return RuntimeStats{
 		WaitGroupCount:          rt.ctx.WaitGroup().Count(),
 		WaitGroupClosed:         rt.ctx.WaitGroup().Closed(),

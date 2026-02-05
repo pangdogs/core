@@ -26,12 +26,12 @@ type ServiceStats struct {
 }
 
 type iServiceStats interface {
-	// GetStats 获取服务统计信息
-	GetStats() ServiceStats
+	// Stats 获取服务统计信息
+	Stats() ServiceStats
 }
 
-// GetStats 获取服务统计信息
-func (svc *ServiceBehavior) GetStats() ServiceStats {
+// Stats 获取服务统计信息
+func (svc *ServiceBehavior) Stats() ServiceStats {
 	return ServiceStats{
 		WaitGroupCount:  svc.ctx.WaitGroup().Count(),
 		WaitGroupClosed: svc.ctx.WaitGroup().Closed(),
