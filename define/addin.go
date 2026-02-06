@@ -60,8 +60,8 @@ func defineAddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADD
 	return AddInDefinition[ADDIN_IFACE, SETTING]{
 		Id:   id,
 		Name: name,
-		Install: func(provider extension.AddInProvider, options ...SETTING) {
-			extension.Install[ADDIN_IFACE](provider, creator(options...), name)
+		Install: func(provider extension.AddInProvider, settings ...SETTING) {
+			extension.Install[ADDIN_IFACE](provider, creator(settings...), name)
 		},
 		Uninstall: func(provider extension.AddInProvider) {
 			extension.Uninstall(provider, name)
