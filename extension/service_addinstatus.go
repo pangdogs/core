@@ -94,7 +94,7 @@ func (s *_ServiceAddInStatus) Uninstall() {
 // String implements fmt.Stringer
 func (s *_ServiceAddInStatus) String() string {
 	s.stringerOnce.Do(func() {
-		s.stringerCache = fmt.Sprintf(`{"name":%q,"instance":%q}`, s.name, s.reflected.Type())
+		s.stringerCache = fmt.Sprintf(`{"id":%d,"name":%q,"instance":%q}`, s.id, s.name, s.reflected.Type())
 	})
 	return s.stringerCache
 }

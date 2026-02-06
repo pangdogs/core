@@ -87,6 +87,7 @@ func (mgr *_ServiceAddInManager) Install(addInFace iface.FaceAny, name ...string
 
 	status := &_ServiceAddInStatus{
 		mgr:          mgr,
+		id:           id,
 		name:         addInName,
 		instanceFace: addInFace,
 		reflected:    reflect.ValueOf(addInFace.Iface),

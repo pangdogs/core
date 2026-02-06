@@ -94,7 +94,7 @@ func (s *_RuntimeAddInStatus) Uninstall() {
 // String implements fmt.Stringer
 func (s *_RuntimeAddInStatus) String() string {
 	if s.stringerCache == "" {
-		s.stringerCache = fmt.Sprintf(`{"name":%q,"instance":%q}`, s.name, s.reflected.Type())
+		s.stringerCache = fmt.Sprintf(`{"id":%d,"name":%q,"instance":%q}`, s.id, s.name, s.reflected.Type())
 	}
 	return s.stringerCache
 }
