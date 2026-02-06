@@ -37,5 +37,5 @@ const (
 	RunningEvent_EntityPTDeclared                        // 实体原型已声明
 	RunningEvent_ComponentPTDeclared                     // 组件原型已声明
 	RunningEvent_EntityRegistered                        // 实体已注册
-	RunningEvent_EntityUnregistered                      // 实体已注销
+	RunningEvent_EntityDeregistered                      // 实体已注销
 )

@@ -103,5 +103,5 @@ func (mgr *_EntityManager) RemoveEntity(id uid.Id) {
 	if !loaded {
 		return
 	}
-	mgr.ctx.emitEventRunningEvent(RunningEvent_EntityUnregistered, entity)
+	mgr.ctx.emitEventRunningEvent(RunningEvent_EntityDeregistered, entity)
 }

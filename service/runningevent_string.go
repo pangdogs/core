@@ -21,10 +21,10 @@ func _() {
 	_ = x[RunningEvent_EntityPTDeclared-10]
 	_ = x[RunningEvent_ComponentPTDeclared-11]
 	_ = x[RunningEvent_EntityRegistered-12]
-	_ = x[RunningEvent_EntityUnregistered-13]
+	_ = x[RunningEvent_EntityDeregistered-13]
 }
 
-const _RunningEvent_name = "RunningEvent_BirthRunningEvent_StartingRunningEvent_StartedRunningEvent_HeartbeatRunningEvent_TerminatingRunningEvent_TerminatedRunningEvent_AddInActivatingRunningEvent_AddInActivatedRunningEvent_AddInDeactivatingRunningEvent_AddInDeactivatedRunningEvent_EntityPTDeclaredRunningEvent_ComponentPTDeclaredRunningEvent_EntityRegisteredRunningEvent_EntityUnregistered"
+const _RunningEvent_name = "RunningEvent_BirthRunningEvent_StartingRunningEvent_StartedRunningEvent_HeartbeatRunningEvent_TerminatingRunningEvent_TerminatedRunningEvent_AddInActivatingRunningEvent_AddInActivatedRunningEvent_AddInDeactivatingRunningEvent_AddInDeactivatedRunningEvent_EntityPTDeclaredRunningEvent_ComponentPTDeclaredRunningEvent_EntityRegisteredRunningEvent_EntityDeregistered"
 
 var _RunningEvent_index = [...]uint16{0, 18, 39, 59, 81, 105, 128, 156, 183, 213, 242, 271, 303, 332, 363}
 
