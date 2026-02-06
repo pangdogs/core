@@ -33,6 +33,8 @@ type AddInManager interface {
 	Uninstall(name string)
 	// Get 获取插件
 	Get(name string) (AddInStatus, bool)
+	// GetById 使用Id获取插件
+	GetById(id uint64) (AddInStatus, bool)
 	// List 获取所有插件
 	List() []AddInStatus
 }

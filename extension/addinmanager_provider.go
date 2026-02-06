@@ -32,30 +32,30 @@ type AddInProvider interface {
 }
 
 // Resolve 解析插件
-func Resolve[T any](provider AddInProvider, name string) T {
+func Resolve[T any](provider AddInProvider, id uint64) T {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrExtension, exception.ErrArgs)
 	}
 
-	status, ok := provider.AddInManager().Get(name)
+	status, ok := provider.AddInManager().GetById(id)
 	if !ok {
-		exception.Panicf("%w: addIn %q not installed", ErrExtension, name)
+		exception.Panicf("%w: addIn id %d not installed", ErrExtension, id)
 	}
 
 	if status.State() != AddInState_Running {
-		exception.Panicf("%w: addIn %q not actived", ErrExtension, name)
+		exception.Panicf("%w: addIn id %d not actived", ErrExtension, id)
 	}
 
 	return iface.Cache2Iface[T](status.InstanceFace().Cache)
 }
 
 // Lookup 查找插件
-func Lookup[T any](provider AddInProvider, name string) (T, bool) {
+func Lookup[T any](provider AddInProvider, id uint64) (T, bool) {
 	if provider == nil {
 		return types.ZeroT[T](), false
 	}
 
-	status, ok := provider.AddInManager().Get(name)
+	status, ok := provider.AddInManager().GetById(id)
 	if !ok {
 		return types.ZeroT[T](), false
 	}

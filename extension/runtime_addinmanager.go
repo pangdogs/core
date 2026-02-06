@@ -39,11 +39,13 @@ type RuntimeAddInManager interface {
 func NewRuntimeAddInManager() RuntimeAddInManager {
 	return &_RuntimeAddInManager{
 		addInNameIndex: map[string]int{},
+		addInIdIndex:   map[uint64]int{},
 	}
 }
 
 type _RuntimeAddInManager struct {
 	addInNameIndex map[string]int
+	addInIdIndex   map[uint64]int
 	addInList      generic.FreeList[*_RuntimeAddInStatus]
 
 	runtimeAddInManagerEventTab
@@ -69,8 +71,15 @@ func (mgr *_RuntimeAddInManager) Install(addInFace iface.FaceAny, name ...string
 		exception.Panicf("%w: addIn %q is already installed", ErrExtension, addInName)
 	}
 
+	id := GenAddInId(addInName)
+
+	if existsIdx, ok := mgr.addInIdIndex[id]; ok {
+		exception.Panicf("%w: addIn %q id index %d conflict with %q", ErrExtension, addInName, id, mgr.addInList.Get(existsIdx).V.name)
+	}
+
 	status := &_RuntimeAddInStatus{
 		mgr:          mgr,
+		id:           id,
 		name:         addInName,
 		instanceFace: addInFace,
 		reflected:    reflect.ValueOf(addInFace.Iface),
@@ -79,6 +88,7 @@ func (mgr *_RuntimeAddInManager) Install(addInFace iface.FaceAny, name ...string
 	status.idx = slot.Index()
 	status.ver = slot.Version()
 	mgr.addInNameIndex[addInName] = slot.Index()
+	mgr.addInIdIndex[id] = slot.Index()
 
 	status.setState(AddInState_Loaded)
 
@@ -102,6 +112,15 @@ func (mgr *_RuntimeAddInManager) Uninstall(name string) {
 // Get 获取插件
 func (mgr *_RuntimeAddInManager) Get(name string) (AddInStatus, bool) {
 	statusIdx, ok := mgr.addInNameIndex[name]
+	if !ok {
+		return nil, false
+	}
+	return mgr.addInList.Get(statusIdx).V, true
+}
+
+// GetById 使用Id获取插件
+func (mgr *_RuntimeAddInManager) GetById(id uint64) (AddInStatus, bool) {
+	statusIdx, ok := mgr.addInIdIndex[id]
 	if !ok {
 		return nil, false
 	}
@@ -134,6 +153,7 @@ func (mgr *_RuntimeAddInManager) uninstallIfVersion(idx int, ver int64) {
 	}
 
 	delete(mgr.addInNameIndex, status.name)
+	delete(mgr.addInIdIndex, status.id)
 	mgr.addInList.ReleaseIfVersion(idx, ver)
 
 	status.setState(AddInState_Unloaded)

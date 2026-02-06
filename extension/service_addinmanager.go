@@ -44,12 +44,14 @@ type ServiceAddInManager interface {
 func NewServiceAddInManager() ServiceAddInManager {
 	return &_ServiceAddInManager{
 		addInNameIndex: map[string]int{},
+		addInIdIndex:   map[uint64]int{},
 	}
 }
 
 type _ServiceAddInManager struct {
 	sync.RWMutex
 	addInNameIndex map[string]int
+	addInIdIndex   map[uint64]int
 	addInList      generic.FreeList[*_ServiceAddInStatus]
 	eventStream    generic.EventStream[any]
 }
@@ -77,6 +79,12 @@ func (mgr *_ServiceAddInManager) Install(addInFace iface.FaceAny, name ...string
 		exception.Panicf("%w: addIn %q is already installed", ErrExtension, addInName)
 	}
 
+	id := GenAddInId(addInName)
+
+	if existsIdx, ok := mgr.addInIdIndex[id]; ok {
+		exception.Panicf("%w: addIn %q id index %d conflict with %q", ErrExtension, addInName, id, mgr.addInList.Get(existsIdx).V.name)
+	}
+
 	status := &_ServiceAddInStatus{
 		mgr:          mgr,
 		name:         addInName,
@@ -90,6 +98,7 @@ func (mgr *_ServiceAddInManager) Install(addInFace iface.FaceAny, name ...string
 	status.idx = slot.Index()
 	status.ver = slot.Version()
 	mgr.addInNameIndex[addInName] = slot.Index()
+	mgr.addInIdIndex[id] = slot.Index()
 
 	async.YieldBreakT(status.waitState[AddInState_Loaded])
 
@@ -117,6 +126,14 @@ func (mgr *_ServiceAddInManager) Get(name string) (AddInStatus, bool) {
 		return nil, false
 	}
 
+	return mgr.addInList.Get(statusIdx).V, true
+}
+
+func (mgr *_ServiceAddInManager) GetById(id uint64) (AddInStatus, bool) {
+	statusIdx, ok := mgr.addInIdIndex[id]
+	if !ok {
+		return nil, false
+	}
 	return mgr.addInList.Get(statusIdx).V, true
 }
 
@@ -164,5 +181,6 @@ func (mgr *_ServiceAddInManager) uninstallIfVersion(idx int, ver int64) {
 	status := slot.V
 
 	delete(mgr.addInNameIndex, status.name)
+	delete(mgr.addInIdIndex, status.id)
 	mgr.addInList.Release(idx)
 }

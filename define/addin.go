@@ -35,6 +35,7 @@ func AddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADDIN_IFA
 
 // AddInDefinition 通用插件定义
 type AddInDefinition[ADDIN_IFACE, SETTING any] struct {
+	Id        uint64                                                        // 插件Id
 	Name      string                                                        // 插件名称
 	Install   generic.ActionVar1[extension.AddInProvider, SETTING]          // 向插件管理器安装
 	Uninstall generic.Action1[extension.AddInProvider]                      // 从插件管理器卸载
@@ -54,8 +55,10 @@ func defineAddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADD
 	}
 
 	name := types.FullNameRT(addinRT)
+	id := extension.GenAddInId(name)
 
 	return AddInDefinition[ADDIN_IFACE, SETTING]{
+		Id:   id,
 		Name: name,
 		Install: func(provider extension.AddInProvider, options ...SETTING) {
 			extension.Install[ADDIN_IFACE](provider, creator(options...), name)
@@ -64,10 +67,10 @@ func defineAddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADD
 			extension.Uninstall(provider, name)
 		},
 		Resolve: func(provider extension.AddInProvider) ADDIN_IFACE {
-			return extension.Resolve[ADDIN_IFACE](provider, name)
+			return extension.Resolve[ADDIN_IFACE](provider, id)
 		},
 		Lookup: func(provider extension.AddInProvider) (ADDIN_IFACE, bool) {
-			return extension.Lookup[ADDIN_IFACE](provider, name)
+			return extension.Lookup[ADDIN_IFACE](provider, id)
 		},
 	}
 }

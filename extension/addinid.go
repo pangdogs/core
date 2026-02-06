@@ -20,26 +20,14 @@
 package extension
 
 import (
-	"fmt"
-	"reflect"
+	"hash/fnv"
 
-	"git.golaxy.org/core/utils/iface"
+	"git.golaxy.org/core/utils/types"
 )
 
-// AddInStatus 插件状态信息
-type AddInStatus interface {
-	fmt.Stringer
-
-	// Id 插件Id
-	Id() uint64
-	// Name 插件名称
-	Name() string
-	// InstanceFace 插件实例
-	InstanceFace() iface.FaceAny
-	// Reflected 插件反射值
-	Reflected() reflect.Value
-	// State 状态
-	State() AddInState
-	// Uninstall 卸载
-	Uninstall()
+// GenAddInId 生成插件Id
+func GenAddInId(name string) uint64 {
+	h := fnv.New64a()
+	h.Write(types.String2Bytes(name))
+	return h.Sum64()
 }

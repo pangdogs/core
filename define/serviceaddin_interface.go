@@ -29,6 +29,7 @@ func ServiceAddInInterface[ADDIN_IFACE any]() ServiceAddInInterfaceDefinition[AD
 	addIn := defineAddInInterface[ADDIN_IFACE]()
 
 	return ServiceAddInInterfaceDefinition[ADDIN_IFACE]{
+		Id:      addIn.Id,
 		Name:    addIn.Name,
 		Resolve: func(svcCtx service.Context) ADDIN_IFACE { return addIn.Resolve(svcCtx) },
 		Lookup:  func(svcCtx service.Context) (ADDIN_IFACE, bool) { return addIn.Lookup(svcCtx) },
@@ -37,6 +38,7 @@ func ServiceAddInInterface[ADDIN_IFACE any]() ServiceAddInInterfaceDefinition[AD
 
 // ServiceAddInInterfaceDefinition 服务插件接口定义
 type ServiceAddInInterfaceDefinition[ADDIN_IFACE any] struct {
+	Id      uint64                                                // 插件Id
 	Name    string                                                // 插件名称
 	Resolve generic.Func1[service.Context, ADDIN_IFACE]           // 解析插件
 	Lookup  generic.FuncPair1[service.Context, ADDIN_IFACE, bool] // 查找插件

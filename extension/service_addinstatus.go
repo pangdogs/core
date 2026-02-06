@@ -47,6 +47,7 @@ type iServiceAddInStatus interface {
 
 type _ServiceAddInStatus struct {
 	mgr                    *_ServiceAddInManager
+	id                     uint64
 	name                   string
 	instanceFace           iface.FaceAny
 	reflected              reflect.Value
@@ -58,6 +59,11 @@ type _ServiceAddInStatus struct {
 	doUninstallingOnceMark atomic.Bool
 	stringerOnce           sync.Once
 	stringerCache          string
+}
+
+// Id 插件Id
+func (s *_ServiceAddInStatus) Id() uint64 {
+	return s.id
 }
 
 // Name 插件名称

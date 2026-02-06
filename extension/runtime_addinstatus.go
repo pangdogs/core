@@ -46,6 +46,7 @@ const (
 
 type _RuntimeAddInStatus struct {
 	mgr                   *_RuntimeAddInManager
+	id                    uint64
 	name                  string
 	instanceFace          iface.FaceAny
 	reflected             reflect.Value
@@ -56,6 +57,11 @@ type _RuntimeAddInStatus struct {
 	ver                   int64
 	managedRuntimeHandles [1]event.Handle
 	stringerCache         string
+}
+
+// Id 插件Id
+func (s *_RuntimeAddInStatus) Id() uint64 {
+	return s.id
 }
 
 // Name 插件名称
