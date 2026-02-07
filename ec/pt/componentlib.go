@@ -38,8 +38,8 @@ type ComponentLib interface {
 	Get(prototype string) (ec.ComponentPT, bool)
 	// List 获取所有组件原型
 	List() []ec.ComponentPT
-	// EventStream 组件声明事件流
-	EventStream(ctx context.Context) <-chan ec.ComponentPT
+	// Watch 监听组件声明
+	Watch(ctx context.Context) <-chan ec.ComponentPT
 }
 
 var compLib = NewComponentLib()
@@ -130,8 +130,8 @@ func (lib *_ComponentLib) List() []ec.ComponentPT {
 	return lib.compPTList.ToSlice()
 }
 
-// EventStream 组件声明事件流
-func (lib *_ComponentLib) EventStream(ctx context.Context) <-chan ec.ComponentPT {
+// Watch 监听组件声明
+func (lib *_ComponentLib) Watch(ctx context.Context) <-chan ec.ComponentPT {
 	if ctx == nil {
 		ctx = context.Background()
 	}

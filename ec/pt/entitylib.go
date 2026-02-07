@@ -43,8 +43,8 @@ type EntityLib interface {
 	Get(prototype string) (ec.EntityPT, bool)
 	// List 获取所有实体原型
 	List() []ec.EntityPT
-	// EventStream 组件声明事件流
-	EventStream(ctx context.Context) <-chan ec.EntityPT
+	// Watch 监听实体声明
+	Watch(ctx context.Context) <-chan ec.EntityPT
 }
 
 // NewEntityLib 创建实体原型库
@@ -204,8 +204,8 @@ func (lib *_EntityLib) List() []ec.EntityPT {
 	return lib.entityPTList.ToSlice()
 }
 
-// EventStream 组件声明事件流
-func (lib *_EntityLib) EventStream(ctx context.Context) <-chan ec.EntityPT {
+// Watch 监听实体声明
+func (lib *_EntityLib) Watch(ctx context.Context) <-chan ec.EntityPT {
 	if ctx == nil {
 		ctx = context.Background()
 	}

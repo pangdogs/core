@@ -36,8 +36,8 @@ import (
 type ServiceAddInManager interface {
 	AddInManager
 
-	// EventStream 插件事件流
-	EventStream(ctx context.Context) <-chan any
+	// WatchEvent 监听插件事件
+	WatchEvent(ctx context.Context) <-chan any
 }
 
 // NewServiceAddInManager 创建服务插件管理器
@@ -152,8 +152,8 @@ func (mgr *_ServiceAddInManager) List() []AddInStatus {
 	return statuses
 }
 
-// EventStream 插件事件流
-func (mgr *_ServiceAddInManager) EventStream(ctx context.Context) <-chan any {
+// WatchEvent 监听插件事件
+func (mgr *_ServiceAddInManager) WatchEvent(ctx context.Context) <-chan any {
 	if ctx == nil {
 		ctx = context.Background()
 	}
