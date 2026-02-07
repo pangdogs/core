@@ -24,15 +24,15 @@ import (
 	"git.golaxy.org/core/utils/generic"
 )
 
-type _TaskType int8
+type TaskType int8
 
 const (
-	_TaskType_Call _TaskType = iota
-	_TaskType_Frame
+	TaskType_Call TaskType = iota
+	TaskType_Frame
 )
 
 type _Task struct {
-	typ          _TaskType
+	typ          TaskType
 	fun          generic.FuncVar0[any, async.Ret]
 	action       generic.ActionVar0[any]
 	delegate     generic.DelegateVar0[any, async.Ret]

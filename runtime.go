@@ -75,7 +75,7 @@ type RuntimeBehavior struct {
 	options                                              RuntimeOptions
 	isRunning                                            atomic.Bool
 	frame                                                *_Frame
-	taskQueue                                            _TaskQueueBehavior
+	taskQueue                                            _TaskQueue
 	handleEventEntityManagerAddEntity                    runtime.EventEntityManagerAddEntity
 	handleEventEntityManagerRemoveEntity                 runtime.EventEntityManagerRemoveEntity
 	handleEventEntityManagerEntityAddComponents          runtime.EventEntityManagerEntityAddComponents

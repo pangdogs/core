@@ -88,7 +88,7 @@ func (rt *RuntimeBehavior) scheduleFrameTasks(wg *sync.WaitGroup, curFrames, tot
 
 		select {
 		case <-updateTicker.C:
-			if rt.taskQueue.pushFrame(rt.ctx, rt.frameLoop, done) {
+			if rt.taskQueue.enqueueFrame(rt.ctx, rt.frameLoop, done) {
 				curFrames++
 			}
 		case <-rt.ctx.Done():

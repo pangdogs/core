@@ -19,14 +19,19 @@
 
 package core
 
+// TaskQueueStats 任务队列统计信息
+type TaskQueueStats struct {
+	Enqueued  int64
+	Pending   int64
+	Rejected  int64
+	Completed int64
+}
+
 // RuntimeStats 运行时统计信息
 type RuntimeStats struct {
-	WaitGroupCount          int64 // 等待组任务数量
-	WaitGroupClosed         bool  // 等待组是否已关闭
-	TaskQueueCallEnqueued   int64 // 任务队列调用任务入队数量
-	TaskQueueCallCompleted  int64 // 任务队列调用任务完成数量
-	TaskQueueFrameEnqueued  int64 // 任务队列帧任务入队数量
-	TaskQueueFrameCompleted int64 // 任务队列帧任务完成数量
+	WaitGroupCount  int64             // 等待组任务数量
+	WaitGroupClosed bool              // 等待组是否已关闭
+	TaskQueue       [2]TaskQueueStats // 任务队列统计信息
 }
 
 type iRuntimeStats interface {
@@ -37,11 +42,21 @@ type iRuntimeStats interface {
 // Stats 获取运行时统计信息
 func (rt *RuntimeBehavior) Stats() RuntimeStats {
 	return RuntimeStats{
-		WaitGroupCount:          rt.ctx.WaitGroup().Count(),
-		WaitGroupClosed:         rt.ctx.WaitGroup().Closed(),
-		TaskQueueCallEnqueued:   rt.taskQueue.callEnqueued.Load(),
-		TaskQueueCallCompleted:  rt.taskQueue.callCompleted.Load(),
-		TaskQueueFrameEnqueued:  rt.taskQueue.frameEnqueued.Load(),
-		TaskQueueFrameCompleted: rt.taskQueue.frameCompleted.Load(),
+		WaitGroupCount:  rt.ctx.WaitGroup().Count(),
+		WaitGroupClosed: rt.ctx.WaitGroup().Closed(),
+		TaskQueue: [2]TaskQueueStats{
+			{
+				Enqueued:  rt.taskQueue.stats[0].enqueued.Load(),
+				Pending:   rt.taskQueue.stats[0].pending.Load(),
+				Rejected:  rt.taskQueue.stats[0].rejected.Load(),
+				Completed: rt.taskQueue.stats[0].completed.Load(),
+			},
+			{
+				Enqueued:  rt.taskQueue.stats[1].enqueued.Load(),
+				Pending:   rt.taskQueue.stats[1].pending.Load(),
+				Rejected:  rt.taskQueue.stats[1].rejected.Load(),
+				Completed: rt.taskQueue.stats[1].completed.Load(),
+			},
+		},
 	}
 }

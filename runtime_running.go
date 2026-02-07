@@ -240,11 +240,11 @@ func (rt *RuntimeBehavior) mainLoop() {
 
 func (rt *RuntimeBehavior) runTask(task _Task) {
 	switch task.typ {
-	case _TaskType_Call:
+	case TaskType_Call:
 		rt.emitEventRunningEvent(runtime.RunningEvent_RunCallBegin)
 		task.run(rt.ctx.AutoRecover(), rt.ctx.ReportError())
 		rt.emitEventRunningEvent(runtime.RunningEvent_RunCallEnd)
-	case _TaskType_Frame:
+	case TaskType_Frame:
 		task.run(rt.ctx.AutoRecover(), rt.ctx.ReportError())
 	}
 	rt.taskQueue.complete(task.typ)
