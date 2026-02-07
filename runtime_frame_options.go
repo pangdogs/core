@@ -56,7 +56,7 @@ func (_FrameOption) Enabled(b bool) option.Setting[FrameOptions] {
 func (_FrameOption) TargetFPS(fps float64) option.Setting[FrameOptions] {
 	return func(options *FrameOptions) {
 		if fps <= 0 {
-			exception.Panicf("%w: %w: TargetFPS less equal 0 is invalid", runtime.ErrFrame, exception.ErrArgs)
+			exception.Panicf("%w: %w: TargetFPS must be greater than 0", runtime.ErrFrame, exception.ErrArgs)
 		}
 		options.TargetFPS = math.Round(fps)
 	}
@@ -66,7 +66,7 @@ func (_FrameOption) TargetFPS(fps float64) option.Setting[FrameOptions] {
 func (_FrameOption) TotalFrames(v int64) option.Setting[FrameOptions] {
 	return func(options *FrameOptions) {
 		if v < 0 {
-			exception.Panicf("%w: %w: TotalFrames less 0 is invalid", runtime.ErrFrame, exception.ErrArgs)
+			exception.Panicf("%w: %w: TotalFrames must be greater than or equal to 0", runtime.ErrFrame, exception.ErrArgs)
 		}
 		options.TotalFrames = v
 	}

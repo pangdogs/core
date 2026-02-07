@@ -51,7 +51,7 @@ func (_TaskQueueOption) Unbounded(b bool) option.Setting[TaskQueueOptions] {
 func (_TaskQueueOption) Capacity(cap int) option.Setting[TaskQueueOptions] {
 	return func(options *TaskQueueOptions) {
 		if cap <= 0 {
-			exception.Panicf("%w: %w: Capacity less equal 0 is invalid", ErrRuntime, exception.ErrArgs)
+			exception.Panicf("%w: %w: Capacity must be greater than 0", ErrRuntime, exception.ErrArgs)
 		}
 		options.Capacity = cap
 	}

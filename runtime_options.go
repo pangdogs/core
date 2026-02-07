@@ -97,7 +97,7 @@ func (_RuntimeOption) TaskQueue(settings ...option.Setting[TaskQueueOptions]) op
 func (_RuntimeOption) GCInterval(dur time.Duration) option.Setting[RuntimeOptions] {
 	return func(options *RuntimeOptions) {
 		if dur <= 0 {
-			exception.Panicf("%w: %w: GCInterval less equal 0 is invalid", ErrRuntime, ErrArgs)
+			exception.Panicf("%w: %w: GCInterval must be greater than 0", ErrRuntime, ErrArgs)
 		}
 		options.GCInterval = dur
 	}
