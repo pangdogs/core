@@ -131,10 +131,14 @@ func (mgr *_ServiceAddInManager) Get(name string) (AddInStatus, bool) {
 }
 
 func (mgr *_ServiceAddInManager) GetById(id uint64) (AddInStatus, bool) {
+	mgr.RLock()
+	defer mgr.RUnlock()
+
 	statusIdx, ok := mgr.addInIdIndex[id]
 	if !ok {
 		return nil, false
 	}
+	
 	return mgr.addInList.Get(statusIdx).V, true
 }
 
