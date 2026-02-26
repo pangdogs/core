@@ -71,7 +71,7 @@ func getServiceContext(provider corectx.ConcurrentContextProvider) service.Conte
 	if ctx == nil {
 		return nil
 	}
-	return ctx.getServiceCtx()
+	return ctx.getServiceContext()
 }
 
 func getCaller(provider corectx.ConcurrentContextProvider) async.Caller {

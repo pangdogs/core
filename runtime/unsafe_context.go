@@ -58,9 +58,9 @@ func (u _UnsafeContext) SetCallee(callee async.Callee) {
 	u.setCallee(callee)
 }
 
-// ServiceCtx 获取服务上下文
-func (u _UnsafeContext) ServiceCtx() service.Context {
-	return u.getServiceCtx()
+// ServiceContext 获取服务上下文
+func (u _UnsafeContext) ServiceContext() service.Context {
+	return u.getServiceContext()
 }
 
 // AddInManager 获取插件管理器

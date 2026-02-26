@@ -92,7 +92,7 @@ type iContext interface {
 	emitEventRunningEvent(runningEvent RunningEvent, args ...any)
 	setFrame(frame Frame)
 	setCallee(callee async.Callee)
-	getServiceCtx() service.Context
+	getServiceContext() service.Context
 	getAddInManager() extension.RuntimeAddInManager
 	getScoped() *atomic.Bool
 	gc()
@@ -251,7 +251,7 @@ func (ctx *ContextBehavior) setCallee(callee async.Callee) {
 	ctx.callee = callee
 }
 
-func (ctx *ContextBehavior) getServiceCtx() service.Context {
+func (ctx *ContextBehavior) getServiceContext() service.Context {
 	return ctx.svcCtx
 }
 
