@@ -33,6 +33,14 @@ import (
 type iComponentManager interface {
 	iiComponentManager
 
+	// AddComponent 添加组件，允许组件同名
+	AddComponent(name string, components ...Component) error
+	// RemoveComponent 使用名称删除组件，同名组件均会删除
+	RemoveComponent(name string)
+	// RemoveComponentById 使用组件Id删除组件（需要开启为实体组件分配唯一Id特性）
+	RemoveComponentById(id uid.Id)
+	// RemoveComponentByPT 使用组件原型删除组件，同原型组件均会删除
+	RemoveComponentByPT(prototype string)
 	// GetComponent 使用名称查询组件，组件同名时，返回首个组件，不存在时返回nil
 	GetComponent(name string) Component
 	// GetComponentById 使用组件Id查询组件，不存在时返回nil（需要开启为实体组件分配唯一Id特性）
@@ -57,14 +65,6 @@ type iComponentManager interface {
 	ListComponents() []Component
 	// CountComponents 统计所有组件数量
 	CountComponents() int
-	// AddComponent 添加组件，允许组件同名
-	AddComponent(name string, components ...Component) error
-	// RemoveComponent 使用名称删除组件，同名组件均会删除
-	RemoveComponent(name string)
-	// RemoveComponentById 使用组件Id删除组件（需要开启为实体组件分配唯一Id特性）
-	RemoveComponentById(id uid.Id)
-	// RemoveComponentByPT 使用组件原型删除组件，同原型组件均会删除
-	RemoveComponentByPT(prototype string)
 
 	IEntityComponentManagerEventTab
 }
@@ -75,6 +75,76 @@ type iiComponentManager interface {
 	getComponentList() *generic.FreeList[Component]
 	onComponentEnableChangedIfVersion(idx int, ver int64)
 	onComponentDestroyIfVersion(idx int, ver int64)
+}
+
+// AddComponent 添加组件，允许组件同名
+func (entity *EntityBehavior) AddComponent(name string, components ...Component) error {
+	if len(components) <= 0 {
+		return fmt.Errorf("%w: %w: components is empty", ErrEC, exception.ErrArgs)
+	}
+
+	for i := range components {
+		comp := components[i]
+
+		if comp == nil {
+			return fmt.Errorf("%w: %w: component is nil", ErrEC, exception.ErrArgs)
+		}
+
+		if comp.State() != ComponentState_Birth {
+			return fmt.Errorf("%w: invalid component state %q", ErrEC, comp.State())
+		}
+	}
+
+	for i := range components {
+		entity.addComponent(name, components[i])
+	}
+
+	_EmitEventComponentManagerAddComponents(entity, entity.getInstance(), components)
+
+	return nil
+}
+
+// RemoveComponent 使用名称删除组件，同名组件均会删除
+func (entity *EntityBehavior) RemoveComponent(name string) {
+	at, ok := entity.getComponentSlot(name)
+	if !ok {
+		return
+	}
+
+	entity.componentList.TraversalAt(func(slot *generic.FreeSlot[Component]) bool {
+		comp := slot.V
+
+		if comp.Name() != name {
+			return false
+		}
+
+		comp.Destroy()
+
+		return true
+	}, at.Index())
+}
+
+// RemoveComponentById 使用组件Id删除组件（需要开启为实体组件分配唯一Id特性）
+func (entity *EntityBehavior) RemoveComponentById(id uid.Id) {
+	slot, ok := entity.getComponentSlotById(id)
+	if !ok {
+		return
+	}
+	comp := slot.V
+	comp.Destroy()
+}
+
+// RemoveComponentByPT 使用组件原型删除组件，同原型组件均会删除
+func (entity *EntityBehavior) RemoveComponentByPT(prototype string) {
+	entity.componentList.TraversalEach(func(slot *generic.FreeSlot[Component]) {
+		comp := slot.V
+
+		if comp.Builtin().PT.Prototype() != prototype {
+			return
+		}
+
+		comp.Destroy()
+	})
 }
 
 // GetComponent 使用名称查询组件，组件同名时，返回首个组件，不存在时返回nil
@@ -244,76 +314,6 @@ func (entity *EntityBehavior) ListComponents() []Component {
 // CountComponents 统计所有组件数量
 func (entity *EntityBehavior) CountComponents() int {
 	return entity.componentList.Len() - entity.componentList.OrphanCount()
-}
-
-// AddComponent 添加组件，允许组件同名
-func (entity *EntityBehavior) AddComponent(name string, components ...Component) error {
-	if len(components) <= 0 {
-		return fmt.Errorf("%w: %w: components is empty", ErrEC, exception.ErrArgs)
-	}
-
-	for i := range components {
-		comp := components[i]
-
-		if comp == nil {
-			return fmt.Errorf("%w: %w: component is nil", ErrEC, exception.ErrArgs)
-		}
-
-		if comp.State() != ComponentState_Birth {
-			return fmt.Errorf("%w: invalid component state %q", ErrEC, comp.State())
-		}
-	}
-
-	for i := range components {
-		entity.addComponent(name, components[i])
-	}
-
-	_EmitEventComponentManagerAddComponents(entity, entity.getInstance(), components)
-
-	return nil
-}
-
-// RemoveComponent 使用名称删除组件，同名组件均会删除
-func (entity *EntityBehavior) RemoveComponent(name string) {
-	at, ok := entity.getComponentSlot(name)
-	if !ok {
-		return
-	}
-
-	entity.componentList.TraversalAt(func(slot *generic.FreeSlot[Component]) bool {
-		comp := slot.V
-
-		if comp.Name() != name {
-			return false
-		}
-
-		comp.Destroy()
-
-		return true
-	}, at.Index())
-}
-
-// RemoveComponentById 使用组件Id删除组件（需要开启为实体组件分配唯一Id特性）
-func (entity *EntityBehavior) RemoveComponentById(id uid.Id) {
-	slot, ok := entity.getComponentSlotById(id)
-	if !ok {
-		return
-	}
-	comp := slot.V
-	comp.Destroy()
-}
-
-// RemoveComponentByPT 使用组件原型删除组件，同原型组件均会删除
-func (entity *EntityBehavior) RemoveComponentByPT(prototype string) {
-	entity.componentList.TraversalEach(func(slot *generic.FreeSlot[Component]) {
-		comp := slot.V
-
-		if comp.Builtin().PT.Prototype() != prototype {
-			return
-		}
-
-		comp.Destroy()
-	})
 }
 
 // EventComponentManagerAddComponents 事件：实体的组件管理器添加组件
