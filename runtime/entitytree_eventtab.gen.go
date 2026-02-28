@@ -33,34 +33,34 @@ type IEntityTreeEventTab interface {
 
 var (
 	_entityTreeEventTabId = event.DeclareEventTabIdT[entityTreeEventTab]()
-	EventEntityTreeAddNodeId = _entityTreeEventTabId + 0
-	EventEntityTreeRemoveNodeId = _entityTreeEventTabId + 1
-	EventEntityTreeMoveNodeId = _entityTreeEventTabId + 2
+	EventEntityTreeAddNodeId = event.DeclareEventIdT[entityTreeEventTab](0)
+	EventEntityTreeRemoveNodeId = event.DeclareEventIdT[entityTreeEventTab](1)
+	EventEntityTreeMoveNodeId = event.DeclareEventIdT[entityTreeEventTab](2)
 )
 
 type entityTreeEventTab [3]event.Event
 
 func (eventTab *entityTreeEventTab) SetPanicHandling(autoRecover bool, reportError chan error) {
-	for i := range *eventTab {
-		(*eventTab)[i].SetPanicHandling(autoRecover, reportError)
+	for i := range eventTab {
+		eventTab[i].SetPanicHandling(autoRecover, reportError)
 	}
 }
 
 func (eventTab *entityTreeEventTab) SetRecursion(recursion event.EventRecursion) {
-	(*eventTab)[0].SetRecursion(event.EventRecursion_Allow)
-	(*eventTab)[1].SetRecursion(event.EventRecursion_Allow)
-	(*eventTab)[2].SetRecursion(event.EventRecursion_Allow)
+	eventTab[0].SetRecursion(event.EventRecursion_Allow)
+	eventTab[1].SetRecursion(event.EventRecursion_Allow)
+	eventTab[2].SetRecursion(event.EventRecursion_Allow)
 }
 
 func (eventTab *entityTreeEventTab) SetEnabled(b bool) {
-	for i := range *eventTab {
-		(*eventTab)[i].SetEnabled(b)
+	for i := range eventTab {
+		eventTab[i].SetEnabled(b)
 	}
 }
 
 func (eventTab *entityTreeEventTab) UnbindAll() {
-	for i := range *eventTab {
-		(*eventTab)[i].UnbindAll()
+	for i := range eventTab {
+		eventTab[i].UnbindAll()
 	}
 }
 
@@ -69,35 +69,32 @@ func (eventTab *entityTreeEventTab) Ctrl() event.IEventCtrl {
 }
 
 func (eventTab *entityTreeEventTab) Event(id uint64) event.IEvent {
-	if _entityTreeEventTabId != id & 0xFFFFFFFF00000000 {
-		return nil
-	}
-	pos := id & 0xFFFFFFFF
-	if pos >= uint64(len(*eventTab)) {
+	eventTabId, pos := event.SplitEventId(id)
+	if _entityTreeEventTabId != eventTabId || pos >= len(eventTab) {
 		return nil
 	}
 	switch pos {
 	case 0:
-		(*eventTab)[0].SetRecursion(event.EventRecursion_Allow)
+		eventTab[0].SetRecursion(event.EventRecursion_Allow)
 	case 1:
-		(*eventTab)[1].SetRecursion(event.EventRecursion_Allow)
+		eventTab[1].SetRecursion(event.EventRecursion_Allow)
 	case 2:
-		(*eventTab)[2].SetRecursion(event.EventRecursion_Allow)
+		eventTab[2].SetRecursion(event.EventRecursion_Allow)
 	}
-	return &(*eventTab)[pos]
+	return &eventTab[pos]
 }
 
 func (eventTab *entityTreeEventTab) EventEntityTreeAddNode() event.IEvent {
-	(*eventTab).SetRecursion(event.EventRecursion_Allow)
-	return &(*eventTab)[0]
+	eventTab.SetRecursion(event.EventRecursion_Allow)
+	return &eventTab[0]
 }
 
 func (eventTab *entityTreeEventTab) EventEntityTreeRemoveNode() event.IEvent {
-	(*eventTab).SetRecursion(event.EventRecursion_Allow)
-	return &(*eventTab)[1]
+	eventTab.SetRecursion(event.EventRecursion_Allow)
+	return &eventTab[1]
 }
 
 func (eventTab *entityTreeEventTab) EventEntityTreeMoveNode() event.IEvent {
-	(*eventTab).SetRecursion(event.EventRecursion_Allow)
-	return &(*eventTab)[2]
+	eventTab.SetRecursion(event.EventRecursion_Allow)
+	return &eventTab[2]
 }

@@ -20,7 +20,9 @@
 package event
 
 import (
+	"fmt"
 	"hash/fnv"
+	"math"
 	"reflect"
 	"sync"
 
@@ -47,9 +49,9 @@ func GenEventTabId(eventTab any) uint64 {
 		exception.Panicf("%w: unsupported type", ErrEvent)
 	}
 
-	hash := fnv.New32a()
-	hash.Write([]byte(types.FullNameRT(eventTabRT)))
-	return uint64(hash.Sum32()) << 32
+	hash := fnv.New64a()
+	hash.Write(types.String2Bytes(types.FullNameRT(eventTabRT)))
+	return hash.Sum64() << 16
 }
 
 // GenEventTabIdT 生成事件表Id
@@ -58,12 +60,15 @@ func GenEventTabIdT[T any]() uint64 {
 }
 
 // GenEventId 生成事件Id
-func GenEventId(eventTab any, pos int32) uint64 {
+func GenEventId(eventTab any, pos int) uint64 {
+	if pos < 0 || pos > math.MaxUint16 {
+		exception.Panicf("%w: %w: pos out of bounds [0,%d]", ErrEvent, exception.ErrArgs, math.MaxUint16)
+	}
 	return GenEventTabId(eventTab) + uint64(pos)
 }
 
 // GenEventIdT 生成事件Id
-func GenEventIdT[T any](pos int32) uint64 {
+func GenEventIdT[T any](pos int) uint64 {
 	return GenEventId(types.ZeroT[T](), pos)
 }
 
@@ -75,9 +80,22 @@ var (
 // DeclareEventTabId 声明事件表Id
 func DeclareEventTabId(eventTab any) uint64 {
 	id := GenEventTabId(eventTab)
-	if name, loaded := declareEventTabs.LoadOrStore(id, types.FullNameRT(reflect.TypeOf(eventTab).Elem())); loaded {
-		exception.Panicf("%w: event_tab(%d) has already been declared by %q", ErrEvent, id, name)
+
+	eventTabRT, ok := eventTab.(reflect.Type)
+	if !ok {
+		eventTabRT = reflect.ValueOf(eventTab).Type()
 	}
+
+	for eventTabRT.Kind() == reflect.Pointer {
+		eventTabRT = eventTabRT.Elem()
+	}
+
+	info := types.FullNameRT(eventTabRT)
+
+	if exists, loaded := declareEventTabs.LoadOrStore(id, info); loaded {
+		exception.Panicf("%w: event tab %q id %d conflict with %q, rename required", ErrEvent, info, id, exists)
+	}
+
 	return id
 }
 
@@ -87,15 +105,33 @@ func DeclareEventTabIdT[T any]() uint64 {
 }
 
 // DeclareEventId 声明事件Id
-func DeclareEventId(eventTab any, pos int32) uint64 {
-	id := GenEventTabId(eventTab) + uint64(pos)
-	if name, loaded := declareEvents.LoadOrStore(id, types.FullNameRT(reflect.TypeOf(eventTab).Elem())); loaded {
-		exception.Panicf("%w: event(%d) has already been declared by %q", ErrEvent, id, name)
+func DeclareEventId(eventTab any, pos int) uint64 {
+	id := GenEventId(eventTab, pos)
+
+	eventTabRT, ok := eventTab.(reflect.Type)
+	if !ok {
+		eventTabRT = reflect.ValueOf(eventTab).Type()
 	}
+
+	for eventTabRT.Kind() == reflect.Pointer {
+		eventTabRT = eventTabRT.Elem()
+	}
+
+	info := fmt.Sprintf("%s[%d]", types.FullNameRT(eventTabRT), pos)
+
+	if exists, loaded := declareEvents.LoadOrStore(id, info); loaded {
+		exception.Panicf("%w: event tab %q id %d conflict with %q, rename required", ErrEvent, info, id, exists)
+	}
+
 	return id
 }
 
 // DeclareEventIdT 声明事件Id
-func DeclareEventIdT[T any](pos int32) uint64 {
+func DeclareEventIdT[T any](pos int) uint64 {
 	return DeclareEventId(types.ZeroT[T](), pos)
+}
+
+// SplitEventId 分解事件Id
+func SplitEventId(eventId uint64) (eventTabId uint64, pos int) {
+	return eventId & 0xFFFFFFFFFFFF0000, int(eventId & 0xFFFF)
 }

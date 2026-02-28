@@ -31,30 +31,30 @@ type IEntityEventTab interface {
 
 var (
 	_entityEventTabId = event.DeclareEventTabIdT[entityEventTab]()
-	EventEntityDestroyId = _entityEventTabId + 0
+	EventEntityDestroyId = event.DeclareEventIdT[entityEventTab](0)
 )
 
 type entityEventTab [1]event.Event
 
 func (eventTab *entityEventTab) SetPanicHandling(autoRecover bool, reportError chan error) {
-	for i := range *eventTab {
-		(*eventTab)[i].SetPanicHandling(autoRecover, reportError)
+	for i := range eventTab {
+		eventTab[i].SetPanicHandling(autoRecover, reportError)
 	}
 }
 
 func (eventTab *entityEventTab) SetRecursion(recursion event.EventRecursion) {
-	(*eventTab)[0].SetRecursion(event.EventRecursion_Allow)
+	eventTab[0].SetRecursion(event.EventRecursion_Allow)
 }
 
 func (eventTab *entityEventTab) SetEnabled(b bool) {
-	for i := range *eventTab {
-		(*eventTab)[i].SetEnabled(b)
+	for i := range eventTab {
+		eventTab[i].SetEnabled(b)
 	}
 }
 
 func (eventTab *entityEventTab) UnbindAll() {
-	for i := range *eventTab {
-		(*eventTab)[i].UnbindAll()
+	for i := range eventTab {
+		eventTab[i].UnbindAll()
 	}
 }
 
@@ -63,21 +63,18 @@ func (eventTab *entityEventTab) Ctrl() event.IEventCtrl {
 }
 
 func (eventTab *entityEventTab) Event(id uint64) event.IEvent {
-	if _entityEventTabId != id & 0xFFFFFFFF00000000 {
-		return nil
-	}
-	pos := id & 0xFFFFFFFF
-	if pos >= uint64(len(*eventTab)) {
+	eventTabId, pos := event.SplitEventId(id)
+	if _entityEventTabId != eventTabId || pos >= len(eventTab) {
 		return nil
 	}
 	switch pos {
 	case 0:
-		(*eventTab)[0].SetRecursion(event.EventRecursion_Allow)
+		eventTab[0].SetRecursion(event.EventRecursion_Allow)
 	}
-	return &(*eventTab)[pos]
+	return &eventTab[pos]
 }
 
 func (eventTab *entityEventTab) EventEntityDestroy() event.IEvent {
-	(*eventTab).SetRecursion(event.EventRecursion_Allow)
-	return &(*eventTab)[0]
+	eventTab.SetRecursion(event.EventRecursion_Allow)
+	return &eventTab[0]
 }

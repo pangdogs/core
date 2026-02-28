@@ -33,18 +33,16 @@ import (
 type iComponentManager interface {
 	iiComponentManager
 
-	// GetComponent 使用名称查询组件，组件同名时，返回首个组件
+	// GetComponent 使用名称查询组件，组件同名时，返回首个组件，不存在时返回nil
 	GetComponent(name string) Component
-	// GetComponentById 使用组件Id查询组件（需要开启为实体组件分配唯一Id特性）
+	// GetComponentById 使用组件Id查询组件，不存在时返回nil（需要开启为实体组件分配唯一Id特性）
 	GetComponentById(id uid.Id) Component
-	// GetComponentByPT 使用组件原型查询组件
+	// GetComponentByPT 使用组件原型查询组件，组件同原型时，返回首个组件，不存在时返回nil
 	GetComponentByPT(prototype string) Component
-	// ContainsComponent 组件是否存在
-	ContainsComponent(name string) bool
-	// ContainsComponentById 使用组件Id检测组件是否存在（需要开启为实体组件分配唯一Id特性）
-	ContainsComponentById(id uid.Id) bool
-	// ContainsComponentByPT 使用组件原型查询组件
-	ContainsComponentByPT(prototype string) bool
+	// GetComponents 使用名称查询同名组件
+	GetComponents(name string) []Component
+	// GetComponentsByPT 使用组件原型查询同原型组件
+	GetComponentsByPT(prototype string) []Component
 	// RangeComponents 遍历所有组件
 	RangeComponents(fun generic.Func1[Component, bool])
 	// EachComponents 遍历每个组件
@@ -65,6 +63,8 @@ type iComponentManager interface {
 	RemoveComponent(name string)
 	// RemoveComponentById 使用组件Id删除组件（需要开启为实体组件分配唯一Id特性）
 	RemoveComponentById(id uid.Id)
+	// RemoveComponentByPT 使用组件原型删除组件，同原型组件均会删除
+	RemoveComponentByPT(prototype string)
 
 	IEntityComponentManagerEventTab
 }
@@ -77,7 +77,7 @@ type iiComponentManager interface {
 	onComponentDestroyIfVersion(idx int, ver int64)
 }
 
-// GetComponent 使用名称查询组件，组件同名时，返回首个组件
+// GetComponent 使用名称查询组件，组件同名时，返回首个组件，不存在时返回nil
 func (entity *EntityBehavior) GetComponent(name string) Component {
 	if slot, ok := entity.getComponentSlot(name); ok {
 		return entity.touchComponent(slot.V)
@@ -85,7 +85,7 @@ func (entity *EntityBehavior) GetComponent(name string) Component {
 	return nil
 }
 
-// GetComponentById 使用组件Id查询组件（需要开启为实体组件分配唯一Id特性）
+// GetComponentById 使用组件Id查询组件，不存在时返回nil（需要开启为实体组件分配唯一Id特性）
 func (entity *EntityBehavior) GetComponentById(id uid.Id) Component {
 	if slot, ok := entity.getComponentSlotById(id); ok {
 		return entity.touchComponent(slot.V)
@@ -93,7 +93,7 @@ func (entity *EntityBehavior) GetComponentById(id uid.Id) Component {
 	return nil
 }
 
-// GetComponentByPT 使用组件原型查询组件
+// GetComponentByPT 使用组件原型查询组件，组件同原型时，返回首个组件，不存在时返回nil
 func (entity *EntityBehavior) GetComponentByPT(prototype string) Component {
 	if slot, ok := entity.getComponentSlotByPT(prototype); ok {
 		return entity.touchComponent(slot.V)
@@ -101,22 +101,55 @@ func (entity *EntityBehavior) GetComponentByPT(prototype string) Component {
 	return nil
 }
 
-// ContainsComponent 组件是否存在
-func (entity *EntityBehavior) ContainsComponent(name string) bool {
-	_, ok := entity.getComponentSlot(name)
-	return ok
+// GetComponents 使用名称查询同名组件
+func (entity *EntityBehavior) GetComponents(name string) []Component {
+	at, ok := entity.getComponentSlot(name)
+	if !ok {
+		return nil
+	}
+
+	var components []Component
+
+	entity.componentList.TraversalAt(func(slot *generic.FreeSlot[Component]) bool {
+		comp := slot.V
+
+		if comp.Name() != name {
+			return false
+		}
+
+		comp = entity.touchComponent(comp)
+		if comp == nil {
+			return true
+		}
+
+		components = append(components, comp)
+
+		return true
+	}, at.Index())
+
+	return components
 }
 
-// ContainsComponentById 使用组件Id检测组件是否存在（需要开启为实体组件分配唯一Id特性）
-func (entity *EntityBehavior) ContainsComponentById(id uid.Id) bool {
-	_, ok := entity.getComponentSlotById(id)
-	return ok
-}
+// GetComponentsByPT 使用组件原型查询同原型组件
+func (entity *EntityBehavior) GetComponentsByPT(prototype string) []Component {
+	var components []Component
 
-// ContainsComponentByPT 使用组件原型查询组件
-func (entity *EntityBehavior) ContainsComponentByPT(prototype string) bool {
-	_, ok := entity.getComponentSlotByPT(prototype)
-	return ok
+	entity.componentList.TraversalEach(func(slot *generic.FreeSlot[Component]) {
+		comp := slot.V
+
+		if comp.Builtin().PT.Prototype() != prototype {
+			return
+		}
+
+		comp = entity.touchComponent(comp)
+		if comp == nil {
+			return
+		}
+
+		components = append(components, comp)
+	})
+
+	return components
 }
 
 // RangeComponents 遍历所有组件
@@ -270,6 +303,19 @@ func (entity *EntityBehavior) RemoveComponentById(id uid.Id) {
 	comp.Destroy()
 }
 
+// RemoveComponentByPT 使用组件原型删除组件，同原型组件均会删除
+func (entity *EntityBehavior) RemoveComponentByPT(prototype string) {
+	entity.componentList.TraversalEach(func(slot *generic.FreeSlot[Component]) {
+		comp := slot.V
+
+		if comp.Builtin().PT.Prototype() != prototype {
+			return
+		}
+
+		comp.Destroy()
+	})
+}
+
 // EventComponentManagerAddComponents 事件：实体的组件管理器添加组件
 func (entity *EntityBehavior) EventComponentManagerAddComponents() event.IEvent {
 	return entity.entityComponentManagerEventTab.EventComponentManagerAddComponents()
@@ -366,6 +412,10 @@ func (entity *EntityBehavior) getComponentSlot(name string) (*generic.FreeSlot[C
 }
 
 func (entity *EntityBehavior) getComponentSlotById(id uid.Id) (*generic.FreeSlot[Component], bool) {
+	if !entity.options.ComponentUniqueID {
+		return nil, false
+	}
+
 	var compSlot *generic.FreeSlot[Component]
 
 	entity.componentList.Traversal(func(slot *generic.FreeSlot[Component]) bool {

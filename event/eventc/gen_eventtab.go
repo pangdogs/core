@@ -128,10 +128,10 @@ type i%[1]s interface {
 				case "receive_once":
 					eventRecursion = eventPrefix + "EventRecursion_ReceiveOnce"
 				}
-				getEventsSetRecursionCode[i] = fmt.Sprintf("\n\t(*eventTab).SetRecursion(%s)", eventRecursion)
+				getEventsSetRecursionCode[i] = fmt.Sprintf("\n\teventTab.SetRecursion(%s)", eventRecursion)
 				caseEventsRecursion[i] = eventRecursion
 			}
-			allEventsSetRecursionCode += fmt.Sprintf("\n\t(*eventTab)[%d].SetRecursion(%s)", i, eventRecursion)
+			allEventsSetRecursionCode += fmt.Sprintf("\n\teventTab[%d].SetRecursion(%s)", i, eventRecursion)
 		}
 
 		if len(getEventsSetRecursionCode) > 0 {
@@ -142,7 +142,7 @@ type i%[1]s interface {
 				if !ok {
 					continue
 				}
-				caseEventsSetRecursionCode += fmt.Sprintf("\n\tcase %[1]d:\n\t\t(*eventTab)[%[1]d].SetRecursion(%s)", i, eventRecursion)
+				caseEventsSetRecursionCode += fmt.Sprintf("\n\tcase %[1]d:\n\t\teventTab[%[1]d].SetRecursion(%s)", i, eventRecursion)
 			}
 
 			caseEventsSetRecursionCode += "\n\t}"
@@ -156,8 +156,8 @@ var (`)
 `, tabName, eventPrefix)
 
 			for i, event := range eventDeclTab.Events {
-				fmt.Fprintf(code, `	%[2]sId = _%[1]sId + %[3]d
-`, tabName, event.Name, i)
+				fmt.Fprintf(code, `	%[3]sId = %[2]sDeclareEventIdT[%[1]s](%[4]d)
+`, tabName, eventPrefix, event.Name, i)
 			}
 
 			fmt.Fprintln(code, ")")
@@ -167,8 +167,8 @@ var (`)
 type %[1]s [%[2]d]%[4]sEvent
 
 func (eventTab *%[1]s) SetPanicHandling(autoRecover bool, reportError chan error) {
-	for i := range *eventTab {
-		(*eventTab)[i].SetPanicHandling(autoRecover, reportError)
+	for i := range eventTab {
+		eventTab[i].SetPanicHandling(autoRecover, reportError)
 	}
 }
 
@@ -176,14 +176,14 @@ func (eventTab *%[1]s) SetRecursion(recursion %[4]sEventRecursion) {%[3]s
 }
 
 func (eventTab *%[1]s) SetEnabled(b bool) {
-	for i := range *eventTab {
-		(*eventTab)[i].SetEnabled(b)
+	for i := range eventTab {
+		eventTab[i].SetEnabled(b)
 	}
 }
 
 func (eventTab *%[1]s) UnbindAll() {
-	for i := range *eventTab {
-		(*eventTab)[i].UnbindAll()
+	for i := range eventTab {
+		eventTab[i].UnbindAll()
 	}
 }
 
@@ -192,21 +192,18 @@ func (eventTab *%[1]s) Ctrl() %[4]sIEventCtrl {
 }
 
 func (eventTab *%[1]s) Event(id uint64) %[4]sIEvent {
-	if _%[1]sId != id & 0xFFFFFFFF00000000 {
-		return nil
-	}
-	pos := id & 0xFFFFFFFF
-	if pos >= uint64(len(*eventTab)) {
+	eventTabId, pos := %[4]sSplitEventId(id)
+	if _%[1]sId != eventTabId || pos >= len(eventTab) {
 		return nil
 	}%[5]s
-	return &(*eventTab)[pos]
+	return &eventTab[pos]
 }
 `, tabName, len(eventDeclTab.Events), allEventsSetRecursionCode, eventPrefix, caseEventsSetRecursionCode)
 
 		for i, event := range eventDeclTab.Events {
 			fmt.Fprintf(code, `
 func (eventTab *%[1]s) %[2]s() %[4]sIEvent {%[5]s
-	return &(*eventTab)[%[3]d]
+	return &eventTab[%[3]d]
 }
 `, tabName, event.Name, i, eventPrefix, getEventsSetRecursionCode[i])
 		}

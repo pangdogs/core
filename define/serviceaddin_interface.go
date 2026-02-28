@@ -22,16 +22,17 @@ package define
 import (
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/generic"
+	"github.com/elliotchance/pie/v2"
 )
 
 // ServiceAddInInterface 定义服务插件接口，支持安装至服务上下文，通常用于为同类插件的不同实现提供统一的接口
-func ServiceAddInInterface[ADDIN_IFACE any]() ServiceAddInInterfaceDefinition[ADDIN_IFACE] {
-	addIn := defineAddInInterface[ADDIN_IFACE]()
+func ServiceAddInInterface[ADDIN_IFACE any](name ...string) ServiceAddInInterfaceDefinition[ADDIN_IFACE] {
+	addIn := defineAddInInterface[ADDIN_IFACE](pie.First(name))
 
 	return ServiceAddInInterfaceDefinition[ADDIN_IFACE]{
 		Id:      addIn.Id,
 		Name:    addIn.Name,
-		Resolve: func(svcCtx service.Context) ADDIN_IFACE { return addIn.Resolve(svcCtx) },
+		Require: func(svcCtx service.Context) ADDIN_IFACE { return addIn.Require(svcCtx) },
 		Lookup:  func(svcCtx service.Context) (ADDIN_IFACE, bool) { return addIn.Lookup(svcCtx) },
 	}
 }
@@ -40,6 +41,6 @@ func ServiceAddInInterface[ADDIN_IFACE any]() ServiceAddInInterfaceDefinition[AD
 type ServiceAddInInterfaceDefinition[ADDIN_IFACE any] struct {
 	Id      uint64                                                // 插件Id
 	Name    string                                                // 插件名称
-	Resolve generic.Func1[service.Context, ADDIN_IFACE]           // 解析插件
+	Require generic.Func1[service.Context, ADDIN_IFACE]           // 依赖插件
 	Lookup  generic.FuncPair1[service.Context, ADDIN_IFACE, bool] // 查找插件
 }

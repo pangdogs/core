@@ -36,7 +36,7 @@ func BindEventRuntimeInstallAddIn(auto iAutoEventRuntimeInstallAddIn, subscriber
 	return event.Bind[EventRuntimeInstallAddIn](auto.EventRuntimeInstallAddIn(), subscriber, priority...)
 }
 
-func _EmitEventRuntimeInstallAddIn(auto iAutoEventRuntimeInstallAddIn, status AddInStatus) {
+func _EmitEventRuntimeInstallAddIn(auto iAutoEventRuntimeInstallAddIn, status RuntimeAddInStatus) {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
@@ -46,7 +46,7 @@ func _EmitEventRuntimeInstallAddIn(auto iAutoEventRuntimeInstallAddIn, status Ad
 	})
 }
 
-func _EmitEventRuntimeInstallAddInWithInterrupt(auto iAutoEventRuntimeInstallAddIn, interrupt func(status AddInStatus) bool, status AddInStatus) {
+func _EmitEventRuntimeInstallAddInWithInterrupt(auto iAutoEventRuntimeInstallAddIn, interrupt func(status RuntimeAddInStatus) bool, status RuntimeAddInStatus) {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
@@ -61,13 +61,13 @@ func _EmitEventRuntimeInstallAddInWithInterrupt(auto iAutoEventRuntimeInstallAdd
 	})
 }
 
-func HandleEventRuntimeInstallAddIn(fun func(status AddInStatus)) EventRuntimeInstallAddInHandler {
+func HandleEventRuntimeInstallAddIn(fun func(status RuntimeAddInStatus)) EventRuntimeInstallAddInHandler {
 	return EventRuntimeInstallAddInHandler(fun)
 }
 
-type EventRuntimeInstallAddInHandler func(status AddInStatus)
+type EventRuntimeInstallAddInHandler func(status RuntimeAddInStatus)
 
-func (h EventRuntimeInstallAddInHandler) OnRuntimeInstallAddIn(status AddInStatus) {
+func (h EventRuntimeInstallAddInHandler) OnRuntimeInstallAddIn(status RuntimeAddInStatus) {
 	h(status)
 }
 
@@ -82,7 +82,7 @@ func BindEventRuntimeUninstallAddIn(auto iAutoEventRuntimeUninstallAddIn, subscr
 	return event.Bind[EventRuntimeUninstallAddIn](auto.EventRuntimeUninstallAddIn(), subscriber, priority...)
 }
 
-func _EmitEventRuntimeUninstallAddIn(auto iAutoEventRuntimeUninstallAddIn, status AddInStatus) {
+func _EmitEventRuntimeUninstallAddIn(auto iAutoEventRuntimeUninstallAddIn, status RuntimeAddInStatus) {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
@@ -92,7 +92,7 @@ func _EmitEventRuntimeUninstallAddIn(auto iAutoEventRuntimeUninstallAddIn, statu
 	})
 }
 
-func _EmitEventRuntimeUninstallAddInWithInterrupt(auto iAutoEventRuntimeUninstallAddIn, interrupt func(status AddInStatus) bool, status AddInStatus) {
+func _EmitEventRuntimeUninstallAddInWithInterrupt(auto iAutoEventRuntimeUninstallAddIn, interrupt func(status RuntimeAddInStatus) bool, status RuntimeAddInStatus) {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
@@ -107,13 +107,13 @@ func _EmitEventRuntimeUninstallAddInWithInterrupt(auto iAutoEventRuntimeUninstal
 	})
 }
 
-func HandleEventRuntimeUninstallAddIn(fun func(status AddInStatus)) EventRuntimeUninstallAddInHandler {
+func HandleEventRuntimeUninstallAddIn(fun func(status RuntimeAddInStatus)) EventRuntimeUninstallAddInHandler {
 	return EventRuntimeUninstallAddInHandler(fun)
 }
 
-type EventRuntimeUninstallAddInHandler func(status AddInStatus)
+type EventRuntimeUninstallAddInHandler func(status RuntimeAddInStatus)
 
-func (h EventRuntimeUninstallAddInHandler) OnRuntimeUninstallAddIn(status AddInStatus) {
+func (h EventRuntimeUninstallAddInHandler) OnRuntimeUninstallAddIn(status RuntimeAddInStatus) {
 	h(status)
 }
 
@@ -128,7 +128,7 @@ func BindEventRuntimeAddInStateChanged(auto iAutoEventRuntimeAddInStateChanged, 
 	return event.Bind[EventRuntimeAddInStateChanged](auto.EventRuntimeAddInStateChanged(), subscriber, priority...)
 }
 
-func _EmitEventRuntimeAddInStateChanged(auto iAutoEventRuntimeAddInStateChanged, status AddInStatus, state AddInState) {
+func _EmitEventRuntimeAddInStateChanged(auto iAutoEventRuntimeAddInStateChanged, status RuntimeAddInStatus, state AddInState) {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
@@ -138,7 +138,7 @@ func _EmitEventRuntimeAddInStateChanged(auto iAutoEventRuntimeAddInStateChanged,
 	})
 }
 
-func _EmitEventRuntimeAddInStateChangedWithInterrupt(auto iAutoEventRuntimeAddInStateChanged, interrupt func(status AddInStatus, state AddInState) bool, status AddInStatus, state AddInState) {
+func _EmitEventRuntimeAddInStateChangedWithInterrupt(auto iAutoEventRuntimeAddInStateChanged, interrupt func(status RuntimeAddInStatus, state AddInState) bool, status RuntimeAddInStatus, state AddInState) {
 	if auto == nil {
 		event.Panicf("%w: %w: auto is nil", event.ErrEvent, event.ErrArgs)
 	}
@@ -153,12 +153,12 @@ func _EmitEventRuntimeAddInStateChangedWithInterrupt(auto iAutoEventRuntimeAddIn
 	})
 }
 
-func HandleEventRuntimeAddInStateChanged(fun func(status AddInStatus, state AddInState)) EventRuntimeAddInStateChangedHandler {
+func HandleEventRuntimeAddInStateChanged(fun func(status RuntimeAddInStatus, state AddInState)) EventRuntimeAddInStateChangedHandler {
 	return EventRuntimeAddInStateChangedHandler(fun)
 }
 
-type EventRuntimeAddInStateChangedHandler func(status AddInStatus, state AddInState)
+type EventRuntimeAddInStateChangedHandler func(status RuntimeAddInStatus, state AddInState)
 
-func (h EventRuntimeAddInStateChangedHandler) OnRuntimeAddInStateChanged(status AddInStatus, state AddInState) {
+func (h EventRuntimeAddInStateChangedHandler) OnRuntimeAddInStateChanged(status RuntimeAddInStatus, state AddInState) {
 	h(status, state)
 }

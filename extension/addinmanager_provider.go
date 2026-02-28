@@ -31,38 +31,6 @@ type AddInProvider interface {
 	AddInManager() AddInManager
 }
 
-// Resolve 解析插件
-func Resolve[T any](provider AddInProvider, id uint64) T {
-	if provider == nil {
-		exception.Panicf("%w: %w: provider is nil", ErrExtension, exception.ErrArgs)
-	}
-
-	status, ok := provider.AddInManager().GetById(id)
-	if !ok {
-		exception.Panicf("%w: addIn id %d not installed", ErrExtension, id)
-	}
-
-	if status.State() != AddInState_Running {
-		exception.Panicf("%w: addIn id %d not actived", ErrExtension, id)
-	}
-
-	return iface.Cache2Iface[T](status.InstanceFace().Cache)
-}
-
-// Lookup 查找插件
-func Lookup[T any](provider AddInProvider, id uint64) (T, bool) {
-	if provider == nil {
-		return types.ZeroT[T](), false
-	}
-
-	status, ok := provider.AddInManager().GetById(id)
-	if !ok {
-		return types.ZeroT[T](), false
-	}
-
-	return iface.Cache2Iface[T](status.InstanceFace().Cache), true
-}
-
 // Install 安装插件
 func Install[T any](provider AddInProvider, addIn T, name ...string) AddInStatus {
 	if provider == nil {
@@ -77,4 +45,36 @@ func Uninstall(provider AddInProvider, name string) {
 		exception.Panicf("%w: %w: provider is nil", ErrExtension, exception.ErrArgs)
 	}
 	provider.AddInManager().Uninstall(name)
+}
+
+// Require 依赖插件
+func Require[T any](provider AddInProvider, id uint64) T {
+	if provider == nil {
+		exception.Panicf("%w: %w: provider is nil", ErrExtension, exception.ErrArgs)
+	}
+
+	status, ok := provider.AddInManager().GetById(id)
+	if !ok {
+		exception.Panicf("%w: add-in id %d not installed", ErrExtension, id)
+	}
+
+	if status.State() != AddInState_Running {
+		exception.Panicf("%w: add-in id %d not actived", ErrExtension, id)
+	}
+
+	return iface.Cache2Iface[T](status.InstanceFace().Cache)
+}
+
+// Lookup 查找插件
+func Lookup[T any](provider AddInProvider, id uint64) (T, bool) {
+	if provider == nil {
+		exception.Panicf("%w: %w: provider is nil", ErrExtension, exception.ErrArgs)
+	}
+
+	status, ok := provider.AddInManager().GetById(id)
+	if !ok {
+		return types.ZeroT[T](), false
+	}
+
+	return iface.Cache2Iface[T](status.InstanceFace().Cache), true
 }

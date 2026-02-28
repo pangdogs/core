@@ -23,18 +23,19 @@ import (
 	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/generic"
+	"github.com/elliotchance/pie/v2"
 )
 
 // ServiceAddIn 定义服务插件，支持安装至服务上下文
-func ServiceAddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADDIN_IFACE]) ServiceAddInDefinition[ADDIN_IFACE, SETTING] {
-	addIn := defineAddIn[ADDIN_IFACE, SETTING](creator)
+func ServiceAddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADDIN_IFACE], name ...string) ServiceAddInDefinition[ADDIN_IFACE, SETTING] {
+	addIn := defineAddIn[ADDIN_IFACE, SETTING](creator, pie.First(name))
 
 	return ServiceAddInDefinition[ADDIN_IFACE, SETTING]{
 		Id:        addIn.Id,
 		Name:      addIn.Name,
 		Install:   addIn.Install,
 		Uninstall: addIn.Uninstall,
-		Resolve:   func(svcCtx service.Context) ADDIN_IFACE { return addIn.Resolve(svcCtx) },
+		Require:   func(svcCtx service.Context) ADDIN_IFACE { return addIn.Require(svcCtx) },
 		Lookup:    func(svcCtx service.Context) (ADDIN_IFACE, bool) { return addIn.Lookup(svcCtx) },
 	}
 }
@@ -43,8 +44,8 @@ func ServiceAddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, AD
 type ServiceAddInDefinition[ADDIN_IFACE, SETTING any] struct {
 	Id        uint64                                                // 插件Id
 	Name      string                                                // 插件名称
-	Install   generic.ActionVar1[extension.AddInProvider, SETTING]  // 向插件管理器安装
-	Uninstall generic.Action1[extension.AddInProvider]              // 从插件管理器卸载
-	Resolve   generic.Func1[service.Context, ADDIN_IFACE]           // 解析插件
+	Install   generic.ActionVar1[extension.AddInProvider, SETTING]  // 安装插件
+	Uninstall generic.Action1[extension.AddInProvider]              // 卸载插件
+	Require   generic.Func1[service.Context, ADDIN_IFACE]           // 依赖插件
 	Lookup    generic.FuncPair1[service.Context, ADDIN_IFACE, bool] // 查找插件
 }

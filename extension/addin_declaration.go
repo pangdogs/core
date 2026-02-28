@@ -17,31 +17,34 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package define
+package extension
 
 import (
-	"git.golaxy.org/core/ec/pt"
+	"hash/fnv"
+	"reflect"
+
 	"git.golaxy.org/core/utils/types"
-	"github.com/elliotchance/pie/v2"
 )
 
-// Component 定义组件
-func Component[COMP any](name ...string) ComponentDefinition {
-	comp := pt.DefaultComponentLib().Declare(types.ZeroT[COMP]())
-
-	_name := pie.First(name)
-	if _name == "" {
-		_name = types.NameRT(comp.InstanceRT().Elem())
-	}
-
-	return ComponentDefinition{
-		Prototype: comp.Prototype(),
-		Name:      _name,
-	}
+// GenAddInId 生成插件Id
+func GenAddInId(name string) uint64 {
+	h := fnv.New64a()
+	h.Write(types.String2Bytes(name))
+	return h.Sum64()
 }
 
-// ComponentDefinition 组件定义
-type ComponentDefinition struct {
-	Prototype string // 组件原型名称
-	Name      string // 组件名称
+// GenAddInName 生成插件名称
+func GenAddInName(addIn any) string {
+	addInRT := reflect.TypeOf(addIn)
+
+	for addInRT.Kind() == reflect.Pointer {
+		addInRT = addInRT.Elem()
+	}
+
+	return types.FullNameRT(addInRT)
+}
+
+// GenAddInNameT 生成插件名称
+func GenAddInNameT[T any]() string {
+	return GenAddInName(types.NewT[T]())
 }

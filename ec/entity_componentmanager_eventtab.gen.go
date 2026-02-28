@@ -34,36 +34,36 @@ type IEntityComponentManagerEventTab interface {
 
 var (
 	_entityComponentManagerEventTabId = event.DeclareEventTabIdT[entityComponentManagerEventTab]()
-	EventComponentManagerAddComponentsId = _entityComponentManagerEventTabId + 0
-	EventComponentManagerRemoveComponentId = _entityComponentManagerEventTabId + 1
-	EventComponentManagerComponentEnableChangedId = _entityComponentManagerEventTabId + 2
-	EventComponentManagerFirstTouchComponentId = _entityComponentManagerEventTabId + 3
+	EventComponentManagerAddComponentsId = event.DeclareEventIdT[entityComponentManagerEventTab](0)
+	EventComponentManagerRemoveComponentId = event.DeclareEventIdT[entityComponentManagerEventTab](1)
+	EventComponentManagerComponentEnableChangedId = event.DeclareEventIdT[entityComponentManagerEventTab](2)
+	EventComponentManagerFirstTouchComponentId = event.DeclareEventIdT[entityComponentManagerEventTab](3)
 )
 
 type entityComponentManagerEventTab [4]event.Event
 
 func (eventTab *entityComponentManagerEventTab) SetPanicHandling(autoRecover bool, reportError chan error) {
-	for i := range *eventTab {
-		(*eventTab)[i].SetPanicHandling(autoRecover, reportError)
+	for i := range eventTab {
+		eventTab[i].SetPanicHandling(autoRecover, reportError)
 	}
 }
 
 func (eventTab *entityComponentManagerEventTab) SetRecursion(recursion event.EventRecursion) {
-	(*eventTab)[0].SetRecursion(event.EventRecursion_Allow)
-	(*eventTab)[1].SetRecursion(event.EventRecursion_Allow)
-	(*eventTab)[2].SetRecursion(event.EventRecursion_Allow)
-	(*eventTab)[3].SetRecursion(event.EventRecursion_Allow)
+	eventTab[0].SetRecursion(event.EventRecursion_Allow)
+	eventTab[1].SetRecursion(event.EventRecursion_Allow)
+	eventTab[2].SetRecursion(event.EventRecursion_Allow)
+	eventTab[3].SetRecursion(event.EventRecursion_Allow)
 }
 
 func (eventTab *entityComponentManagerEventTab) SetEnabled(b bool) {
-	for i := range *eventTab {
-		(*eventTab)[i].SetEnabled(b)
+	for i := range eventTab {
+		eventTab[i].SetEnabled(b)
 	}
 }
 
 func (eventTab *entityComponentManagerEventTab) UnbindAll() {
-	for i := range *eventTab {
-		(*eventTab)[i].UnbindAll()
+	for i := range eventTab {
+		eventTab[i].UnbindAll()
 	}
 }
 
@@ -72,42 +72,39 @@ func (eventTab *entityComponentManagerEventTab) Ctrl() event.IEventCtrl {
 }
 
 func (eventTab *entityComponentManagerEventTab) Event(id uint64) event.IEvent {
-	if _entityComponentManagerEventTabId != id & 0xFFFFFFFF00000000 {
-		return nil
-	}
-	pos := id & 0xFFFFFFFF
-	if pos >= uint64(len(*eventTab)) {
+	eventTabId, pos := event.SplitEventId(id)
+	if _entityComponentManagerEventTabId != eventTabId || pos >= len(eventTab) {
 		return nil
 	}
 	switch pos {
 	case 0:
-		(*eventTab)[0].SetRecursion(event.EventRecursion_Allow)
+		eventTab[0].SetRecursion(event.EventRecursion_Allow)
 	case 1:
-		(*eventTab)[1].SetRecursion(event.EventRecursion_Allow)
+		eventTab[1].SetRecursion(event.EventRecursion_Allow)
 	case 2:
-		(*eventTab)[2].SetRecursion(event.EventRecursion_Allow)
+		eventTab[2].SetRecursion(event.EventRecursion_Allow)
 	case 3:
-		(*eventTab)[3].SetRecursion(event.EventRecursion_Allow)
+		eventTab[3].SetRecursion(event.EventRecursion_Allow)
 	}
-	return &(*eventTab)[pos]
+	return &eventTab[pos]
 }
 
 func (eventTab *entityComponentManagerEventTab) EventComponentManagerAddComponents() event.IEvent {
-	(*eventTab).SetRecursion(event.EventRecursion_Allow)
-	return &(*eventTab)[0]
+	eventTab.SetRecursion(event.EventRecursion_Allow)
+	return &eventTab[0]
 }
 
 func (eventTab *entityComponentManagerEventTab) EventComponentManagerRemoveComponent() event.IEvent {
-	(*eventTab).SetRecursion(event.EventRecursion_Allow)
-	return &(*eventTab)[1]
+	eventTab.SetRecursion(event.EventRecursion_Allow)
+	return &eventTab[1]
 }
 
 func (eventTab *entityComponentManagerEventTab) EventComponentManagerComponentEnableChanged() event.IEvent {
-	(*eventTab).SetRecursion(event.EventRecursion_Allow)
-	return &(*eventTab)[2]
+	eventTab.SetRecursion(event.EventRecursion_Allow)
+	return &eventTab[2]
 }
 
 func (eventTab *entityComponentManagerEventTab) EventComponentManagerFirstTouchComponent() event.IEvent {
-	(*eventTab).SetRecursion(event.EventRecursion_Allow)
-	return &(*eventTab)[3]
+	eventTab.SetRecursion(event.EventRecursion_Allow)
+	return &eventTab[3]
 }

@@ -131,9 +131,9 @@ func (rt *RuntimeBehavior) initAddIn() {
 	rt.managedAddInManagerHandles[0] = extension.BindEventRuntimeInstallAddIn(addInManager, extension.HandleEventRuntimeInstallAddIn(rt.activateAddIn))
 	rt.managedAddInManagerHandles[1] = extension.BindEventRuntimeUninstallAddIn(addInManager, extension.HandleEventRuntimeUninstallAddIn(rt.deactivateAddIn))
 
-	addInStatusList := addInManager.List()
-	for i := range addInStatusList {
-		rt.activateAddIn(addInStatusList[i])
+	statuses := addInManager.ListRuntimeAddInStatuses()
+	for i := range statuses {
+		rt.activateAddIn(statuses[i])
 	}
 }
 
@@ -142,15 +142,15 @@ func (rt *RuntimeBehavior) shutAddIn() {
 
 	rt.managedAddInManagerHandles[0].Unbind()
 
-	addInStatusList := addInManager.List()
-	for i := len(addInStatusList) - 1; i >= 0; i-- {
-		addInStatusList[i].Uninstall()
+	statuses := addInManager.ListRuntimeAddInStatuses()
+	for i := len(statuses) - 1; i >= 0; i-- {
+		addInManager.Uninstall(statuses[i].Name())
 	}
 
 	rt.managedAddInManagerHandles[1].Unbind()
 }
 
-func (rt *RuntimeBehavior) activateAddIn(status extension.AddInStatus) {
+func (rt *RuntimeBehavior) activateAddIn(status extension.RuntimeAddInStatus) {
 	if status.State() != extension.AddInState_Loaded {
 		return
 	}
@@ -173,8 +173,12 @@ func (rt *RuntimeBehavior) activateAddIn(status extension.AddInStatus) {
 		return
 	}
 
-	addInStatus := status.(extension.RuntimeAddInStatus)
-	extension.UnsafeRuntimeAddInStatus(addInStatus).SetState(extension.AddInState_Running)
+	extension.UnsafeRuntimeAddInStatus(status).Started()
+
+	if status.State() != extension.AddInState_Loaded {
+		rt.emitEventRunningEvent(runtime.RunningEvent_AddInActivationAborted, status)
+		return
+	}
 
 	rt.emitEventRunningEvent(runtime.RunningEvent_AddInActivated, status)
 
@@ -183,13 +187,13 @@ func (rt *RuntimeBehavior) activateAddIn(status extension.AddInStatus) {
 	}
 
 	if cb, ok := status.InstanceFace().Iface.(LifecycleAddInOnRuntimeRunningEvent); ok {
-		extension.UnsafeRuntimeAddInStatus(addInStatus).ManagedRuntimeRunningEventHandle(
+		extension.UnsafeRuntimeAddInStatus(status).ManagedRuntimeRunningEventHandle(
 			runtime.BindEventContextRunningEvent(rt.ctx, runtime.HandleEventContextRunningEvent(cb.OnContextRunningEvent)),
 		)
 	}
 }
 
-func (rt *RuntimeBehavior) deactivateAddIn(status extension.AddInStatus) {
+func (rt *RuntimeBehavior) deactivateAddIn(status extension.RuntimeAddInStatus) {
 	if status.State() != extension.AddInState_Running {
 		return
 	}

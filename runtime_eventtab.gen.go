@@ -32,32 +32,32 @@ type iRuntimeEventTab interface {
 
 var (
 	_runtimeEventTabId = event.DeclareEventTabIdT[runtimeEventTab]()
-	eventUpdateId = _runtimeEventTabId + 0
-	eventLateUpdateId = _runtimeEventTabId + 1
+	eventUpdateId = event.DeclareEventIdT[runtimeEventTab](0)
+	eventLateUpdateId = event.DeclareEventIdT[runtimeEventTab](1)
 )
 
 type runtimeEventTab [2]event.Event
 
 func (eventTab *runtimeEventTab) SetPanicHandling(autoRecover bool, reportError chan error) {
-	for i := range *eventTab {
-		(*eventTab)[i].SetPanicHandling(autoRecover, reportError)
+	for i := range eventTab {
+		eventTab[i].SetPanicHandling(autoRecover, reportError)
 	}
 }
 
 func (eventTab *runtimeEventTab) SetRecursion(recursion event.EventRecursion) {
-	(*eventTab)[0].SetRecursion(event.EventRecursion_Disallow)
-	(*eventTab)[1].SetRecursion(event.EventRecursion_Disallow)
+	eventTab[0].SetRecursion(event.EventRecursion_Disallow)
+	eventTab[1].SetRecursion(event.EventRecursion_Disallow)
 }
 
 func (eventTab *runtimeEventTab) SetEnabled(b bool) {
-	for i := range *eventTab {
-		(*eventTab)[i].SetEnabled(b)
+	for i := range eventTab {
+		eventTab[i].SetEnabled(b)
 	}
 }
 
 func (eventTab *runtimeEventTab) UnbindAll() {
-	for i := range *eventTab {
-		(*eventTab)[i].UnbindAll()
+	for i := range eventTab {
+		eventTab[i].UnbindAll()
 	}
 }
 
@@ -66,28 +66,25 @@ func (eventTab *runtimeEventTab) Ctrl() event.IEventCtrl {
 }
 
 func (eventTab *runtimeEventTab) Event(id uint64) event.IEvent {
-	if _runtimeEventTabId != id & 0xFFFFFFFF00000000 {
-		return nil
-	}
-	pos := id & 0xFFFFFFFF
-	if pos >= uint64(len(*eventTab)) {
+	eventTabId, pos := event.SplitEventId(id)
+	if _runtimeEventTabId != eventTabId || pos >= len(eventTab) {
 		return nil
 	}
 	switch pos {
 	case 0:
-		(*eventTab)[0].SetRecursion(event.EventRecursion_Disallow)
+		eventTab[0].SetRecursion(event.EventRecursion_Disallow)
 	case 1:
-		(*eventTab)[1].SetRecursion(event.EventRecursion_Disallow)
+		eventTab[1].SetRecursion(event.EventRecursion_Disallow)
 	}
-	return &(*eventTab)[pos]
+	return &eventTab[pos]
 }
 
 func (eventTab *runtimeEventTab) eventUpdate() event.IEvent {
-	(*eventTab).SetRecursion(event.EventRecursion_Disallow)
-	return &(*eventTab)[0]
+	eventTab.SetRecursion(event.EventRecursion_Disallow)
+	return &eventTab[0]
 }
 
 func (eventTab *runtimeEventTab) eventLateUpdate() event.IEvent {
-	(*eventTab).SetRecursion(event.EventRecursion_Disallow)
-	return &(*eventTab)[1]
+	eventTab.SetRecursion(event.EventRecursion_Disallow)
+	return &eventTab[1]
 }

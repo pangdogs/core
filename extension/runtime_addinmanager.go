@@ -25,13 +25,16 @@ import (
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
-	"git.golaxy.org/core/utils/types"
 	"github.com/elliotchance/pie/v2"
 )
 
 // RuntimeAddInManager 运行时插件管理器
 type RuntimeAddInManager interface {
 	AddInManager
+
+	// ListRuntimeAddInStatuses 获取所有运行时插件状态信息
+	ListRuntimeAddInStatuses() []RuntimeAddInStatus
+
 	IRuntimeAddInManagerEventTab
 }
 
@@ -56,7 +59,7 @@ func (mgr *_RuntimeAddInManager) AddInManager() AddInManager {
 	return mgr
 }
 
-// Install 安装插件，不设置插件名称时，将会使用插件实例名称作为插件名称
+// Install 安装插件
 func (mgr *_RuntimeAddInManager) Install(addInFace iface.FaceAny, name ...string) AddInStatus {
 	if addInFace.IsNil() {
 		exception.Panicf("%w: %w: addInFace is nil", ErrExtension, exception.ErrArgs)
@@ -64,17 +67,21 @@ func (mgr *_RuntimeAddInManager) Install(addInFace iface.FaceAny, name ...string
 
 	addInName := pie.First(name)
 	if addInName == "" {
-		addInName = types.FullName(addInFace.Iface)
+		addInName = GenAddInName(addInFace.Iface)
+	}
+
+	if addInName == "" {
+		exception.Panicf("%w: anonymous add-in not allowed", ErrExtension)
 	}
 
 	if _, ok := mgr.addInNameIndex[addInName]; ok {
-		exception.Panicf("%w: addIn %q is already installed", ErrExtension, addInName)
+		exception.Panicf("%w: add-in %q is already installed", ErrExtension, addInName)
 	}
 
 	id := GenAddInId(addInName)
 
 	if existsIdx, ok := mgr.addInIdIndex[id]; ok {
-		exception.Panicf("%w: addIn %q id index %d conflict with %q", ErrExtension, addInName, id, mgr.addInList.Get(existsIdx).V.name)
+		exception.Panicf("%w: add-in %q id %d conflict with %q, rename required", ErrExtension, addInName, id, mgr.addInList.Get(existsIdx).V.Name())
 	}
 
 	status := &_RuntimeAddInStatus{
@@ -90,7 +97,7 @@ func (mgr *_RuntimeAddInManager) Install(addInFace iface.FaceAny, name ...string
 	mgr.addInNameIndex[addInName] = slot.Index()
 	mgr.addInIdIndex[id] = slot.Index()
 
-	status.setState(AddInState_Loaded)
+	_EmitEventRuntimeAddInStateChanged(mgr, status, AddInState_Loaded)
 
 	if status.state == AddInState_Loaded {
 		_EmitEventRuntimeInstallAddIn(mgr, status)
@@ -106,11 +113,11 @@ func (mgr *_RuntimeAddInManager) Uninstall(name string) {
 		return
 	}
 	status := mgr.addInList.Get(statusIdx).V
-	status.Uninstall()
+	status.uninstall()
 }
 
-// Get 获取插件
-func (mgr *_RuntimeAddInManager) Get(name string) (AddInStatus, bool) {
+// GetByName 使用名称查询插件状态信息
+func (mgr *_RuntimeAddInManager) GetByName(name string) (AddInStatus, bool) {
 	statusIdx, ok := mgr.addInNameIndex[name]
 	if !ok {
 		return nil, false
@@ -118,7 +125,7 @@ func (mgr *_RuntimeAddInManager) Get(name string) (AddInStatus, bool) {
 	return mgr.addInList.Get(statusIdx).V, true
 }
 
-// GetById 使用Id获取插件
+// GetById 使用Id查询插件状态信息
 func (mgr *_RuntimeAddInManager) GetById(id uint64) (AddInStatus, bool) {
 	statusIdx, ok := mgr.addInIdIndex[id]
 	if !ok {
@@ -127,9 +134,20 @@ func (mgr *_RuntimeAddInManager) GetById(id uint64) (AddInStatus, bool) {
 	return mgr.addInList.Get(statusIdx).V, true
 }
 
-// List 获取所有插件
+// List 获取所有插件状态信息
 func (mgr *_RuntimeAddInManager) List() []AddInStatus {
 	statuses := make([]AddInStatus, 0, mgr.addInList.Len())
+
+	mgr.addInList.TraversalEach(func(slot *generic.FreeSlot[*_RuntimeAddInStatus]) {
+		statuses = append(statuses, slot.V)
+	})
+
+	return statuses
+}
+
+// ListRuntimeAddInStatuses 获取所有运行时插件状态信息
+func (mgr *_RuntimeAddInManager) ListRuntimeAddInStatuses() []RuntimeAddInStatus {
+	statuses := make([]RuntimeAddInStatus, 0, mgr.addInList.Len())
 
 	mgr.addInList.TraversalEach(func(slot *generic.FreeSlot[*_RuntimeAddInStatus]) {
 		statuses = append(statuses, slot.V)

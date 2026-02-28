@@ -30,15 +30,22 @@ type _UnsafeServiceAddInStatus struct {
 	ServiceAddInStatus
 }
 
-// SetState 修改状态
-func (u _UnsafeServiceAddInStatus) SetState(must, state AddInState) bool {
-	return u.setState(must, state)
+// Started 已启动
+func (u _UnsafeServiceAddInStatus) Started() {
+	u.started()
 }
 
-func (u _UnsafeServiceAddInStatus) DoInstallingOnce() bool {
-	return u.doInstallingOnce()
+// Stopped 已停止
+func (u _UnsafeServiceAddInStatus) Stopped() {
+	u.stopped()
 }
 
-func (u _UnsafeServiceAddInStatus) DoUninstallingOnce() bool {
-	return u.doUninstallingOnce()
+// DoInstallOnce 执行安装函数一次
+func (u _UnsafeServiceAddInStatus) DoInstallOnce(fun func()) {
+	u.doInstallOnce(fun)
+}
+
+// DoUninstallOnce 执行卸载函数一次
+func (u _UnsafeServiceAddInStatus) DoUninstallOnce(fun func()) {
+	u.doUninstallOnce(fun)
 }

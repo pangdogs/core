@@ -17,9 +17,8 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Package define 利用泛型特性，简化代码编写。
+// Package define 利用泛型特性，简化插件代码编写。
 /*
-   - 支持定义组件。
    - 支持定义插件与插件接口，按安装位置分类，共有通用插件、运行时插件、服务插件三种。
    - 使用 GoLand 作为 IDE 时，需要更新至 2023.2 版本以上，否则可能会有误报错。
    - 可以参考官方示例：https://git.golaxy.org/examples，学习如何使用。

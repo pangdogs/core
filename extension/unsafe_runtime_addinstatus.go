@@ -32,9 +32,9 @@ type _UnsafeRuntimeAddInStatus struct {
 	RuntimeAddInStatus
 }
 
-// SetState 修改状态
-func (u _UnsafeRuntimeAddInStatus) SetState(state AddInState) {
-	u.setState(state)
+// Started 已启动
+func (u _UnsafeRuntimeAddInStatus) Started() {
+	u.started()
 }
 
 // ManagedRuntimeRunningEventHandle 托管运行时运行事件句柄

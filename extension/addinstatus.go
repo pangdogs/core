@@ -40,6 +40,4 @@ type AddInStatus interface {
 	Reflected() reflect.Value
 	// State 状态
 	State() AddInState
-	// Uninstall 卸载
-	Uninstall()
 }

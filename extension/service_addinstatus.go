@@ -40,25 +40,26 @@ type ServiceAddInStatus interface {
 }
 
 type iServiceAddInStatus interface {
-	setState(must, state AddInState) bool
-	doInstallingOnce() bool
-	doUninstallingOnce() bool
+	started()
+	stopped()
+	doInstallOnce(fun func())
+	doUninstallOnce(fun func())
 }
 
 type _ServiceAddInStatus struct {
-	mgr                    *_ServiceAddInManager
-	id                     uint64
-	name                   string
-	instanceFace           iface.FaceAny
-	reflected              reflect.Value
-	state                  atomic.Int32
-	idx                    int
-	ver                    int64
-	waitState              [AddInState_Unloaded + 1]chan async.Ret
-	doInstallingOnceMark   atomic.Bool
-	doUninstallingOnceMark atomic.Bool
-	stringerOnce           sync.Once
-	stringerCache          string
+	mgr           *_ServiceAddInManager
+	id            uint64
+	name          string
+	instanceFace  iface.FaceAny
+	reflected     reflect.Value
+	state         atomic.Int32
+	idx           int
+	ver           int64
+	waitState     [AddInState_Unloaded + 1]chan async.Ret
+	installOnce   sync.Once
+	uninstallOnce sync.Once
+	stringerOnce  sync.Once
+	stringerCache string
 }
 
 // Id 插件Id
@@ -86,11 +87,6 @@ func (s *_ServiceAddInStatus) State() AddInState {
 	return AddInState(s.state.Load())
 }
 
-// Uninstall 卸载
-func (s *_ServiceAddInStatus) Uninstall() {
-	s.mgr.eventStream.Publish(&EventServiceUninstallAddIn{Status: s})
-}
-
 // String implements fmt.Stringer
 func (s *_ServiceAddInStatus) String() string {
 	s.stringerOnce.Do(func() {
@@ -107,8 +103,24 @@ func (s *_ServiceAddInStatus) WaitState(state AddInState) async.AsyncRet {
 	return s.waitState[state]
 }
 
+func (s *_ServiceAddInStatus) started() {
+	s.setState(AddInState_Loaded, AddInState_Running)
+}
+
+func (s *_ServiceAddInStatus) stopped() {
+	s.mgr.removeIfVersion(s.idx, s.ver)
+}
+
+func (s *_ServiceAddInStatus) doInstallOnce(fun func()) {
+	s.installOnce.Do(fun)
+}
+
+func (s *_ServiceAddInStatus) doUninstallOnce(fun func()) {
+	s.uninstallOnce.Do(fun)
+}
+
 func (s *_ServiceAddInStatus) setState(must, state AddInState) bool {
-	if state <= must {
+	if must >= state {
 		return false
 	}
 
@@ -116,19 +128,6 @@ func (s *_ServiceAddInStatus) setState(must, state AddInState) bool {
 		return false
 	}
 
-	if state == AddInState_Unloaded {
-		s.mgr.uninstallIfVersion(s.idx, s.ver)
-	}
-
 	async.YieldBreakT(s.waitState[state])
-
 	return true
-}
-
-func (s *_ServiceAddInStatus) doInstallingOnce() bool {
-	return s.doInstallingOnceMark.CompareAndSwap(false, true)
-}
-
-func (s *_ServiceAddInStatus) doUninstallingOnce() bool {
-	return s.doUninstallingOnceMark.CompareAndSwap(false, true)
 }

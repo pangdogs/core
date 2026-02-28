@@ -21,32 +21,38 @@ package define
 
 import (
 	"git.golaxy.org/core/extension"
+	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
-	"git.golaxy.org/core/utils/types"
+	"github.com/elliotchance/pie/v2"
 )
 
 // AddInInterface 定义通用插件接口，支持安装至运行时上下文和服务上下文，通常用于为同类插件的不同实现提供统一的接口
-func AddInInterface[ADDIN_IFACE any]() AddInInterfaceDefinition[ADDIN_IFACE] {
-	return defineAddInInterface[ADDIN_IFACE]()
+func AddInInterface[ADDIN_IFACE any](name ...string) AddInInterfaceDefinition[ADDIN_IFACE] {
+	return defineAddInInterface[ADDIN_IFACE](pie.First(name))
 }
 
 // AddInInterfaceDefinition 通用插件接口定义
 type AddInInterfaceDefinition[ADDIN_IFACE any] struct {
 	Id      uint64                                                        // 插件Id
 	Name    string                                                        // 插件名称
-	Resolve generic.Func1[extension.AddInProvider, ADDIN_IFACE]           // 解析插件
+	Require generic.Func1[extension.AddInProvider, ADDIN_IFACE]           // 依赖插件
 	Lookup  generic.FuncPair1[extension.AddInProvider, ADDIN_IFACE, bool] // 查找插件
 }
 
-func defineAddInInterface[ADDIN_IFACE any]() AddInInterfaceDefinition[ADDIN_IFACE] {
-	name := types.FullNameT[ADDIN_IFACE]()
+func defineAddInInterface[ADDIN_IFACE any](name string) AddInInterfaceDefinition[ADDIN_IFACE] {
+	if name == "" {
+		name = extension.GenAddInNameT[ADDIN_IFACE]()
+	}
+	if name == "" {
+		exception.Panicf("%w: anonymous add-in not allowed", extension.ErrExtension)
+	}
 	id := extension.GenAddInId(name)
 
 	return AddInInterfaceDefinition[ADDIN_IFACE]{
 		Id:   id,
 		Name: name,
-		Resolve: func(provider extension.AddInProvider) ADDIN_IFACE {
-			return extension.Resolve[ADDIN_IFACE](provider, id)
+		Require: func(provider extension.AddInProvider) ADDIN_IFACE {
+			return extension.Require[ADDIN_IFACE](provider, id)
 		},
 		Lookup: func(provider extension.AddInProvider) (ADDIN_IFACE, bool) {
 			return extension.Lookup[ADDIN_IFACE](provider, id)

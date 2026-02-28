@@ -1122,6 +1122,10 @@ func (ServiceAddIn1) Shut(ctx service.Context) {
 	log.Println("ServiceAddIn1 Shut")
 }
 
+func (ServiceAddIn1) Hello() {
+	log.Println("ServiceAddIn1 Hello")
+}
+
 func NewServiceAddIn1(...any) *ServiceAddIn1 {
 	return &ServiceAddIn1{}
 }
@@ -1130,7 +1134,9 @@ var (
 	serviceAddIn1 = define.AddIn(NewServiceAddIn1)
 )
 
-type IServiceAddIn2 interface{}
+type IServiceAddIn2 interface {
+	Hello()
+}
 
 type ServiceAddIn2 struct{}
 
@@ -1140,6 +1146,10 @@ func (ServiceAddIn2) Init(ctx service.Context) {
 
 func (ServiceAddIn2) Shut(ctx service.Context) {
 	log.Println("ServiceAddIn2 Shut")
+}
+
+func (ServiceAddIn2) Hello() {
+	log.Println("ServiceAddIn2 Hello")
 }
 
 func NewServiceAddIn2(...any) IServiceAddIn2 {
@@ -1160,6 +1170,9 @@ func Test_ServiceAddIn(t *testing.T) {
 			case service.RunningEvent_Birth:
 				serviceAddIn1.Install(ctx)
 				serviceAddIn2.Install(ctx)
+			case service.RunningEvent_Started:
+				serviceAddIn1.Require(ctx).Hello()
+				serviceAddIn2.Require(ctx).Hello()
 			}
 			log.Println("service event:", runningEvent, args)
 		}),
@@ -1180,6 +1193,10 @@ func (RuntimeAddIn1) Shut(ctx runtime.Context) {
 
 func (RuntimeAddIn1) OnContextRunningEvent(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
 	log.Println("RuntimeAddIn1 OnContextRunningEvent:", runningEvent)
+}
+
+func (RuntimeAddIn1) Hello() {
+	log.Println("RuntimeAddIn1 Hello")
 }
 
 func NewRuntimeAddIn1(...any) *RuntimeAddIn1 {
@@ -1204,6 +1221,8 @@ func Test_RuntimeAddIn(t *testing.T) {
 							switch runningEvent {
 							case runtime.RunningEvent_Birth:
 								runtimeAddIn1.Install(ctx)
+							case runtime.RunningEvent_Started:
+								runtimeAddIn1.Require(ctx).Hello()
 							}
 							log.Println("runtime event:", runningEvent, args)
 						}),

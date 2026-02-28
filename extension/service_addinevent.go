@@ -21,15 +21,15 @@ package extension
 
 // EventServiceInstallAddIn 服务安装插件事件
 type EventServiceInstallAddIn struct {
-	Status AddInStatus
+	Status ServiceAddInStatus
 }
 
 // EventServiceUninstallAddIn 服务卸载插件事件
 type EventServiceUninstallAddIn struct {
-	Status AddInStatus
+	Status ServiceAddInStatus
 }
 
 // EventServiceAddInSnapshot 服务插件快照事件
 type EventServiceAddInSnapshot struct {
-	Statuses []AddInStatus
+	Statuses []ServiceAddInStatus
 }

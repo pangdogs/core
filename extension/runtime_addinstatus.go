@@ -35,13 +35,13 @@ type RuntimeAddInStatus interface {
 }
 
 type iRuntimeAddInStatus interface {
-	setState(state AddInState)
+	started()
 	managedRuntimeRunningEventHandle(runtimeRunningEventHandle event.Handle)
 	managedUnbindRuntimeHandles()
 }
 
 const (
-	runtimeAddInStatusReentrancyGuard_Uninstall = iota
+	runtimeAddInStatusReentrancyGuard_uninstall = iota
 )
 
 type _RuntimeAddInStatus struct {
@@ -51,7 +51,6 @@ type _RuntimeAddInStatus struct {
 	instanceFace          iface.FaceAny
 	reflected             reflect.Value
 	state                 AddInState
-	processedStateBits    generic.Bits16
 	reentrancyGuard       generic.ReentrancyGuardBits8
 	idx                   int
 	ver                   int64
@@ -84,13 +83,6 @@ func (s *_RuntimeAddInStatus) State() AddInState {
 	return s.state
 }
 
-// Uninstall 卸载
-func (s *_RuntimeAddInStatus) Uninstall() {
-	s.reentrancyGuard.Call(runtimeAddInStatusReentrancyGuard_Uninstall, func() {
-		s.mgr.uninstallIfVersion(s.idx, s.ver)
-	})
-}
-
 // String implements fmt.Stringer
 func (s *_RuntimeAddInStatus) String() string {
 	if s.stringerCache == "" {
@@ -99,20 +91,8 @@ func (s *_RuntimeAddInStatus) String() string {
 	return s.stringerCache
 }
 
-func (s *_RuntimeAddInStatus) setState(state AddInState) {
-	slot := s.mgr.addInList.Get(s.idx)
-	if slot.Version() != s.ver {
-		return
-	}
-
-	if s.processedStateBits.Is(int(state)) {
-		return
-	}
-
-	s.state = state
-	s.processedStateBits.Set(int(state), true)
-
-	_EmitEventRuntimeAddInStateChanged(s.mgr, s, state)
+func (s *_RuntimeAddInStatus) started() {
+	s.setState(AddInState_Running)
 }
 
 func (s *_RuntimeAddInStatus) managedRuntimeRunningEventHandle(runtimeRunningEventHandle event.Handle) {
@@ -124,4 +104,25 @@ func (s *_RuntimeAddInStatus) managedRuntimeRunningEventHandle(runtimeRunningEve
 
 func (s *_RuntimeAddInStatus) managedUnbindRuntimeHandles() {
 	event.UnbindHandles(s.managedRuntimeHandles[:])
+}
+
+func (s *_RuntimeAddInStatus) uninstall() {
+	s.reentrancyGuard.Call(runtimeAddInStatusReentrancyGuard_uninstall, func() {
+		s.mgr.uninstallIfVersion(s.idx, s.ver)
+	})
+}
+
+func (s *_RuntimeAddInStatus) setState(state AddInState) {
+	slot := s.mgr.addInList.Get(s.idx)
+	if slot.Version() != s.ver {
+		return
+	}
+
+	if s.state >= state {
+		return
+	}
+
+	s.state = state
+
+	_EmitEventRuntimeAddInStateChanged(s.mgr, s, state)
 }

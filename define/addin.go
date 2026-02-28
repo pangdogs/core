@@ -20,41 +20,37 @@
 package define
 
 import (
-	"reflect"
-
 	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
-	"git.golaxy.org/core/utils/types"
+	"github.com/elliotchance/pie/v2"
 )
 
 // AddIn 定义通用插件，支持安装至运行时上下文和服务上下文
-func AddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADDIN_IFACE]) AddInDefinition[ADDIN_IFACE, SETTING] {
-	return defineAddIn[ADDIN_IFACE, SETTING](creator)
+func AddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADDIN_IFACE], name ...string) AddInDefinition[ADDIN_IFACE, SETTING] {
+	return defineAddIn[ADDIN_IFACE, SETTING](creator, pie.First(name))
 }
 
 // AddInDefinition 通用插件定义
 type AddInDefinition[ADDIN_IFACE, SETTING any] struct {
 	Id        uint64                                                        // 插件Id
 	Name      string                                                        // 插件名称
-	Install   generic.ActionVar1[extension.AddInProvider, SETTING]          // 向插件管理器安装
-	Uninstall generic.Action1[extension.AddInProvider]                      // 从插件管理器卸载
-	Resolve   generic.Func1[extension.AddInProvider, ADDIN_IFACE]           // 解析插件
+	Install   generic.ActionVar1[extension.AddInProvider, SETTING]          // 安装插件
+	Uninstall generic.Action1[extension.AddInProvider]                      // 卸载插件
+	Require   generic.Func1[extension.AddInProvider, ADDIN_IFACE]           // 依赖插件
 	Lookup    generic.FuncPair1[extension.AddInProvider, ADDIN_IFACE, bool] // 查找插件
 }
 
-func defineAddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADDIN_IFACE]) AddInDefinition[ADDIN_IFACE, SETTING] {
+func defineAddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADDIN_IFACE], name string) AddInDefinition[ADDIN_IFACE, SETTING] {
 	if creator == nil {
 		exception.Panicf("%w: %w: creator is nil", exception.ErrCore, exception.ErrArgs)
 	}
-
-	addinRT := reflect.TypeFor[ADDIN_IFACE]()
-
-	for addinRT.Kind() == reflect.Pointer {
-		addinRT = addinRT.Elem()
+	if name == "" {
+		name = extension.GenAddInNameT[ADDIN_IFACE]()
 	}
-
-	name := types.FullNameRT(addinRT)
+	if name == "" {
+		exception.Panicf("%w: anonymous add-in not allowed", extension.ErrExtension)
+	}
 	id := extension.GenAddInId(name)
 
 	return AddInDefinition[ADDIN_IFACE, SETTING]{
@@ -66,8 +62,8 @@ func defineAddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADD
 		Uninstall: func(provider extension.AddInProvider) {
 			extension.Uninstall(provider, name)
 		},
-		Resolve: func(provider extension.AddInProvider) ADDIN_IFACE {
-			return extension.Resolve[ADDIN_IFACE](provider, id)
+		Require: func(provider extension.AddInProvider) ADDIN_IFACE {
+			return extension.Require[ADDIN_IFACE](provider, id)
 		},
 		Lookup: func(provider extension.AddInProvider) (ADDIN_IFACE, bool) {
 			return extension.Lookup[ADDIN_IFACE](provider, id)

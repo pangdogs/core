@@ -170,49 +170,42 @@ func (svc *ServiceBehavior) initAddIn() {
 }
 
 func (svc *ServiceBehavior) shutAddIn() {
-	for _, status := range pie.Reverse(service.UnsafeContext(svc.ctx).AddInManager().List()) {
-		svcAddInStatus := status.(extension.ServiceAddInStatus)
-		svcAddInStatus.Uninstall()
-		<-svcAddInStatus.WaitState(extension.AddInState_Unloaded)
+	addInManager := service.UnsafeContext(svc.ctx).AddInManager()
+
+	for _, status := range pie.Reverse(addInManager.ListServiceAddInStatuses()) {
+		addInManager.Uninstall(status.Name())
+		<-status.WaitState(extension.AddInState_Unloaded)
 	}
 }
 
-func (svc *ServiceBehavior) activateAddIn(status extension.AddInStatus) {
-	svcAddInStatus := status.(extension.ServiceAddInStatus)
+func (svc *ServiceBehavior) activateAddIn(status extension.ServiceAddInStatus) {
+	extension.UnsafeServiceAddInStatus(status).DoInstallOnce(func() {
+		svc.emitEventRunningEvent(service.RunningEvent_AddInActivating, status)
 
-	if !extension.UnsafeServiceAddInStatus(svcAddInStatus).DoInstallingOnce() {
-		return
-	}
+		if cb, ok := status.InstanceFace().Iface.(LifecycleAddInInit); ok {
+			generic.CastAction2(cb.Init).Call(svc.ctx.AutoRecover(), svc.ctx.ReportError(), svc.ctx, nil)
+		} else if cb, ok := status.InstanceFace().Iface.(LifecycleServiceAddInInit); ok {
+			generic.CastAction1(cb.Init).Call(svc.ctx.AutoRecover(), svc.ctx.ReportError(), svc.ctx)
+		}
 
-	svc.emitEventRunningEvent(service.RunningEvent_AddInActivating, status)
+		extension.UnsafeServiceAddInStatus(status).Started()
 
-	if cb, ok := status.InstanceFace().Iface.(LifecycleAddInInit); ok {
-		generic.CastAction2(cb.Init).Call(svc.ctx.AutoRecover(), svc.ctx.ReportError(), svc.ctx, nil)
-	} else if cb, ok := status.InstanceFace().Iface.(LifecycleServiceAddInInit); ok {
-		generic.CastAction1(cb.Init).Call(svc.ctx.AutoRecover(), svc.ctx.ReportError(), svc.ctx)
-	}
-
-	extension.UnsafeServiceAddInStatus(svcAddInStatus).SetState(extension.AddInState_Loaded, extension.AddInState_Running)
-
-	svc.emitEventRunningEvent(service.RunningEvent_AddInActivated, status)
+		svc.emitEventRunningEvent(service.RunningEvent_AddInActivated, status)
+	})
 }
 
-func (svc *ServiceBehavior) deactivateAddIn(status extension.AddInStatus) {
-	svcAddInStatus := status.(extension.ServiceAddInStatus)
+func (svc *ServiceBehavior) deactivateAddIn(status extension.ServiceAddInStatus) {
+	extension.UnsafeServiceAddInStatus(status).DoUninstallOnce(func() {
+		svc.emitEventRunningEvent(service.RunningEvent_AddInDeactivating, status)
 
-	if !extension.UnsafeServiceAddInStatus(svcAddInStatus).DoUninstallingOnce() {
-		return
-	}
+		if cb, ok := status.InstanceFace().Iface.(LifecycleAddInShut); ok {
+			generic.CastAction2(cb.Shut).Call(svc.ctx.AutoRecover(), svc.ctx.ReportError(), svc.ctx, nil)
+		} else if cb, ok := status.InstanceFace().Iface.(LifecycleServiceAddInShut); ok {
+			generic.CastAction1(cb.Shut).Call(svc.ctx.AutoRecover(), svc.ctx.ReportError(), svc.ctx)
+		}
 
-	svc.emitEventRunningEvent(service.RunningEvent_AddInDeactivating, status)
+		svc.emitEventRunningEvent(service.RunningEvent_AddInDeactivated, status)
 
-	if cb, ok := status.InstanceFace().Iface.(LifecycleAddInShut); ok {
-		generic.CastAction2(cb.Shut).Call(svc.ctx.AutoRecover(), svc.ctx.ReportError(), svc.ctx, nil)
-	} else if cb, ok := status.InstanceFace().Iface.(LifecycleServiceAddInShut); ok {
-		generic.CastAction1(cb.Shut).Call(svc.ctx.AutoRecover(), svc.ctx.ReportError(), svc.ctx)
-	}
-
-	extension.UnsafeServiceAddInStatus(svcAddInStatus).SetState(extension.AddInState_Running, extension.AddInState_Unloaded)
-
-	svc.emitEventRunningEvent(service.RunningEvent_AddInDeactivated, status)
+		extension.UnsafeServiceAddInStatus(status).Stopped()
+	})
 }

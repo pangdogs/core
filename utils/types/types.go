@@ -103,6 +103,11 @@ func FullName(i any) string {
 
 // FullNameRT 类型全名
 func FullNameRT(t reflect.Type) string {
+	pkgPath := t.PkgPath()
+	name := t.Name()
+	if pkgPath == "" {
+		return name
+	}
 	return t.PkgPath() + "." + t.Name()
 }
 
@@ -122,9 +127,15 @@ func WriteFullName(sb *strings.Builder, i any) {
 
 // WriteFullNameRT 写入类型全名
 func WriteFullNameRT(sb *strings.Builder, t reflect.Type) {
-	sb.WriteString(t.PkgPath())
+	pkgPath := t.PkgPath()
+	name := t.Name()
+	if pkgPath == "" {
+		sb.WriteString(name)
+		return
+	}
+	sb.WriteString(pkgPath)
 	sb.WriteString(".")
-	sb.WriteString(t.Name())
+	sb.WriteString(name)
 }
 
 // WriteFullNameT 写入类型全名

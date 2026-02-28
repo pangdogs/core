@@ -31,8 +31,6 @@ import (
 
 // EntityManager 实体管理器接口
 type EntityManager interface {
-	// Context 获取服务上下文
-	Context() Context
 	// GetEntity 查询实体
 	GetEntity(id uid.Id) (ec.ConcurrentEntity, bool)
 	// GetOrAddEntity 查询或添加实体
@@ -44,19 +42,6 @@ type EntityManager interface {
 type _EntityManager struct {
 	ctx      Context
 	entities sync.Map
-}
-
-func (mgr *_EntityManager) init(ctx Context) {
-	if ctx == nil {
-		exception.Panicf("%w: %w: ctx is nil", ErrEntityManager, exception.ErrArgs)
-	}
-
-	mgr.ctx = ctx
-}
-
-// Context 获取服务上下文
-func (mgr *_EntityManager) Context() Context {
-	return mgr.ctx
 }
 
 // GetEntity 查询实体
@@ -104,4 +89,12 @@ func (mgr *_EntityManager) RemoveEntity(id uid.Id) {
 		return
 	}
 	mgr.ctx.emitEventRunningEvent(RunningEvent_EntityDeregistered, entity)
+}
+
+func (mgr *_EntityManager) init(ctx Context) {
+	if ctx == nil {
+		exception.Panicf("%w: %w: ctx is nil", ErrEntityManager, exception.ErrArgs)
+	}
+
+	mgr.ctx = ctx
 }

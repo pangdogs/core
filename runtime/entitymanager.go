@@ -36,14 +36,8 @@ import (
 type EntityManager interface {
 	corectx.CurrentContextProvider
 
-	// AddEntity 添加实体
-	AddEntity(entity ec.Entity) error
-	// RemoveEntity 删除实体
-	RemoveEntity(id uid.Id)
 	// GetEntity 查询实体
 	GetEntity(id uid.Id) (ec.Entity, bool)
-	// ContainsEntity 实体是否存在
-	ContainsEntity(id uid.Id) bool
 	// RangeEntities 遍历所有实体
 	RangeEntities(fun generic.Func1[ec.Entity, bool])
 	// EachEntities 遍历每个实体
@@ -58,6 +52,10 @@ type EntityManager interface {
 	ListEntities() []ec.Entity
 	// CountEntities 获取实体数量
 	CountEntities() int
+	// AddEntity 添加实体
+	AddEntity(entity ec.Entity) error
+	// RemoveEntity 删除实体
+	RemoveEntity(id uid.Id)
 
 	IEntityManagerEventTab
 }
@@ -87,6 +85,71 @@ func (mgr *_EntityManager) CurrentContext() iface.Cache {
 // ConcurrentContext 获取多线程安全的上下文
 func (mgr *_EntityManager) ConcurrentContext() iface.Cache {
 	return mgr.ctx.ConcurrentContext()
+}
+
+// GetEntity 查询实体
+func (mgr *_EntityManager) GetEntity(id uid.Id) (ec.Entity, bool) {
+	slotIdx, ok := mgr.entityIdIndex[id]
+	if !ok {
+		return nil, false
+	}
+	return mgr.entityList.Get(slotIdx).V, true
+}
+
+// RangeEntities 遍历所有实体
+func (mgr *_EntityManager) RangeEntities(fun generic.Func1[ec.Entity, bool]) {
+	mgr.entityList.Traversal(func(slot *generic.FreeSlot[ec.Entity]) bool {
+		return fun.UnsafeCall(slot.V)
+	})
+}
+
+// EachEntities 遍历每个实体
+func (mgr *_EntityManager) EachEntities(fun generic.Action1[ec.Entity]) {
+	mgr.entityList.TraversalEach(func(slot *generic.FreeSlot[ec.Entity]) {
+		fun.UnsafeCall(slot.V)
+	})
+}
+
+// ReversedRangeEntities 反向遍历所有实体
+func (mgr *_EntityManager) ReversedRangeEntities(fun generic.Func1[ec.Entity, bool]) {
+	mgr.entityList.ReversedTraversal(func(slot *generic.FreeSlot[ec.Entity]) bool {
+		return fun.UnsafeCall(slot.V)
+	})
+}
+
+// ReversedEachEntities 反向遍历每个实体
+func (mgr *_EntityManager) ReversedEachEntities(fun generic.Action1[ec.Entity]) {
+	mgr.entityList.ReversedTraversalEach(func(slot *generic.FreeSlot[ec.Entity]) {
+		fun.UnsafeCall(slot.V)
+	})
+}
+
+// FilterEntities 过滤并获取实体
+func (mgr *_EntityManager) FilterEntities(fun generic.Func1[ec.Entity, bool]) []ec.Entity {
+	var entities []ec.Entity
+
+	ver := mgr.entityList.Version()
+	mgr.entityList.TraversalEach(func(slot *generic.FreeSlot[ec.Entity]) {
+		if slot.Version() > ver {
+			return
+		}
+		entity := slot.V
+		if fun.UnsafeCall(entity) {
+			entities = append(entities, entity)
+		}
+	})
+
+	return entities
+}
+
+// ListEntities 获取所有实体
+func (mgr *_EntityManager) ListEntities() []ec.Entity {
+	return mgr.entityList.ToSlice()
+}
+
+// CountEntities 获取实体数量
+func (mgr *_EntityManager) CountEntities() int {
+	return mgr.entityList.Len() - mgr.entityList.OrphanCount()
 }
 
 // AddEntity 添加实体
@@ -144,77 +207,6 @@ func (mgr *_EntityManager) RemoveEntity(id uid.Id) {
 	}
 	entity := mgr.entityList.Get(slotIdx).V
 	entity.Destroy()
-}
-
-// GetEntity 查询实体
-func (mgr *_EntityManager) GetEntity(id uid.Id) (ec.Entity, bool) {
-	slotIdx, ok := mgr.entityIdIndex[id]
-	if !ok {
-		return nil, false
-	}
-	return mgr.entityList.Get(slotIdx).V, true
-}
-
-// ContainsEntity 实体是否存在
-func (mgr *_EntityManager) ContainsEntity(id uid.Id) bool {
-	_, ok := mgr.entityIdIndex[id]
-	return ok
-}
-
-// RangeEntities 遍历所有实体
-func (mgr *_EntityManager) RangeEntities(fun generic.Func1[ec.Entity, bool]) {
-	mgr.entityList.Traversal(func(slot *generic.FreeSlot[ec.Entity]) bool {
-		return fun.UnsafeCall(slot.V)
-	})
-}
-
-// EachEntities 遍历每个实体
-func (mgr *_EntityManager) EachEntities(fun generic.Action1[ec.Entity]) {
-	mgr.entityList.TraversalEach(func(slot *generic.FreeSlot[ec.Entity]) {
-		fun.UnsafeCall(slot.V)
-	})
-}
-
-// ReversedRangeEntities 反向遍历所有实体
-func (mgr *_EntityManager) ReversedRangeEntities(fun generic.Func1[ec.Entity, bool]) {
-	mgr.entityList.ReversedTraversal(func(slot *generic.FreeSlot[ec.Entity]) bool {
-		return fun.UnsafeCall(slot.V)
-	})
-}
-
-// ReversedEachEntities 反向遍历每个实体
-func (mgr *_EntityManager) ReversedEachEntities(fun generic.Action1[ec.Entity]) {
-	mgr.entityList.ReversedTraversalEach(func(slot *generic.FreeSlot[ec.Entity]) {
-		fun.UnsafeCall(slot.V)
-	})
-}
-
-// FilterEntities 过滤并获取实体
-func (mgr *_EntityManager) FilterEntities(fun generic.Func1[ec.Entity, bool]) []ec.Entity {
-	var entities []ec.Entity
-
-	ver := mgr.entityList.Version()
-	mgr.entityList.TraversalEach(func(slot *generic.FreeSlot[ec.Entity]) {
-		if slot.Version() > ver {
-			return
-		}
-		entity := slot.V
-		if fun.UnsafeCall(entity) {
-			entities = append(entities, entity)
-		}
-	})
-
-	return entities
-}
-
-// ListEntities 获取所有实体
-func (mgr *_EntityManager) ListEntities() []ec.Entity {
-	return mgr.entityList.ToSlice()
-}
-
-// CountEntities 获取实体数量
-func (mgr *_EntityManager) CountEntities() int {
-	return mgr.entityList.Len() - mgr.entityList.OrphanCount()
 }
 
 func (mgr *_EntityManager) OnEntityDestroy(entity ec.Entity) {

@@ -26,19 +26,19 @@ package extension
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventRuntimeInstallAddIn interface {
-	OnRuntimeInstallAddIn(status AddInStatus)
+	OnRuntimeInstallAddIn(status RuntimeAddInStatus)
 }
 
 // EventRuntimeUninstallAddIn 事件：运行时卸载插件
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventRuntimeUninstallAddIn interface {
-	OnRuntimeUninstallAddIn(status AddInStatus)
+	OnRuntimeUninstallAddIn(status RuntimeAddInStatus)
 }
 
 // EventRuntimeAddInStateChanged 事件：运行时插件状态改变
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventRuntimeAddInStateChanged interface {
-	OnRuntimeAddInStateChanged(status AddInStatus, state AddInState)
+	OnRuntimeAddInStateChanged(status RuntimeAddInStatus, state AddInState)
 }

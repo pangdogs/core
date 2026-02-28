@@ -32,32 +32,32 @@ type IComponentEventTab interface {
 
 var (
 	_componentEventTabId = event.DeclareEventTabIdT[componentEventTab]()
-	EventComponentEnableChangedId = _componentEventTabId + 0
-	EventComponentDestroyId = _componentEventTabId + 1
+	EventComponentEnableChangedId = event.DeclareEventIdT[componentEventTab](0)
+	EventComponentDestroyId = event.DeclareEventIdT[componentEventTab](1)
 )
 
 type componentEventTab [2]event.Event
 
 func (eventTab *componentEventTab) SetPanicHandling(autoRecover bool, reportError chan error) {
-	for i := range *eventTab {
-		(*eventTab)[i].SetPanicHandling(autoRecover, reportError)
+	for i := range eventTab {
+		eventTab[i].SetPanicHandling(autoRecover, reportError)
 	}
 }
 
 func (eventTab *componentEventTab) SetRecursion(recursion event.EventRecursion) {
-	(*eventTab)[0].SetRecursion(event.EventRecursion_Allow)
-	(*eventTab)[1].SetRecursion(event.EventRecursion_Allow)
+	eventTab[0].SetRecursion(event.EventRecursion_Allow)
+	eventTab[1].SetRecursion(event.EventRecursion_Allow)
 }
 
 func (eventTab *componentEventTab) SetEnabled(b bool) {
-	for i := range *eventTab {
-		(*eventTab)[i].SetEnabled(b)
+	for i := range eventTab {
+		eventTab[i].SetEnabled(b)
 	}
 }
 
 func (eventTab *componentEventTab) UnbindAll() {
-	for i := range *eventTab {
-		(*eventTab)[i].UnbindAll()
+	for i := range eventTab {
+		eventTab[i].UnbindAll()
 	}
 }
 
@@ -66,28 +66,25 @@ func (eventTab *componentEventTab) Ctrl() event.IEventCtrl {
 }
 
 func (eventTab *componentEventTab) Event(id uint64) event.IEvent {
-	if _componentEventTabId != id & 0xFFFFFFFF00000000 {
-		return nil
-	}
-	pos := id & 0xFFFFFFFF
-	if pos >= uint64(len(*eventTab)) {
+	eventTabId, pos := event.SplitEventId(id)
+	if _componentEventTabId != eventTabId || pos >= len(eventTab) {
 		return nil
 	}
 	switch pos {
 	case 0:
-		(*eventTab)[0].SetRecursion(event.EventRecursion_Allow)
+		eventTab[0].SetRecursion(event.EventRecursion_Allow)
 	case 1:
-		(*eventTab)[1].SetRecursion(event.EventRecursion_Allow)
+		eventTab[1].SetRecursion(event.EventRecursion_Allow)
 	}
-	return &(*eventTab)[pos]
+	return &eventTab[pos]
 }
 
 func (eventTab *componentEventTab) EventComponentEnableChanged() event.IEvent {
-	(*eventTab).SetRecursion(event.EventRecursion_Allow)
-	return &(*eventTab)[0]
+	eventTab.SetRecursion(event.EventRecursion_Allow)
+	return &eventTab[0]
 }
 
 func (eventTab *componentEventTab) EventComponentDestroy() event.IEvent {
-	(*eventTab).SetRecursion(event.EventRecursion_Allow)
-	return &(*eventTab)[1]
+	eventTab.SetRecursion(event.EventRecursion_Allow)
+	return &eventTab[1]
 }

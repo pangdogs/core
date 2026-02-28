@@ -27,14 +27,14 @@ import (
 type AddInManager interface {
 	AddInProvider
 
-	// Install 安装插件，不设置插件名称时，将会使用插件实例名称作为插件名称
+	// Install 安装插件
 	Install(addInFace iface.FaceAny, name ...string) AddInStatus
 	// Uninstall 卸载插件
 	Uninstall(name string)
-	// Get 获取插件
-	Get(name string) (AddInStatus, bool)
-	// GetById 使用Id获取插件
+	// GetByName 使用名称查询插件状态信息
+	GetByName(name string) (AddInStatus, bool)
+	// GetById 使用Id查询插件状态信息
 	GetById(id uint64) (AddInStatus, bool)
-	// List 获取所有插件
+	// List 获取所有插件状态信息
 	List() []AddInStatus
 }

@@ -33,34 +33,34 @@ type IRuntimeAddInManagerEventTab interface {
 
 var (
 	_runtimeAddInManagerEventTabId = event.DeclareEventTabIdT[runtimeAddInManagerEventTab]()
-	EventRuntimeInstallAddInId = _runtimeAddInManagerEventTabId + 0
-	EventRuntimeUninstallAddInId = _runtimeAddInManagerEventTabId + 1
-	EventRuntimeAddInStateChangedId = _runtimeAddInManagerEventTabId + 2
+	EventRuntimeInstallAddInId = event.DeclareEventIdT[runtimeAddInManagerEventTab](0)
+	EventRuntimeUninstallAddInId = event.DeclareEventIdT[runtimeAddInManagerEventTab](1)
+	EventRuntimeAddInStateChangedId = event.DeclareEventIdT[runtimeAddInManagerEventTab](2)
 )
 
 type runtimeAddInManagerEventTab [3]event.Event
 
 func (eventTab *runtimeAddInManagerEventTab) SetPanicHandling(autoRecover bool, reportError chan error) {
-	for i := range *eventTab {
-		(*eventTab)[i].SetPanicHandling(autoRecover, reportError)
+	for i := range eventTab {
+		eventTab[i].SetPanicHandling(autoRecover, reportError)
 	}
 }
 
 func (eventTab *runtimeAddInManagerEventTab) SetRecursion(recursion event.EventRecursion) {
-	(*eventTab)[0].SetRecursion(event.EventRecursion_Allow)
-	(*eventTab)[1].SetRecursion(event.EventRecursion_Allow)
-	(*eventTab)[2].SetRecursion(event.EventRecursion_Allow)
+	eventTab[0].SetRecursion(event.EventRecursion_Allow)
+	eventTab[1].SetRecursion(event.EventRecursion_Allow)
+	eventTab[2].SetRecursion(event.EventRecursion_Allow)
 }
 
 func (eventTab *runtimeAddInManagerEventTab) SetEnabled(b bool) {
-	for i := range *eventTab {
-		(*eventTab)[i].SetEnabled(b)
+	for i := range eventTab {
+		eventTab[i].SetEnabled(b)
 	}
 }
 
 func (eventTab *runtimeAddInManagerEventTab) UnbindAll() {
-	for i := range *eventTab {
-		(*eventTab)[i].UnbindAll()
+	for i := range eventTab {
+		eventTab[i].UnbindAll()
 	}
 }
 
@@ -69,35 +69,32 @@ func (eventTab *runtimeAddInManagerEventTab) Ctrl() event.IEventCtrl {
 }
 
 func (eventTab *runtimeAddInManagerEventTab) Event(id uint64) event.IEvent {
-	if _runtimeAddInManagerEventTabId != id & 0xFFFFFFFF00000000 {
-		return nil
-	}
-	pos := id & 0xFFFFFFFF
-	if pos >= uint64(len(*eventTab)) {
+	eventTabId, pos := event.SplitEventId(id)
+	if _runtimeAddInManagerEventTabId != eventTabId || pos >= len(eventTab) {
 		return nil
 	}
 	switch pos {
 	case 0:
-		(*eventTab)[0].SetRecursion(event.EventRecursion_Allow)
+		eventTab[0].SetRecursion(event.EventRecursion_Allow)
 	case 1:
-		(*eventTab)[1].SetRecursion(event.EventRecursion_Allow)
+		eventTab[1].SetRecursion(event.EventRecursion_Allow)
 	case 2:
-		(*eventTab)[2].SetRecursion(event.EventRecursion_Allow)
+		eventTab[2].SetRecursion(event.EventRecursion_Allow)
 	}
-	return &(*eventTab)[pos]
+	return &eventTab[pos]
 }
 
 func (eventTab *runtimeAddInManagerEventTab) EventRuntimeInstallAddIn() event.IEvent {
-	(*eventTab).SetRecursion(event.EventRecursion_Allow)
-	return &(*eventTab)[0]
+	eventTab.SetRecursion(event.EventRecursion_Allow)
+	return &eventTab[0]
 }
 
 func (eventTab *runtimeAddInManagerEventTab) EventRuntimeUninstallAddIn() event.IEvent {
-	(*eventTab).SetRecursion(event.EventRecursion_Allow)
-	return &(*eventTab)[1]
+	eventTab.SetRecursion(event.EventRecursion_Allow)
+	return &eventTab[1]
 }
 
 func (eventTab *runtimeAddInManagerEventTab) EventRuntimeAddInStateChanged() event.IEvent {
-	(*eventTab).SetRecursion(event.EventRecursion_Allow)
-	return &(*eventTab)[2]
+	eventTab.SetRecursion(event.EventRecursion_Allow)
+	return &eventTab[2]
 }
