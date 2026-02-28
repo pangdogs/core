@@ -175,7 +175,7 @@ func (rt *RuntimeBehavior) activateAddIn(status extension.RuntimeAddInStatus) {
 
 	extension.UnsafeRuntimeAddInStatus(status).Started()
 
-	if status.State() != extension.AddInState_Loaded {
+	if status.State() != extension.AddInState_Running {
 		rt.emitEventRunningEvent(runtime.RunningEvent_AddInActivationAborted, status)
 		return
 	}
