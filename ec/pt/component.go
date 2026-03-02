@@ -75,7 +75,7 @@ type _ComponentJSON struct {
 }
 
 // MarshalJSON implements json.Marshaler
-func (pt _Component) MarshalJSON() ([]byte, error) {
+func (pt *_Component) MarshalJSON() ([]byte, error) {
 	compStringer := _ComponentJSON{
 		Prototype: pt.prototype,
 		Instance:  pt.instanceRT.String(),
