@@ -30,12 +30,14 @@ import (
 
 // RuntimeAddInManager 运行时插件管理器
 type RuntimeAddInManager interface {
+	iRuntimeAddInManager
 	AddInManager
 
-	// ListRuntimeAddInStatuses 获取所有运行时插件状态信息
-	ListRuntimeAddInStatuses() []RuntimeAddInStatus
-
 	IRuntimeAddInManagerEventTab
+}
+
+type iRuntimeAddInManager interface {
+	getList() []RuntimeAddInStatus
 }
 
 // NewRuntimeAddInManager 创建运行时插件管理器
@@ -145,8 +147,7 @@ func (mgr *_RuntimeAddInManager) List() []AddInStatus {
 	return statuses
 }
 
-// ListRuntimeAddInStatuses 获取所有运行时插件状态信息
-func (mgr *_RuntimeAddInManager) ListRuntimeAddInStatuses() []RuntimeAddInStatus {
+func (mgr *_RuntimeAddInManager) getList() []RuntimeAddInStatus {
 	statuses := make([]RuntimeAddInStatus, 0, mgr.addInList.Len())
 
 	mgr.addInList.TraversalEach(func(slot *generic.FreeSlot[*_RuntimeAddInStatus]) {

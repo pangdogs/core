@@ -131,7 +131,7 @@ func (rt *RuntimeBehavior) initAddIn() {
 	rt.managedAddInManagerHandles[0] = extension.BindEventRuntimeInstallAddIn(addInManager, extension.HandleEventRuntimeInstallAddIn(rt.activateAddIn))
 	rt.managedAddInManagerHandles[1] = extension.BindEventRuntimeUninstallAddIn(addInManager, extension.HandleEventRuntimeUninstallAddIn(rt.deactivateAddIn))
 
-	statuses := addInManager.ListRuntimeAddInStatuses()
+	statuses := extension.UnsafeRuntimeAddInManager(addInManager).List()
 	for i := range statuses {
 		rt.activateAddIn(statuses[i])
 	}
@@ -142,7 +142,7 @@ func (rt *RuntimeBehavior) shutAddIn() {
 
 	rt.managedAddInManagerHandles[0].Unbind()
 
-	statuses := addInManager.ListRuntimeAddInStatuses()
+	statuses := extension.UnsafeRuntimeAddInManager(addInManager).List()
 	for i := len(statuses) - 1; i >= 0; i-- {
 		addInManager.Uninstall(statuses[i].Name())
 	}

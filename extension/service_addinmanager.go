@@ -34,12 +34,15 @@ import (
 
 // ServiceAddInManager 服务插件管理器
 type ServiceAddInManager interface {
+	iServiceAddInManager
 	AddInManager
 
-	// ListServiceAddInStatuses 获取所有服务插件状态信息
-	ListServiceAddInStatuses() []ServiceAddInStatus
 	// WatchEvent 监听插件事件
 	WatchEvent(ctx context.Context) <-chan any
+}
+
+type iServiceAddInManager interface {
+	getList() []ServiceAddInStatus
 }
 
 // NewServiceAddInManager 创建服务插件管理器
@@ -165,20 +168,6 @@ func (mgr *_ServiceAddInManager) List() []AddInStatus {
 	return statuses
 }
 
-// ListServiceAddInStatuses 获取所有服务插件状态信息
-func (mgr *_ServiceAddInManager) ListServiceAddInStatuses() []ServiceAddInStatus {
-	mgr.RLock()
-	defer mgr.RUnlock()
-
-	statuses := make([]ServiceAddInStatus, 0, mgr.addInList.Len())
-
-	mgr.addInList.TraversalEach(func(slot *generic.FreeSlot[*_ServiceAddInStatus]) {
-		statuses = append(statuses, slot.V)
-	})
-
-	return statuses
-}
-
 // WatchEvent 监听插件事件
 func (mgr *_ServiceAddInManager) WatchEvent(ctx context.Context) <-chan any {
 	if ctx == nil {
@@ -195,6 +184,19 @@ func (mgr *_ServiceAddInManager) WatchEvent(ctx context.Context) <-chan any {
 	})
 
 	return mgr.eventStream.Subscribe(ctx, &EventServiceAddInSnapshot{Statuses: statuses})
+}
+
+func (mgr *_ServiceAddInManager) getList() []ServiceAddInStatus {
+	mgr.RLock()
+	defer mgr.RUnlock()
+
+	statuses := make([]ServiceAddInStatus, 0, mgr.addInList.Len())
+
+	mgr.addInList.TraversalEach(func(slot *generic.FreeSlot[*_ServiceAddInStatus]) {
+		statuses = append(statuses, slot.V)
+	})
+
+	return statuses
 }
 
 func (mgr *_ServiceAddInManager) removeIfVersion(idx int, ver int64) {
