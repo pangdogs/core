@@ -46,13 +46,14 @@ func (task _Task) run(autoRecover bool, reportError chan error) {
 	var ret async.Ret
 	var panicErr error
 
-	if task.fun != nil {
+	switch {
+	case task.fun != nil:
 		ret, panicErr = task.fun.Call(autoRecover, reportError, task.args...)
-	} else if task.action != nil {
+	case task.action != nil:
 		panicErr = task.action.Call(autoRecover, reportError, task.args...)
-	} else if task.delegate != nil {
+	case task.delegate != nil:
 		ret, panicErr = task.delegate.Call(autoRecover, reportError, nil, task.args...)
-	} else if task.delegateVoid != nil {
+	case task.delegateVoid != nil:
 		panicErr = task.delegateVoid.Call(autoRecover, reportError, nil, task.args...)
 	}
 

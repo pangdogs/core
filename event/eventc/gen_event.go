@@ -77,11 +77,12 @@ package %s
 	%s "%s"`, packageEventAlias, packageEventPath)
 
 		for _, is := range fast.Imports {
-			if is.Name != nil {
+			switch {
+			case is.Name != nil:
 				if is.Name.Name == packageEventAlias {
 					continue
 				}
-			} else if is.Path != nil {
+			case is.Path != nil:
 				if path.Base(is.Path.Value) == packageEventAlias {
 					continue
 				}
