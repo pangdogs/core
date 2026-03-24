@@ -93,6 +93,9 @@ func (future Future) Wait(ctx context.Context) Result {
 	if ctx == nil {
 		ctx = context.Background()
 	}
+	if future.IsNil() {
+		exception.Panic("future is nil, cannot wait")
+	}
 
 	if future.Void() {
 		select {
@@ -117,6 +120,9 @@ func (future Future) Wait(ctx context.Context) Result {
 func (future Future) Context(ctx context.Context) context.Context {
 	if ctx == nil {
 		ctx = context.Background()
+	}
+	if future.IsNil() {
+		exception.Panic("future is nil, cannot convert to context")
 	}
 
 	ctx, cancel := context.WithCancel(ctx)
