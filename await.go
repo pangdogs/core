@@ -41,7 +41,7 @@ var (
 func Await(provider corectx.CurrentContextProvider, futures ...async.Future) AwaitDirector {
 	return AwaitDirector{
 		rtCtx:   runtime.Current(provider),
-		futures: slices.DeleteFunc(futures, func(future async.Future) bool { return future == nil }),
+		futures: slices.DeleteFunc(futures, func(future async.Future) bool { return future.IsNil() }),
 	}
 }
 
@@ -64,7 +64,7 @@ func (ad AwaitDirector) Any(fun generic.FuncVar2[runtime.Context, async.Result, 
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	resultFuture := async.NewFutureStream()
+	resultFuture := async.NewFutureChan()
 
 	if len(ad.futures) <= 0 {
 		return async.Return(resultFuture, async.NewResult(nil, nil))
@@ -123,7 +123,7 @@ func (ad AwaitDirector) AnyVoid(fun generic.ActionVar2[runtime.Context, async.Re
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	resultFuture := async.NewFutureStream()
+	resultFuture := async.NewFutureChan()
 
 	if len(ad.futures) <= 0 {
 		return async.Return(resultFuture, async.NewResult(nil, nil))
@@ -182,7 +182,7 @@ func (ad AwaitDirector) OK(fun generic.FuncVar2[runtime.Context, async.Result, a
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	resultFuture := async.NewFutureStream()
+	resultFuture := async.NewFutureChan()
 
 	if len(ad.futures) <= 0 {
 		return async.Return(resultFuture, async.NewResult(nil, nil))
@@ -244,7 +244,7 @@ func (ad AwaitDirector) OKVoid(fun generic.ActionVar2[runtime.Context, async.Res
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	resultFuture := async.NewFutureStream()
+	resultFuture := async.NewFutureChan()
 
 	if len(ad.futures) <= 0 {
 		return async.Return(resultFuture, async.NewResult(nil, nil))
@@ -306,7 +306,7 @@ func (ad AwaitDirector) All(fun generic.FuncVar2[runtime.Context, []async.Result
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	resultFuture := async.NewFutureStream()
+	resultFuture := async.NewFutureChan()
 
 	if len(ad.futures) <= 0 {
 		return async.Return(resultFuture, async.NewResult(nil, nil))
@@ -343,7 +343,7 @@ func (ad AwaitDirector) AllVoid(fun generic.ActionVar2[runtime.Context, []async.
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	resultFuture := async.NewFutureStream()
+	resultFuture := async.NewFutureChan()
 
 	if len(ad.futures) <= 0 {
 		return async.Return(resultFuture, async.NewResult(nil, nil))
@@ -380,7 +380,7 @@ func (ad AwaitDirector) Transform(fun generic.FuncVar2[runtime.Context, async.Re
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	resultFuture := async.NewFutureStream(len(ad.futures))
+	resultFuture := async.NewFutureChan(len(ad.futures))
 
 	if len(ad.futures) <= 0 {
 		return async.YieldBreak(resultFuture)
@@ -394,7 +394,7 @@ func (ad AwaitDirector) Transform(fun generic.FuncVar2[runtime.Context, async.Re
 		go func(future async.Future) {
 			defer wg.Done()
 
-			for ret := range future {
+			for ret := range future.Chan() {
 				nextFuture := ad.rtCtx.CallAsync(func(ctx runtime.Context, args ...any) async.Result {
 					return fun.UnsafeCall(ctx, ret, args...)
 				}, args...)
@@ -420,7 +420,7 @@ func (ad AwaitDirector) Foreach(fun generic.ActionVar2[runtime.Context, async.Re
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	resultFuture := async.NewFutureStream(len(ad.futures))
+	resultFuture := async.NewFutureChan(len(ad.futures))
 
 	if len(ad.futures) <= 0 {
 		return async.YieldBreak(resultFuture)
@@ -434,7 +434,7 @@ func (ad AwaitDirector) Foreach(fun generic.ActionVar2[runtime.Context, async.Re
 		go func(future async.Future) {
 			defer wg.Done()
 
-			for ret := range future {
+			for ret := range future.Chan() {
 				nextFuture := ad.rtCtx.CallVoidAsync(func(ctx runtime.Context, args ...any) {
 					fun.UnsafeCall(ctx, ret, args...)
 				}, args...)

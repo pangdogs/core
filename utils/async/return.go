@@ -21,12 +21,13 @@ package async
 
 import "git.golaxy.org/core/utils/exception"
 
-func Return(future FutureStream, ret Result) Future {
-	if cap(future) <= 0 {
+func Return(future FutureChan, ret Result) Future {
+	if future.ch == nil || future.done == nil {
 		exception.Panic("future is void result, cannot return")
 	}
-	future <- ret
-	close(future)
+	future.ch <- ret
+	close(future.ch)
+	close(future.done)
 	return future.Out()
 }
 

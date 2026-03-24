@@ -46,7 +46,7 @@ func GoAsync(ctx context.Context, fun generic.FuncVar1[context.Context, any, asy
 		ctx = context.Background()
 	}
 
-	future := async.NewFutureStream()
+	future := async.NewFutureChan()
 
 	go func() {
 		ret, panicErr := fun.SafeCall(ctx, args...)
@@ -65,7 +65,7 @@ func GoVoidAsync(ctx context.Context, fun generic.ActionVar1[context.Context, an
 		ctx = context.Background()
 	}
 
-	future := async.NewFutureStream()
+	future := async.NewFutureChan()
 
 	go func() {
 		async.Return(future, async.NewResult(nil, fun.SafeCall(ctx, args...)))
@@ -80,7 +80,7 @@ func TimeAfterAsync(ctx context.Context, dur time.Duration) async.Future {
 		ctx = context.Background()
 	}
 
-	future := async.NewFutureStream()
+	future := async.NewFutureChan()
 
 	go func() {
 		timer := time.NewTimer(dur)
@@ -104,7 +104,7 @@ func TimeAtAsync(ctx context.Context, at time.Time) async.Future {
 		ctx = context.Background()
 	}
 
-	future := async.NewFutureStream()
+	future := async.NewFutureChan()
 
 	go func() {
 		timer := time.NewTimer(time.Until(at))
@@ -128,7 +128,7 @@ func TimeTickAsync(ctx context.Context, dur time.Duration) async.Future {
 		ctx = context.Background()
 	}
 
-	future := async.NewFutureStream()
+	future := async.NewFutureChan()
 
 	go func() {
 		tick := time.NewTicker(dur)
@@ -162,7 +162,7 @@ func ReadChanAsync[T any](ctx context.Context, ch <-chan T) async.Future {
 		exception.Panicf("%w: %w: ch is nil", ErrCore, ErrArgs)
 	}
 
-	future := async.NewFutureStream(cap(ch))
+	future := async.NewFutureChan(cap(ch))
 
 	go func() {
 	loop:

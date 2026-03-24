@@ -39,7 +39,7 @@ type _Task struct {
 	delegate     generic.DelegateVar1[runtime.Context, any, async.Result]
 	delegateVoid generic.DelegateVoidVar1[runtime.Context, any]
 	args         []any
-	future       async.FutureStream
+	future       async.FutureChan
 	done         chan struct{}
 }
 
@@ -63,7 +63,7 @@ func (task _Task) run(ctx runtime.Context) {
 		ret.Error = panicErr
 	}
 
-	if task.future != nil {
+	if !task.future.IsNil() {
 		async.Return(task.future, ret)
 	}
 

@@ -25,27 +25,28 @@ import (
 	"git.golaxy.org/core/utils/exception"
 )
 
-func YieldReturn(ctx context.Context, future FutureStream, ret Result) bool {
+func YieldReturn(ctx context.Context, future FutureChan, ret Result) bool {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	if cap(future) <= 0 {
+	if future.ch == nil || future.done == nil {
 		exception.Panic("future is void result, cannot yield return")
 	}
 
 	select {
-	case future <- ret:
+	case future.ch <- ret:
 		return true
 	case <-ctx.Done():
 		return false
 	}
 }
 
-func YieldBreak(future FutureStream) Future {
-	if cap(future) <= 0 {
+func YieldBreak(future FutureChan) Future {
+	if future.ch == nil || future.done == nil {
 		exception.Panic("future is void result, cannot yield break")
 	}
-	close(future)
+	close(future.ch)
+	close(future.done)
 	return future.Out()
 }

@@ -48,7 +48,7 @@ func Test_StartService(t *testing.T) {
 		}),
 	)
 
-	<-core.NewService(svcCtx).Run()
+	<-core.NewService(svcCtx).Run().Done()
 }
 
 type EntityTest1 struct {
@@ -182,7 +182,7 @@ func Test_ServiceRegisterEntityPT(t *testing.T) {
 		}),
 	)
 
-	<-core.NewService(svcCtx).Run()
+	<-core.NewService(svcCtx).Run().Done()
 }
 
 func Test_CreateEntity(t *testing.T) {
@@ -228,7 +228,7 @@ func Test_CreateEntity(t *testing.T) {
 		}),
 	)
 
-	<-core.NewService(svcCtx).Run()
+	<-core.NewService(svcCtx).Run().Done()
 }
 
 type ComponentTestEnable1 struct {
@@ -380,7 +380,7 @@ func Test_EntityComponentEnable(t *testing.T) {
 		}),
 	)
 
-	<-core.NewService(svcCtx).Run()
+	<-core.NewService(svcCtx).Run().Done()
 }
 
 type ComponentTestDynamic1 struct {
@@ -481,7 +481,7 @@ func Test_EntityDynamicComponent(t *testing.T) {
 		}),
 	)
 
-	<-core.NewService(svcCtx).Run()
+	<-core.NewService(svcCtx).Run().Done()
 }
 
 type ComponentTestParent struct {
@@ -700,7 +700,7 @@ func Test_EntityTree(t *testing.T) {
 		}),
 	)
 
-	<-core.NewService(svcCtx).Run()
+	<-core.NewService(svcCtx).Run().Done()
 }
 
 type ComponentTestChildDetachInAttaching struct {
@@ -1011,7 +1011,7 @@ func Test_EntityTreeSequence(t *testing.T) {
 		}),
 	)
 
-	<-core.NewService(svcCtx).Run()
+	<-core.NewService(svcCtx).Run().Done()
 }
 
 type ComponentTestFrameUpdate struct {
@@ -1058,7 +1058,7 @@ func Test_CreateEntityFrameUpdate(t *testing.T) {
 		}),
 	)
 
-	<-core.NewService(svcCtx).Run()
+	<-core.NewService(svcCtx).Run().Done()
 }
 
 type ComponentTestStressFrameUpdate struct {
@@ -1109,7 +1109,7 @@ func Test_CreateEntityStressFrameUpdate(t *testing.T) {
 		}),
 	)
 
-	<-core.NewService(svcCtx).Run()
+	<-core.NewService(svcCtx).Run().Done()
 }
 
 type ServiceAddIn1 struct{}
@@ -1178,7 +1178,7 @@ func Test_ServiceAddIn(t *testing.T) {
 		}),
 	)
 
-	<-core.NewService(svcCtx).Run()
+	<-core.NewService(svcCtx).Run().Done()
 }
 
 type RuntimeAddIn1 struct{}
@@ -1235,5 +1235,5 @@ func Test_RuntimeAddIn(t *testing.T) {
 		}),
 	)
 
-	<-core.NewService(svcCtx).Run()
+	<-core.NewService(svcCtx).Run().Done()
 }

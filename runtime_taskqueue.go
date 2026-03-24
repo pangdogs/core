@@ -69,7 +69,7 @@ func (q *_TaskQueue) enqueueCall(
 		delegate:     delegate,
 		delegateVoid: delegateVoid,
 		args:         args,
-		future:       async.NewFutureStream(),
+		future:       async.NewFutureChan(),
 	}
 
 	defer func() {

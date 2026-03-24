@@ -80,7 +80,7 @@ func callDelegateVoidAsync(entity ec.ConcurrentEntity, fun generic.DelegateVoidV
 func (ctx *ContextBehavior) CallAsync(entityId uid.Id, fun generic.FuncVar1[ec.Entity, any, async.Result], args ...any) async.Future {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
-		return async.Return(async.NewFutureStream(), async.NewResult(nil, err))
+		return async.Return(async.NewFutureChan(), async.NewResult(nil, err))
 	}
 	return callAsync(entity, fun, args...)
 }
@@ -93,7 +93,7 @@ func (ctx *ContextBehavior) CallAsync(entityId uid.Id, fun generic.FuncVar1[ec.E
 func (ctx *ContextBehavior) CallDelegateAsync(entityId uid.Id, fun generic.DelegateVar1[ec.Entity, any, async.Result], args ...any) async.Future {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
-		return async.Return(async.NewFutureStream(), async.NewResult(nil, err))
+		return async.Return(async.NewFutureChan(), async.NewResult(nil, err))
 	}
 	return callDelegateAsync(entity, fun, args...)
 }
@@ -106,7 +106,7 @@ func (ctx *ContextBehavior) CallDelegateAsync(entityId uid.Id, fun generic.Deleg
 func (ctx *ContextBehavior) CallVoidAsync(entityId uid.Id, fun generic.ActionVar1[ec.Entity, any], args ...any) async.Future {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
-		return async.Return(async.NewFutureStream(), async.NewResult(nil, err))
+		return async.Return(async.NewFutureChan(), async.NewResult(nil, err))
 	}
 	return callVoidAsync(entity, fun, args...)
 }
@@ -119,7 +119,7 @@ func (ctx *ContextBehavior) CallVoidAsync(entityId uid.Id, fun generic.ActionVar
 func (ctx *ContextBehavior) CallDelegateVoidAsync(entityId uid.Id, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) async.Future {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
-		return async.Return(async.NewFutureStream(), async.NewResult(nil, err))
+		return async.Return(async.NewFutureChan(), async.NewResult(nil, err))
 	}
 	return callDelegateVoidAsync(entity, fun, args...)
 }

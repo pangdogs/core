@@ -32,29 +32,61 @@ var (
 )
 
 func NewFutureVoid() FutureVoid {
-	return make(chan Result)
+	return make(chan struct{})
 }
 
-type FutureVoid chan Result
+type FutureVoid chan struct{}
 
 func (future FutureVoid) Out() Future {
-	return chan Result(future)
+	return Future{
+		done: future,
+		void: true,
+	}
 }
 
-func NewFutureStream(size ...int) FutureStream {
-	return make(chan Result, max(1, pie.First(size)))
+func NewFutureChan(size ...int) FutureChan {
+	return FutureChan{
+		ch:   make(chan Result, max(1, pie.First(size))),
+		done: make(chan struct{}),
+	}
 }
 
-type FutureStream chan Result
-
-func (future FutureStream) Out() Future {
-	return chan Result(future)
+type FutureChan struct {
+	ch   chan Result
+	done chan struct{}
 }
 
-type Future <-chan Result
+func (future FutureChan) IsNil() bool {
+	return future.ch == nil && future.done == nil
+}
+
+func (future FutureChan) Out() Future {
+	return Future{
+		ch:   future.ch,
+		done: future.done,
+	}
+}
+
+type Future struct {
+	ch   <-chan Result
+	done <-chan struct{}
+	void bool
+}
+
+func (future Future) IsNil() bool {
+	return future.ch == nil && future.done == nil
+}
 
 func (future Future) Void() bool {
-	return cap(future) <= 0
+	return future.void
+}
+
+func (future Future) Chan() <-chan Result {
+	return future.ch
+}
+
+func (future Future) Done() <-chan struct{} {
+	return future.done
 }
 
 func (future Future) Wait(ctx context.Context) Result {
@@ -62,12 +94,18 @@ func (future Future) Wait(ctx context.Context) Result {
 		ctx = context.Background()
 	}
 
+	if future.Void() {
+		select {
+		case <-future.done:
+			return NewResult(nil, nil)
+		case <-ctx.Done():
+			return NewResult(nil, ctx.Err())
+		}
+	}
+
 	select {
-	case ret, ok := <-future:
+	case ret, ok := <-future.ch:
 		if !ok {
-			if future.Void() {
-				return Result{}
-			}
 			return NewResult(nil, ErrFutureClosed)
 		}
 		return ret
@@ -84,16 +122,10 @@ func (future Future) Context(ctx context.Context) context.Context {
 	ctx, cancel := context.WithCancel(ctx)
 
 	go func() {
-		for {
-			select {
-			case _, ok := <-ctx.Done():
-				if !ok {
-					return
-				}
-			case <-future:
-				cancel()
-				return
-			}
+		select {
+		case <-ctx.Done():
+		case <-future.done:
+			cancel()
 		}
 	}()
 

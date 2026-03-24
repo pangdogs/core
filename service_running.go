@@ -174,7 +174,7 @@ func (svc *ServiceBehavior) shutAddIn() {
 
 	for _, status := range pie.Reverse(extension.UnsafeServiceAddInManager(addInManager).List()) {
 		addInManager.Uninstall(status.Name())
-		<-status.WaitState(extension.AddInState_Unloaded)
+		<-status.WaitState(extension.AddInState_Unloaded).Done()
 	}
 }
 
