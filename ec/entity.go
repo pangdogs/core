@@ -111,7 +111,7 @@ const (
 type EntityBehavior struct {
 	context.Context
 	terminate             context.CancelFunc
-	terminated            chan async.Ret
+	terminated            async.FutureVoid
 	options               EntityOptions
 	prototype             EntityPT
 	context               iface.Cache
@@ -224,7 +224,7 @@ func (entity *EntityBehavior) init(options EntityOptions) {
 
 func (entity *EntityBehavior) withContext(ctx context.Context) {
 	entity.Context, entity.terminate = context.WithCancel(ctx)
-	entity.terminated = async.NewAsyncRet()
+	entity.terminated = async.NewFutureVoid()
 }
 
 func (entity *EntityBehavior) getOptions() *EntityOptions {
@@ -259,7 +259,7 @@ func (entity *EntityBehavior) setState(state EntityState) {
 	case EntityState_Destroyed:
 		entity.managedHandles.UnbindAllEventHandles()
 		entity.managedUnbindRuntimeHandles()
-		async.Return(entity.terminated, async.VoidRet)
+		async.ReturnVoid(entity.terminated)
 	}
 }
 

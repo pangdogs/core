@@ -97,7 +97,7 @@ func (rt *RuntimeBehavior) scheduleFrameTasks(wg *sync.WaitGroup, curFrames, tot
 	}
 }
 
-func (rt *RuntimeBehavior) frameLoop(...any) {
+func (rt *RuntimeBehavior) frameLoop(runtime.Context, ...any) {
 	rt.frameLoopEnd()
 	rt.frameLoopBegin()
 }

@@ -20,26 +20,27 @@
 package core
 
 import (
+	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/generic"
 )
 
-// PushCallAsync 将调用函数压入接受者的任务处理流水线，返回AsyncRet。
-func (rt *RuntimeBehavior) PushCallAsync(fun generic.FuncVar0[any, async.Ret], args ...any) async.AsyncRet {
+// PushCallAsync 将调用函数压入接受者的任务处理流水线，返回Future。
+func (rt *RuntimeBehavior) PushCallAsync(fun generic.FuncVar1[runtime.Context, any, async.Result], args ...any) async.Future {
 	return rt.taskQueue.enqueueCall(fun, nil, nil, nil, args)
 }
 
-// PushCallDelegateAsync 将调用委托压入接受者的任务处理流水线，返回AsyncRet。
-func (rt *RuntimeBehavior) PushCallDelegateAsync(fun generic.DelegateVar0[any, async.Ret], args ...any) async.AsyncRet {
+// PushCallDelegateAsync 将调用委托压入接受者的任务处理流水线，返回Future。
+func (rt *RuntimeBehavior) PushCallDelegateAsync(fun generic.DelegateVar1[runtime.Context, any, async.Result], args ...any) async.Future {
 	return rt.taskQueue.enqueueCall(nil, nil, fun, nil, args)
 }
 
-// PushCallVoidAsync 将调用函数压入接受者的任务处理流水线，返回AsyncRet。
-func (rt *RuntimeBehavior) PushCallVoidAsync(fun generic.ActionVar0[any], args ...any) async.AsyncRet {
+// PushCallVoidAsync 将调用函数压入接受者的任务处理流水线，返回Future。
+func (rt *RuntimeBehavior) PushCallVoidAsync(fun generic.ActionVar1[runtime.Context, any], args ...any) async.Future {
 	return rt.taskQueue.enqueueCall(nil, fun, nil, nil, args)
 }
 
-// PushCallDelegateVoidAsync 将调用委托压入接受者的任务处理流水线，返回AsyncRet。
-func (rt *RuntimeBehavior) PushCallDelegateVoidAsync(fun generic.DelegateVoidVar0[any], args ...any) async.AsyncRet {
+// PushCallDelegateVoidAsync 将调用委托压入接受者的任务处理流水线，返回Future。
+func (rt *RuntimeBehavior) PushCallDelegateVoidAsync(fun generic.DelegateVoidVar1[runtime.Context, any], args ...any) async.Future {
 	return rt.taskQueue.enqueueCall(nil, nil, nil, fun, args)
 }

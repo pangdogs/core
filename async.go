@@ -31,106 +31,104 @@ import (
 )
 
 // CallAsync 异步执行代码，有返回值
-func CallAsync(provider corectx.ConcurrentContextProvider, fun generic.FuncVar1[runtime.Context, any, async.Ret], args ...any) async.AsyncRet {
-	ctx := runtime.UnsafeConcurrentContext(runtime.Concurrent(provider)).Context()
-	return ctx.CallAsync(func(...any) async.Ret { return fun.UnsafeCall(ctx, args...) })
+func CallAsync(provider corectx.ConcurrentContextProvider, fun generic.FuncVar1[runtime.Context, any, async.Result], args ...any) async.Future {
+	return runtime.Concurrent(provider).CallAsync(fun, args...)
 }
 
 // CallVoidAsync 异步执行代码，无返回值
-func CallVoidAsync(provider corectx.ConcurrentContextProvider, fun generic.ActionVar1[runtime.Context, any], args ...any) async.AsyncRet {
-	ctx := runtime.UnsafeConcurrentContext(runtime.Concurrent(provider)).Context()
-	return ctx.CallVoidAsync(func(...any) { fun.UnsafeCall(ctx, args...) })
+func CallVoidAsync(provider corectx.ConcurrentContextProvider, fun generic.ActionVar1[runtime.Context, any], args ...any) async.Future {
+	return runtime.Concurrent(provider).CallVoidAsync(fun, args...)
 }
 
 // GoAsync 使用新线程执行代码，有返回值
-func GoAsync(ctx context.Context, fun generic.FuncVar1[context.Context, any, async.Ret], args ...any) async.AsyncRet {
+func GoAsync(ctx context.Context, fun generic.FuncVar1[context.Context, any, async.Result], args ...any) async.Future {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	asyncRet := async.NewAsyncRet()
+	future := async.NewFutureStream()
 
 	go func() {
 		ret, panicErr := fun.SafeCall(ctx, args...)
 		if panicErr != nil {
 			ret.Error = panicErr
 		}
-		async.Return(asyncRet, ret)
+		async.Return(future, ret)
 	}()
 
-	return asyncRet
+	return future.Out()
 }
 
 // GoVoidAsync 使用新线程执行代码，无返回值
-func GoVoidAsync(ctx context.Context, fun generic.ActionVar1[context.Context, any], args ...any) async.AsyncRet {
+func GoVoidAsync(ctx context.Context, fun generic.ActionVar1[context.Context, any], args ...any) async.Future {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	asyncRet := async.NewAsyncRet()
+	future := async.NewFutureStream()
 
 	go func() {
-		async.Return(asyncRet, async.NewRet(nil, fun.SafeCall(ctx, args...)))
+		async.Return(future, async.NewResult(nil, fun.SafeCall(ctx, args...)))
 	}()
 
-	return asyncRet
+	return future.Out()
 }
 
 // TimeAfterAsync 定时器，指定时长
-func TimeAfterAsync(ctx context.Context, dur time.Duration) async.AsyncRet {
+func TimeAfterAsync(ctx context.Context, dur time.Duration) async.Future {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	asyncRet := async.NewAsyncRet()
+	future := async.NewFutureStream()
 
 	go func() {
 		timer := time.NewTimer(dur)
 		defer timer.Stop()
 
 		select {
-		case <-timer.C:
-			async.YieldReturn(ctx, asyncRet, async.VoidRet)
+		case t := <-timer.C:
+			async.YieldReturn(ctx, future, async.NewResult(t, nil))
 		case <-ctx.Done():
 		}
 
-		async.YieldBreak(asyncRet)
+		async.YieldBreak(future)
 	}()
 
-	return asyncRet
+	return future.Out()
 }
 
 // TimeAtAsync 定时器，指定时间点
-func TimeAtAsync(ctx context.Context, at time.Time) async.AsyncRet {
+func TimeAtAsync(ctx context.Context, at time.Time) async.Future {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	asyncRet := async.NewAsyncRet()
+	future := async.NewFutureStream()
 
 	go func() {
 		timer := time.NewTimer(time.Until(at))
 		defer timer.Stop()
 
 		select {
-		case <-timer.C:
-			async.YieldReturn(ctx, asyncRet, async.VoidRet)
+		case t := <-timer.C:
+			async.YieldReturn(ctx, future, async.NewResult(t, nil))
 		case <-ctx.Done():
 		}
 
-		async.YieldBreak(asyncRet)
+		async.YieldBreak(future)
 	}()
 
-	return asyncRet
+	return future.Out()
 }
 
 // TimeTickAsync 心跳器
-func TimeTickAsync(ctx context.Context, dur time.Duration) async.AsyncRet {
+func TimeTickAsync(ctx context.Context, dur time.Duration) async.Future {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	asyncRet := async.NewAsyncRet()
+	future := async.NewFutureStream()
 
 	go func() {
 		tick := time.NewTicker(dur)
@@ -139,8 +137,8 @@ func TimeTickAsync(ctx context.Context, dur time.Duration) async.AsyncRet {
 	loop:
 		for {
 			select {
-			case <-tick.C:
-				if !async.YieldReturn(ctx, asyncRet, async.VoidRet) {
+			case t := <-tick.C:
+				if !async.YieldReturn(ctx, future, async.NewResult(t, nil)) {
 					break loop
 				}
 			case <-ctx.Done():
@@ -148,19 +146,14 @@ func TimeTickAsync(ctx context.Context, dur time.Duration) async.AsyncRet {
 			}
 		}
 
-		async.YieldBreak(asyncRet)
+		async.YieldBreak(future)
 	}()
 
-	return asyncRet
+	return future.Out()
 }
 
-// ReadChanAsync 读取channel转换为AsyncRet
-func ReadChanAsync(ctx context.Context, ch <-chan any) async.AsyncRet {
-	return ReadChanAsyncT[any](ctx, ch)
-}
-
-// ReadChanAsyncT 读取channel转换为AsyncRet
-func ReadChanAsyncT[T any](ctx context.Context, ch <-chan T) async.AsyncRet {
+// ReadChanAsync 读取channel转换为Future
+func ReadChanAsync[T any](ctx context.Context, ch <-chan T) async.Future {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -169,7 +162,7 @@ func ReadChanAsyncT[T any](ctx context.Context, ch <-chan T) async.AsyncRet {
 		exception.Panicf("%w: %w: ch is nil", ErrCore, ErrArgs)
 	}
 
-	asyncRet := async.NewAsyncRet()
+	future := async.NewFutureStream(cap(ch))
 
 	go func() {
 	loop:
@@ -179,15 +172,15 @@ func ReadChanAsyncT[T any](ctx context.Context, ch <-chan T) async.AsyncRet {
 				if !ok {
 					break loop
 				}
-				if !async.YieldReturn(ctx, asyncRet, async.NewRet(v, nil)) {
+				if !async.YieldReturn(ctx, future, async.NewResult(v, nil)) {
 					break loop
 				}
 			case <-ctx.Done():
 				break loop
 			}
 		}
-		async.YieldBreak(asyncRet)
+		async.YieldBreak(future)
 	}()
 
-	return asyncRet
+	return future.Out()
 }

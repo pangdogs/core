@@ -24,7 +24,6 @@ import (
 
 	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/core/utils/async"
 )
 
 // Deprecated: UnsafeContext 访问运行时上下文内部方法
@@ -54,7 +53,7 @@ func (u _UnsafeContext) SetFrame(frame Frame) {
 }
 
 // SetCallee 设置调用接受者
-func (u _UnsafeContext) SetCallee(callee async.Callee) {
+func (u _UnsafeContext) SetCallee(callee Callee) {
 	u.setCallee(callee)
 }
 

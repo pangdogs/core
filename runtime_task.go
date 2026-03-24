@@ -20,6 +20,7 @@
 package core
 
 import (
+	"git.golaxy.org/core/runtime"
 	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/generic"
 )
@@ -33,28 +34,28 @@ const (
 
 type _Task struct {
 	typ          TaskType
-	fun          generic.FuncVar0[any, async.Ret]
-	action       generic.ActionVar0[any]
-	delegate     generic.DelegateVar0[any, async.Ret]
-	delegateVoid generic.DelegateVoidVar0[any]
+	fun          generic.FuncVar1[runtime.Context, any, async.Result]
+	action       generic.ActionVar1[runtime.Context, any]
+	delegate     generic.DelegateVar1[runtime.Context, any, async.Result]
+	delegateVoid generic.DelegateVoidVar1[runtime.Context, any]
 	args         []any
-	asyncRet     chan async.Ret
+	future       async.FutureStream
 	done         chan struct{}
 }
 
-func (task _Task) run(autoRecover bool, reportError chan error) {
-	var ret async.Ret
+func (task _Task) run(ctx runtime.Context) {
+	var ret async.Result
 	var panicErr error
 
 	switch {
 	case task.fun != nil:
-		ret, panicErr = task.fun.Call(autoRecover, reportError, task.args...)
+		ret, panicErr = task.fun.Call(ctx.AutoRecover(), ctx.ReportError(), ctx, task.args...)
 	case task.action != nil:
-		panicErr = task.action.Call(autoRecover, reportError, task.args...)
+		panicErr = task.action.Call(ctx.AutoRecover(), ctx.ReportError(), ctx, task.args...)
 	case task.delegate != nil:
-		ret, panicErr = task.delegate.Call(autoRecover, reportError, nil, task.args...)
+		ret, panicErr = task.delegate.Call(ctx.AutoRecover(), ctx.ReportError(), nil, ctx, task.args...)
 	case task.delegateVoid != nil:
-		panicErr = task.delegateVoid.Call(autoRecover, reportError, nil, task.args...)
+		panicErr = task.delegateVoid.Call(ctx.AutoRecover(), ctx.ReportError(), nil, ctx, task.args...)
 	}
 
 	if panicErr != nil {
@@ -62,8 +63,8 @@ func (task _Task) run(autoRecover bool, reportError chan error) {
 		ret.Error = panicErr
 	}
 
-	if task.asyncRet != nil {
-		async.Return(task.asyncRet, ret)
+	if task.future != nil {
+		async.Return(task.future, ret)
 	}
 
 	if task.done != nil {

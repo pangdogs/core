@@ -17,15 +17,35 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package core
+package async
 
-import "git.golaxy.org/core/utils/async"
+import (
+	"context"
 
-type iWorker interface {
-	// Run 运行
-	Run() async.Future
-	// Terminate 停止
-	Terminate() async.Future
-	// Terminated 已停止
-	Terminated() async.Future
+	"git.golaxy.org/core/utils/exception"
+)
+
+func YieldReturn(ctx context.Context, future FutureStream, ret Result) bool {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	if cap(future) <= 0 {
+		exception.Panic("future is void result, cannot yield return")
+	}
+
+	select {
+	case future <- ret:
+		return true
+	case <-ctx.Done():
+		return false
+	}
+}
+
+func YieldBreak(future FutureStream) Future {
+	if cap(future) <= 0 {
+		exception.Panic("future is void result, cannot yield break")
+	}
+	close(future)
+	return future.Out()
 }

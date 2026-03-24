@@ -21,69 +21,23 @@ package async
 
 import "fmt"
 
-var (
-	VoidRet = NewRet(nil, nil) // 空返回值
-)
-
-// NewRet 创建调用结果
-func NewRet(val any, err error) Ret {
-	return NewRetT(val, err)
-}
-
-// NewRetT 创建调用结果
-func NewRetT[T any](val T, err error) RetT[T] {
-	return RetT[T]{
-		Value: val,
+func NewResult(value any, err error) Result {
+	return Result{
+		Value: value,
 		Error: err,
 	}
 }
 
-// CastRetT 转换
-func CastRetT[T any](ret Ret) RetT[T] {
-	if ret.Value == nil || ret.Error != nil {
-		return RetT[T]{
-			Error: ret.Error,
-		}
-	}
-	return RetT[T]{
-		Value: ret.Value.(T),
-		Error: ret.Error,
-	}
+type Result struct {
+	Value any
+	Error error
 }
 
-// AsRetT 转换
-func AsRetT[T any](ret Ret) (RetT[T], bool) {
-	if ret.Value == nil || ret.Error != nil {
-		return RetT[T]{
-			Error: ret.Error,
-		}, true
-	}
-	v, ok := ret.Value.(T)
-	if !ok {
-		return RetT[T]{}, false
-	}
-	return RetT[T]{
-		Value: v,
-		Error: ret.Error,
-	}, true
-}
-
-// Ret 调用结果
-type Ret = RetT[any]
-
-// RetT 调用结果
-type RetT[T any] struct {
-	Value T     // 返回值
-	Error error // error
-}
-
-// OK 是否成功
-func (ret RetT[T]) OK() bool {
+func (ret Result) OK() bool {
 	return ret.Error == nil
 }
 
-// String implements fmt.Stringer
-func (ret RetT[T]) String() string {
+func (ret Result) String() string {
 	if ret.Error != nil {
 		return ret.Error.Error()
 	}

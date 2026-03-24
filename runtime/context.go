@@ -28,7 +28,6 @@ import (
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/corectx"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/iface"
@@ -64,7 +63,7 @@ type Context interface {
 	corectx.CurrentContextProvider
 	reinterpret.InstanceProvider
 	extension.AddInProvider
-	async.Caller
+	Caller
 	GCCollector
 	fmt.Stringer
 
@@ -91,7 +90,7 @@ type iContext interface {
 	getOptions() *ContextOptions
 	emitEventRunningEvent(runningEvent RunningEvent, args ...any)
 	setFrame(frame Frame)
-	setCallee(callee async.Callee)
+	setCallee(callee Callee)
 	getServiceContext() service.Context
 	getAddInManager() extension.RuntimeAddInManager
 	getScoped() *atomic.Bool
@@ -106,7 +105,7 @@ type ContextBehavior struct {
 	reflected     reflect.Value
 	frame         Frame
 	entityManager _EntityManager
-	callee        async.Callee
+	callee        Callee
 	scoped        atomic.Bool
 	gcList        []GC
 	managed       event.ManagedHandles
@@ -247,7 +246,7 @@ func (ctx *ContextBehavior) setFrame(frame Frame) {
 	ctx.frame = frame
 }
 
-func (ctx *ContextBehavior) setCallee(callee async.Callee) {
+func (ctx *ContextBehavior) setCallee(callee Callee) {
 	ctx.callee = callee
 }
 

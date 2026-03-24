@@ -54,9 +54,9 @@ type Context interface {
 	// WaitGroup 获取等待组
 	WaitGroup() WaitGroup
 	// Terminate 停止
-	Terminate() async.AsyncRet
+	Terminate() async.Future
 	// Terminated 已停止
-	Terminated() async.AsyncRet
+	Terminated() async.Future
 }
 
 type iContext interface {
@@ -73,7 +73,7 @@ type ContextBehavior struct {
 	reportError chan error
 	barrier     generic.Barrier
 	terminate   context.CancelFunc
-	terminated  chan async.Ret
+	terminated  async.FutureVoid
 }
 
 // ParentContext 获取父上下文
@@ -97,14 +97,14 @@ func (ctx *ContextBehavior) WaitGroup() WaitGroup {
 }
 
 // Terminate 停止
-func (ctx *ContextBehavior) Terminate() async.AsyncRet {
+func (ctx *ContextBehavior) Terminate() async.Future {
 	ctx.terminate()
-	return ctx.terminated
+	return ctx.terminated.Out()
 }
 
 // Terminated 已停止
-func (ctx *ContextBehavior) Terminated() async.AsyncRet {
-	return ctx.terminated
+func (ctx *ContextBehavior) Terminated() async.Future {
+	return ctx.terminated.Out()
 }
 
 func (ctx *ContextBehavior) init(parentCtx context.Context, autoRecover bool, reportError chan error) {
@@ -116,7 +116,7 @@ func (ctx *ContextBehavior) init(parentCtx context.Context, autoRecover bool, re
 	ctx.autoRecover = autoRecover
 	ctx.reportError = reportError
 	ctx.Context, ctx.terminate = context.WithCancel(ctx.parentCtx)
-	ctx.terminated = async.NewAsyncRet()
+	ctx.terminated = async.NewFutureVoid()
 }
 
 func (ctx *ContextBehavior) closeWaitGroup() {
@@ -124,5 +124,5 @@ func (ctx *ContextBehavior) closeWaitGroup() {
 }
 
 func (ctx *ContextBehavior) returnTerminated() {
-	async.Return(ctx.terminated, async.VoidRet)
+	async.ReturnVoid(ctx.terminated)
 }

@@ -34,54 +34,54 @@ import (
 )
 
 var (
-	ErrAllAsyncRetExceeded = fmt.Errorf("%w: all of async result exceeded, %w", ErrCore, context.DeadlineExceeded)
+	ErrAllFuturesExceeded = fmt.Errorf("%w: all futures exceeded deadline: %w", ErrCore, context.DeadlineExceeded)
 )
 
 // Await 异步等待结果返回
-func Await(provider corectx.CurrentContextProvider, asyncRets ...async.AsyncRet) AwaitDirector {
+func Await(provider corectx.CurrentContextProvider, futures ...async.Future) AwaitDirector {
 	return AwaitDirector{
-		rtCtx:     runtime.Current(provider),
-		asyncRets: slices.DeleteFunc(asyncRets, func(asyncRet async.AsyncRet) bool { return asyncRet == nil }),
+		rtCtx:   runtime.Current(provider),
+		futures: slices.DeleteFunc(futures, func(future async.Future) bool { return future == nil }),
 	}
 }
 
 // AwaitDirector 异步等待分发器
 type AwaitDirector struct {
-	rtCtx     runtime.Context
-	asyncRets []async.AsyncRet
+	rtCtx   runtime.Context
+	futures []async.Future
+}
+
+func (ad AwaitDirector) waitContext() (context.Context, context.CancelFunc) {
+	if len(ad.futures) > 1 {
+		return context.WithCancel(ad.rtCtx)
+	}
+	return ad.rtCtx, nil
 }
 
 // Any 异步等待任意一个结果返回，有返回值
-func (ad AwaitDirector) Any(fun generic.FuncVar2[runtime.Context, async.Ret, any, async.Ret], args ...any) async.AsyncRet {
+func (ad AwaitDirector) Any(fun generic.FuncVar2[runtime.Context, async.Result, any, async.Result], args ...any) async.Future {
 	if ad.rtCtx == nil {
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	awaitRet := async.NewAsyncRet()
+	resultFuture := async.NewFutureStream()
 
-	if len(ad.asyncRets) <= 0 {
-		return async.Return(awaitRet, async.VoidRet)
+	if len(ad.futures) <= 0 {
+		return async.Return(resultFuture, async.NewResult(nil, nil))
 	}
 
-	var ctx context.Context
-	var cancel context.CancelFunc
-
-	if len(ad.asyncRets) > 1 {
-		ctx, cancel = context.WithCancel(ad.rtCtx)
-	} else {
-		ctx = ad.rtCtx
-	}
+	ctx, cancel := ad.waitContext()
 
 	var once atomic.Bool
 	var wg sync.WaitGroup
 
-	for i := range ad.asyncRets {
+	for i := range ad.futures {
 		wg.Add(1)
 
-		go func(asyncRet async.AsyncRet) {
+		go func(future async.Future) {
 			defer wg.Done()
 
-			ret := asyncRet.Wait(ctx)
+			ret := future.Wait(ctx)
 
 			if !once.CompareAndSwap(false, true) {
 				return
@@ -91,13 +91,13 @@ func (ad AwaitDirector) Any(fun generic.FuncVar2[runtime.Context, async.Ret, any
 				cancel()
 			}
 
-			callRet := ad.rtCtx.CallAsync(func(args ...any) async.Ret {
-				return fun.UnsafeCall(ad.rtCtx, ret, args...)
+			nextFuture := ad.rtCtx.CallAsync(func(ctx runtime.Context, args ...any) async.Result {
+				return fun.UnsafeCall(ctx, ret, args...)
 			}, args...)
 
-			async.Return(awaitRet, callRet.Wait(ad.rtCtx))
+			async.Return(resultFuture, nextFuture.Wait(ad.rtCtx))
 
-		}(ad.asyncRets[i])
+		}(ad.futures[i])
 	}
 
 	go func() {
@@ -111,43 +111,36 @@ func (ad AwaitDirector) Any(fun generic.FuncVar2[runtime.Context, async.Ret, any
 			return
 		}
 
-		async.Return(awaitRet, async.NewRet(nil, ErrAllAsyncRetExceeded))
+		async.Return(resultFuture, async.NewResult(nil, ErrAllFuturesExceeded))
 	}()
 
-	return awaitRet
+	return resultFuture.Out()
 }
 
 // AnyVoid 异步等待任意一个结果返回，无返回值
-func (ad AwaitDirector) AnyVoid(fun generic.ActionVar2[runtime.Context, async.Ret, any], args ...any) async.AsyncRet {
+func (ad AwaitDirector) AnyVoid(fun generic.ActionVar2[runtime.Context, async.Result, any], args ...any) async.Future {
 	if ad.rtCtx == nil {
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	awaitRet := async.NewAsyncRet()
+	resultFuture := async.NewFutureStream()
 
-	if len(ad.asyncRets) <= 0 {
-		return async.Return(awaitRet, async.VoidRet)
+	if len(ad.futures) <= 0 {
+		return async.Return(resultFuture, async.NewResult(nil, nil))
 	}
 
-	var ctx context.Context
-	var cancel context.CancelFunc
-
-	if len(ad.asyncRets) > 1 {
-		ctx, cancel = context.WithCancel(ad.rtCtx)
-	} else {
-		ctx = ad.rtCtx
-	}
+	ctx, cancel := ad.waitContext()
 
 	var once atomic.Bool
 	var wg sync.WaitGroup
 
-	for i := range ad.asyncRets {
+	for i := range ad.futures {
 		wg.Add(1)
 
-		go func(asyncRet async.AsyncRet) {
+		go func(future async.Future) {
 			defer wg.Done()
 
-			ret := asyncRet.Wait(ctx)
+			ret := future.Wait(ctx)
 
 			if !once.CompareAndSwap(false, true) {
 				return
@@ -157,13 +150,13 @@ func (ad AwaitDirector) AnyVoid(fun generic.ActionVar2[runtime.Context, async.Re
 				cancel()
 			}
 
-			callRet := ad.rtCtx.CallVoidAsync(func(args ...any) {
-				fun.UnsafeCall(ad.rtCtx, ret, args...)
+			nextFuture := ad.rtCtx.CallVoidAsync(func(ctx runtime.Context, args ...any) {
+				fun.UnsafeCall(ctx, ret, args...)
 			}, args...)
 
-			async.Return(awaitRet, callRet.Wait(ad.rtCtx))
+			async.Return(resultFuture, nextFuture.Wait(ad.rtCtx))
 
-		}(ad.asyncRets[i])
+		}(ad.futures[i])
 	}
 
 	go func() {
@@ -177,43 +170,36 @@ func (ad AwaitDirector) AnyVoid(fun generic.ActionVar2[runtime.Context, async.Re
 			return
 		}
 
-		async.Return(awaitRet, async.NewRet(nil, ErrAllAsyncRetExceeded))
+		async.Return(resultFuture, async.NewResult(nil, ErrAllFuturesExceeded))
 	}()
 
-	return awaitRet
+	return resultFuture.Out()
 }
 
 // OK 异步等待任意一个结果成功返回，有返回值
-func (ad AwaitDirector) OK(fun generic.FuncVar2[runtime.Context, async.Ret, any, async.Ret], args ...any) async.AsyncRet {
+func (ad AwaitDirector) OK(fun generic.FuncVar2[runtime.Context, async.Result, any, async.Result], args ...any) async.Future {
 	if ad.rtCtx == nil {
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	awaitRet := async.NewAsyncRet()
+	resultFuture := async.NewFutureStream()
 
-	if len(ad.asyncRets) <= 0 {
-		return async.Return(awaitRet, async.VoidRet)
+	if len(ad.futures) <= 0 {
+		return async.Return(resultFuture, async.NewResult(nil, nil))
 	}
 
-	var ctx context.Context
-	var cancel context.CancelFunc
-
-	if len(ad.asyncRets) > 1 {
-		ctx, cancel = context.WithCancel(ad.rtCtx)
-	} else {
-		ctx = ad.rtCtx
-	}
+	ctx, cancel := ad.waitContext()
 
 	var once atomic.Bool
 	var wg sync.WaitGroup
 
-	for i := range ad.asyncRets {
+	for i := range ad.futures {
 		wg.Add(1)
 
-		go func(asyncRet async.AsyncRet) {
+		go func(future async.Future) {
 			defer wg.Done()
 
-			ret := asyncRet.Wait(ctx)
+			ret := future.Wait(ctx)
 			if !ret.OK() {
 				return
 			}
@@ -226,13 +212,13 @@ func (ad AwaitDirector) OK(fun generic.FuncVar2[runtime.Context, async.Ret, any,
 				cancel()
 			}
 
-			callRet := ad.rtCtx.CallAsync(func(args ...any) async.Ret {
-				return fun.UnsafeCall(ad.rtCtx, ret, args...)
+			nextFuture := ad.rtCtx.CallAsync(func(ctx runtime.Context, args ...any) async.Result {
+				return fun.UnsafeCall(ctx, ret, args...)
 			}, args...)
 
-			async.Return(awaitRet, callRet.Wait(ad.rtCtx))
+			async.Return(resultFuture, nextFuture.Wait(ad.rtCtx))
 
-		}(ad.asyncRets[i])
+		}(ad.futures[i])
 	}
 
 	go func() {
@@ -246,43 +232,36 @@ func (ad AwaitDirector) OK(fun generic.FuncVar2[runtime.Context, async.Ret, any,
 			return
 		}
 
-		async.Return(awaitRet, async.NewRet(nil, ErrAllAsyncRetExceeded))
+		async.Return(resultFuture, async.NewResult(nil, ErrAllFuturesExceeded))
 	}()
 
-	return awaitRet
+	return resultFuture.Out()
 }
 
 // OKVoid 异步等待任意一个结果成功返回，无返回值
-func (ad AwaitDirector) OKVoid(fun generic.ActionVar2[runtime.Context, async.Ret, any], args ...any) async.AsyncRet {
+func (ad AwaitDirector) OKVoid(fun generic.ActionVar2[runtime.Context, async.Result, any], args ...any) async.Future {
 	if ad.rtCtx == nil {
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	awaitRet := async.NewAsyncRet()
+	resultFuture := async.NewFutureStream()
 
-	if len(ad.asyncRets) <= 0 {
-		return async.Return(awaitRet, async.VoidRet)
+	if len(ad.futures) <= 0 {
+		return async.Return(resultFuture, async.NewResult(nil, nil))
 	}
 
-	var ctx context.Context
-	var cancel context.CancelFunc
-
-	if len(ad.asyncRets) > 1 {
-		ctx, cancel = context.WithCancel(ad.rtCtx)
-	} else {
-		ctx = ad.rtCtx
-	}
+	ctx, cancel := ad.waitContext()
 
 	var once atomic.Bool
 	var wg sync.WaitGroup
 
-	for i := range ad.asyncRets {
+	for i := range ad.futures {
 		wg.Add(1)
 
-		go func(asyncRet async.AsyncRet) {
+		go func(future async.Future) {
 			defer wg.Done()
 
-			ret := asyncRet.Wait(ctx)
+			ret := future.Wait(ctx)
 			if !ret.OK() {
 				return
 			}
@@ -295,13 +274,13 @@ func (ad AwaitDirector) OKVoid(fun generic.ActionVar2[runtime.Context, async.Ret
 				cancel()
 			}
 
-			callRet := ad.rtCtx.CallVoidAsync(func(args ...any) {
-				fun.UnsafeCall(ad.rtCtx, ret, args...)
+			nextFuture := ad.rtCtx.CallVoidAsync(func(ctx runtime.Context, args ...any) {
+				fun.UnsafeCall(ctx, ret, args...)
 			}, args...)
 
-			async.Return(awaitRet, callRet.Wait(ad.rtCtx))
+			async.Return(resultFuture, nextFuture.Wait(ad.rtCtx))
 
-		}(ad.asyncRets[i])
+		}(ad.futures[i])
 	}
 
 	go func() {
@@ -315,159 +294,160 @@ func (ad AwaitDirector) OKVoid(fun generic.ActionVar2[runtime.Context, async.Ret
 			return
 		}
 
-		async.Return(awaitRet, async.NewRet(nil, ErrAllAsyncRetExceeded))
+		async.Return(resultFuture, async.NewResult(nil, ErrAllFuturesExceeded))
 	}()
 
-	return awaitRet
+	return resultFuture.Out()
 }
 
 // All 异步等待所有结果返回，有返回值
-func (ad AwaitDirector) All(fun generic.FuncVar2[runtime.Context, []async.Ret, any, async.Ret], args ...any) async.AsyncRet {
+func (ad AwaitDirector) All(fun generic.FuncVar2[runtime.Context, []async.Result, any, async.Result], args ...any) async.Future {
 	if ad.rtCtx == nil {
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	awaitRet := async.NewAsyncRet()
+	resultFuture := async.NewFutureStream()
 
-	if len(ad.asyncRets) <= 0 {
-		return async.Return(awaitRet, async.VoidRet)
+	if len(ad.futures) <= 0 {
+		return async.Return(resultFuture, async.NewResult(nil, nil))
 	}
 
-	rets := make([]async.Ret, len(ad.asyncRets))
+	rets := make([]async.Result, len(ad.futures))
 	var wg sync.WaitGroup
 
-	for i := range ad.asyncRets {
+	for i := range ad.futures {
 		wg.Add(1)
 
-		go func(asyncRet async.AsyncRet, ret *async.Ret) {
+		go func(future async.Future, ret *async.Result) {
 			defer wg.Done()
-			*ret = asyncRet.Wait(ad.rtCtx)
-		}(ad.asyncRets[i], &rets[i])
+			*ret = future.Wait(ad.rtCtx)
+		}(ad.futures[i], &rets[i])
 	}
 
 	go func() {
 		wg.Wait()
 
-		callRet := ad.rtCtx.CallAsync(func(args ...any) async.Ret {
-			return fun.UnsafeCall(ad.rtCtx, rets, args...)
+		nextFuture := ad.rtCtx.CallAsync(func(ctx runtime.Context, args ...any) async.Result {
+			return fun.UnsafeCall(ctx, rets, args...)
 		}, args...)
 
-		async.Return(awaitRet, callRet.Wait(ad.rtCtx))
+		async.Return(resultFuture, nextFuture.Wait(ad.rtCtx))
 	}()
 
-	return awaitRet
+	return resultFuture.Out()
 }
 
 // AllVoid 异步等待所有结果返回，无返回值
-func (ad AwaitDirector) AllVoid(fun generic.ActionVar2[runtime.Context, []async.Ret, any], args ...any) async.AsyncRet {
+func (ad AwaitDirector) AllVoid(fun generic.ActionVar2[runtime.Context, []async.Result, any], args ...any) async.Future {
 	if ad.rtCtx == nil {
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	awaitRet := async.NewAsyncRet()
+	resultFuture := async.NewFutureStream()
 
-	if len(ad.asyncRets) <= 0 {
-		return async.Return(awaitRet, async.VoidRet)
+	if len(ad.futures) <= 0 {
+		return async.Return(resultFuture, async.NewResult(nil, nil))
 	}
 
-	rets := make([]async.Ret, len(ad.asyncRets))
+	rets := make([]async.Result, len(ad.futures))
 	var wg sync.WaitGroup
 
-	for i := range ad.asyncRets {
+	for i := range ad.futures {
 		wg.Add(1)
 
-		go func(asyncRet async.AsyncRet, ret *async.Ret) {
+		go func(future async.Future, ret *async.Result) {
 			defer wg.Done()
-			*ret = asyncRet.Wait(ad.rtCtx)
-		}(ad.asyncRets[i], &rets[i])
+			*ret = future.Wait(ad.rtCtx)
+		}(ad.futures[i], &rets[i])
 	}
 
 	go func() {
 		wg.Wait()
 
-		callRet := ad.rtCtx.CallVoidAsync(func(args ...any) {
-			fun.UnsafeCall(ad.rtCtx, rets, args...)
+		nextFuture := ad.rtCtx.CallVoidAsync(func(ctx runtime.Context, args ...any) {
+			fun.UnsafeCall(ctx, rets, args...)
 		}, args...)
 
-		async.Return(awaitRet, callRet.Wait(ad.rtCtx))
+		async.Return(resultFuture, nextFuture.Wait(ad.rtCtx))
 	}()
 
-	return awaitRet
+	return resultFuture.Out()
 }
 
 // Transform 异步等待产出（yield）返回，并变换结果
-func (ad AwaitDirector) Transform(fun generic.FuncVar2[runtime.Context, async.Ret, any, async.Ret], args ...any) async.AsyncRet {
+func (ad AwaitDirector) Transform(fun generic.FuncVar2[runtime.Context, async.Result, any, async.Result], args ...any) async.Future {
 	if ad.rtCtx == nil {
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	awaitRet := async.NewAsyncRet()
+	resultFuture := async.NewFutureStream(len(ad.futures))
 
-	if len(ad.asyncRets) <= 0 {
-		async.YieldBreak(awaitRet)
-		return awaitRet
+	if len(ad.futures) <= 0 {
+		return async.YieldBreak(resultFuture)
 	}
 
 	var wg sync.WaitGroup
 
-	for i := range ad.asyncRets {
+	for i := range ad.futures {
 		wg.Add(1)
 
-		go func(asyncRet async.AsyncRet) {
+		go func(future async.Future) {
 			defer wg.Done()
 
-			for ret := range asyncRet {
-				callRet := ad.rtCtx.CallAsync(func(args ...any) async.Ret {
-					return fun.UnsafeCall(ad.rtCtx, ret, args...)
+			for ret := range future {
+				nextFuture := ad.rtCtx.CallAsync(func(ctx runtime.Context, args ...any) async.Result {
+					return fun.UnsafeCall(ctx, ret, args...)
 				}, args...)
 
-				async.YieldReturn(nil, awaitRet, callRet.Wait(ad.rtCtx))
+				if !async.YieldReturn(ad.rtCtx, resultFuture, nextFuture.Wait(ad.rtCtx)) {
+					return
+				}
 			}
-		}(ad.asyncRets[i])
+		}(ad.futures[i])
 	}
 
 	go func() {
 		wg.Wait()
-		async.YieldBreak(awaitRet)
+		async.YieldBreak(resultFuture)
 	}()
 
-	return awaitRet
+	return resultFuture.Out()
 }
 
 // Foreach 异步等待产出（yield）返回
-func (ad AwaitDirector) Foreach(fun generic.ActionVar2[runtime.Context, async.Ret, any], args ...any) async.AsyncRet {
+func (ad AwaitDirector) Foreach(fun generic.ActionVar2[runtime.Context, async.Result, any], args ...any) async.Future {
 	if ad.rtCtx == nil {
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	awaitRet := async.NewAsyncRet()
+	resultFuture := async.NewFutureStream(len(ad.futures))
 
-	if len(ad.asyncRets) <= 0 {
-		return async.Return(awaitRet, async.VoidRet)
+	if len(ad.futures) <= 0 {
+		return async.YieldBreak(resultFuture)
 	}
 
 	var wg sync.WaitGroup
 
-	for i := range ad.asyncRets {
+	for i := range ad.futures {
 		wg.Add(1)
 
-		go func(asyncRet async.AsyncRet) {
+		go func(future async.Future) {
 			defer wg.Done()
 
-			for ret := range asyncRet {
-				callRet := ad.rtCtx.CallVoidAsync(func(args ...any) {
-					fun.UnsafeCall(ad.rtCtx, ret, args...)
+			for ret := range future {
+				nextFuture := ad.rtCtx.CallVoidAsync(func(ctx runtime.Context, args ...any) {
+					fun.UnsafeCall(ctx, ret, args...)
 				}, args...)
 
-				callRet.Wait(ad.rtCtx)
+				nextFuture.Wait(ad.rtCtx)
 			}
-		}(ad.asyncRets[i])
+		}(ad.futures[i])
 	}
 
 	go func() {
 		wg.Wait()
-		async.Return(awaitRet, async.VoidRet)
+		async.YieldBreak(resultFuture)
 	}()
 
-	return awaitRet
+	return resultFuture.Out()
 }

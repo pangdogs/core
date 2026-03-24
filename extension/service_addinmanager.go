@@ -98,9 +98,9 @@ func (mgr *_ServiceAddInManager) Install(addInFace iface.FaceAny, name ...string
 		reflected:    reflect.ValueOf(addInFace.Iface),
 	}
 	for i := range status.waitState {
-		status.waitState[i] = async.NewAsyncRet()
+		status.waitState[i] = async.NewFutureVoid()
 	}
-	async.YieldBreakT(status.waitState[AddInState_Loaded])
+	async.ReturnVoid(status.waitState[AddInState_Loaded])
 
 	slot := mgr.addInList.PushBack(status)
 	status.idx = slot.Index()

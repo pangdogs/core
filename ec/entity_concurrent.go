@@ -45,7 +45,7 @@ type iContext interface {
 	context.Context
 
 	// Terminated 已停止
-	Terminated() async.AsyncRet
+	Terminated() async.Future
 }
 
 type iConcurrentEntity interface {
@@ -53,8 +53,8 @@ type iConcurrentEntity interface {
 }
 
 // Terminated 已停止
-func (entity *EntityBehavior) Terminated() async.AsyncRet {
-	return entity.terminated
+func (entity *EntityBehavior) Terminated() async.Future {
+	return entity.terminated.Out()
 }
 
 func (entity *EntityBehavior) getEntity() Entity {

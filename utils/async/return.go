@@ -17,15 +17,20 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package core
+package async
 
-import "git.golaxy.org/core/utils/async"
+import "git.golaxy.org/core/utils/exception"
 
-type iWorker interface {
-	// Run 运行
-	Run() async.Future
-	// Terminate 停止
-	Terminate() async.Future
-	// Terminated 已停止
-	Terminated() async.Future
+func Return(future FutureStream, ret Result) Future {
+	if cap(future) <= 0 {
+		exception.Panic("future is void result, cannot return")
+	}
+	future <- ret
+	close(future)
+	return future.Out()
+}
+
+func ReturnVoid(future FutureVoid) Future {
+	close(future)
+	return future.Out()
 }

@@ -36,7 +36,7 @@ type ServiceAddInStatus interface {
 	AddInStatus
 
 	// WaitState 等待状态完成
-	WaitState(state AddInState) async.AsyncRet
+	WaitState(state AddInState) async.Future
 }
 
 type iServiceAddInStatus interface {
@@ -55,7 +55,7 @@ type _ServiceAddInStatus struct {
 	state         atomic.Int32
 	idx           int
 	ver           int64
-	waitState     [AddInState_Unloaded + 1]chan async.Ret
+	waitState     [AddInState_Unloaded + 1]async.FutureVoid
 	installOnce   sync.Once
 	uninstallOnce sync.Once
 	stringerOnce  sync.Once
@@ -96,11 +96,11 @@ func (s *_ServiceAddInStatus) String() string {
 }
 
 // WaitState 等待状态完成
-func (s *_ServiceAddInStatus) WaitState(state AddInState) async.AsyncRet {
+func (s *_ServiceAddInStatus) WaitState(state AddInState) async.Future {
 	if state < 0 || int(state) >= len(s.waitState) {
 		exception.Panicf("%w: invalid state %q", ErrExtension, state)
 	}
-	return s.waitState[state]
+	return s.waitState[state].Out()
 }
 
 func (s *_ServiceAddInStatus) started() {
@@ -128,6 +128,6 @@ func (s *_ServiceAddInStatus) setState(must, state AddInState) bool {
 		return false
 	}
 
-	async.YieldBreakT(s.waitState[state])
+	async.ReturnVoid(s.waitState[state])
 	return true
 }

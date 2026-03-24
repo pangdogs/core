@@ -23,7 +23,6 @@ import (
 	"fmt"
 
 	"git.golaxy.org/core/service"
-	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/corectx"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/iface"
@@ -38,7 +37,7 @@ type ConcurrentContext interface {
 	iConcurrentContext
 	corectx.Context
 	corectx.ConcurrentContextProvider
-	async.Caller
+	Caller
 	fmt.Stringer
 
 	// Name 获取名称
@@ -72,11 +71,4 @@ func getServiceContext(provider corectx.ConcurrentContextProvider) service.Conte
 		return nil
 	}
 	return ctx.getServiceContext()
-}
-
-func getCaller(provider corectx.ConcurrentContextProvider) async.Caller {
-	if provider == nil {
-		exception.Panicf("%w: %w: provider is nil", ErrContext, exception.ErrArgs)
-	}
-	return iface.Cache2Iface[Context](provider.ConcurrentContext())
 }

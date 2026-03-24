@@ -33,7 +33,7 @@ import (
 )
 
 // Run 运行
-func (svc *ServiceBehavior) Run() async.AsyncRet {
+func (svc *ServiceBehavior) Run() async.Future {
 	ctx := svc.ctx
 
 	select {
@@ -61,12 +61,12 @@ func (svc *ServiceBehavior) Run() async.AsyncRet {
 }
 
 // Terminate 停止
-func (svc *ServiceBehavior) Terminate() async.AsyncRet {
+func (svc *ServiceBehavior) Terminate() async.Future {
 	return svc.ctx.Terminate()
 }
 
 // Terminated 已停止
-func (svc *ServiceBehavior) Terminated() async.AsyncRet {
+func (svc *ServiceBehavior) Terminated() async.Future {
 	return svc.ctx.Terminated()
 }
 
