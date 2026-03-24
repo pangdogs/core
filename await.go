@@ -420,10 +420,10 @@ func (ad AwaitDirector) Foreach(fun generic.ActionVar2[runtime.Context, async.Re
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
 	}
 
-	resultFuture := async.NewFutureChan(len(ad.futures))
+	resultFuture := async.NewFutureChan()
 
 	if len(ad.futures) <= 0 {
-		return async.YieldBreak(resultFuture)
+		return async.Return(resultFuture, async.NewResult(nil, nil))
 	}
 
 	var wg sync.WaitGroup
@@ -446,7 +446,7 @@ func (ad AwaitDirector) Foreach(fun generic.ActionVar2[runtime.Context, async.Re
 
 	go func() {
 		wg.Wait()
-		async.YieldBreak(resultFuture)
+		async.Return(resultFuture, async.NewResult(nil, nil))
 	}()
 
 	return resultFuture.Out()
