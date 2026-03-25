@@ -78,14 +78,23 @@ func (future Future) IsNil() bool {
 }
 
 func (future Future) Void() bool {
+	if future.IsNil() {
+		exception.Panic("future is nil, cannot check void")
+	}
 	return future.void
 }
 
 func (future Future) Chan() <-chan Result {
+	if future.IsNil() {
+		exception.Panic("future is nil, cannot get channel")
+	}
 	return future.ch
 }
 
 func (future Future) Done() <-chan struct{} {
+	if future.IsNil() {
+		exception.Panic("future is nil, cannot get done channel")
+	}
 	return future.done
 }
 
