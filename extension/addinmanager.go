@@ -31,10 +31,10 @@ type AddInManager interface {
 	Install(addInFace iface.FaceAny, name ...string) AddInStatus
 	// Uninstall 卸载插件
 	Uninstall(name string)
-	// GetByName 使用名称查询插件状态信息
-	GetByName(name string) (AddInStatus, bool)
-	// GetById 使用Id查询插件状态信息
-	GetById(id uint64) (AddInStatus, bool)
-	// List 获取所有插件状态信息
-	List() []AddInStatus
+	// GetStatusByName 使用名称查询插件状态信息
+	GetStatusByName(name string) (AddInStatus, bool)
+	// GetStatusById 使用Id查询插件状态信息
+	GetStatusById(id uint64) (AddInStatus, bool)
+	// ListStatuses 获取所有插件状态信息
+	ListStatuses() []AddInStatus
 }

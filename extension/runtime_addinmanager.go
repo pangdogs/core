@@ -118,8 +118,8 @@ func (mgr *_RuntimeAddInManager) Uninstall(name string) {
 	status.uninstall()
 }
 
-// GetByName 使用名称查询插件状态信息
-func (mgr *_RuntimeAddInManager) GetByName(name string) (AddInStatus, bool) {
+// GetStatusByName 使用名称查询插件状态信息
+func (mgr *_RuntimeAddInManager) GetStatusByName(name string) (AddInStatus, bool) {
 	statusIdx, ok := mgr.addInNameIndex[name]
 	if !ok {
 		return nil, false
@@ -127,8 +127,8 @@ func (mgr *_RuntimeAddInManager) GetByName(name string) (AddInStatus, bool) {
 	return mgr.addInList.Get(statusIdx).V, true
 }
 
-// GetById 使用Id查询插件状态信息
-func (mgr *_RuntimeAddInManager) GetById(id uint64) (AddInStatus, bool) {
+// GetStatusById 使用Id查询插件状态信息
+func (mgr *_RuntimeAddInManager) GetStatusById(id uint64) (AddInStatus, bool) {
 	statusIdx, ok := mgr.addInIdIndex[id]
 	if !ok {
 		return nil, false
@@ -136,8 +136,8 @@ func (mgr *_RuntimeAddInManager) GetById(id uint64) (AddInStatus, bool) {
 	return mgr.addInList.Get(statusIdx).V, true
 }
 
-// List 获取所有插件状态信息
-func (mgr *_RuntimeAddInManager) List() []AddInStatus {
+// ListStatuses 获取所有插件状态信息
+func (mgr *_RuntimeAddInManager) ListStatuses() []AddInStatus {
 	statuses := make([]AddInStatus, 0, mgr.addInList.Len())
 
 	mgr.addInList.TraversalEach(func(slot *generic.FreeSlot[*_RuntimeAddInStatus]) {

@@ -53,7 +53,7 @@ func Require[T any](provider AddInProvider, id uint64) T {
 		exception.Panicf("%w: %w: provider is nil", ErrExtension, exception.ErrArgs)
 	}
 
-	status, ok := provider.AddInManager().GetById(id)
+	status, ok := provider.AddInManager().GetStatusById(id)
 	if !ok {
 		exception.Panicf("%w: add-in id %d not installed", ErrExtension, id)
 	}
@@ -71,7 +71,7 @@ func Lookup[T any](provider AddInProvider, id uint64) (T, bool) {
 		exception.Panicf("%w: %w: provider is nil", ErrExtension, exception.ErrArgs)
 	}
 
-	status, ok := provider.AddInManager().GetById(id)
+	status, ok := provider.AddInManager().GetStatusById(id)
 	if !ok {
 		return types.ZeroT[T](), false
 	}

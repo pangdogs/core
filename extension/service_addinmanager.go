@@ -128,8 +128,8 @@ func (mgr *_ServiceAddInManager) Uninstall(name string) {
 	mgr.eventStream.Publish(&EventServiceUninstallAddIn{Status: status})
 }
 
-// GetByName 使用名称查询插件状态信息
-func (mgr *_ServiceAddInManager) GetByName(name string) (AddInStatus, bool) {
+// GetStatusByName 使用名称查询插件状态信息
+func (mgr *_ServiceAddInManager) GetStatusByName(name string) (AddInStatus, bool) {
 	mgr.RLock()
 	defer mgr.RUnlock()
 
@@ -141,8 +141,8 @@ func (mgr *_ServiceAddInManager) GetByName(name string) (AddInStatus, bool) {
 	return mgr.addInList.Get(statusIdx).V, true
 }
 
-// GetById 使用Id查询插件状态信息
-func (mgr *_ServiceAddInManager) GetById(id uint64) (AddInStatus, bool) {
+// GetStatusById 使用Id查询插件状态信息
+func (mgr *_ServiceAddInManager) GetStatusById(id uint64) (AddInStatus, bool) {
 	mgr.RLock()
 	defer mgr.RUnlock()
 
@@ -154,8 +154,8 @@ func (mgr *_ServiceAddInManager) GetById(id uint64) (AddInStatus, bool) {
 	return mgr.addInList.Get(statusIdx).V, true
 }
 
-// List 获取所有插件状态信息
-func (mgr *_ServiceAddInManager) List() []AddInStatus {
+// ListStatuses 获取所有插件状态信息
+func (mgr *_ServiceAddInManager) ListStatuses() []AddInStatus {
 	mgr.RLock()
 	defer mgr.RUnlock()
 
