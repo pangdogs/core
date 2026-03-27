@@ -42,6 +42,7 @@ type _TaskQueueStats struct {
 }
 
 type _TaskQueue struct {
+	barrier       generic.Barrier
 	boundedChan   chan _Task
 	unboundedChan *generic.UnboundedChannel[_Task]
 	stats         [2]_TaskQueueStats
@@ -72,12 +73,11 @@ func (q *_TaskQueue) enqueueCall(
 		future:       async.NewFutureChan(),
 	}
 
-	defer func() {
-		if panicInfo := recover(); panicInfo != nil {
-			q.stats[TaskType_Call].rejected.Add(1)
-			future = async.Return(task.future, async.NewResult(nil, ErrTaskQueueClosed))
-		}
-	}()
+	if !q.barrier.Join(1) {
+		q.stats[TaskType_Call].rejected.Add(1)
+		return async.Return(task.future, async.NewResult(nil, ErrTaskQueueClosed))
+	}
+	defer q.barrier.Done()
 
 	q.stats[TaskType_Call].enqueued.Add(1)
 
@@ -160,6 +160,8 @@ func (q *_TaskQueue) complete(typ TaskType) {
 }
 
 func (q *_TaskQueue) close() {
+	q.barrier.Close()
+	q.barrier.Wait()
 	if q.boundedChan != nil {
 		close(q.boundedChan)
 	}
