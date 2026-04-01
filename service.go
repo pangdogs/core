@@ -62,6 +62,7 @@ type Service interface {
 type iService interface {
 	init(svcCtx service.Context, options ServiceOptions)
 	getOptions() *ServiceOptions
+	getInstance() Service
 }
 
 type ServiceBehavior struct {

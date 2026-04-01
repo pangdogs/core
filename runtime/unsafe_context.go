@@ -42,6 +42,11 @@ func (u _UnsafeContext) Options() *ContextOptions {
 	return u.getOptions()
 }
 
+// Instance 获取实例
+func (u _UnsafeContext) Instance() Context {
+	return u.getInstance()
+}
+
 // EmitEventRunningEvent 发送运行事件
 func (u _UnsafeContext) EmitEventRunningEvent(runningEvent RunningEvent, args ...any) {
 	u.emitEventRunningEvent(runningEvent, args...)

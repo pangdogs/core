@@ -38,6 +38,11 @@ type _UnsafeComponent struct {
 	Component
 }
 
+// Instance 获取实例
+func (u _UnsafeComponent) Instance() Component {
+	return u.getInstance()
+}
+
 // SetId 设置Id
 func (u _UnsafeComponent) SetId(id uid.Id) {
 	u.setId(id)

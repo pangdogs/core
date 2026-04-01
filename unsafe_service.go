@@ -34,3 +34,8 @@ type _UnsafeService struct {
 func (u _UnsafeService) Options() *ServiceOptions {
 	return u.getOptions()
 }
+
+// Instance 获取实例
+func (u _UnsafeService) Instance() Service {
+	return u.getInstance()
+}

@@ -77,6 +77,7 @@ type Context interface {
 type iContext interface {
 	init(options ContextOptions)
 	getOptions() *ContextOptions
+	getInstance() Context
 	emitEventRunningEvent(runningEvent RunningEvent, args ...any)
 	getAddInManager() extension.ServiceAddInManager
 	getScoped() *atomic.Bool
@@ -158,14 +159,14 @@ func (ctx *ContextBehavior) getOptions() *ContextOptions {
 	return &ctx.options
 }
 
+func (ctx *ContextBehavior) getInstance() Context {
+	return ctx.options.InstanceFace.Iface
+}
+
 func (ctx *ContextBehavior) emitEventRunningEvent(runningEvent RunningEvent, args ...any) {
 	ctx.options.RunningEventCB.Call(ctx.AutoRecover(), ctx.ReportError(), ctx.getInstance(), runningEvent, args...)
 }
 
 func (ctx *ContextBehavior) getScoped() *atomic.Bool {
 	return &ctx.scoped
-}
-
-func (ctx *ContextBehavior) getInstance() Context {
-	return ctx.options.InstanceFace.Iface
 }

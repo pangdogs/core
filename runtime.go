@@ -66,6 +66,7 @@ type Runtime interface {
 type iRuntime interface {
 	init(rtCtx runtime.Context, options RuntimeOptions)
 	getOptions() *RuntimeOptions
+	getInstance() Runtime
 }
 
 // RuntimeBehavior 运行时行为，在扩展运行时能力时，匿名嵌入至运行时结构体中
@@ -145,6 +146,10 @@ func (rt *RuntimeBehavior) init(rtCtx runtime.Context, options RuntimeOptions) {
 
 func (rt *RuntimeBehavior) getOptions() *RuntimeOptions {
 	return &rt.options
+}
+
+func (rt *RuntimeBehavior) getInstance() Runtime {
+	return rt.options.InstanceFace.Iface
 }
 
 // onEntityManagerAddEntity 事件处理器：实体管理器添加实体
@@ -701,8 +706,4 @@ func (rt *RuntimeBehavior) panicHandlingActivatingEntity(entity ec.Entity, err e
 	if err != nil && !rt.options.ContinueOnActivatingEntityPanic {
 		entity.Destroy()
 	}
-}
-
-func (rt *RuntimeBehavior) getInstance() Runtime {
-	return rt.options.InstanceFace.Iface
 }

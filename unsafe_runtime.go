@@ -34,3 +34,8 @@ type _UnsafeRuntime struct {
 func (u _UnsafeRuntime) Options() *RuntimeOptions {
 	return u.getOptions()
 }
+
+// Instance 获取实例
+func (u _UnsafeRuntime) Instance() Runtime {
+	return u.getInstance()
+}

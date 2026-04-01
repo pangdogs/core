@@ -64,6 +64,7 @@ type Component interface {
 
 type iComponent interface {
 	init(name string, entity Entity, instance Component)
+	getInstance() Component
 	setId(id uid.Id)
 	setBuiltin(builtin *BuiltinComponent)
 	setState(state ComponentState)
@@ -229,6 +230,10 @@ func (comp *ComponentBehavior) init(name string, entity Entity, instance Compone
 	comp.instance = instance
 	comp.removable = true
 	comp.enabled = true
+}
+
+func (comp *ComponentBehavior) getInstance() Component {
+	return comp.instance
 }
 
 func (comp *ComponentBehavior) setId(id uid.Id) {

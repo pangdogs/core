@@ -50,6 +50,11 @@ func (u _UnsafeEntity) Options() *EntityOptions {
 	return u.getOptions()
 }
 
+// Instance 获取实例
+func (u _UnsafeEntity) Instance() Entity {
+	return u.getInstance()
+}
+
 // SetId 设置Id
 func (u _UnsafeEntity) SetId(id uid.Id) {
 	u.setId(id)
