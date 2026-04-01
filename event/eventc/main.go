@@ -74,9 +74,7 @@ func main() {
 			cmd.Help()
 		},
 		CompletionOptions: cobra.CompletionOptions{
-			DisableDefaultCmd:   true,
-			DisableNoDescFlag:   true,
-			DisableDescriptions: true,
+			DisableDefaultCmd: true,
 		},
 	}
 	rootCmd.PersistentFlags().String("decl_file", os.Getenv("GOFILE"), "事件定义文件（.go）。")
