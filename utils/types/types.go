@@ -57,19 +57,7 @@ func NewT[T any]() *T {
 }
 
 // Pointer 转指针
-func Pointer(src any) reflect.Value {
-	return PointerRT(reflect.ValueOf(src))
-}
-
-// PointerRT 转指针
-func PointerRT(src reflect.Value) reflect.Value {
-	val := reflect.New(src.Type())
-	val.Elem().Set(src)
-	return val
-}
-
-// PointerT 转指针
-func PointerT[T any](src T) *T {
+func Pointer[T any](src T) *T {
 	return &src
 }
 
