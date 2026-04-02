@@ -157,7 +157,7 @@ func (l *FreeList[T]) Release(idx int) {
 	}
 	if l.depth > 0 {
 		if !slot.Orphaned() {
-			slot.V = types.ZeroT[T]()
+			slot.V = types.Zero[T]()
 			slot.orphaned = true
 			l.orphanCount++
 		}
@@ -174,7 +174,7 @@ func (l *FreeList[T]) ReleaseIfVersion(idx int, ver int64) {
 	}
 	if l.depth > 0 {
 		if !slot.Orphaned() {
-			slot.V = types.ZeroT[T]()
+			slot.V = types.Zero[T]()
 			slot.orphaned = true
 			l.orphanCount++
 		}
@@ -207,7 +207,7 @@ func (l *FreeList[T]) PushBack(value T) *FreeSlot[T] {
 func (l *FreeList[T]) PopFront() (T, bool) {
 	slot := l.Front()
 	if slot == nil {
-		return types.ZeroT[T](), false
+		return types.Zero[T](), false
 	}
 	v := slot.V
 	slot.Free()
@@ -218,7 +218,7 @@ func (l *FreeList[T]) PopFront() (T, bool) {
 func (l *FreeList[T]) PopBack() (T, bool) {
 	slot := l.Back()
 	if slot == nil {
-		return types.ZeroT[T](), false
+		return types.Zero[T](), false
 	}
 	v := slot.V
 	slot.Free()

@@ -93,7 +93,7 @@ func (m UnorderedSliceMap[K, V]) Get(k K) (V, bool) {
 	if idx >= 0 {
 		return m[idx].V, true
 	}
-	return types.ZeroT[V](), false
+	return types.Zero[V](), false
 }
 
 func (m UnorderedSliceMap[K, V]) Value(k K) V {
@@ -103,7 +103,7 @@ func (m UnorderedSliceMap[K, V]) Value(k K) V {
 	if idx >= 0 {
 		return m[idx].V
 	}
-	return types.ZeroT[V]()
+	return types.Zero[V]()
 }
 
 func (m UnorderedSliceMap[K, V]) Exist(k K) bool {

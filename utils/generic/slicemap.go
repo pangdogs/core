@@ -94,7 +94,7 @@ func (m SliceMap[K, V]) Get(k K) (V, bool) {
 	if ok {
 		return m[idx].V, true
 	}
-	return types.ZeroT[V](), false
+	return types.Zero[V](), false
 }
 
 func (m SliceMap[K, V]) Value(k K) V {
@@ -104,7 +104,7 @@ func (m SliceMap[K, V]) Value(k K) V {
 	if ok {
 		return m[idx].V
 	}
-	return types.ZeroT[V]()
+	return types.Zero[V]()
 }
 
 func (m SliceMap[K, V]) Exist(k K) bool {

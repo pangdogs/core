@@ -46,5 +46,5 @@ func GenAddInName(addIn any) string {
 
 // GenAddInNameT 生成插件名称
 func GenAddInNameT[T any]() string {
-	return GenAddInName(types.NewT[T]())
+	return GenAddInName(types.New[T]())
 }

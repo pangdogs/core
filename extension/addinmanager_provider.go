@@ -73,7 +73,7 @@ func Lookup[T any](provider AddInProvider, id uint64) (T, bool) {
 
 	status, ok := provider.AddInManager().GetStatusById(id)
 	if !ok {
-		return types.ZeroT[T](), false
+		return types.Zero[T](), false
 	}
 
 	return iface.Cache2Iface[T](status.InstanceFace().Cache), true

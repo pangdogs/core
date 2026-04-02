@@ -25,33 +25,13 @@ import (
 )
 
 // Zero 创建零值
-func Zero(t any) reflect.Value {
-	return ZeroRT(reflect.TypeOf(t))
-}
-
-// ZeroRT 创建零值
-func ZeroRT(t reflect.Type) reflect.Value {
-	return reflect.New(t).Elem()
-}
-
-// ZeroT 创建零值
-func ZeroT[T any]() T {
+func Zero[T any]() T {
 	var zero T
 	return zero
 }
 
 // New 新建零值
-func New(t any) reflect.Value {
-	return ZeroRT(reflect.TypeOf(t))
-}
-
-// NewRT 新建零值
-func NewRT(t reflect.Type) reflect.Value {
-	return reflect.New(t)
-}
-
-// NewT 新建零值
-func NewT[T any]() *T {
+func New[T any]() *T {
 	var zero T
 	return &zero
 }

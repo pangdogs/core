@@ -56,7 +56,7 @@ func GenEventTabId(eventTab any) uint64 {
 
 // GenEventTabIdT 生成事件表Id
 func GenEventTabIdT[T any]() uint64 {
-	return GenEventTabId(types.ZeroT[T]())
+	return GenEventTabId(types.Zero[T]())
 }
 
 // GenEventId 生成事件Id
@@ -69,7 +69,7 @@ func GenEventId(eventTab any, pos int) uint64 {
 
 // GenEventIdT 生成事件Id
 func GenEventIdT[T any](pos int) uint64 {
-	return GenEventId(types.ZeroT[T](), pos)
+	return GenEventId(types.Zero[T](), pos)
 }
 
 var (
@@ -101,7 +101,7 @@ func DeclareEventTabId(eventTab any) uint64 {
 
 // DeclareEventTabIdT 声明事件表Id
 func DeclareEventTabIdT[T any]() uint64 {
-	return DeclareEventTabId(types.ZeroT[T]())
+	return DeclareEventTabId(types.Zero[T]())
 }
 
 // DeclareEventId 声明事件Id
@@ -128,7 +128,7 @@ func DeclareEventId(eventTab any, pos int) uint64 {
 
 // DeclareEventIdT 声明事件Id
 func DeclareEventIdT[T any](pos int) uint64 {
-	return DeclareEventId(types.ZeroT[T](), pos)
+	return DeclareEventId(types.Zero[T](), pos)
 }
 
 // SplitEventId 分解事件Id
