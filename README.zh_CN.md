@@ -2,42 +2,127 @@
 [English](./README.md) | [简体中文](./README.zh_CN.md)
 
 ## 简介
-[**Golaxy分布式服务开发框架**](https://github.com/pangdogs/framework) 旨在为实时通信应用程序提供一个全面的服务端解决方案。框架基于EC系统与Actor线程模型，设计简洁、易于使用，特别适合用于开发游戏和远程控制系统。
+`core` 是
+[**Golaxy 分布式服务开发框架**](https://github.com/pangdogs/framework)
+的执行内核。它把服务级作用域、Actor 风格运行时、实体组件模型、原型库、
+本地事件、插件系统和异步辅助统一成一套服务端编程模型。
 
-本项目是框架的 [**内核**](https://github.com/pangdogs/core) 部分，主要功能特性包括：
+这个仓库主要面向实时后端场景，例如游戏服务器、仿真/控制系统，以及其他需要
+明确运行时归属和消息式执行的服务程序。
 
-- 实体组件框架（`Entity Component`）：提供灵活的实体和组件管理，支持复杂对象的创建与维护。
-- 实体原型系统（`Entity Prototype`）：支持实体的原型定义和复用，简化实体的创建过程。
-- Actor线程模型（`Actor Model`）：基于Actor模型的线程处理机制，每个Actor在独立的计算单元，实现并行任务处理，提升系统的并发性能和稳定性。
-- 运行时环境（`Runtime and Context`）：实现Actor独立运行线程环境，并提供实体管理与通信调用机制。
-- 服务环境（`Service and Context`）：支持服务的启动、停止和管理，提供全局的实体管理与通信调用机制。
-- 插件系统（`Add-In System`）：提供扩展框架功能的机制，支持在运行时环境或服务环境中扩展实现新功能。
-- 本地事件系统（`Local Event`）：基于代码生成器，在Actor独立运行线程环境中，提供高效的本地事件机制。
-- 异步调用方案（`Async/Await`）：支持异步操作，简化异步代码的编写，提升系统的响应能力。
+## 本模块提供什么
+- **服务作用域**：负责启动/停止编排、原型注册、全局实体索引和 service 插件。
+- **运行时作用域**：负责 Actor 风格执行、任务队列、可选帧循环、实体树和 runtime 插件。
+- **实体组件模型**：支持生命周期驱动的激活、启停、动态增删组件和树形关系管理。
+- **实体原型系统**：可在服务启动阶段预先声明可复用的实体/组件组合。
+- **本地事件系统**：通过代码生成提供轻量事件绑定、派发和事件表抽象。
+- **Async/Future 辅助**：用于把工作调度回所属 runtime，并协调并发结果。
 
-## 目录
-| Directory                                                                | Description |
-|--------------------------------------------------------------------------| ----------- |
-| [/](https://github.com/pangdogs/core)                                    | 主要实现服务与运行时相关功能。|
-| [/define](https://github.com/pangdogs/core/tree/main/define)             | 利用泛型特性，支持定义插件或组件，简化代码编写。 |
-| [/ec](https://github.com/pangdogs/core/tree/main/ec)                     | 实体组件框架。 |
-| [/ec/pt](https://github.com/pangdogs/core/tree/main/ec/pt)               | 实体原型系统。 |
-| [/event](https://github.com/pangdogs/core/tree/main/event)               | 本地事件系统。 |
-| [/event/eventc](https://github.com/pangdogs/core/tree/main/event/eventc) | 本地事件代码生成器。 |
-| [/extension](https://github.com/pangdogs/core/tree/main/extension)       | 插件系统。 |
-| [/runtime](https://github.com/pangdogs/core/tree/main/runtime)           | 运行时上下文。 |
-| [/service](https://github.com/pangdogs/core/tree/main/service)           | 服务上下文。 |
-| [/utils](https://github.com/pangdogs/core/tree/main/utils)               | 一些工具类与函数。 |
+## 运行模型
+- `service.Context` 是外层全局作用域，持有实体原型库、service 插件管理器和服务运行事件。
+- `runtime.Context` 是 Actor 风格的执行作用域，持有任务队列、可选帧循环、本地实体管理器和实体树。
+- 实体和组件都运行在 runtime 中，它们的生命周期由 `core.Runtime` 自动推进，而不是由任意 goroutine 直接修改。
+- 跨 goroutine 或跨 runtime 的工作，通常应通过 `CallAsync`、`CallVoidAsync`、`Await`，或者 `service.Context` / `runtime.Context` 提供的调用接口回到目标 runtime。
 
-## 示例
+## 快速开始
+[`core_test.go`](./core_test.go) 里的测试基本都是场景化示例。下面这段代码展示了从原型声明到运行时创建实体的最小路径：
 
-详见： [Examples](https://github.com/pangdogs/examples)
+```go
+package main
+
+import (
+	"context"
+	"log"
+	"time"
+
+	"git.golaxy.org/core"
+	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/runtime"
+	"git.golaxy.org/core/service"
+)
+
+type Player struct {
+	ec.ComponentBehavior
+}
+
+func (p *Player) Awake() {
+	log.Printf("player %s awake", p.Entity().Id())
+}
+
+func main() {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	svcCtx := service.NewContext(
+		service.With.Context(ctx),
+		service.With.RunningEventCB(func(ctx service.Context, event service.RunningEvent, args ...any) {
+			switch event {
+			case service.RunningEvent_Birth:
+				core.BuildEntityPT(ctx, "player").
+					AddComponent(Player{}).
+					Declare()
+
+			case service.RunningEvent_Started:
+				core.NewRuntime(
+					runtime.NewContext(
+						ctx,
+						runtime.With.RunningEventCB(func(ctx runtime.Context, event runtime.RunningEvent, args ...any) {
+							if event == runtime.RunningEvent_Started {
+								_, _ = core.BuildEntity(ctx, "player").New()
+							}
+						}),
+					),
+					core.With.Runtime.AutoRun(true),
+					core.With.Runtime.Frame(core.With.Frame.Enabled(false)),
+				)
+			}
+		}),
+	)
+
+	<-core.NewService(svcCtx).Run().Done()
+}
+```
+
+## 本地事件与代码生成
+事件系统推荐通过 `go generate` 使用：
+
+1. 在 `*_event.go` 中定义事件接口。
+2. 添加 `//go:generate go run git.golaxy.org/core/event/eventc event`。
+3. 如果需要事件表，再添加
+   `//go:generate go run git.golaxy.org/core/event/eventc eventtab --name=...`。
+4. 执行 `go generate ./...`。
+
+仓库内可直接参考这些文件：
+- [`ec/component_event.go`](./ec/component_event.go)
+- [`ec/entity_event.go`](./ec/entity_event.go)
+- [`runtime/context_event.go`](./runtime/context_event.go)
+- [`runtime_event.go`](./runtime_event.go)
+
+## 包说明
+| 包 | 说明 |
+| --- | --- |
+| [`/`](https://github.com/pangdogs/core) | 对外公共入口、生命周期接口、异步辅助，以及 service/runtime 封装。 |
+| [`/service`](https://github.com/pangdogs/core/tree/main/service) | 服务上下文、原型访问、全局实体调用和服务运行事件。 |
+| [`/runtime`](https://github.com/pangdogs/core/tree/main/runtime) | 运行时上下文、任务调度、帧循环、实体管理器和实体树。 |
+| [`/ec`](https://github.com/pangdogs/core/tree/main/ec) | 实体/组件模型、状态机、事件和树节点行为。 |
+| [`/ec/pt`](https://github.com/pangdogs/core/tree/main/ec/pt) | 实体/组件原型描述、原型库和构造支持。 |
+| [`/define`](https://github.com/pangdogs/core/tree/main/define) | 类型安全的插件定义，统一暴露 `Install`、`Require`、`Lookup` 和 `Uninstall`。 |
+| [`/extension`](https://github.com/pangdogs/core/tree/main/extension) | 底层插件管理器、状态对象和插件生命周期事件。 |
+| [`/event`](https://github.com/pangdogs/core/tree/main/event) | 本地事件基础设施、句柄、递归策略控制和事件表抽象。 |
+| [`/event/eventc`](https://github.com/pangdogs/core/tree/main/event/eventc) | 通过 `go:generate` 使用的事件代码生成器。 |
+| [`/utils`](https://github.com/pangdogs/core/tree/main/utils) | 通用工具包集合，例如 `assertion`、`async`、`corectx`、`generic`、`iface`、`meta`、`option`、`types` 和 `uid`。 |
 
 ## 安装
-```
-go get -u git.golaxy.org/core
+当前模块以 [`go.mod`](./go.mod) 中声明的 Go 版本为准。
+
+```bash
+go get git.golaxy.org/core@latest
 ```
 
+## 更多示例
+- 仓库内端到端示例：[`core_test.go`](./core_test.go)
+- 外部示例工程：[Examples](https://github.com/pangdogs/examples)
+
 ## 相关项目
-- [Golaxy分布式服务开发框架](https://github.com/pangdogs/framework)
-- [Golaxy游戏服务器的脚手架](https://github.com/pangdogs/scaffold)
+- [Golaxy 分布式服务开发框架](https://github.com/pangdogs/framework)
+- [Golaxy 游戏服务器脚手架](https://github.com/pangdogs/scaffold)

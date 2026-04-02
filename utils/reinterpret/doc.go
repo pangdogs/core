@@ -17,16 +17,12 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Package define 为插件声明提供类型安全的辅助定义。
+// Package reinterpret 提供基于实例缓存的接口重新解释。
 /*
-Package define 把插件构造函数、接口类型和插件名称封装成可复用的定义对象，避免
-业务代码反复编写名称、Id 计算和类型断言。
+Package reinterpret 约定 InstanceProvider 暴露统一的实例缓存，然后通过 Cast 把同一个
+对象重新解释为其他接口类型。
 
-定义对象会暴露 Install、Uninstall、Require 和 Lookup 等操作，适合在包级变量中
-声明后复用。常用入口包括：
-
-  - AddIn：同时适用于 service 与 runtime 的通用插件定义；
-  - ServiceAddIn / RuntimeAddIn：限定安装作用域的插件定义；
-  - AddInInterface 等 Interface 变体：只声明依赖契约，不绑定构造函数。
+这个机制常用于扩展实体、组件、service 或 runtime 的对外接口，而无需在调用点做
+重复的类型断言或显式保存多个接口引用。
 */
-package define
+package reinterpret

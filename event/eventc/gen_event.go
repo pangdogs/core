@@ -96,7 +96,7 @@ package %s
 
 		fmt.Fprintf(importCode, "\n)\n")
 
-		fmt.Fprintf(code, importCode.String())
+		fmt.Fprint(code, importCode.String())
 	}
 
 	// event包前缀

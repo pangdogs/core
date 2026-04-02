@@ -17,16 +17,10 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Package define 为插件声明提供类型安全的辅助定义。
+// Package uid 提供框架统一使用的全局唯一 Id 类型。
 /*
-Package define 把插件构造函数、接口类型和插件名称封装成可复用的定义对象，避免
-业务代码反复编写名称、Id 计算和类型断言。
+Package uid 基于 xid 生成短字符串 Id，并提供 Nil、New 与 From 等辅助函数。
 
-定义对象会暴露 Install、Uninstall、Require 和 Lookup 等操作，适合在包级变量中
-声明后复用。常用入口包括：
-
-  - AddIn：同时适用于 service 与 runtime 的通用插件定义；
-  - ServiceAddIn / RuntimeAddIn：限定安装作用域的插件定义；
-  - AddInInterface 等 Interface 变体：只声明依赖契约，不绑定构造函数。
+service、runtime、entity、component 以及实体树节点关系都使用 uid.Id 作为稳定标识。
 */
-package define
+package uid

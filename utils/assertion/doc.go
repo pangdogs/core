@@ -17,16 +17,15 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Package define 为插件声明提供类型安全的辅助定义。
+// Package assertion 提供基于实体组件模型的断言与注入辅助。
 /*
-Package define 把插件构造函数、接口类型和插件名称封装成可复用的定义对象，避免
-业务代码反复编写名称、Id 计算和类型断言。
+Package assertion 通过反射从 ec.Entity 中提取组件，并按字段类型、组件名或原型名
+注入到结构体中。
 
-定义对象会暴露 Install、Uninstall、Require 和 Lookup 等操作，适合在包级变量中
-声明后复用。常用入口包括：
+它适合把多个组件组合成临时视图，或者在组件启动时把依赖字段补齐。字段可通过
+`ec:"name,prototype"` tag 指定组件名或组件原型；如果目标原型已在服务的组件库中
+注册，但实体上尚未存在对应组件，Inject 还可以按原型动态创建组件。
 
-  - AddIn：同时适用于 service 与 runtime 的通用插件定义；
-  - ServiceAddIn / RuntimeAddIn：限定安装作用域的插件定义；
-  - AddInInterface 等 Interface 变体：只声明依赖契约，不绑定构造函数。
+这类操作依赖反射，适合启动期、装配期或测试场景，不建议在高频热点路径中反复执行。
 */
-package define
+package assertion

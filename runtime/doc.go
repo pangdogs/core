@@ -17,11 +17,16 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Package runtime 为运行时环境提供的一些接口与函数。
+// Package runtime 定义运行时级上下文。
 /*
-   - 运行时上下文（Context）
-   - 实体管理器（EntityManager）
-   - 实体树（EntityTree）
-   - 帧（Frame）
+Package runtime 表示 Actor 风格的单运行时执行作用域。一个运行时拥有自己的任务
+队列、可选帧循环、本地实体管理器、实体树、运行事件和 runtime add-in。
+
+所有会直接读写实体或组件状态的逻辑，通常都应回到所属 runtime 中执行。可以通过
+Context.CallAsync / CallVoidAsync，或者根包中的 CallAsync / Await 辅助函数，
+把工作调度回运行时线程。
+
+用 NewContext 创建上下文后，再交给 core.NewRuntime 绑定和运行。实体实例通常在
+runtime.RunningEvent_Started 阶段通过 core.BuildEntity 创建。
 */
 package runtime

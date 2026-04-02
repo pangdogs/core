@@ -17,16 +17,12 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Package define 为插件声明提供类型安全的辅助定义。
+// Package types 提供反射类型辅助函数。
 /*
-Package define 把插件构造函数、接口类型和插件名称封装成可复用的定义对象，避免
-业务代码反复编写名称、Id 计算和类型断言。
+Package types 封装了零值创建、指针包装、类型名和完整限定名等常见反射操作，用于
+原型系统、断言注入和代码生成支持逻辑。
 
-定义对象会暴露 Install、Uninstall、Require 和 Lookup 等操作，适合在包级变量中
-声明后复用。常用入口包括：
-
-  - AddIn：同时适用于 service 与 runtime 的通用插件定义；
-  - ServiceAddIn / RuntimeAddIn：限定安装作用域的插件定义；
-  - AddInInterface 等 Interface 变体：只声明依赖契约，不绑定构造函数。
+当框架需要在运行期根据实例或 reflect.Type 推导名称、创建零值或写出全限定类型名时，
+通常会使用该包。
 */
-package define
+package types

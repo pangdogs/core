@@ -17,9 +17,13 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Package extension 插件系统，用于扩展服务或运行时能力，例如服务发现、消息队列与日志系统等。
+// Package extension 实现插件管理器与插件状态机。
 /*
-   - 插件主要以组合方式安装在服务或运行时上下文上，用于扩展服务或运行时能力。
-   - 服务与运行时上下文均支持安装插件，注意服务上的插件需要支持多线程环境，运行时上的插件仅需支持单线程环境即可。
+Package extension 提供 service 与 runtime 两种插件管理器，以及插件安装、运行、
+卸载过程中的状态跟踪和事件通知。
+
+大多数业务代码只需要通过 define 包声明插件，再调用 Install/Require 即可。
+当需要直接观察插件生命周期、实现自定义管理器，或操作低层状态对象时，再使用
+extension 包暴露的 AddInManager、Status 和事件类型。
 */
 package extension

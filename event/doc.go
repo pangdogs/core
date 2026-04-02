@@ -17,67 +17,24 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Package event 高效的事件系统，适用于单线程环境，需要使用 go:generate 功能来生成代码。
+// Package event 提供本地同步事件基础设施。
 /*
-定义事件：
-	1.按以下格式编写一个接口，即完成事件的定义：
-	type Event{事件名} interface {
-		On{事件名}({参数列表})
-	}
+Package event 是框架内部与业务代码共用的轻量事件系统，适合单线程或由调用方保证
+串行访问的场景。
 
-	2.在定义事件的源码文件（.go）头部添加以下注释，在编译前自动化生成代码：
-	//go:generate go run git.golaxy.org/core/event/eventc event
+推荐工作流是：
 
-使用事件：
-	1.事件一般作为组件的成员，在组件 Awake 时初始化，组件 Dispose 时关闭，示例如下：
-	type Comp struct {
-		ec.ComponentBehavior
-		event{事件名} event.Event
-	}
-	func (c *Comp) Awake() {
-		runtime.Current(c).ActivateEvent(&c.event{事件名}, event.EventRecursion_Discard)
-	}
-	func (c *Comp) Dispose() {
-		c.event{事件名}.Disable()
-	}
+  1. 定义事件接口，例如 `type EventFoo interface { OnFoo(...) }`。
+  2. 在同一文件添加 `//go:generate go run git.golaxy.org/core/event/eventc event`。
+  3. 如果需要统一管理多个事件，再添加 `eventtab --name=...` 生成事件表。
+  4. 通过生成的 `BindEventFoo`、`HandleEventFoo` 和 emit 辅助函数进行绑定与派发。
 
-订阅事件：
-	1.在组件的成员函数，编写以下代码：
-	func (c *Comp) On{事件名}({参数列表}) {
-		...
-	}
+底层的 Event、Handle、ManagedHandles、IEvent 和 IEventTab 也可以直接使用，
+用于实现自定义事件容器、统一解绑和递归策略控制。递归行为由 EventRecursion 控制，
+生成代码中的 `+event-gen:*` 与 `+event-tab-gen:*` 注释用于配置可见性、自动绑定
+代码和事件表默认递归策略。
 
-	2.在需要订阅事件时，编写以下代码：
-	func (c *Comp) MethodXXX() {
-		{事件定义包名}.Bind{事件名}({发布者}, c)
-	}
-
-	3.如果订阅者生命周期小于发布者，那么需要记录 handle 并且在 Dispose 时解除绑定，示例如下：
-	type Comp struct {
-		ec.ComponentBehavior
-		handle event.Handle
-	}
-	func (c *Comp) MethodXXX() {
-		c.handle = {事件定义包名}.Bind{事件名}({发布者}, c)
-	}
-	func (c *Comp) Dispose() {
-		c.handle.Unbind()
-	}
-
-	4.如果不想写代码记录 handle，可以使用 ec.Component、ec.Entity 或 runtime.Context 的 ManagedAddEventHandles() 来记录 handle，在它们生命周期结束时，将会自动解除绑定
-
-定义事件表：
-	1.在定义事件的源码文件（.go）头部添加以下注释，在编译前自动化生成代码：
-	//go:generate go run git.golaxy.org/core/event/eventc eventtab --name={事件表名称}
-
-事件的选项（添加到定义事件的注释里）：
-	1.发送事件的代码的可见性
-		+event-gen:export_emit=[0,1]
-
-	2.是否生成简化绑定事件的代码
-		+event-gen:auto=[0,1]
-
-	3.事件表初始化时，该事件使用的递归处理方式，不填表示使用事件表初始化参数值
-		+event-tab-gen:recursion=[allow,disallow,discard,skip_received,receive_once]
+可参考 ec、runtime 和 core 包中的 `*_event.go` 与 `*_eventtab.gen.go` 文件了解
+推荐用法。
 */
 package event

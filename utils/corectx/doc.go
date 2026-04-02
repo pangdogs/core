@@ -17,16 +17,16 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Package define 为插件声明提供类型安全的辅助定义。
+// Package corectx 定义 service 与 runtime 共用的上下文契约。
 /*
-Package define 把插件构造函数、接口类型和插件名称封装成可复用的定义对象，避免
-业务代码反复编写名称、Id 计算和类型断言。
+Package corectx 抽象了框架中通用的上下文能力，包括：
 
-定义对象会暴露 Install、Uninstall、Require 和 Lookup 等操作，适合在包级变量中
-声明后复用。常用入口包括：
+  - 父 context、终止与完成信号；
+  - panic 自动恢复与错误上报策略；
+  - 等待组/屏障，用于协调 service 与 runtime 的关闭顺序；
+  - 当前上下文和并发安全上下文提供器接口。
 
-  - AddIn：同时适用于 service 与 runtime 的通用插件定义；
-  - ServiceAddIn / RuntimeAddIn：限定安装作用域的插件定义；
-  - AddInInterface 等 Interface 变体：只声明依赖契约，不绑定构造函数。
+service.Context、runtime.Context，以及 entity/component 对当前上下文的暴露方式，
+都依赖这些基础接口。
 */
-package define
+package corectx

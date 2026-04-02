@@ -17,5 +17,17 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Package pt 实体与组件原型，用于创建实体。
+// Package pt 提供实体与组件原型库。
+/*
+Package pt 用于声明、查询和构造实体原型与组件原型。
+
+核心对象包括：
+
+  - EntityDescriptor / ComponentDescriptor：原型声明描述；
+  - EntityLib / ComponentLib：原型注册表与订阅接口；
+  - EntityPT / ComponentPT：供 ec 与 service/runtime 使用的原型对象。
+
+服务启动阶段通常会通过 service.Context.EntityLib() 或根包的 BuildEntityPT 声明
+实体原型；运行时创建实体时，再根据原型生成实体与内建组件。
+*/
 package pt

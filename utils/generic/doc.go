@@ -17,16 +17,15 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Package define 为插件声明提供类型安全的辅助定义。
+// Package generic 提供框架内部常用的泛型基础设施。
 /*
-Package define 把插件构造函数、接口类型和插件名称封装成可复用的定义对象，避免
-业务代码反复编写名称、Id 计算和类型断言。
+Package generic 包含三类能力：
 
-定义对象会暴露 Install、Uninstall、Require 和 Lookup 等操作，适合在包级变量中
-声明后复用。常用入口包括：
+  - Func / Action / Delegate 等函数类型及其安全调用包装；
+  - FreeList、SliceMap、Barrier、EventStream、UnboundedChannel 等通用数据结构；
+  - Bits、ReentrancyGuard 等状态与并发辅助工具。
 
-  - AddIn：同时适用于 service 与 runtime 的通用插件定义；
-  - ServiceAddIn / RuntimeAddIn：限定安装作用域的插件定义；
-  - AddInInterface 等 Interface 变体：只声明依赖契约，不绑定构造函数。
+这些类型是 service、runtime、event、extension 等包的实现基础，也可以被业务代码
+直接复用来表达统一的泛型回调协议。
 */
-package define
+package generic

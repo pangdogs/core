@@ -17,16 +17,12 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Package define 为插件声明提供类型安全的辅助定义。
+// Package option 提供泛型选项构造器。
 /*
-Package define 把插件构造函数、接口类型和插件名称封装成可复用的定义对象，避免
-业务代码反复编写名称、Id 计算和类型断言。
+Package option 定义了 `Setting[T]` 及其组合函数，用来实现本仓库大量使用的
+`With.xxx(...)` 风格配置 API。
 
-定义对象会暴露 Install、Uninstall、Require 和 Lookup 等操作，适合在包级变量中
-声明后复用。常用入口包括：
-
-  - AddIn：同时适用于 service 与 runtime 的通用插件定义；
-  - ServiceAddIn / RuntimeAddIn：限定安装作用域的插件定义；
-  - AddInInterface 等 Interface 变体：只声明依赖契约，不绑定构造函数。
+New 会先应用默认值，再按顺序应用额外配置；Append 和 Change 用于在现有值上继续叠加。
+service、runtime、core 与 ec 包的选项体系都基于该包实现。
 */
-package define
+package option

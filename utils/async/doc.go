@@ -17,16 +17,17 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Package define 为插件声明提供类型安全的辅助定义。
+// Package async 提供 Future 与异步结果类型。
 /*
-Package define 把插件构造函数、接口类型和插件名称封装成可复用的定义对象，避免
-业务代码反复编写名称、Id 计算和类型断言。
+Package async 定义了 Result、Future、FutureVoid 以及一组 Return/Yield 辅助函数，
+用于在 service/runtime 异步调用和独立 goroutine 任务之间传递结果。
 
-定义对象会暴露 Install、Uninstall、Require 和 Lookup 等操作，适合在包级变量中
-声明后复用。常用入口包括：
+Future 支持：
 
-  - AddIn：同时适用于 service 与 runtime 的通用插件定义；
-  - ServiceAddIn / RuntimeAddIn：限定安装作用域的插件定义；
-  - AddInInterface 等 Interface 变体：只声明依赖契约，不绑定构造函数。
+  - Wait：等待单个结果；
+  - Chan：消费 yield 式多次产出；
+  - Context：把 future 完成态转换为 context 取消信号。
+
+根包 core 的 CallAsync、GoAsync、Await 等 API 都建立在该包之上。
 */
-package define
+package async

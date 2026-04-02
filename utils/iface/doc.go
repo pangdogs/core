@@ -17,16 +17,16 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Package define 为插件声明提供类型安全的辅助定义。
+// Package iface 提供接口缓存与 Face 封装。
 /*
-Package define 把插件构造函数、接口类型和插件名称封装成可复用的定义对象，避免
-业务代码反复编写名称、Id 计算和类型断言。
+Package iface 使用基于 unsafe 的缓存表示来降低高频接口重新解释的开销。
 
-定义对象会暴露 Install、Uninstall、Require 和 Lookup 等操作，适合在包级变量中
-声明后复用。常用入口包括：
+Face 用于同时保存“接口值”和“缓存后的底层表示”，便于：
 
-  - AddIn：同时适用于 service 与 runtime 的通用插件定义；
-  - ServiceAddIn / RuntimeAddIn：限定安装作用域的插件定义；
-  - AddInInterface 等 Interface 变体：只声明依赖契约，不绑定构造函数。
+  - 记录实例的默认对外接口；
+  - 在不同接口视图之间快速重新解释；
+  - 为 define、extension 与 reinterpret 等包提供统一的实例封装。
+
+该包建立在 unsafe 之上，适合框架底层和明确理解其约束的场景。
 */
-package define
+package iface

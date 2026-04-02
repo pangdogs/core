@@ -17,16 +17,12 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Package define 为插件声明提供类型安全的辅助定义。
+// Package exception 提供带调用位置信息的错误与 panic 辅助。
 /*
-Package define 把插件构造函数、接口类型和插件名称封装成可复用的定义对象，避免
-业务代码反复编写名称、Id 计算和类型断言。
+Package exception 用于统一构造框架内部错误。它会把调用文件和行号附加到错误信息中，
+并可通过 TraceStack 为 error 附带当前栈信息。
 
-定义对象会暴露 Install、Uninstall、Require 和 Lookup 等操作，适合在包级变量中
-声明后复用。常用入口包括：
-
-  - AddIn：同时适用于 service 与 runtime 的通用插件定义；
-  - ServiceAddIn / RuntimeAddIn：限定安装作用域的插件定义；
-  - AddInInterface 等 Interface 变体：只声明依赖契约，不绑定构造函数。
+框架内的参数检查与不变量校验通常通过 Panic / Panicf 抛出；需要向上返回 error
+时则使用 Error / Errorf 系列函数。
 */
-package define
+package exception

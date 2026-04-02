@@ -17,16 +17,11 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Package define 为插件声明提供类型安全的辅助定义。
+// Package meta 提供字符串键的有序元数据映射。
 /*
-Package define 把插件构造函数、接口类型和插件名称封装成可复用的定义对象，避免
-业务代码反复编写名称、Id 计算和类型断言。
+Package meta 把 `map[string]any` 封装为基于 SliceMap 的元数据结构，并提供链式构造器，
+便于在实体原型、实体实例和组件描述上附加额外信息。
 
-定义对象会暴露 Install、Uninstall、Require 和 Lookup 等操作，适合在包级变量中
-声明后复用。常用入口包括：
-
-  - AddIn：同时适用于 service 与 runtime 的通用插件定义；
-  - ServiceAddIn / RuntimeAddIn：限定安装作用域的插件定义；
-  - AddInInterface 等 Interface 变体：只声明依赖契约，不绑定构造函数。
+Meta 保持稳定的键顺序，适合需要可重复遍历或后续合并覆盖的配置场景。
 */
-package define
+package meta
