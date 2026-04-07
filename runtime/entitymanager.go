@@ -294,6 +294,8 @@ func (mgr *_EntityManager) initComponent(entity ec.Entity, comp ec.Component) {
 		if comp.Id().IsNil() {
 			ec.UnsafeComponent(comp).SetId(uid.New())
 		}
+	} else {
+		ec.UnsafeComponent(comp).SetId(entity.Id())
 	}
 }
 
