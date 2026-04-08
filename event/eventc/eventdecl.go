@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"log"
 	"regexp"
 	"strings"
 
@@ -46,7 +47,7 @@ type EventDeclTab struct {
 func (tab *EventDeclTab) Parse() {
 	eventRegexp, err := regexp.Compile(viper.GetString("event_regexp"))
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 
 	fast := viper.Get("file_ast").(*ast.File)

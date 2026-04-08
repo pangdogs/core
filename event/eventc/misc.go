@@ -24,6 +24,7 @@ import (
 	"go/parser"
 	"go/token"
 	"io/ioutil"
+	"log"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -65,14 +66,14 @@ func loadDeclFile() {
 
 	fileData, err := ioutil.ReadFile(declFile)
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 
 	fset := token.NewFileSet()
 
 	fast, err := parser.ParseFile(fset, declFile, fileData, parser.ParseComments)
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 
 	viper.Set("file_data", fileData)

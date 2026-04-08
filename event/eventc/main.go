@@ -31,6 +31,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -39,34 +40,33 @@ import (
 )
 
 func main() {
-	// 基础选项
 	rootCmd := &cobra.Command{
-		Short: "事件代码生成工具。",
+		Short: "Event code generation tool.",
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())
 			{
 				declFile := viper.GetString("decl_file")
 				if declFile == "" {
-					panic("[--decl_file]值不能为空")
+					log.Panic("[--decl_file] must not be empty")
 				}
 				stat, err := os.Stat(declFile)
 				if err != nil {
-					panic(fmt.Errorf("[--decl_file]文件错误，%s", err))
+					log.Panicf("[--decl_file] invalid file: %s", err)
 				}
 				if stat.IsDir() {
-					panic("[--decl_file]文件错误，不能为文件夹")
+					log.Panic("[--decl_file] must reference a file, not a directory")
 				}
 			}
 			{
 				eventRegexp := viper.GetString("event_regexp")
 				if eventRegexp == "" {
-					panic("[--event_regexp]值不能为空")
+					log.Panic("[--event_regexp] must not be empty")
 				}
 			}
 			{
 				packageEventAlias := viper.GetString("package_event_alias")
 				if packageEventAlias == "" {
-					panic("[--package_event_alias]值不能为空")
+					log.Panic("[--package_event_alias] must not be empty")
 				}
 			}
 		},
@@ -77,15 +77,15 @@ func main() {
 			DisableDefaultCmd: true,
 		},
 	}
-	rootCmd.PersistentFlags().String("decl_file", os.Getenv("GOFILE"), "事件定义文件（.go）。")
-	rootCmd.PersistentFlags().String("event_regexp", "^[eE]vent.+", "匹配事件定义时，使用的正则表达式。")
-	rootCmd.PersistentFlags().String("package_event_alias", "event", fmt.Sprintf("导入Golaxy框架的（%s）包时使用的别名。", packageEventPath))
-	rootCmd.PersistentFlags().Bool("copyright", true, "Golaxy分布式服务开发框架版权信息。")
 
-	// 生成事件代码相关选项
+	rootCmd.PersistentFlags().String("decl_file", os.Getenv("GOFILE"), "Event declaration source file (.go).")
+	rootCmd.PersistentFlags().String("event_regexp", "^[eE]vent.+", "Regular expression used to match event declarations.")
+	rootCmd.PersistentFlags().String("package_event_alias", "event", fmt.Sprintf("Import alias used for the Golaxy event package (%s).", packageEventPath))
+	rootCmd.PersistentFlags().Bool("copyright", true, "Include the Golaxy Distributed Service Development Framework copyright notice.")
+
 	eventCmd := &cobra.Command{
 		Use:   "event",
-		Short: "根据定义的事件，生成事件代码。（支持定义选项：+event-gen:export_emit=[0,1]&auto=[0,1]）",
+		Short: "Generate event code from declared events. Supported declaration options: +event-gen:export_emit=[0,1]&auto=[0,1].",
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())
 			loadDeclFile()
@@ -94,31 +94,30 @@ func main() {
 			genEvent()
 		},
 	}
-	eventCmd.Flags().Bool("default_export_emit", true, "生成事件代码时，发送事件的代码的可见性，事件定义选项+event-gen:export_emit=[0,1]可以覆盖此配置。")
-	eventCmd.Flags().Bool("default_auto", true, "生成事件代码时，是否生成简化绑定事件的代码，事件定义选项+event-gen:auto=[0,1]可以覆盖此配置。")
+	eventCmd.Flags().Bool("default_export_emit", true, "Default visibility of generated emit helpers. Can be overridden by +event-gen:export_emit=[0,1].")
+	eventCmd.Flags().Bool("default_auto", true, "Generate simplified auto-binding helpers by default. Can be overridden by +event-gen:auto=[0,1].")
 
-	// 生成事件表代码相关选项
 	eventTabCmd := &cobra.Command{
 		Use:   "eventtab",
-		Short: "根据定义的事件，生成事件表代码。（支持定义选项：+event-tab-gen:recursion=[allow,disallow,discard,skip_received,receive_once]）",
+		Short: "Generate event table code from declared events. Supported declaration options: +event-tab-gen:recursion=[allow,disallow,discard,skip_received,receive_once].",
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())
 			{
 				pkg := viper.GetString("package")
 				if pkg == "" {
-					panic("[eventtab --package]值不能为空")
+					log.Panic("[eventtab --package] must not be empty")
 				}
 			}
 			{
 				dir := viper.GetString("dir")
 				if dir == "" {
-					panic("[eventtab --dir]值不能为空")
+					log.Panic("[eventtab --dir] must not be empty")
 				}
 			}
 			{
 				name := viper.GetString("name")
 				if name == "" {
-					panic("[eventtab --name]值不能为空")
+					log.Panic("[eventtab --name] must not be empty")
 				}
 			}
 			loadDeclFile()
@@ -127,14 +126,14 @@ func main() {
 			genEventTab()
 		},
 	}
-	eventTabCmd.Flags().String("package", os.Getenv("GOPACKAGE"), "生成事件表代码，使用的包名。")
-	eventTabCmd.Flags().String("dir", filepath.Dir(os.Getenv("GOFILE")), "生成事件表代码时，输出代码文件（.go）的目录。")
-	eventTabCmd.Flags().String("name", defaultEventTab(), "生成的事件表名称。")
-	eventTabCmd.Flags().Bool("export_interface", true, "生成事件表代码时，事件表接口的可见性。")
+	eventTabCmd.Flags().String("package", os.Getenv("GOPACKAGE"), "Package name used for generated event table code.")
+	eventTabCmd.Flags().String("dir", filepath.Dir(os.Getenv("GOFILE")), "Output directory for generated event table source files (.go).")
+	eventTabCmd.Flags().String("name", defaultEventTab(), "Name of the generated event table.")
+	eventTabCmd.Flags().Bool("export_interface", true, "Control whether the generated event table interface is exported.")
 
 	rootCmd.AddCommand(eventCmd, eventTabCmd)
 
 	if err := rootCmd.Execute(); err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 }

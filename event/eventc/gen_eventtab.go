@@ -221,6 +221,6 @@ func (eventTab *%[1]s) %[2]s() %[4]sIEvent {%[5]s
 	os.MkdirAll(filepath.Dir(outFile), os.ModePerm)
 
 	if err := ioutil.WriteFile(outFile, code.Bytes(), os.ModePerm); err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 }
