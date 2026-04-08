@@ -47,7 +47,6 @@ func BuildEntity(provider corectx.CurrentContextProvider, prototype string) *Ent
 type EntityCreator struct {
 	rtCtx     runtime.Context
 	prototype string
-	parentId  uid.Id
 	meta      meta.Meta
 	settings  []option.Setting[ec.EntityOptions]
 }
@@ -131,12 +130,6 @@ func (c *EntityCreator) AssignMeta(m meta.Meta) *EntityCreator {
 	return c
 }
 
-// SetParentId 设置父实体Id
-func (c *EntityCreator) SetParentId(id uid.Id) *EntityCreator {
-	c.parentId = id
-	return c
-}
-
 // New 创建实体
 func (c *EntityCreator) New() (ec.Entity, error) {
 	if c.rtCtx == nil {
@@ -147,13 +140,6 @@ func (c *EntityCreator) New() (ec.Entity, error) {
 
 	if err := c.rtCtx.EntityManager().AddEntity(entity); err != nil {
 		return nil, err
-	}
-
-	if !c.parentId.IsNil() {
-		if err := c.rtCtx.EntityTree().AddChild(c.parentId, entity.Id()); err != nil {
-			entity.Destroy()
-			return nil, err
-		}
 	}
 
 	return entity, nil
