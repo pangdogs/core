@@ -30,14 +30,12 @@ import (
 )
 
 type EventDecl struct {
-	Name               string
-	Comment            string
-	FuncName           string
-	FuncParamsDecl     string
-	FuncParams         string
-	FuncTypeParamsDecl string
-	FuncTypeParams     string
-	FuncHasRet         bool
+	Name           string
+	Comment        string
+	FuncName       string
+	FuncParamsDecl string
+	FuncParams     string
+	FuncHasRet     bool
 }
 
 type EventDeclTab struct {
@@ -77,6 +75,10 @@ func (tab *EventDeclTab) Parse() {
 			return true
 		}
 
+		if ts.TypeParams != nil {
+			return true
+		}
+
 		eventIface, ok := ts.Type.(*ast.InterfaceType)
 		if !ok {
 			return true
@@ -113,7 +115,7 @@ func (tab *EventDeclTab) Parse() {
 					paramName += pn.Name
 				}
 
-				if paramName == "" {
+				if paramName == "" || paramName == "_" {
 					paramName = fmt.Sprintf("p%d", i)
 				}
 
@@ -133,50 +135,13 @@ func (tab *EventDeclTab) Parse() {
 			}
 		}
 
-		eventFuncTypeParamsDecl := ""
-		eventFuncTypeParams := ""
-
-		if ts.TypeParams != nil {
-			for i, typeParam := range ts.TypeParams.List {
-				typeParamName := ""
-
-				for _, pn := range typeParam.Names {
-					if typeParamName != "" {
-						typeParamName += ", "
-					}
-					typeParamName += pn.Name
-				}
-
-				if typeParamName == "" {
-					typeParamName = fmt.Sprintf("p%d", i)
-				}
-
-				if eventFuncTypeParams != "" {
-					eventFuncTypeParams += ", "
-				}
-				eventFuncTypeParams += typeParamName
-
-				begin := fset.Position(typeParam.Type.Pos()).Offset
-				end := fset.Position(typeParam.Type.End()).Offset
-
-				if eventFuncTypeParamsDecl != "" {
-					eventFuncTypeParamsDecl += ", "
-				}
-				eventFuncTypeParamsDecl += fmt.Sprintf("%s %s", typeParamName, fdata[begin:end])
-			}
-		}
-
-		if eventFuncTypeParamsDecl != "" {
-			eventFuncTypeParamsDecl = fmt.Sprintf("[%s]", eventFuncTypeParamsDecl)
-		}
-
-		if eventFuncTypeParams != "" {
-			eventFuncTypeParams = fmt.Sprintf("[%s]", eventFuncTypeParams)
-		}
-
 		eventFuncHasRet := false
 
 		if eventFunc.Results.NumFields() > 0 {
+			if eventFunc.Results.NumFields() != 1 {
+				return true
+			}
+
 			eventRet, ok := eventFunc.Results.List[0].Type.(*ast.Ident)
 			if !ok {
 				return true
@@ -190,14 +155,12 @@ func (tab *EventDeclTab) Parse() {
 		}
 
 		eventDecl := EventDecl{
-			Name:               eventName,
-			Comment:            eventComment,
-			FuncName:           eventFuncName,
-			FuncParamsDecl:     eventFuncParamsDecl,
-			FuncParams:         eventFuncParams,
-			FuncTypeParamsDecl: eventFuncTypeParamsDecl,
-			FuncTypeParams:     eventFuncTypeParams,
-			FuncHasRet:         eventFuncHasRet,
+			Name:           eventName,
+			Comment:        eventComment,
+			FuncName:       eventFuncName,
+			FuncParamsDecl: eventFuncParamsDecl,
+			FuncParams:     eventFuncParams,
+			FuncHasRet:     eventFuncHasRet,
 		}
 
 		tab.Events = append(tab.Events, eventDecl)

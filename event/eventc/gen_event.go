@@ -150,23 +150,23 @@ type iAuto%[1]s interface {
 	%[2]s() %[6]sIEvent
 }
 
-func %[11]sBind%[1]s(auto iAuto%[1]s, subscriber %[2]s%[8]s, priority ...int32) %[6]sHandle {
+func %[9]sBind%[1]s(auto iAuto%[1]s, subscriber %[2]s, priority ...int32) %[6]sHandle {
 	if auto == nil {
 		%[6]sPanicf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
-	return %[6]sBind[%[2]s%[8]s](auto.%[2]s(), subscriber, priority...)
+	return %[6]sBind[%[2]s](auto.%[2]s(), subscriber, priority...)
 }
 
-func %[9]s%[1]s%[7]s(auto iAuto%[1]s%[4]s) {
+func %[7]s%[1]s(auto iAuto%[1]s%[4]s) {
 	if auto == nil {
 		%[6]sPanicf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
 	%[6]sUnsafeEvent(auto.%[2]s()).Emit(func(subscriber %[6]sCache) bool {
-		return %[6]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
+		return %[6]sCache2Iface[%[2]s](subscriber).%[3]s(%[5]s)
 	})
 }
 
-func %[9]s%[1]s%[7]sWithInterrupt(auto iAuto%[1]s, interrupt func(%[10]s) bool%[4]s) {
+func %[7]s%[1]sWithInterrupt(auto iAuto%[1]s, interrupt func(%[8]s) bool%[4]s) {
 	if auto == nil {
 		%[6]sPanicf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
@@ -176,10 +176,10 @@ func %[9]s%[1]s%[7]sWithInterrupt(auto iAuto%[1]s, interrupt func(%[10]s) bool%[
 				return false
 			}
 		}
-		return %[6]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
+		return %[6]sCache2Iface[%[2]s](subscriber).%[3]s(%[5]s)
 	})
 }
-`, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, eventPrefix, eventDecl.FuncTypeParamsDecl, eventDecl.FuncTypeParams, exportEmitStr, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "), visibility)
+`, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, eventPrefix, exportEmitStr, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "), visibility)
 
 			} else {
 				fmt.Fprintf(code, `
@@ -187,24 +187,24 @@ type iAuto%[1]s interface {
 	%[2]s() %[6]sIEvent
 }
 
-func %[11]sBind%[1]s(auto iAuto%[1]s, subscriber %[2]s%[8]s, priority ...int32) %[6]sHandle {
+func %[9]sBind%[1]s(auto iAuto%[1]s, subscriber %[2]s, priority ...int32) %[6]sHandle {
 	if auto == nil {
 		%[6]sPanicf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
-	return %[6]sBind[%[2]s%[8]s](auto.%[2]s(), subscriber, priority...)
+	return %[6]sBind[%[2]s](auto.%[2]s(), subscriber, priority...)
 }
 
-func %[9]s%[1]s%[7]s(auto iAuto%[1]s%[4]s) {
+func %[7]s%[1]s(auto iAuto%[1]s%[4]s) {
 	if auto == nil {
 		%[6]sPanicf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
 	%[6]sUnsafeEvent(auto.%[2]s()).Emit(func(subscriber %[6]sCache) bool {
-		%[6]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
+		%[6]sCache2Iface[%[2]s](subscriber).%[3]s(%[5]s)
 		return true
 	})
 }
 
-func %[9]s%[1]s%[7]sWithInterrupt(auto iAuto%[1]s, interrupt func(%[10]s) bool%[4]s) {
+func %[7]s%[1]sWithInterrupt(auto iAuto%[1]s, interrupt func(%[8]s) bool%[4]s) {
 	if auto == nil {
 		%[6]sPanicf("%%w: %%w: auto is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
@@ -214,25 +214,25 @@ func %[9]s%[1]s%[7]sWithInterrupt(auto iAuto%[1]s, interrupt func(%[10]s) bool%[
 				return false
 			}
 		}
-		%[6]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
+		%[6]sCache2Iface[%[2]s](subscriber).%[3]s(%[5]s)
 		return true
 	})
 }
-`, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, eventPrefix, eventDecl.FuncTypeParamsDecl, eventDecl.FuncTypeParams, exportEmitStr, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "), visibility)
+`, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, eventPrefix, exportEmitStr, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "), visibility)
 			}
 		} else {
 			if eventDecl.FuncHasRet {
 				fmt.Fprintf(code, `
-func %[9]s%[1]s%[7]s(evt %[6]sIEvent%[4]s) {
+func %[7]s%[1]s(evt %[6]sIEvent%[4]s) {
 	if evt == nil {
 		%[6]sPanicf("%%w: %%w: evt is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
 	%[6]sUnsafeEvent(evt).Emit(func(subscriber %[6]sCache) bool {
-		return %[6]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
+		return %[6]sCache2Iface[%[2]s](subscriber).%[3]s(%[5]s)
 	})
 }
 
-func %[9]s%[1]s%[7]sWithInterrupt(evt %[6]sIEvent, interrupt func(%[10]s) bool%[4]s) {
+func %[7]s%[1]sWithInterrupt(evt %[6]sIEvent, interrupt func(%[8]s) bool%[4]s) {
 	if evt == nil {
 		%[6]sPanicf("%%w: %%w: evt is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
@@ -242,24 +242,24 @@ func %[9]s%[1]s%[7]sWithInterrupt(evt %[6]sIEvent, interrupt func(%[10]s) bool%[
 				return false
 			}
 		}
-		return %[6]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
+		return %[6]sCache2Iface[%[2]s](subscriber).%[3]s(%[5]s)
 	})
 }
-`, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, eventPrefix, eventDecl.FuncTypeParamsDecl, eventDecl.FuncTypeParams, exportEmitStr, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "))
+`, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, eventPrefix, exportEmitStr, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "))
 
 			} else {
 				fmt.Fprintf(code, `
-func %[9]s%[1]s%[7]s(evt %[6]sIEvent%[4]s) {
+func %[7]s%[1]s(evt %[6]sIEvent%[4]s) {
 	if evt == nil {
 		%[6]sPanicf("%%w: %%w: evt is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
 	%[6]sUnsafeEvent(evt).Emit(func(subscriber %[6]sCache) bool {
-		%[6]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
+		%[6]sCache2Iface[%[2]s](subscriber).%[3]s(%[5]s)
 		return true
 	})
 }
 
-func %[9]s%[1]s%[7]sWithInterrupt(evt %[6]sIEvent, interrupt func(%[10]s) bool%[4]s) {
+func %[7]s%[1]sWithInterrupt(evt %[6]sIEvent, interrupt func(%[8]s) bool%[4]s) {
 	if evt == nil {
 		%[6]sPanicf("%%w: %%w: evt is nil", %[6]sErrEvent, %[6]sErrArgs)
 	}
@@ -269,11 +269,11 @@ func %[9]s%[1]s%[7]sWithInterrupt(evt %[6]sIEvent, interrupt func(%[10]s) bool%[
 				return false
 			}
 		}
-		%[6]sCache2Iface[%[2]s%[8]s](subscriber).%[3]s(%[5]s)
+		%[6]sCache2Iface[%[2]s](subscriber).%[3]s(%[5]s)
 		return true
 	})
 }
-`, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, eventPrefix, eventDecl.FuncTypeParamsDecl, eventDecl.FuncTypeParams, exportEmitStr, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "))
+`, strings.Title(eventDecl.Name), eventDecl.Name, eventDecl.FuncName, eventDecl.FuncParamsDecl, eventDecl.FuncParams, eventPrefix, exportEmitStr, strings.TrimLeft(eventDecl.FuncParamsDecl, ", "))
 			}
 		}
 
