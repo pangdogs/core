@@ -21,6 +21,7 @@ package core
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"slices"
 	"sync"
@@ -34,7 +35,7 @@ import (
 )
 
 var (
-	ErrAllFuturesExceeded = fmt.Errorf("%w: all futures exceeded deadline: %w", ErrCore, context.DeadlineExceeded)
+	ErrNoFutureSucceeded = fmt.Errorf("%w: no future succeeded", ErrCore)
 )
 
 // Await 异步等待结果返回
@@ -56,6 +57,14 @@ func (ad AwaitDirector) singleFuture() (async.Future, bool) {
 		return async.Future{}, false
 	}
 	return ad.futures[0], true
+}
+
+func joinAwaitErrors(errs []error) error {
+	errs = slices.DeleteFunc(errs, func(err error) bool { return err == nil })
+	if len(errs) <= 0 {
+		return ErrNoFutureSucceeded
+	}
+	return fmt.Errorf("%w: %w", ErrNoFutureSucceeded, errors.Join(errs...))
 }
 
 // Any 异步等待任意一个结果返回，有返回值
@@ -119,7 +128,7 @@ func (ad AwaitDirector) Any(fun generic.FuncVar2[runtime.Context, async.Result, 
 			return
 		}
 
-		async.Return(resultFuture, async.NewResult(nil, ErrAllFuturesExceeded))
+		async.Return(resultFuture, async.NewResult(nil, joinAwaitErrors(nil)))
 	}()
 
 	return resultFuture.Out()
@@ -186,7 +195,7 @@ func (ad AwaitDirector) AnyVoid(fun generic.ActionVar2[runtime.Context, async.Re
 			return
 		}
 
-		async.Return(resultFuture, async.NewResult(nil, ErrAllFuturesExceeded))
+		async.Return(resultFuture, async.NewResult(nil, joinAwaitErrors(nil)))
 	}()
 
 	return resultFuture.Out()
@@ -208,7 +217,7 @@ func (ad AwaitDirector) OK(fun generic.FuncVar2[runtime.Context, async.Result, a
 		go func() {
 			ret := future.Wait(ad.rtCtx)
 			if !ret.OK() {
-				async.Return(resultFuture, async.NewResult(nil, ErrAllFuturesExceeded))
+				async.Return(resultFuture, async.NewResult(nil, joinAwaitErrors([]error{ret.Error})))
 				return
 			}
 
@@ -225,15 +234,17 @@ func (ad AwaitDirector) OK(fun generic.FuncVar2[runtime.Context, async.Result, a
 
 	var once atomic.Bool
 	var wg sync.WaitGroup
+	errs := make([]error, len(ad.futures))
 
 	for i := range ad.futures {
 		wg.Add(1)
 
-		go func(future async.Future) {
+		go func(future async.Future, errRef *error) {
 			defer wg.Done()
 
 			ret := future.Wait(ctx)
 			if !ret.OK() {
+				*errRef = ret.Error
 				return
 			}
 
@@ -249,7 +260,7 @@ func (ad AwaitDirector) OK(fun generic.FuncVar2[runtime.Context, async.Result, a
 
 			async.Return(resultFuture, nextFuture.Wait(ad.rtCtx))
 
-		}(ad.futures[i])
+		}(ad.futures[i], &errs[i])
 	}
 
 	go func() {
@@ -261,7 +272,7 @@ func (ad AwaitDirector) OK(fun generic.FuncVar2[runtime.Context, async.Result, a
 			return
 		}
 
-		async.Return(resultFuture, async.NewResult(nil, ErrAllFuturesExceeded))
+		async.Return(resultFuture, async.NewResult(nil, joinAwaitErrors(errs)))
 	}()
 
 	return resultFuture.Out()
@@ -283,7 +294,7 @@ func (ad AwaitDirector) OKVoid(fun generic.ActionVar2[runtime.Context, async.Res
 		go func() {
 			ret := future.Wait(ad.rtCtx)
 			if !ret.OK() {
-				async.Return(resultFuture, async.NewResult(nil, ErrAllFuturesExceeded))
+				async.Return(resultFuture, async.NewResult(nil, joinAwaitErrors([]error{ret.Error})))
 				return
 			}
 
@@ -300,15 +311,17 @@ func (ad AwaitDirector) OKVoid(fun generic.ActionVar2[runtime.Context, async.Res
 
 	var once atomic.Bool
 	var wg sync.WaitGroup
+	errs := make([]error, len(ad.futures))
 
 	for i := range ad.futures {
 		wg.Add(1)
 
-		go func(future async.Future) {
+		go func(future async.Future, errRef *error) {
 			defer wg.Done()
 
 			ret := future.Wait(ctx)
 			if !ret.OK() {
+				*errRef = ret.Error
 				return
 			}
 
@@ -324,7 +337,7 @@ func (ad AwaitDirector) OKVoid(fun generic.ActionVar2[runtime.Context, async.Res
 
 			async.Return(resultFuture, nextFuture.Wait(ad.rtCtx))
 
-		}(ad.futures[i])
+		}(ad.futures[i], &errs[i])
 	}
 
 	go func() {
@@ -336,7 +349,7 @@ func (ad AwaitDirector) OKVoid(fun generic.ActionVar2[runtime.Context, async.Res
 			return
 		}
 
-		async.Return(resultFuture, async.NewResult(nil, ErrAllFuturesExceeded))
+		async.Return(resultFuture, async.NewResult(nil, joinAwaitErrors(errs)))
 	}()
 
 	return resultFuture.Out()
