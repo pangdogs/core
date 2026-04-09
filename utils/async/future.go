@@ -88,6 +88,19 @@ func (future Future) Chan() <-chan Result {
 	if future.IsNil() {
 		exception.Panic("future is nil, cannot get channel")
 	}
+	if future.Void() {
+		ch := make(chan Result)
+		select {
+		case <-future.done:
+			close(ch)
+		default:
+			go func(done <-chan struct{}) {
+				<-done
+				close(ch)
+			}(future.done)
+		}
+		return ch
+	}
 	return future.ch
 }
 
