@@ -607,44 +607,76 @@ func Test_EntityTree(t *testing.T) {
 									log.Panicln("make root error:", err)
 								}
 
-								child1, err := core.BuildEntity(ctx, "Test1").SetParentId(root.Id()).New()
+								child1, err := core.BuildEntity(ctx, "Test1").New()
 								if err != nil {
 									log.Panicln("new child1 error:", err)
 								}
+								err = ctx.EntityTree().AddChild(root.Id(), child1.Id())
+								if err != nil {
+									log.Panicln("add child1 error:", err)
+								}
 
-								child2, err := core.BuildEntity(ctx, "Test1").SetParentId(root.Id()).New()
+								child2, err := core.BuildEntity(ctx, "Test1").New()
 								if err != nil {
 									log.Panicln("new child2 error:", err)
 								}
+								err = ctx.EntityTree().AddChild(root.Id(), child2.Id())
+								if err != nil {
+									log.Panicln("add child2 error:", err)
+								}
 
-								child3, err := core.BuildEntity(ctx, "Test1").SetParentId(child1.Id()).New()
+								child3, err := core.BuildEntity(ctx, "Test1").New()
 								if err != nil {
 									log.Panicln("new child3 error:", err)
 								}
+								err = ctx.EntityTree().AddChild(child1.Id(), child3.Id())
+								if err != nil {
+									log.Panicln("add child3 error:", err)
+								}
 
-								child4, err := core.BuildEntity(ctx, "Test1").SetParentId(child3.Id()).New()
+								child4, err := core.BuildEntity(ctx, "Test1").New()
 								if err != nil {
 									log.Panicln("new child4 error:", err)
 								}
+								err = ctx.EntityTree().AddChild(child3.Id(), child4.Id())
+								if err != nil {
+									log.Panicln("add child4 error:", err)
+								}
 
-								child5, err := core.BuildEntity(ctx, "Test1").SetParentId(child3.Id()).New()
+								child5, err := core.BuildEntity(ctx, "Test1").New()
 								if err != nil {
 									log.Panicln("new child5 error:", err)
 								}
+								err = ctx.EntityTree().AddChild(child3.Id(), child5.Id())
+								if err != nil {
+									log.Panicln("add child5 error:", err)
+								}
 
-								child6, err := core.BuildEntity(ctx, "Test1").SetParentId(child3.Id()).New()
+								child6, err := core.BuildEntity(ctx, "Test1").New()
 								if err != nil {
 									log.Panicln("new child6 error:", err)
 								}
+								err = ctx.EntityTree().AddChild(child3.Id(), child6.Id())
+								if err != nil {
+									log.Panicln("add child6 error:", err)
+								}
 
-								child7, err := core.BuildEntity(ctx, "Test1").SetParentId(runtime.ForestNodeId).New()
+								child7, err := core.BuildEntity(ctx, "Test1").New()
 								if err != nil {
 									log.Panicln("new child7 error:", err)
 								}
+								err = ctx.EntityTree().AddChild(runtime.ForestNodeId, child7.Id())
+								if err != nil {
+									log.Panicln("add child7 error:", err)
+								}
 
-								child8, err := core.BuildEntity(ctx, "Test1").SetParentId(child2.Id()).New()
+								child8, err := core.BuildEntity(ctx, "Test1").New()
 								if err != nil {
 									log.Panicln("new child8 error:", err)
+								}
+								err = ctx.EntityTree().AddChild(child2.Id(), child8.Id())
+								if err != nil {
+									log.Panicln("add child8 error:", err)
 								}
 
 								log.Println("1. testing detach node")
@@ -897,9 +929,13 @@ func Test_EntityTreeSequence(t *testing.T) {
 
 								PrintEntityTreeForest(ctx.EntityTree())
 
-								child1, err := core.BuildEntity(ctx, "Test2").SetParentId(root.Id()).New()
+								child1, err := core.BuildEntity(ctx, "Test2").New()
 								if err != nil {
 									log.Panicln("new child1 error:", err)
+								}
+								err = ctx.EntityTree().AddChild(root.Id(), child1.Id())
+								if err != nil {
+									log.Panicln("add child1 error:", err)
 								}
 
 								PrintEntityTreeForest(ctx.EntityTree())
@@ -908,9 +944,13 @@ func Test_EntityTreeSequence(t *testing.T) {
 
 								PrintEntityTreeForest(ctx.EntityTree())
 
-								child2, err := core.BuildEntity(ctx, "Test3").SetParentId(root.Id()).New()
+								child2, err := core.BuildEntity(ctx, "Test3").New()
 								if err != nil {
 									log.Panicln("new child2 error:", err)
+								}
+								err = ctx.EntityTree().AddChild(root.Id(), child2.Id())
+								if err != nil {
+									log.Panicln("add child2 error:", err)
 								}
 
 								PrintEntityTreeForest(ctx.EntityTree())
@@ -919,9 +959,13 @@ func Test_EntityTreeSequence(t *testing.T) {
 
 								PrintEntityTreeForest(ctx.EntityTree())
 
-								child3, err := core.BuildEntity(ctx, "Test4").SetParentId(root.Id()).New()
+								child3, err := core.BuildEntity(ctx, "Test4").New()
 								if err != nil {
 									log.Panicln("new child3 error:", err)
+								}
+								err = ctx.EntityTree().AddChild(root.Id(), child3.Id())
+								if err != nil {
+									log.Panicln("add child3 error:", err)
 								}
 
 								PrintEntityTreeForest(ctx.EntityTree())
@@ -930,9 +974,13 @@ func Test_EntityTreeSequence(t *testing.T) {
 
 								PrintEntityTreeForest(ctx.EntityTree())
 
-								child4, err := core.BuildEntity(ctx, "Test5").SetParentId(root.Id()).New()
+								child4, err := core.BuildEntity(ctx, "Test5").New()
 								if err != nil {
 									log.Panicln("new child4 error:", err)
+								}
+								err = ctx.EntityTree().AddChild(root.Id(), child4.Id())
+								if err != nil {
+									log.Panicln("add child4 error:", err)
 								}
 
 								PrintEntityTreeForest(ctx.EntityTree())
@@ -946,16 +994,24 @@ func Test_EntityTreeSequence(t *testing.T) {
 
 								PrintEntityTreeForest(ctx.EntityTree())
 
-								child5, err := core.BuildEntity(ctx, "Test6").SetParentId(root.Id()).New()
+								child5, err := core.BuildEntity(ctx, "Test6").New()
 								if err != nil {
 									log.Panicln("new child5 error:", err)
+								}
+								err = ctx.EntityTree().AddChild(root.Id(), child5.Id())
+								if err != nil {
+									log.Panicln("add child5 error:", err)
 								}
 
 								PrintEntityTreeForest(ctx.EntityTree())
 
-								child6, err := core.BuildEntity(ctx, "Test1").SetParentId(child5.Id()).New()
+								child6, err := core.BuildEntity(ctx, "Test1").New()
 								if err != nil {
 									log.Panicln("new child6 error:", err)
+								}
+								err = ctx.EntityTree().AddChild(child5.Id(), child6.Id())
+								if err != nil {
+									log.Panicln("add child6 error:", err)
 								}
 
 								PrintEntityTreeForest(ctx.EntityTree())
@@ -967,16 +1023,24 @@ func Test_EntityTreeSequence(t *testing.T) {
 
 								PrintEntityTreeForest(ctx.EntityTree())
 
-								child7, err := core.BuildEntity(ctx, "Test7").SetParentId(root.Id()).New()
+								child7, err := core.BuildEntity(ctx, "Test7").New()
 								if err != nil {
 									log.Panicln("new child7 error:", err)
+								}
+								err = ctx.EntityTree().AddChild(root.Id(), child7.Id())
+								if err != nil {
+									log.Panicln("add child7 error:", err)
 								}
 
 								PrintEntityTreeForest(ctx.EntityTree())
 
-								child8, err := core.BuildEntity(ctx, "Test1").SetParentId(child7.Id()).New()
+								child8, err := core.BuildEntity(ctx, "Test1").New()
 								if err != nil {
 									log.Panicln("new child8 error:", err)
+								}
+								err = ctx.EntityTree().AddChild(child7.Id(), child8.Id())
+								if err != nil {
+									log.Panicln("add child8 error:", err)
 								}
 
 								PrintEntityTreeForest(ctx.EntityTree())

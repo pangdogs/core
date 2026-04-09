@@ -101,10 +101,6 @@ func (rt *RuntimeBehavior) emitEventRunningEvent(runningEvent runtime.RunningEve
 
 func (rt *RuntimeBehavior) onBeforeContextRunningEvent(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
 	switch runningEvent {
-	case runtime.RunningEvent_Birth:
-		if rt.options.AutoRun {
-			rt.getInstance().Run()
-		}
 	case runtime.RunningEvent_Starting:
 		rt.initAddIn()
 	case runtime.RunningEvent_FrameLoopBegin:
@@ -120,6 +116,10 @@ func (rt *RuntimeBehavior) onBeforeContextRunningEvent(ctx runtime.Context, runn
 
 func (rt *RuntimeBehavior) onAfterContextRunningEvent(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
 	switch runningEvent {
+	case runtime.RunningEvent_Birth:
+		if rt.options.AutoRun {
+			rt.getInstance().Run()
+		}
 	case runtime.RunningEvent_Terminated:
 		rt.shutAddIn()
 	}
