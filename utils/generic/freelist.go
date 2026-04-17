@@ -29,13 +29,22 @@ func NewFreeList[T any]() *FreeList[T] {
 	return &FreeList[T]{}
 }
 
+type freeSlotState uint8
+
+const (
+	freeSlotState_Freed freeSlotState = iota
+	freeSlotState_Active
+	freeSlotState_Orphaned
+)
+
 // FreeSlot 自由链表槽位
 type FreeSlot[T any] struct {
 	V               T
 	idx, prev, next int
+	pendingFreeNext int
 	list            *FreeList[T]
 	ver             int64
-	orphaned        bool
+	state           freeSlotState
 }
 
 // Version 被占用时的数据版本号
@@ -45,7 +54,7 @@ func (s *FreeSlot[T]) Version() int64 {
 
 // Prev 前一个槽位
 func (s *FreeSlot[T]) Prev() *FreeSlot[T] {
-	if s.list == nil {
+	if s.list == nil || s.Freed() {
 		return nil
 	}
 	slotPrev := s.list.Get(s.prev)
@@ -57,7 +66,7 @@ func (s *FreeSlot[T]) Prev() *FreeSlot[T] {
 
 // Next 下一个槽位
 func (s *FreeSlot[T]) Next() *FreeSlot[T] {
-	if s.list == nil {
+	if s.list == nil || s.Freed() {
 		return nil
 	}
 	slotNext := s.list.Get(s.next)
@@ -74,30 +83,35 @@ func (s *FreeSlot[T]) Index() int {
 
 // Free 释放
 func (s *FreeSlot[T]) Free() {
+	if s.list == nil {
+		return
+	}
 	s.list.ReleaseIfVersion(s.idx, s.ver)
 }
 
 // Orphaned 是否悬空准备释放
 func (s *FreeSlot[T]) Orphaned() bool {
-	return s.orphaned
+	return s.state == freeSlotState_Orphaned
 }
 
 // Freed 是否已被释放
 func (s *FreeSlot[T]) Freed() bool {
-	return s.list == nil
+	return s.state == freeSlotState_Freed
 }
 
 // FreeList 自由链表
 type FreeList[T any] struct {
-	_           noCopy
-	slots       []FreeSlot[T]
-	head        int
-	tail        int
-	free        int
-	len         int
-	ver         int64
-	orphanCount int
-	depth       int
+	_               noCopy
+	slots           []FreeSlot[T]
+	head            int
+	tail            int
+	unused          int
+	pendingFreeHead int
+	freeHead        int
+	len             int
+	ver             int64
+	orphanCount     int
+	depth           int
 }
 
 // Cap 总容量
@@ -156,11 +170,7 @@ func (l *FreeList[T]) Release(idx int) {
 		return
 	}
 	if l.depth > 0 {
-		if !slot.Orphaned() {
-			slot.V = types.Zero[T]()
-			slot.orphaned = true
-			l.orphanCount++
-		}
+		l.orphan(slot)
 		return
 	}
 	l.release(slot)
@@ -173,11 +183,7 @@ func (l *FreeList[T]) ReleaseIfVersion(idx int, ver int64) {
 		return
 	}
 	if l.depth > 0 {
-		if !slot.Orphaned() {
-			slot.V = types.Zero[T]()
-			slot.orphaned = true
-			l.orphanCount++
-		}
+		l.orphan(slot)
 		return
 	}
 	l.release(slot)
@@ -188,7 +194,7 @@ func (l *FreeList[T]) ReleaseOrphans() {
 	if l.ver <= 0 {
 		return
 	}
-	l.releaseOrphans(0)
+	l.releaseOrphans()
 }
 
 // PushFront 在链表头部插入数据
@@ -293,29 +299,33 @@ func (l *FreeList[T]) MoveAfter(idx, at int) {
 	l.moveAfter(slot, at)
 }
 
-// PushFrontList 在链表头部插入其他链表，可以传入自身
+// PushFrontList 在链表头部插入其他链表，跳过悬空节点，可以传入自身
 func (l *FreeList[T]) PushFrontList(other *FreeList[T]) {
 	if other == nil {
 		return
 	}
 	l.lazyInit()
 	for i, n := other.Len(), other.Back(); i > 0; i, n = i-1, n.Prev() {
-		l.appendValue(n.V, -1)
+		if !n.Orphaned() {
+			l.appendValue(n.V, -1)
+		}
 	}
 }
 
-// PushBackList 在链表尾部插入其他链表，可以传入自身
+// PushBackList 在链表尾部插入其他链表，跳过悬空节点，可以传入自身
 func (l *FreeList[T]) PushBackList(other *FreeList[T]) {
 	if other == nil {
 		return
 	}
 	l.lazyInit()
 	for i, n := other.Len(), other.Front(); i > 0; i, n = i-1, n.Next() {
-		l.appendValue(n.V, l.tail)
+		if !n.Orphaned() {
+			l.appendValue(n.V, l.tail)
+		}
 	}
 }
 
-// Traversal 遍历槽位
+// Traversal 遍历槽位，跳过悬空节点
 func (l *FreeList[T]) Traversal(visitor func(slot *FreeSlot[T]) bool) {
 	if l.ver <= 0 || visitor == nil {
 		return
@@ -336,7 +346,7 @@ func (l *FreeList[T]) Traversal(visitor func(slot *FreeSlot[T]) bool) {
 	}
 }
 
-// TraversalEach 遍历每个槽位
+// TraversalEach 遍历每个槽位，跳过悬空节点
 func (l *FreeList[T]) TraversalEach(visitor func(slot *FreeSlot[T])) {
 	if l.ver <= 0 || visitor == nil {
 		return
@@ -355,7 +365,7 @@ func (l *FreeList[T]) TraversalEach(visitor func(slot *FreeSlot[T])) {
 	}
 }
 
-// TraversalAt 从指定位置开始遍历槽位
+// TraversalAt 从指定位置开始遍历槽位，跳过悬空节点
 func (l *FreeList[T]) TraversalAt(visitor func(slot *FreeSlot[T]) bool, at int) {
 	if l.ver <= 0 || visitor == nil {
 		return
@@ -380,7 +390,7 @@ func (l *FreeList[T]) TraversalAt(visitor func(slot *FreeSlot[T]) bool, at int) 
 	}
 }
 
-// TraversalEachAt 从指定位置开始遍历每个槽位
+// TraversalEachAt 从指定位置开始遍历每个槽位，跳过悬空节点
 func (l *FreeList[T]) TraversalEachAt(visitor func(slot *FreeSlot[T]), at int) {
 	if l.ver <= 0 || visitor == nil {
 		return
@@ -403,7 +413,7 @@ func (l *FreeList[T]) TraversalEachAt(visitor func(slot *FreeSlot[T]), at int) {
 	}
 }
 
-// ReversedTraversal 反向遍历槽位
+// ReversedTraversal 反向遍历槽位，跳过悬空节点
 func (l *FreeList[T]) ReversedTraversal(visitor func(slot *FreeSlot[T]) bool) {
 	if l.ver <= 0 || visitor == nil {
 		return
@@ -424,7 +434,7 @@ func (l *FreeList[T]) ReversedTraversal(visitor func(slot *FreeSlot[T]) bool) {
 	}
 }
 
-// ReversedTraversalAt 从指定位置开始反向遍历槽位
+// ReversedTraversalAt 从指定位置开始反向遍历槽位，跳过悬空节点
 func (l *FreeList[T]) ReversedTraversalAt(visitor func(slot *FreeSlot[T]) bool, at int) {
 	if l.ver <= 0 || visitor == nil {
 		return
@@ -449,7 +459,7 @@ func (l *FreeList[T]) ReversedTraversalAt(visitor func(slot *FreeSlot[T]) bool, 
 	}
 }
 
-// ReversedTraversalEach 反向遍历槽位
+// ReversedTraversalEach 反向遍历槽位，跳过悬空节点
 func (l *FreeList[T]) ReversedTraversalEach(visitor func(slot *FreeSlot[T])) {
 	if l.ver <= 0 || visitor == nil {
 		return
@@ -468,7 +478,7 @@ func (l *FreeList[T]) ReversedTraversalEach(visitor func(slot *FreeSlot[T])) {
 	}
 }
 
-// ReversedTraversalEachAt 从指定位置开始反向遍历每个槽位
+// ReversedTraversalEachAt 从指定位置开始反向遍历每个槽位，跳过悬空节点
 func (l *FreeList[T]) ReversedTraversalEachAt(visitor func(slot *FreeSlot[T]), at int) {
 	if l.ver <= 0 || visitor == nil {
 		return
@@ -491,7 +501,26 @@ func (l *FreeList[T]) ReversedTraversalEachAt(visitor func(slot *FreeSlot[T]), a
 	}
 }
 
-// ToSlice 链表所有数据转换为切片
+// Clone 拷贝链表，跳过悬空节点
+func (l *FreeList[T]) Clone() *FreeList[T] {
+	if l == nil {
+		return nil
+	}
+
+	copied := NewFreeList[T]()
+	if l.ver <= 0 {
+		return copied
+	}
+
+	copied.lazyInit()
+	l.TraversalEach(func(slot *FreeSlot[T]) {
+		copied.appendValue(slot.V, copied.tail)
+	})
+
+	return copied
+}
+
+// ToSlice 链表所有数据转换为切片，跳过悬空节点
 func (l *FreeList[T]) ToSlice() []T {
 	slice := make([]T, 0, l.Len()-l.OrphanCount())
 	l.TraversalEach(func(slot *FreeSlot[T]) {
@@ -500,7 +529,6 @@ func (l *FreeList[T]) ToSlice() []T {
 	return slice
 }
 
-// lazyInit 延迟初始化
 func (l *FreeList[T]) lazyInit() {
 	if l.ver != 0 {
 		return
@@ -508,57 +536,46 @@ func (l *FreeList[T]) lazyInit() {
 	l.slots = make([]FreeSlot[T], 8)
 	l.head = -1
 	l.tail = -1
-	l.free = 0
+	l.unused = 0
+	l.pendingFreeHead = -1
+	l.freeHead = -1
 	l.len = 0
 	l.ver++
 	l.orphanCount = 0
 	l.depth = 0
 }
 
-// appendValue 追加数据
 func (l *FreeList[T]) appendValue(value T, at int) *FreeSlot[T] {
 	slotsCap := len(l.slots)
-	if l.len >= slotsCap {
+	if l.freeHead < 0 && l.unused >= slotsCap {
 		var slots []FreeSlot[T]
 		if slotsCap < 1024 {
 			slots = make([]FreeSlot[T], slotsCap*2)
 		} else {
 			slots = make([]FreeSlot[T], slotsCap+slotsCap/4)
 		}
-		copy(slots, l.slots[:l.len])
+		copy(slots, l.slots)
 		l.slots = slots
-		l.free = l.len
 		slotsCap = len(slots)
 	}
 
-	slot := &l.slots[l.free]
-	if slot.Freed() {
-		slot.idx = l.free
+	var slot *FreeSlot[T]
+	if l.freeHead >= 0 {
+		slot = &l.slots[l.freeHead]
+		l.freeHead = slot.next
 	} else {
-		for i := l.free; i < slotsCap; i++ {
-			if l.slots[i].Freed() {
-				slot = &l.slots[i]
-				slot.idx = i
-				break
-			}
+		if l.unused >= slotsCap {
+			exception.Panic("FreeList: no free slot")
 		}
-		if !slot.Freed() {
-			for i := 0; i < l.free; i++ {
-				if l.slots[i].Freed() {
-					slot = &l.slots[i]
-					slot.idx = i
-					break
-				}
-			}
-			if !slot.Freed() {
-				exception.Panic("FreeList: no free slot")
-			}
-		}
+		slot = &l.slots[l.unused]
+		slot.list = l
+		slot.idx = l.unused
+		l.unused++
 	}
-	l.free = (slot.idx + 1) % slotsCap
 
 	slot.V = value
-	slot.list = l
+	slot.pendingFreeNext = -1
+	slot.state = freeSlotState_Active
 
 	if at < 0 {
 		if l.head < 0 {
@@ -592,7 +609,6 @@ func (l *FreeList[T]) appendValue(value T, at int) *FreeSlot[T] {
 	return slot
 }
 
-// moveAfter 移动至指定位置后
 func (l *FreeList[T]) moveAfter(slot *FreeSlot[T], at int) {
 	if slot.idx == at || l.len < 2 {
 		return
@@ -654,51 +670,41 @@ func (l *FreeList[T]) release(slot *FreeSlot[T]) {
 	} else {
 		l.slots[slot.next].prev = slot.prev
 	}
-	*slot = FreeSlot[T]{}
+	slot.V = types.Zero[T]()
+	slot.next = l.freeHead
+	slot.state = freeSlotState_Freed
+	l.freeHead = slot.idx
 	l.ver++
 	l.len--
 }
 
-func (l *FreeList[T]) traversalReleaseOrphans() {
-	l.depth--
-	l.releaseOrphans(20)
+func (l *FreeList[T]) orphan(slot *FreeSlot[T]) {
+	if slot.Orphaned() {
+		return
+	}
+	slot.V = types.Zero[T]()
+	slot.state = freeSlotState_Orphaned
+	slot.pendingFreeNext = l.pendingFreeHead
+	l.pendingFreeHead = slot.idx
+	l.orphanCount++
 }
 
-func (l *FreeList[T]) releaseOrphans(orphanPercThreshold int) {
-	if l.depth > 0 || len(l.slots) <= 0 {
+func (l *FreeList[T]) traversalReleaseOrphans() {
+	l.depth--
+	l.releaseOrphans()
+}
+
+func (l *FreeList[T]) releaseOrphans() {
+	if l.depth > 0 || l.pendingFreeHead < 0 {
 		return
 	}
 
-	orphanPerc := l.orphanCount * 100 / len(l.slots)
-	if orphanPerc < orphanPercThreshold {
-		return
+	for idx := l.pendingFreeHead; idx >= 0; {
+		slot := &l.slots[idx]
+		next := slot.pendingFreeNext
+		l.release(slot)
+		l.orphanCount--
+		idx = next
 	}
-
-	freedCount := 0
-	lastFreedCount := 0
-	slotsCap := len(l.slots)
-
-	i := len(l.slots) - 1
-	for ; l.orphanCount > 0 && i >= 0; i-- {
-		slots := &l.slots[i]
-
-		if slots.Orphaned() {
-			l.release(slots)
-			l.orphanCount--
-		}
-
-		if slots.Freed() {
-			freedCount++
-		} else {
-			if freedCount > lastFreedCount {
-				l.free = (i + 1) % slotsCap
-			}
-			lastFreedCount = freedCount
-			freedCount = 0
-		}
-	}
-
-	if freedCount > lastFreedCount {
-		l.free = (i + 1) % slotsCap
-	}
+	l.pendingFreeHead = -1
 }
