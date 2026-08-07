@@ -93,7 +93,10 @@ func main() {
 						ctx,
 						runtime.With.RunningEventCB(func(ctx runtime.Context, event runtime.RunningEvent, args ...any) {
 							if event == runtime.RunningEvent_Started {
-								_, _ = core.BuildEntity(ctx, "player").New()
+								if _, err := core.BuildEntity(ctx, "player").New(); err != nil {
+									log.Printf("create player: %v", err)
+								}
+								cancel()
 							}
 						}),
 					),
@@ -155,6 +158,27 @@ The module currently targets the Go version declared in [`go.mod`](./go.mod).
 go get git.golaxy.org/core@latest
 ```
 
+## Testing
+Run the regular test suite and static checks with:
+
+```bash
+go test ./...
+go vet ./...
+```
+
+[`core_stress_test.go`](./core_stress_test.go) is excluded from regular test
+runs by the `stress` build tag. Its default duration is 120 seconds:
+
+```bash
+go test -tags stress .
+```
+
+Use the `stress.duration` test flag for a shorter or longer run:
+
+```bash
+go test -tags stress . -args "-stress.duration=10s"
+```
+
 ## More Examples
 - In-repo end-to-end scenarios: [`core_test.go`](./core_test.go)
 - External samples: [Examples](https://github.com/pangdogs/examples)
@@ -162,3 +186,7 @@ go get git.golaxy.org/core@latest
 ## Related Repositories
 - [Golaxy Distributed Service Development Framework](https://github.com/pangdogs/framework)
 - [Golaxy Developing a Game Server Scaffold](https://github.com/pangdogs/scaffold)
+
+## License
+
+This project is licensed under the [GNU Lesser General Public License v2.1](./LICENSE).

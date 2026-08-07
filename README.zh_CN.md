@@ -70,7 +70,10 @@ func main() {
 						ctx,
 						runtime.With.RunningEventCB(func(ctx runtime.Context, event runtime.RunningEvent, args ...any) {
 							if event == runtime.RunningEvent_Started {
-								_, _ = core.BuildEntity(ctx, "player").New()
+								if _, err := core.BuildEntity(ctx, "player").New(); err != nil {
+									log.Printf("create player: %v", err)
+								}
+								cancel()
 							}
 						}),
 					),
@@ -131,6 +134,27 @@ go install golang.org/x/tools/cmd/stringer@latest
 go get git.golaxy.org/core@latest
 ```
 
+## 测试
+执行普通测试和静态检查：
+
+```bash
+go test ./...
+go vet ./...
+```
+
+[`core_stress_test.go`](./core_stress_test.go) 使用 `stress` 构建标签，普通测试不会执行；
+默认压力测试时长为 120 秒：
+
+```bash
+go test -tags stress .
+```
+
+可以通过 `stress.duration` 测试参数调整运行时长：
+
+```bash
+go test -tags stress . -args "-stress.duration=10s"
+```
+
 ## 更多示例
 - 仓库内端到端示例：[`core_test.go`](./core_test.go)
 - 外部示例工程：[Examples](https://github.com/pangdogs/examples)
@@ -138,3 +162,7 @@ go get git.golaxy.org/core@latest
 ## 相关项目
 - [Golaxy 分布式服务开发框架](https://github.com/pangdogs/framework)
 - [Golaxy 游戏服务器脚手架](https://github.com/pangdogs/scaffold)
+
+## 许可证
+
+本项目采用 [GNU Lesser General Public License v2.1](./LICENSE)。

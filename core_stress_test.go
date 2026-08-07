@@ -22,8 +22,9 @@
 package core_test
 
 import (
-	"context"
-	"log"
+	"flag"
+	"fmt"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -33,73 +34,60 @@ import (
 	"git.golaxy.org/core/service"
 )
 
-type ComponentTestFrameUpdate struct {
-	ec.ComponentBehavior
+const stressEntityBatchSize = int64(200)
+
+var stressDuration = flag.Duration("stress.duration", 120*time.Second, "duration of tagged stress tests")
+
+type stressFrameCounters struct {
+	frames       int64
+	entities     int64
+	updates      int64
+	lateUpdates  int64
+	peakEntities int64
 }
 
-func (c *ComponentTestFrameUpdate) Update() {
-	frame := runtime.Current(c).Frame()
-	log.Printf("Component %s.%s Update, fps: %.2f", c.Entity().Id(), c.Name(), frame.CurFPS())
-}
-
-func (c *ComponentTestFrameUpdate) LateUpdate() {
-	log.Printf("Component %s.%s LateUpdate", c.Entity().Id(), c.Name())
-}
-
-func Test_CreateEntityFrameUpdate(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	svcCtx := service.NewContext(
-		service.With.Context(ctx),
-		service.With.RunningEventCB(func(ctx service.Context, runningEvent service.RunningEvent, args ...any) {
-			switch runningEvent {
-			case service.RunningEvent_Birth:
-				core.BuildEntityPT(ctx, "Test1").
-					AddComponent(ComponentTestFrameUpdate{}).
-					Declare()
-			case service.RunningEvent_Started:
-				core.NewRuntime(
-					runtime.NewContext(ctx,
-						runtime.With.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
-							switch runningEvent {
-							case runtime.RunningEvent_Started:
-								for range 10 {
-									core.BuildEntity(ctx, "Test1").New()
-								}
-							}
-							log.Println("runtime event:", runningEvent, args)
-						}),
-					),
-					core.With.Runtime.AutoRun(true),
-				)
-			}
-			log.Println("service event:", runningEvent, args)
-		}),
-	)
-
-	<-core.NewService(svcCtx).Run().Done()
-}
+var activeStressFrameCounters atomic.Pointer[stressFrameCounters]
 
 type ComponentTestStressFrameUpdate struct {
 	ec.ComponentBehavior
-	count int
+	counters *stressFrameCounters
+}
+
+func (c *ComponentTestStressFrameUpdate) Awake() {
+	c.counters = activeStressFrameCounters.Load()
 }
 
 func (c *ComponentTestStressFrameUpdate) Update() {
-	c.count++
+	if c.counters != nil {
+		c.counters.updates++
+	}
 }
 
 func (c *ComponentTestStressFrameUpdate) LateUpdate() {
-	c.count++
+	if c.counters != nil {
+		c.counters.lateUpdates++
+	}
 }
 
 func Test_CreateEntityStressFrameUpdate(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
-	defer cancel()
+	if *stressDuration <= 0 {
+		t.Fatalf("stress.duration must be greater than zero: %s", *stressDuration)
+	}
+
+	scenario := newCoreTestScenario(*stressDuration + 15*time.Second)
+	counters := &stressFrameCounters{}
+	if !activeStressFrameCounters.CompareAndSwap(nil, counters) {
+		t.Fatal("another frame stress test is already active")
+	}
+	defer activeStressFrameCounters.CompareAndSwap(counters, nil)
+
+	var (
+		startedAt     time.Time
+		stopRequested atomic.Bool
+	)
 
 	svcCtx := service.NewContext(
-		service.With.Context(ctx),
+		service.With.Context(scenario.ctx),
 		service.With.RunningEventCB(func(ctx service.Context, runningEvent service.RunningEvent, args ...any) {
 			switch runningEvent {
 			case service.RunningEvent_Birth:
@@ -111,16 +99,35 @@ func Test_CreateEntityStressFrameUpdate(t *testing.T) {
 					runtime.NewContext(ctx,
 						runtime.With.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
 							switch runningEvent {
+							case runtime.RunningEvent_Started:
+								startedAt = time.Now()
+								go func() {
+									timer := time.NewTimer(*stressDuration)
+									defer timer.Stop()
+									select {
+									case <-timer.C:
+										stopRequested.Store(true)
+									case <-scenario.ctx.Done():
+									}
+								}()
 							case runtime.RunningEvent_FrameLoopBegin:
-								for range 200 {
-									core.BuildEntity(ctx, "Test1").New()
+								counters.frames++
+								frame := counters.frames
+								for i := int64(0); i < stressEntityBatchSize; i++ {
+									if _, err := core.BuildEntity(ctx, "Test1").New(); err != nil {
+										scenario.complete(fmt.Errorf("create entity in frame %d: %w", frame, err))
+										return
+									}
+									counters.entities++
 								}
-							case runtime.RunningEvent_RunGCBegin:
-								log.Printf("fps: %.2f, running_elapse_time: %.3f, last_loop_elapse_time: %.3f, entities: %d",
-									ctx.Frame().CurFPS(),
-									ctx.Frame().RunningElapseTime().Seconds(),
-									ctx.Frame().LastLoopElapseTime().Seconds(),
-									ctx.EntityManager().CountEntities())
+								managedEntities := int64(ctx.EntityManager().CountEntities())
+								if managedEntities > counters.peakEntities {
+									counters.peakEntities = managedEntities
+								}
+							case runtime.RunningEvent_FrameUpdateEnd:
+								if stopRequested.Load() {
+									scenario.complete(nil)
+								}
 							}
 						}),
 					),
@@ -130,5 +137,37 @@ func Test_CreateEntityStressFrameUpdate(t *testing.T) {
 		}),
 	)
 
-	<-core.NewService(svcCtx).Run().Done()
+	scenario.run(t, svcCtx)
+
+	frames := counters.frames
+	entities := counters.entities
+	updates := counters.updates
+	lateUpdates := counters.lateUpdates
+	peakEntities := counters.peakEntities
+
+	if frames <= 0 {
+		t.Fatal("stress runtime completed without executing a frame")
+	}
+	if want := frames * stressEntityBatchSize; entities != want {
+		t.Errorf("created entities: got %d, want %d", entities, want)
+	}
+	if peakEntities != entities {
+		t.Errorf("peak managed entities: got %d, want %d", peakEntities, entities)
+	}
+	wantUpdates := stressEntityBatchSize * frames * (frames + 1) / 2
+	if updates != wantUpdates {
+		t.Errorf("Update callbacks: got %d, want %d", updates, wantUpdates)
+	}
+	if lateUpdates != wantUpdates {
+		t.Errorf("LateUpdate callbacks: got %d, want %d", lateUpdates, wantUpdates)
+	}
+
+	elapsed := time.Since(startedAt)
+	t.Logf("duration=%s frames=%d avg_fps=%.2f entities=%d updates=%d",
+		elapsed.Round(time.Millisecond),
+		frames,
+		float64(frames)/elapsed.Seconds(),
+		entities,
+		updates,
+	)
 }
