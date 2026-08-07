@@ -25,7 +25,7 @@ import (
 )
 
 type _TaggedHandleSpan struct {
-	head, count int
+	head, tail, count int
 }
 
 // ManagedHandles 按无标签或标签分组保存事件句柄，便于批量解绑。
@@ -86,7 +86,11 @@ func (m *ManagedHandles) AddTaggedEventHandles(tag string, handles ...Handle) {
 		span := &m.taggedHandleIndex[spanIdx]
 		for _, handle := range handles {
 			if handle.Bound() {
-				m.handleList.InsertAfter(handle, span.V.head+span.V.count-1)
+				slot := m.handleList.InsertAfter(handle, span.V.tail)
+				if slot == nil {
+					exception.Panicf("%w: tagged event handle span tail not found", ErrEvent)
+				}
+				span.V.tail = slot.Index()
 				span.V.count++
 			}
 		}
@@ -98,14 +102,18 @@ func (m *ManagedHandles) AddTaggedEventHandles(tag string, handles ...Handle) {
 		if handle.Bound() {
 			if span == nil {
 				slot := m.handleList.PushBack(handle)
-				m.taggedHandleIndex.Add(tag, _TaggedHandleSpan{head: slot.Index(), count: 1})
+				m.taggedHandleIndex.Add(tag, _TaggedHandleSpan{head: slot.Index(), tail: slot.Index(), count: 1})
 				spanIdx, ok := m.taggedHandleIndex.Index(tag)
 				if !ok {
 					exception.Panicf("%w: tagged event handle span not found", ErrEvent)
 				}
 				span = &m.taggedHandleIndex[spanIdx]
 			} else {
-				m.handleList.InsertAfter(handle, span.V.head+span.V.count-1)
+				slot := m.handleList.InsertAfter(handle, span.V.tail)
+				if slot == nil {
+					exception.Panicf("%w: tagged event handle span tail not found", ErrEvent)
+				}
+				span.V.tail = slot.Index()
 				span.V.count++
 			}
 		}
@@ -176,26 +184,29 @@ func (m *ManagedHandles) ClearAllUnboundEventHandles() {
 	for i := len(m.taggedHandleIndex) - 1; i >= 0; i-- {
 		span := &m.taggedHandleIndex[i]
 		count := span.V.count
+		remaining := 0
+		head, tail := -1, -1
 
 		m.handleList.TraversalAt(func(slot *generic.FreeSlot[Handle]) bool {
 			if !slot.V.Bound() {
 				slot.Free()
-				span.V.count--
-
-				if slot.Index() == span.V.head && span.V.count > 0 {
-					headSlot := slot.Next()
-					if headSlot == nil {
-						exception.Panicf("%w: tagged event handle span head not found", ErrEvent)
-					}
-					span.V.head = headSlot.Index()
+			} else {
+				if head < 0 {
+					head = slot.Index()
 				}
+				tail = slot.Index()
+				remaining++
 			}
 			count--
 			return count > 0
 		}, span.V.head)
 
-		if span.V.count <= 0 {
+		if remaining <= 0 {
 			m.taggedHandleIndex.Delete(span.K)
+		} else {
+			span.V.head = head
+			span.V.tail = tail
+			span.V.count = remaining
 		}
 	}
 }

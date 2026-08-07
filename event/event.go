@@ -191,6 +191,8 @@ func (event *Event) addSubscriber(subscriberFace iface.FaceAny, priority int32) 
 		exception.Panicf("%w: %w: subscriberFace is nil", ErrEvent, exception.ErrArgs)
 	}
 
+	event.subscribers.Reserve(2)
+
 	var at *generic.FreeSlot[_Subscriber]
 	event.subscribers.ReversedTraversal(func(slot *generic.FreeSlot[_Subscriber]) bool {
 		if priority >= slot.V.priority {

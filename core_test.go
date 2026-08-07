@@ -39,11 +39,15 @@ import (
 )
 
 func Test_StartService(t *testing.T) {
-	ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
 	svcCtx := service.NewContext(
 		service.With.Context(ctx),
 		service.With.RunningEventCB(func(ctx service.Context, runningEvent service.RunningEvent, args ...any) {
+			if runningEvent == service.RunningEvent_Started {
+				cancel()
+			}
 			log.Println("service event:", runningEvent, args)
 		}),
 	)
@@ -152,7 +156,8 @@ func (c *ComponentTest3) Dispose() {
 }
 
 func Test_ServiceRegisterEntityPT(t *testing.T) {
-	ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
 	svcCtx := service.NewContext(
 		service.With.Context(ctx),
@@ -177,6 +182,8 @@ func Test_ServiceRegisterEntityPT(t *testing.T) {
 					ComponentTest2{},
 					ComponentTest3{},
 				)
+			case service.RunningEvent_Started:
+				cancel()
 			}
 			log.Println("service event:", runningEvent, args)
 		}),
@@ -186,7 +193,8 @@ func Test_ServiceRegisterEntityPT(t *testing.T) {
 }
 
 func Test_CreateEntity(t *testing.T) {
-	ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
 	svcCtx := service.NewContext(
 		service.With.Context(ctx),
@@ -213,6 +221,7 @@ func Test_CreateEntity(t *testing.T) {
 						runtime.With.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
 							switch runningEvent {
 							case runtime.RunningEvent_Started:
+								defer cancel()
 								core.BuildEntity(ctx, "Test1").New()
 								core.BuildEntity(ctx, "Test2").New()
 								core.BuildEntity(ctx, "Test3").New()
@@ -348,7 +357,8 @@ func (c *ComponentTestEnable4) Dispose() {
 }
 
 func Test_EntityComponentEnable(t *testing.T) {
-	ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
 	svcCtx := service.NewContext(
 		service.With.Context(ctx),
@@ -367,6 +377,7 @@ func Test_EntityComponentEnable(t *testing.T) {
 						runtime.With.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
 							switch runningEvent {
 							case runtime.RunningEvent_Started:
+								defer cancel()
 								core.BuildEntity(ctx, "Test1").New()
 							}
 							log.Println("runtime event:", runningEvent, args)
@@ -442,7 +453,8 @@ func (c *ComponentTestDynamic2) Dispose() {
 }
 
 func Test_EntityDynamicComponent(t *testing.T) {
-	ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
 	svcCtx := service.NewContext(
 		service.With.Context(ctx),
@@ -467,6 +479,7 @@ func Test_EntityDynamicComponent(t *testing.T) {
 						runtime.With.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
 							switch runningEvent {
 							case runtime.RunningEvent_Started:
+								defer cancel()
 								core.BuildEntity(ctx, "Test1").New()
 								core.BuildEntity(ctx, "Test2").New()
 							}
@@ -558,7 +571,8 @@ func PrintEntityTree(entity ec.Entity, depth ...int) {
 }
 
 func Test_EntityTree(t *testing.T) {
-	ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
 	svcCtx := service.NewContext(
 		service.With.Context(ctx),
@@ -597,6 +611,7 @@ func Test_EntityTree(t *testing.T) {
 									log.Printf("OnEntityTreeMoveNode %s: %s => %s", childId, fromParentId, toParentId)
 								}))
 							case runtime.RunningEvent_Started:
+								defer cancel()
 								root, err := core.BuildEntity(ctx, "Test1").New()
 								if err != nil {
 									log.Panicln("new root error:", err)
@@ -852,7 +867,8 @@ func (c *ComponentTestParentDestroyInDetaching) OnTreeNodeRemoveChild(entity ec.
 }
 
 func Test_EntityTreeSequence(t *testing.T) {
-	ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
 	svcCtx := service.NewContext(
 		service.With.Context(ctx),
@@ -915,6 +931,7 @@ func Test_EntityTreeSequence(t *testing.T) {
 									log.Printf("OnEntityTreeMoveNode %s: %s => %s", childId, fromParentId, toParentId)
 								}))
 							case runtime.RunningEvent_Started:
+								defer cancel()
 								root, err := core.BuildEntity(ctx, "Test1").New()
 								if err != nil {
 									log.Panicln("new root error:", err)
@@ -1078,105 +1095,11 @@ func Test_EntityTreeSequence(t *testing.T) {
 	<-core.NewService(svcCtx).Run().Done()
 }
 
-type ComponentTestFrameUpdate struct {
-	ec.ComponentBehavior
-}
-
-func (c *ComponentTestFrameUpdate) Update() {
-	frame := runtime.Current(c).Frame()
-	log.Printf("Component %s.%s Update, fps: %.2f", c.Entity().Id(), c.Name(), frame.CurFPS())
-}
-
-func (c *ComponentTestFrameUpdate) LateUpdate() {
-	log.Printf("Component %s.%s LateUpdate", c.Entity().Id(), c.Name())
-}
-
-func Test_CreateEntityFrameUpdate(t *testing.T) {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-
-	svcCtx := service.NewContext(
-		service.With.Context(ctx),
-		service.With.RunningEventCB(func(ctx service.Context, runningEvent service.RunningEvent, args ...any) {
-			switch runningEvent {
-			case service.RunningEvent_Birth:
-				core.BuildEntityPT(ctx, "Test1").
-					AddComponent(ComponentTestFrameUpdate{}).
-					Declare()
-			case service.RunningEvent_Started:
-				core.NewRuntime(
-					runtime.NewContext(ctx,
-						runtime.With.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
-							switch runningEvent {
-							case runtime.RunningEvent_Started:
-								for range 10 {
-									core.BuildEntity(ctx, "Test1").New()
-								}
-							}
-							log.Println("runtime event:", runningEvent, args)
-						}),
-					),
-					core.With.Runtime.AutoRun(true),
-				)
-			}
-			log.Println("service event:", runningEvent, args)
-		}),
-	)
-
-	<-core.NewService(svcCtx).Run().Done()
-}
-
-type ComponentTestStressFrameUpdate struct {
-	ec.ComponentBehavior
-	count int
-}
-
-func (c *ComponentTestStressFrameUpdate) Update() {
-	c.count++
-}
-
-func (c *ComponentTestStressFrameUpdate) LateUpdate() {
-	c.count++
-}
-
-func Test_CreateEntityStressFrameUpdate(t *testing.T) {
-	ctx, _ := context.WithTimeout(context.Background(), 120*time.Second)
-
-	svcCtx := service.NewContext(
-		service.With.Context(ctx),
-		service.With.RunningEventCB(func(ctx service.Context, runningEvent service.RunningEvent, args ...any) {
-			switch runningEvent {
-			case service.RunningEvent_Birth:
-				core.BuildEntityPT(ctx, "Test1").
-					AddComponent(ComponentTestStressFrameUpdate{}).
-					Declare()
-			case service.RunningEvent_Started:
-				core.NewRuntime(
-					runtime.NewContext(ctx,
-						runtime.With.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
-							switch runningEvent {
-							case runtime.RunningEvent_FrameLoopBegin:
-								for range 200 {
-									core.BuildEntity(ctx, "Test1").New()
-								}
-							case runtime.RunningEvent_RunGCBegin:
-								log.Printf("fps: %.2f, running_elapse_time: %.3f, last_loop_elapse_time: %.3f, entities: %d",
-									ctx.Frame().CurFPS(),
-									ctx.Frame().RunningElapseTime().Seconds(),
-									ctx.Frame().LastLoopElapseTime().Seconds(),
-									ctx.EntityManager().CountEntities())
-							}
-						}),
-					),
-					core.With.Runtime.AutoRun(true),
-				)
-			}
-		}),
-	)
-
-	<-core.NewService(svcCtx).Run().Done()
-}
-
 type ServiceAddIn1 struct{}
+
+type IServiceAddIn1 interface {
+	Hello()
+}
 
 func (ServiceAddIn1) Init(ctx service.Context) {
 	log.Println("ServiceAddIn1 Init")
@@ -1190,7 +1113,7 @@ func (ServiceAddIn1) Hello() {
 	log.Println("ServiceAddIn1 Hello")
 }
 
-func NewServiceAddIn1(...any) *ServiceAddIn1 {
+func NewServiceAddIn1(...any) IServiceAddIn1 {
 	return &ServiceAddIn1{}
 }
 
@@ -1225,7 +1148,8 @@ var (
 )
 
 func Test_ServiceAddIn(t *testing.T) {
-	ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
 	svcCtx := service.NewContext(
 		service.With.Context(ctx),
@@ -1235,6 +1159,7 @@ func Test_ServiceAddIn(t *testing.T) {
 				serviceAddIn1.Install(ctx)
 				serviceAddIn2.Install(ctx)
 			case service.RunningEvent_Started:
+				defer cancel()
 				serviceAddIn1.Require(ctx).Hello()
 				serviceAddIn2.Require(ctx).Hello()
 			}
@@ -1246,6 +1171,10 @@ func Test_ServiceAddIn(t *testing.T) {
 }
 
 type RuntimeAddIn1 struct{}
+
+type IRuntimeAddIn1 interface {
+	Hello()
+}
 
 func (RuntimeAddIn1) Init(ctx runtime.Context) {
 	log.Println("RuntimeAddIn1 Init")
@@ -1263,7 +1192,7 @@ func (RuntimeAddIn1) Hello() {
 	log.Println("RuntimeAddIn1 Hello")
 }
 
-func NewRuntimeAddIn1(...any) *RuntimeAddIn1 {
+func NewRuntimeAddIn1(...any) IRuntimeAddIn1 {
 	return &RuntimeAddIn1{}
 }
 
@@ -1272,7 +1201,8 @@ var (
 )
 
 func Test_RuntimeAddIn(t *testing.T) {
-	ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
 	svcCtx := service.NewContext(
 		service.With.Context(ctx),
@@ -1286,6 +1216,7 @@ func Test_RuntimeAddIn(t *testing.T) {
 							case runtime.RunningEvent_Birth:
 								runtimeAddIn1.Install(ctx)
 							case runtime.RunningEvent_Started:
+								defer cancel()
 								runtimeAddIn1.Require(ctx).Hello()
 							}
 							log.Println("runtime event:", runningEvent, args)

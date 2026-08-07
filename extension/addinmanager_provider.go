@@ -20,6 +20,8 @@
 package extension
 
 import (
+	"reflect"
+
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/types"
@@ -32,10 +34,14 @@ type AddInProvider interface {
 }
 
 // Install 将 addIn 安装到 provider，并返回插件状态。
-// provider 为 nil 时会 panic；具体生命周期和并发约束由管理器决定。
+// T 必须是接口类型；provider 为 nil 或 T 为具体类型时会 panic。
+// 具体生命周期和并发约束由管理器决定。
 func Install[T any](provider AddInProvider, addIn T, name ...string) AddInStatus {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrExtension, exception.ErrArgs)
+	}
+	if reflect.TypeFor[T]().Kind() != reflect.Interface {
+		exception.Panicf("%w: add-in type %q is not an interface", ErrExtension, reflect.TypeFor[T]())
 	}
 	return provider.AddInManager().Install(iface.NewFaceAny(addIn), name...)
 }

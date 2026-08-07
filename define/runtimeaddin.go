@@ -27,6 +27,7 @@ import (
 )
 
 // RuntimeAddIn 创建运行时插件定义，其 Require 和 Lookup 直接接受 runtime.Context。
+// ADDIN_IFACE 必须是接口类型。
 func RuntimeAddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADDIN_IFACE], name ...string) RuntimeAddInDefinition[ADDIN_IFACE, SETTING] {
 	addIn := defineAddIn[ADDIN_IFACE, SETTING](creator, pie.First(name))
 

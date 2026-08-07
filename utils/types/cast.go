@@ -22,7 +22,6 @@ package types
 import (
 	"errors"
 	"fmt"
-	"reflect"
 	"unsafe"
 )
 
@@ -61,20 +60,14 @@ func Int2Bool[T Integer](v T) bool {
 //
 // 返回值与 s 共享存储，绝不能修改；违反约束可能导致崩溃或未定义行为。
 func String2Bytes(s string) []byte {
-	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
-	bh := reflect.SliceHeader{
-		Data: sh.Data,
-		Len:  sh.Len,
-		Cap:  sh.Len,
-	}
-	return *(*[]byte)(unsafe.Pointer(&bh))
+	return unsafe.Slice(unsafe.StringData(s), len(s))
 }
 
 // Bytes2String 将字节切片零拷贝重解释为字符串。
 //
 // 返回值与 b 共享存储；字符串存活期间不得修改或并发写入 b。
 func Bytes2String(b []byte) string {
-	return *(*string)(unsafe.Pointer(&b))
+	return unsafe.String(unsafe.SliceData(b), len(b))
 }
 
 // Panic2Err 将 recover 的结果转换为 error；nil 保持为 nil。

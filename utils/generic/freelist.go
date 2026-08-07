@@ -126,6 +126,26 @@ func (l *FreeList[T]) Cap() int {
 	return len(l.slots)
 }
 
+// Reserve 确保底层至少能容纳 capacity 个槽位；不会改变现有元素的链表顺序。
+// capacity 为负数时 panic。
+func (l *FreeList[T]) Reserve(capacity int) {
+	if capacity < 0 {
+		exception.Panicf("FreeList: capacity %d is negative", capacity)
+	}
+	if capacity <= len(l.slots) {
+		return
+	}
+
+	if l.ver == 0 {
+		l.init(capacity)
+		return
+	}
+
+	slots := make([]FreeSlot[T], capacity)
+	copy(slots, l.slots)
+	l.slots = slots
+}
+
 // Len 返回链表中的槽位数；遍历期间包含尚未回收的悬空槽位。
 func (l *FreeList[T]) Len() int {
 	return l.len
@@ -542,7 +562,11 @@ func (l *FreeList[T]) lazyInit() {
 	if l.ver != 0 {
 		return
 	}
-	l.slots = make([]FreeSlot[T], 8)
+	l.init(8)
+}
+
+func (l *FreeList[T]) init(capacity int) {
+	l.slots = make([]FreeSlot[T], capacity)
 	l.head = -1
 	l.tail = -1
 	l.unused = 0

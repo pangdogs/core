@@ -27,6 +27,7 @@ import (
 )
 
 // ServiceAddIn 创建服务插件定义，其 Require 和 Lookup 直接接受 service.Context。
+// ADDIN_IFACE 必须是接口类型。
 func ServiceAddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADDIN_IFACE], name ...string) ServiceAddInDefinition[ADDIN_IFACE, SETTING] {
 	addIn := defineAddIn[ADDIN_IFACE, SETTING](creator, pie.First(name))
 

@@ -54,18 +54,8 @@ loop:
 	wg.Wait()
 	rt.taskQueue.close()
 
-loopEnding:
-	for {
-		select {
-		case task, ok := <-taskOut:
-			if !ok {
-				break loopEnding
-			}
-			rt.runTask(task)
-
-		default:
-			break loopEnding
-		}
+	for task := range taskOut {
+		rt.runTask(task)
 	}
 
 	rt.runGC()

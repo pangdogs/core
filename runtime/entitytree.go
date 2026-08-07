@@ -274,6 +274,18 @@ func (mgr *_EntityManager) MoveNode(childId, parentId uid.Id) error {
 		return fmt.Errorf("%w: child entity %q has an unexpected tree node state %q", ErrEntityTree, childId, childEntity.TreeNodeState())
 	}
 
+	for ancestorSlotIdx := toParentSlotIdx; ancestorSlotIdx >= 0; {
+		if ancestorSlotIdx == childSlotIdx {
+			return fmt.Errorf("%w: moving child entity %q under parent entity %q would create a cycle", ErrEntityTree, childId, parentId)
+		}
+
+		ancestorTreeNode := mgr.entityTreeNodes[ancestorSlotIdx]
+		if ancestorTreeNode == nil {
+			return fmt.Errorf("%w: parent entity %q has an invalid ancestor chain", ErrEntityTree, parentId)
+		}
+		ancestorSlotIdx = ancestorTreeNode.parent
+	}
+
 	ec.UnsafeEntity(childEntity).SetTreeNodeState(ec.TreeNodeState_Moving)
 
 	fromParentId := ForestNodeId

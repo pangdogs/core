@@ -27,7 +27,8 @@ import (
 )
 
 // AddIn 创建可用于任意 extension.AddInProvider 的通用插件定义。
-// 未指定名称时使用 ADDIN_IFACE 的完整限定名；creator 为 nil 或名称无效时会 panic。
+// ADDIN_IFACE 必须是接口类型。未指定名称时使用 ADDIN_IFACE 的完整限定名；
+// creator 为 nil 或名称无效时会 panic。
 func AddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADDIN_IFACE], name ...string) AddInDefinition[ADDIN_IFACE, SETTING] {
 	return defineAddIn[ADDIN_IFACE, SETTING](creator, pie.First(name))
 }
