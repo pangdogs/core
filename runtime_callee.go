@@ -25,22 +25,22 @@ import (
 	"git.golaxy.org/core/utils/generic"
 )
 
-// PushCallAsync 将调用函数压入接受者的任务处理流水线，返回Future。
+// PushCallAsync 将有返回值的函数加入运行时任务队列，并返回承载调用结果的 Future。
 func (rt *RuntimeBehavior) PushCallAsync(fun generic.FuncVar1[runtime.Context, any, async.Result], args ...any) async.Future {
 	return rt.taskQueue.enqueueCall(fun, nil, nil, nil, args)
 }
 
-// PushCallDelegateAsync 将调用委托压入接受者的任务处理流水线，返回Future。
+// PushCallDelegateAsync 将有返回值的委托加入运行时任务队列，并返回承载调用结果的 Future。
 func (rt *RuntimeBehavior) PushCallDelegateAsync(fun generic.DelegateVar1[runtime.Context, any, async.Result], args ...any) async.Future {
 	return rt.taskQueue.enqueueCall(nil, nil, fun, nil, args)
 }
 
-// PushCallVoidAsync 将调用函数压入接受者的任务处理流水线，返回Future。
+// PushCallVoidAsync 将无返回值的函数加入运行时任务队列，并返回完成信号。
 func (rt *RuntimeBehavior) PushCallVoidAsync(fun generic.ActionVar1[runtime.Context, any], args ...any) async.Future {
 	return rt.taskQueue.enqueueCall(nil, fun, nil, nil, args)
 }
 
-// PushCallDelegateVoidAsync 将调用委托压入接受者的任务处理流水线，返回Future。
+// PushCallDelegateVoidAsync 将无返回值的委托加入运行时任务队列，并返回完成信号。
 func (rt *RuntimeBehavior) PushCallDelegateVoidAsync(fun generic.DelegateVoidVar1[runtime.Context, any], args ...any) async.Future {
 	return rt.taskQueue.enqueueCall(nil, nil, nil, fun, args)
 }

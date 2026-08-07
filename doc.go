@@ -35,7 +35,7 @@ Package core 把 service、runtime、ec、event 和 extension 等子包串联成
   - 实体、组件、插件的生命周期接口；
   - 异步调度与等待工具，例如 CallAsync、Await、GoAsync 和 TimeAfterAsync；
   - Service、Runtime、Frame 与 TaskQueue 的选项构造器；
-  - 面向高级扩展场景的 unsafe 辅助入口。
+  - 面向框架集成与高级扩展场景的 unsafe 辅助入口。
 
 业务模型与底层数据结构分别位于 ec、runtime、service、event、extension、
 define 与 utils 子包中。

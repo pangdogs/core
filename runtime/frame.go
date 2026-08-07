@@ -23,26 +23,26 @@ import (
 	"time"
 )
 
-// Frame 帧，在运行时初始化时可以设置帧，用于设置运行时帧更新方式，在逻辑运行过程中可以在运行时上下文中获取帧信息
+// Frame 提供运行时帧循环的配置值和只读统计信息。
 type Frame interface {
-	// TargetFPS 获取目标FPS
+	// TargetFPS 返回目标 FPS。
 	TargetFPS() float64
-	// CurFPS 获取当前FPS
+	// CurFPS 返回最近一个统计周期内的实际 FPS。
 	CurFPS() float64
-	// TotalFrames 获取运行帧数上限
+	// TotalFrames 返回最大运行帧数；0 表示不限制。
 	TotalFrames() int64
-	// CurFrames 获取当前帧数
+	// CurFrames 返回已经开始执行的帧数。
 	CurFrames() int64
-	// RunningBeginTime 获取运行开始时间
+	// RunningBeginTime 返回帧循环的启动时间。
 	RunningBeginTime() time.Time
-	// RunningElapseTime 获取运行持续时间
+	// RunningElapseTime 返回已累计的帧循环运行时长。
 	RunningElapseTime() time.Duration
-	// LoopBeginTime 获取当前帧循环开始时间（包含异步调用）
+	// LoopBeginTime 返回当前帧循环的开始时间；循环包含异步调用处理。
 	LoopBeginTime() time.Time
-	// LastLoopElapseTime 获取上一帧循环耗时（包含异步调用）
+	// LastLoopElapseTime 返回上一帧完整循环的耗时，包含异步调用处理。
 	LastLoopElapseTime() time.Duration
-	// UpdateBeginTime 获取当前帧更新开始时间
+	// UpdateBeginTime 返回当前帧更新阶段的开始时间。
 	UpdateBeginTime() time.Time
-	// LastUpdateElapseTime 获取上一次帧更新耗时
+	// LastUpdateElapseTime 返回上一帧更新阶段的耗时。
 	LastUpdateElapseTime() time.Duration
 }

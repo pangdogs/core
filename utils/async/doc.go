@@ -29,5 +29,8 @@ Future 支持：
   - Context：把 future 完成态转换为 context 取消信号。
 
 根包 core 的 CallAsync、GoAsync、Await 等 API 都建立在该包之上。
+
+Future 的结果频道是消费式而非广播式：多个 Wait 或 Chan 消费者会竞争同一批结果。
+Return、ReturnVoid 与 YieldBreak 负责结束 Future，每个 Future 只能结束一次。
 */
 package async

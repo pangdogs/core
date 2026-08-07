@@ -21,7 +21,7 @@
 //go:generate go run git.golaxy.org/core/event/eventc eventtab --name=contextRunningEventTab
 package runtime
 
-// EventContextRunningEvent 事件：运行事件
+// EventContextRunningEvent 在 Runtime 上下文进入各运行阶段时同步派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventContextRunningEvent interface {

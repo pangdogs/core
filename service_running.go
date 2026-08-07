@@ -20,19 +20,17 @@
 package core
 
 import (
-	"sync"
 	"time"
 
-	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/service"
 	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/corectx"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
-	"github.com/elliotchance/pie/v2"
 )
 
-// Run 运行
+// Run 在新 goroutine 中启动服务循环，并返回服务终止时完成的 Future。
+// 服务只能启动一次；上下文已经取消或服务已经启动时会 panic。
 func (svc *ServiceBehavior) Run() async.Future {
 	ctx := svc.ctx
 
@@ -60,12 +58,12 @@ func (svc *ServiceBehavior) Run() async.Future {
 	return ctx.Terminated()
 }
 
-// Terminate 停止
+// Terminate 请求停止服务，并返回服务终止时完成的 Future。
 func (svc *ServiceBehavior) Terminate() async.Future {
 	return svc.ctx.Terminate()
 }
 
-// Terminated 已停止
+// Terminated 返回服务终止时完成的 Future。
 func (svc *ServiceBehavior) Terminated() async.Future {
 	return svc.ctx.Terminated()
 }
@@ -94,6 +92,8 @@ loop:
 	corectx.UnsafeContext(ctx).CloseWaitGroup()
 	ctx.WaitGroup().Wait()
 
+	svc.shutAddIn()
+
 	svc.emitEventRunningEvent(service.RunningEvent_Terminated)
 
 	if parentCtx, ok := ctx.ParentContext().(corectx.Context); ok {
@@ -106,7 +106,6 @@ loop:
 func (svc *ServiceBehavior) emitEventRunningEvent(runningEvent service.RunningEvent, args ...any) {
 	svc.onBeforeContextRunningEvent(svc.ctx, runningEvent, args...)
 	service.UnsafeContext(svc.ctx).EmitEventRunningEvent(runningEvent, args...)
-	svc.onAfterContextRunningEvent(svc.ctx, runningEvent, args...)
 }
 
 func (svc *ServiceBehavior) onBeforeContextRunningEvent(ctx service.Context, runningEvent service.RunningEvent, args ...any) {
@@ -115,13 +114,6 @@ func (svc *ServiceBehavior) onBeforeContextRunningEvent(ctx service.Context, run
 		svc.initEntityPT()
 		svc.initComponentPT()
 		svc.initAddIn()
-	}
-}
-
-func (svc *ServiceBehavior) onAfterContextRunningEvent(ctx service.Context, runningEvent service.RunningEvent, args ...any) {
-	switch runningEvent {
-	case service.RunningEvent_Terminated:
-		svc.shutAddIn()
 	}
 }
 
@@ -142,70 +134,37 @@ func (svc *ServiceBehavior) initComponentPT() {
 }
 
 func (svc *ServiceBehavior) initAddIn() {
-	var wg sync.WaitGroup
-
-	wg.Add(1)
-	go func() {
-		for event := range service.UnsafeContext(svc.ctx).AddInManager().WatchEvent(svc.ctx.Terminated().Context(nil)) {
-			switch e := event.(type) {
-			case *extension.EventServiceAddInSnapshot:
-				for _, status := range e.Statuses {
-					svc.activateAddIn(status)
-				}
-				wg.Done()
-			case *extension.EventServiceInstallAddIn:
-				select {
-				case <-svc.ctx.Done():
-					continue
-				default:
-					svc.activateAddIn(e.Status)
-				}
-			case *extension.EventServiceUninstallAddIn:
-				svc.deactivateAddIn(e.Status)
-			}
-		}
-	}()
-
-	wg.Wait()
+	addInManager := service.UnsafeContext(svc.ctx).AddInManager()
+	for _, status := range service.UnsafeAddInManager(addInManager).Freeze() {
+		svc.activateAddIn(status)
+	}
 }
 
 func (svc *ServiceBehavior) shutAddIn() {
 	addInManager := service.UnsafeContext(svc.ctx).AddInManager()
 
-	for _, status := range pie.Reverse(extension.UnsafeServiceAddInManager(addInManager).List()) {
-		addInManager.Uninstall(status.Name())
-		<-status.WaitState(extension.AddInState_Unloaded).Done()
+	statuses := service.UnsafeAddInManager(addInManager).List()
+	for i := len(statuses) - 1; i >= 0; i-- {
+		svc.deactivateAddIn(statuses[i])
 	}
 }
 
-func (svc *ServiceBehavior) activateAddIn(status extension.ServiceAddInStatus) {
-	extension.UnsafeServiceAddInStatus(status).DoInstallOnce(func() {
-		svc.emitEventRunningEvent(service.RunningEvent_AddInActivating, status)
+func (svc *ServiceBehavior) activateAddIn(status service.AddInStatus) {
+	if cb, ok := status.InstanceFace().Iface.(LifecycleAddInInit); ok {
+		generic.CastAction2(cb.Init).Call(svc.ctx.AutoRecover(), svc.ctx.ReportError(), svc.ctx, nil)
+	} else if cb, ok := status.InstanceFace().Iface.(LifecycleServiceAddInInit); ok {
+		generic.CastAction1(cb.Init).Call(svc.ctx.AutoRecover(), svc.ctx.ReportError(), svc.ctx)
+	}
 
-		if cb, ok := status.InstanceFace().Iface.(LifecycleAddInInit); ok {
-			generic.CastAction2(cb.Init).Call(svc.ctx.AutoRecover(), svc.ctx.ReportError(), svc.ctx, nil)
-		} else if cb, ok := status.InstanceFace().Iface.(LifecycleServiceAddInInit); ok {
-			generic.CastAction1(cb.Init).Call(svc.ctx.AutoRecover(), svc.ctx.ReportError(), svc.ctx)
-		}
-
-		extension.UnsafeServiceAddInStatus(status).Started()
-
-		svc.emitEventRunningEvent(service.RunningEvent_AddInActivated, status)
-	})
+	service.UnsafeAddInStatus(status).Started()
 }
 
-func (svc *ServiceBehavior) deactivateAddIn(status extension.ServiceAddInStatus) {
-	extension.UnsafeServiceAddInStatus(status).DoUninstallOnce(func() {
-		svc.emitEventRunningEvent(service.RunningEvent_AddInDeactivating, status)
+func (svc *ServiceBehavior) deactivateAddIn(status service.AddInStatus) {
+	if cb, ok := status.InstanceFace().Iface.(LifecycleAddInShut); ok {
+		generic.CastAction2(cb.Shut).Call(svc.ctx.AutoRecover(), svc.ctx.ReportError(), svc.ctx, nil)
+	} else if cb, ok := status.InstanceFace().Iface.(LifecycleServiceAddInShut); ok {
+		generic.CastAction1(cb.Shut).Call(svc.ctx.AutoRecover(), svc.ctx.ReportError(), svc.ctx)
+	}
 
-		if cb, ok := status.InstanceFace().Iface.(LifecycleAddInShut); ok {
-			generic.CastAction2(cb.Shut).Call(svc.ctx.AutoRecover(), svc.ctx.ReportError(), svc.ctx, nil)
-		} else if cb, ok := status.InstanceFace().Iface.(LifecycleServiceAddInShut); ok {
-			generic.CastAction1(cb.Shut).Call(svc.ctx.AutoRecover(), svc.ctx.ReportError(), svc.ctx)
-		}
-
-		svc.emitEventRunningEvent(service.RunningEvent_AddInDeactivated, status)
-
-		extension.UnsafeServiceAddInStatus(status).Stopped()
-	})
+	service.UnsafeAddInStatus(status).Stopped()
 }

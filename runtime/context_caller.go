@@ -27,81 +27,51 @@ import (
 	"git.golaxy.org/core/utils/generic"
 )
 
-// Caller 异步调用发起者
+// Caller 将调用异步调度到运行时任务队列。
+// 回调在运行时 goroutine 中串行执行。AutoRecover 启用时，panic 会写入 Result.Error；
+// 否则 panic 会继续向运行时工作循环传播。
 type Caller interface {
-	// CallAsync 异步调用函数，有返回值。不会阻塞当前线程，会返回Future。
-	//
-	//	注意：
-	//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-	//  - 调用过程中的panic信息，均会转换为error返回。
+	// CallAsync 异步执行有返回值的函数。
 	CallAsync(fun generic.FuncVar1[Context, any, async.Result], args ...any) async.Future
 
-	// CallDelegateAsync 异步调用委托，有返回值。不会阻塞当前线程，会返回Future。
-	//
-	//	注意：
-	//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-	//  - 调用过程中的panic信息，均会转换为error返回。
+	// CallDelegateAsync 异步执行有返回值的委托。
 	CallDelegateAsync(fun generic.DelegateVar1[Context, any, async.Result], args ...any) async.Future
 
-	// CallVoidAsync 异步调用函数，无返回值。在运行时中。不会阻塞当前线程，会返回Future。
-	//
-	//	注意：
-	//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-	//  - 调用过程中的panic信息，均会转换为error返回。
+	// CallVoidAsync 异步执行无返回值的函数。
 	CallVoidAsync(fun generic.ActionVar1[Context, any], args ...any) async.Future
 
-	// CallDelegateVoidAsync 异步调用委托，无返回值。在运行时中。不会阻塞当前线程，会返回Future。
-	//
-	//	注意：
-	//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-	//  - 调用过程中的panic信息，均会转换为error返回。
+	// CallDelegateVoidAsync 异步执行无返回值的委托。
 	CallDelegateVoidAsync(fun generic.DelegateVoidVar1[Context, any], args ...any) async.Future
 }
 
-// Callee 异步调用接受者
+// Callee 接收异步调用并将其加入运行时任务队列。
 type Callee interface {
-	// PushCallAsync 将调用函数压入接受者的任务处理流水线，返回Future。
+	// PushCallAsync 将有返回值的函数加入任务队列，并返回承载调用结果的 Future。
 	PushCallAsync(fun generic.FuncVar1[Context, any, async.Result], args ...any) async.Future
-	// PushCallDelegateAsync 将调用委托压入接受者的任务处理流水线，返回Future。
+	// PushCallDelegateAsync 将有返回值的委托加入任务队列，并返回承载调用结果的 Future。
 	PushCallDelegateAsync(fun generic.DelegateVar1[Context, any, async.Result], args ...any) async.Future
-	// PushCallVoidAsync 将调用函数压入接受者的任务处理流水线，返回Future。
+	// PushCallVoidAsync 将无返回值的函数加入任务队列，并返回完成信号。
 	PushCallVoidAsync(fun generic.ActionVar1[Context, any], args ...any) async.Future
-	// PushCallDelegateVoidAsync 将调用委托压入接受者的任务处理流水线，返回Future。
+	// PushCallDelegateVoidAsync 将无返回值的委托加入任务队列，并返回完成信号。
 	PushCallDelegateVoidAsync(fun generic.DelegateVoidVar1[Context, any], args ...any) async.Future
 }
 
-// CallAsync 异步调用函数，有返回值。不会阻塞当前线程，会返回Future。
-//
-//	注意：
-//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-//	- 调用过程中的panic信息，均会转换为error返回。
+// CallAsync 将有返回值的函数加入运行时任务队列。
 func (ctx *ContextBehavior) CallAsync(fun generic.FuncVar1[Context, any, async.Result], args ...any) async.Future {
 	return ctx.callee.PushCallAsync(fun, args...)
 }
 
-// CallDelegateAsync 异步调用委托，有返回值。不会阻塞当前线程，会返回Future。
-//
-//	注意：
-//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-//	- 调用过程中的panic信息，均会转换为error返回。
+// CallDelegateAsync 将有返回值的委托加入运行时任务队列。
 func (ctx *ContextBehavior) CallDelegateAsync(fun generic.DelegateVar1[Context, any, async.Result], args ...any) async.Future {
 	return ctx.callee.PushCallDelegateAsync(fun, args...)
 }
 
-// CallVoidAsync 异步调用函数，无返回值。在运行时中。不会阻塞当前线程，会返回Future。
-//
-//	注意：
-//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-//	- 调用过程中的panic信息，均会转换为error返回。
+// CallVoidAsync 将无返回值的函数加入运行时任务队列。
 func (ctx *ContextBehavior) CallVoidAsync(fun generic.ActionVar1[Context, any], args ...any) async.Future {
 	return ctx.callee.PushCallVoidAsync(fun, args...)
 }
 
-// CallDelegateVoidAsync 异步调用委托，无返回值。在运行时中。不会阻塞当前线程，会返回Future。
-//
-//	注意：
-//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-//	- 调用过程中的panic信息，均会转换为error返回。
+// CallDelegateVoidAsync 将无返回值的委托加入运行时任务队列。
 func (ctx *ContextBehavior) CallDelegateVoidAsync(fun generic.DelegateVoidVar1[Context, any], args ...any) async.Future {
 	return ctx.callee.PushCallDelegateVoidAsync(fun, args...)
 }

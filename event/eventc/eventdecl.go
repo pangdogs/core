@@ -30,6 +30,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// EventDecl 保存从一个事件接口提取出的代码生成信息。
 type EventDecl struct {
 	Name           string
 	Comment        string
@@ -39,11 +40,14 @@ type EventDecl struct {
 	FuncHasRet     bool
 }
 
+// EventDeclTab 汇总源文件的包名及其中可生成代码的事件声明。
 type EventDeclTab struct {
 	Package string
 	Events  []EventDecl
 }
 
+// Parse 按配置的命名规则扫描源文件 AST，并将受支持的事件接口追加到 Events。
+// 事件接口必须至少包含一个具名方法；该方法只能无返回值或返回一个 bool。
 func (tab *EventDeclTab) Parse() {
 	eventRegexp, err := regexp.Compile(viper.GetString("event_regexp"))
 	if err != nil {

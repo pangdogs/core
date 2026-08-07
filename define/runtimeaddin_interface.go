@@ -25,7 +25,8 @@ import (
 	"github.com/elliotchance/pie/v2"
 )
 
-// RuntimeAddInInterface 定义运行时插件接口，支持安装至运行时上下文，通常用于为同类插件的不同实现提供统一的接口
+// RuntimeAddInInterface 创建不绑定构造函数的运行时插件接口定义。
+// 它适合通过 runtime.Context 访问同类插件的不同实现。
 func RuntimeAddInInterface[ADDIN_IFACE any](name ...string) RuntimeAddInInterfaceDefinition[ADDIN_IFACE] {
 	addIn := defineAddInInterface[ADDIN_IFACE](pie.First(name))
 
@@ -37,10 +38,10 @@ func RuntimeAddInInterface[ADDIN_IFACE any](name ...string) RuntimeAddInInterfac
 	}
 }
 
-// RuntimeAddInInterfaceDefinition 运行时插件接口定义
+// RuntimeAddInInterfaceDefinition 封装运行时插件接口的标识和访问操作。
 type RuntimeAddInInterfaceDefinition[ADDIN_IFACE any] struct {
-	Id      uint64                                                // 插件Id
-	Name    string                                                // 插件名称
-	Require generic.Func1[runtime.Context, ADDIN_IFACE]           // 依赖插件
-	Lookup  generic.FuncPair1[runtime.Context, ADDIN_IFACE, bool] // 查找插件
+	Id      uint64                                                // 由 Name 生成的插件 ID。
+	Name    string                                                // 插件注册名称。
+	Require generic.Func1[runtime.Context, ADDIN_IFACE]           // 从运行时获取正在运行的插件，不可用时 panic。
+	Lookup  generic.FuncPair1[runtime.Context, ADDIN_IFACE, bool] // 查询运行时管理器当前持有的插件。
 }

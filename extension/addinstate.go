@@ -20,11 +20,11 @@
 //go:generate stringer -type AddInState
 package extension
 
-// AddInState 插件状态
+// AddInState 表示插件从加载、运行到卸载的单向生命周期状态。
 type AddInState int8
 
 const (
-	AddInState_Loaded   AddInState = iota // 已加载
-	AddInState_Running                    // 运行中
-	AddInState_Unloaded                   // 已卸载
+	AddInState_Loaded   AddInState = iota // 已加载，等待所属 service 或 runtime 激活。
+	AddInState_Running                    // 已激活并正在运行。
+	AddInState_Unloaded                   // 已停用并从管理器移除。
 )

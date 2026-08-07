@@ -20,22 +20,18 @@
 //go:generate stringer -type RunningEvent
 package service
 
-// RunningEvent 运行事件
+// RunningEvent 标识服务生命周期及服务级资源变化事件。
 type RunningEvent int32
 
 const (
-	RunningEvent_Birth               RunningEvent = iota // 出生
-	RunningEvent_Starting                                // 开始启动
-	RunningEvent_Started                                 // 已启动
-	RunningEvent_Heartbeat                               // 心跳
-	RunningEvent_Terminating                             // 开始停止
-	RunningEvent_Terminated                              // 已停止
-	RunningEvent_AddInActivating                         // 开始激活插件
-	RunningEvent_AddInActivated                          // 已激活插件
-	RunningEvent_AddInDeactivating                       // 开始去激活插件
-	RunningEvent_AddInDeactivated                        // 已去激活插件
-	RunningEvent_EntityPTDeclared                        // 实体原型已声明
-	RunningEvent_ComponentPTDeclared                     // 组件原型已声明
-	RunningEvent_EntityRegistered                        // 实体已注册
-	RunningEvent_EntityDeregistered                      // 实体已注销
+	RunningEvent_Birth               RunningEvent = iota // 服务对象创建完成。
+	RunningEvent_Starting                                // 服务开始启动，插件管理器在回调前冻结并激活插件。
+	RunningEvent_Started                                 // 服务启动完成。
+	RunningEvent_Heartbeat                               // 服务运行期间的每秒心跳。
+	RunningEvent_Terminating                             // 服务开始停止。
+	RunningEvent_Terminated                              // 服务等待组清空、插件停用完成，主体生命周期结束。
+	RunningEvent_EntityPTDeclared                        // 实体原型已声明。
+	RunningEvent_ComponentPTDeclared                     // 组件原型已声明。
+	RunningEvent_EntityRegistered                        // 全局实体已注册。
+	RunningEvent_EntityDeregistered                      // 全局实体已注销。
 )

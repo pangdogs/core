@@ -29,7 +29,9 @@ import (
 	"git.golaxy.org/core/utils/uid"
 )
 
-// Deprecated: UnsafeEntity 访问实体内部函数
+// UnsafeEntity 暴露实体状态机、组件表与运行时句柄等框架内部能力。
+//
+// Deprecated: 仅供框架内部使用。
 func UnsafeEntity(entity Entity) _UnsafeEntity {
 	return _UnsafeEntity{
 		Entity: entity,
@@ -40,117 +42,117 @@ type _UnsafeEntity struct {
 	Entity
 }
 
-// WithContext 传递上下文
+// WithContext 创建由 ctx 派生的实体生命周期上下文。
 func (u _UnsafeEntity) WithContext(ctx context.Context) {
 	u.withContext(ctx)
 }
 
-// Options 获取实体所有选项
+// Options 返回实体当前持有的构造选项。
 func (u _UnsafeEntity) Options() *EntityOptions {
 	return u.getOptions()
 }
 
-// Instance 获取实例
+// Instance 返回实际实体实例。
 func (u _UnsafeEntity) Instance() Entity {
 	return u.getInstance()
 }
 
-// SetId 设置Id
+// SetId 设置实体 ID。
 func (u _UnsafeEntity) SetId(id uid.Id) {
 	u.setId(id)
 }
 
-// SetPT 设置实体原型信息
+// SetPT 绑定实体原型。
 func (u _UnsafeEntity) SetPT(prototype EntityPT) {
 	u.setPT(prototype)
 }
 
-// SetContext 设置上下文
+// SetContext 设置实体所属 Runtime 的上下文缓存。
 func (u _UnsafeEntity) SetContext(ctx iface.Cache) {
 	u.setContext(ctx)
 }
 
-// SetState 设置状态
+// SetState 推进实体生命周期状态。
 func (u _UnsafeEntity) SetState(state EntityState) {
 	u.setState(state)
 }
 
-// SetReflected 设置反射值
+// SetReflected 缓存实际实体实例的反射值。
 func (u _UnsafeEntity) SetReflected(v reflect.Value) {
 	u.setReflected(v)
 }
 
-// ProcessedStateBits 获取已处理状态标志位
+// ProcessedStateBits 返回生命周期阶段的已处理标志位。
 func (u _UnsafeEntity) ProcessedStateBits() *generic.Bits16 {
 	return u.getProcessedStateBits()
 }
 
-// EnteredHandle 获取加入运行时时的句柄
+// EnteredHandle 返回实体在 Runtime 实体表中的位置与版本。
 func (u _UnsafeEntity) EnteredHandle() (int, int64) {
 	return u.getEnteredHandle()
 }
 
-// SetEnteredHandle 设置加入运行时时的句柄
+// SetEnteredHandle 设置实体在 Runtime 实体表中的位置与版本。
 func (u _UnsafeEntity) SetEnteredHandle(idx int, ver int64) {
 	u.setEnteredHandle(idx, ver)
 }
 
-// ManagedRuntimeUpdateHandle 托管运行时更新句柄
+// ManagedRuntimeUpdateHandle 替换并托管 Runtime 更新事件句柄。
 func (u _UnsafeEntity) ManagedRuntimeUpdateHandle(updateHandle event.Handle) {
 	u.managedRuntimeUpdateHandle(updateHandle)
 }
 
-// ManagedRuntimeLateUpdateHandle 托管运行时延迟更新句柄
+// ManagedRuntimeLateUpdateHandle 替换并托管 Runtime 后置更新事件句柄。
 func (u _UnsafeEntity) ManagedRuntimeLateUpdateHandle(lateUpdateHandle event.Handle) {
 	u.managedRuntimeLateUpdateHandle(lateUpdateHandle)
 }
 
-// ManagedUnbindRuntimeHandles 解绑定托管的运行时句柄
+// ManagedUnbindRuntimeHandles 解绑全部托管的 Runtime 更新事件句柄。
 func (u _UnsafeEntity) ManagedUnbindRuntimeHandles() {
 	u.managedUnbindRuntimeHandles()
 }
 
-// Version 获取实体组件变化版本号
+// Version 返回实体组件表的当前版本。
 func (u _UnsafeEntity) Version() int64 {
 	return u.getVersion()
 }
 
-// ComponentNameIndex 获取实体组件名称索引
+// ComponentNameIndex 返回实体组件名称索引。
 func (u _UnsafeEntity) ComponentNameIndex() *generic.SliceMap[string, int] {
 	return u.getComponentNameIndex()
 }
 
-// ComponentList 获取实体组件链表
+// ComponentList 返回实体组件槽表。
 func (u _UnsafeEntity) ComponentList() *generic.FreeList[Component] {
 	return u.getComponentList()
 }
 
-// SetTreeNodeState 设置实体树节点状态
+// SetTreeNodeState 设置实体树节点状态。
 func (u _UnsafeEntity) SetTreeNodeState(state TreeNodeState) {
 	u.setTreeNodeState(state)
 }
 
-// EmitEventTreeNodeAddChild 发送实体树节点添加子实体事件
+// EmitEventTreeNodeAddChild 派发直接子实体添加事件。
 func (u _UnsafeEntity) EmitEventTreeNodeAddChild(childId uid.Id) {
 	u.emitEventTreeNodeAddChild(childId)
 }
 
-// EmitEventTreeNodeRemoveChild 发送实体树节点删除子实体事件
+// EmitEventTreeNodeRemoveChild 派发直接子实体移除事件。
 func (u _UnsafeEntity) EmitEventTreeNodeRemoveChild(childId uid.Id) {
 	u.emitEventTreeNodeRemoveChild(childId)
 }
 
-// EmitEventTreeNodeAttachParent 发送实体树节点加入父节点事件
+// EmitEventTreeNodeAttachParent 派发接入父节点事件。
 func (u _UnsafeEntity) EmitEventTreeNodeAttachParent(parentId uid.Id) {
 	u.emitEventTreeNodeAttachParent(parentId)
 }
 
-// EmitEventTreeNodeDetachParent 发送实体树节点离开父节点事件
+// EmitEventTreeNodeDetachParent 派发脱离父节点事件。
 func (u _UnsafeEntity) EmitEventTreeNodeDetachParent(parentId uid.Id) {
 	u.emitEventTreeNodeDetachParent(parentId)
 }
 
-// EmitEventTreeNodeMoveTo 发送实体树节点切换父节点事件
+// EmitEventTreeNodeMoveTo 派发父节点变更事件。
 func (u _UnsafeEntity) EmitEventTreeNodeMoveTo(fromParentId, toParentId uid.Id) {
 	u.emitEventTreeNodeMoveTo(fromParentId, toParentId)
 }

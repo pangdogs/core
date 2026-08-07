@@ -21,9 +21,11 @@ package pt
 
 import (
 	"context"
+	"maps"
 	"reflect"
 	"slices"
 	"sync"
+	"sync/atomic"
 
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/utils/exception"
@@ -31,53 +33,69 @@ import (
 	"git.golaxy.org/core/utils/types"
 )
 
-// EntityLib 实体原型库
+// EntityLib 是可并发访问的实体原型注册表。
 type EntityLib interface {
 	EntityPTProvider
 
-	// ComponentLib 获取组件原型库
+	// ComponentLib 返回实体原型解析组件时使用的组件原型库。
 	ComponentLib() ComponentLib
-	// Declare 声明实体原型
+	// Declare 声明实体原型；同名声明会替换旧原型。
 	Declare(prototype any, comps ...any) ec.EntityPT
-	// Get 获取实体原型
+	// Get 按原型名查询实体原型。
 	Get(prototype string) (ec.EntityPT, bool)
-	// List 获取所有实体原型
+	// List 返回当前全部实体原型的快照。
 	List() []ec.EntityPT
-	// Watch 监听实体声明
+	// Watch 依次发送当前快照及后续声明；ctx 结束后排空已排队项并关闭频道。
 	Watch(ctx context.Context) <-chan ec.EntityPT
 }
 
-// NewEntityLib 创建实体原型库
+// NewEntityLib 使用 compLib 创建独立的空实体原型库；compLib 为 nil 时 panic。
 func NewEntityLib(compLib ComponentLib) EntityLib {
 	if compLib == nil {
 		exception.Panicf("%w: %w: compLib is nil", ErrPt, exception.ErrArgs)
 	}
 
-	return &_EntityLib{
-		compLib:       compLib,
-		entityPTIndex: map[string]int{},
-	}
+	lib := &_EntityLib{compLib: compLib}
+	lib.snapshot.Store(&_EntityLibSnapshot{
+		entityPTIndex: map[string]ec.EntityPT{},
+	})
+	return lib
 }
 
 type _EntityLib struct {
-	sync.RWMutex
-	compLib       ComponentLib
-	entityPTIndex map[string]int
-	entityPTList  generic.FreeList[ec.EntityPT]
-	eventStream   generic.EventStream[ec.EntityPT]
+	mutex       sync.Mutex
+	compLib     ComponentLib
+	snapshot    atomic.Pointer[_EntityLibSnapshot]
+	eventStream generic.EventStream[ec.EntityPT]
 }
 
-// EntityLib 获取实体原型库
+// _EntityLibSnapshot 是实体原型库的只读快照，发布后不再修改。
+type _EntityLibSnapshot struct {
+	entityPTIndex map[string]ec.EntityPT
+	entityPTList  []ec.EntityPT
+}
+
+func (snapshot *_EntityLibSnapshot) clone() *_EntityLibSnapshot {
+	return &_EntityLibSnapshot{
+		entityPTIndex: maps.Clone(snapshot.entityPTIndex),
+		entityPTList:  slices.Clone(snapshot.entityPTList),
+	}
+}
+
+// EntityLib 返回自身，以实现 EntityPTProvider。
 func (lib *_EntityLib) EntityLib() EntityLib {
 	return lib
 }
 
-// ComponentLib 获取组件原型库
+// ComponentLib 返回实体原型解析组件时使用的组件原型库。
 func (lib *_EntityLib) ComponentLib() ComponentLib {
 	return lib.compLib
 }
 
-// Declare 声明实体原型
+// Declare 声明实体原型；同名声明会替换旧原型并发布一次声明事件。
+//
+// prototype 支持原型名、EntityDescriptor 或其指针；comps 支持组件值、完整原型名、
+// ComponentDescriptor 或其指针。参数无效或引用未声明的组件原型时 panic。
 func (lib *_EntityLib) Declare(prototype any, comps ...any) ec.EntityPT {
 	if prototype == nil {
 		exception.Panicf("%w: %w: prototype is nil", ErrPt, exception.ErrArgs)
@@ -87,8 +105,8 @@ func (lib *_EntityLib) Declare(prototype any, comps ...any) ec.EntityPT {
 		exception.Panicf("%w: %w: comps contains nil", ErrPt, exception.ErrArgs)
 	}
 
-	lib.Lock()
-	defer lib.Unlock()
+	lib.mutex.Lock()
+	defer lib.mutex.Unlock()
 
 	var entityDescr EntityDescriptor
 
@@ -172,46 +190,44 @@ func (lib *_EntityLib) Declare(prototype any, comps ...any) ec.EntityPT {
 		entityPT.components = append(entityPT.components, builtin)
 	}
 
-	if entityPTIdx, ok := lib.entityPTIndex[entityDescr.Prototype]; ok {
-		lib.entityPTList.Release(entityPTIdx)
+	snapshot := lib.snapshot.Load()
+	next := snapshot.clone()
+
+	if _, ok := next.entityPTIndex[entityDescr.Prototype]; ok {
+		next.entityPTList = slices.DeleteFunc(next.entityPTList, func(entityPT ec.EntityPT) bool {
+			return entityPT.Prototype() == entityDescr.Prototype
+		})
 	}
 
-	lib.entityPTIndex[entityDescr.Prototype] = lib.entityPTList.PushBack(entityPT).Index()
+	next.entityPTIndex[entityDescr.Prototype] = entityPT
+	next.entityPTList = append(next.entityPTList, entityPT)
+	lib.snapshot.Store(next)
 
 	lib.eventStream.Publish(entityPT)
 
 	return entityPT
 }
 
-// Get 获取实体原型
+// Get 按原型名查询实体原型。
 func (lib *_EntityLib) Get(prototype string) (ec.EntityPT, bool) {
-	lib.RLock()
-	defer lib.RUnlock()
-
-	entityPTIdx, ok := lib.entityPTIndex[prototype]
-	if !ok {
-		return nil, false
-	}
-
-	return lib.entityPTList.Get(entityPTIdx).V, true
+	entityPT, ok := lib.snapshot.Load().entityPTIndex[prototype]
+	return entityPT, ok
 }
 
-// List 获取所有实体原型
+// List 返回当前全部实体原型的快照。
 func (lib *_EntityLib) List() []ec.EntityPT {
-	lib.RLock()
-	defer lib.RUnlock()
-
-	return lib.entityPTList.ToSlice()
+	return slices.Clone(lib.snapshot.Load().entityPTList)
 }
 
-// Watch 监听实体声明
+// Watch 依次发送当前快照及后续声明；ctx 结束后排空已排队项并关闭频道。
+// nil ctx 按 context.Background 处理。
 func (lib *_EntityLib) Watch(ctx context.Context) <-chan ec.EntityPT {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	lib.Lock()
-	defer lib.Unlock()
+	lib.mutex.Lock()
+	defer lib.mutex.Unlock()
 
-	return lib.eventStream.Subscribe(ctx, lib.entityPTList.ToSlice()...)
+	return lib.eventStream.Subscribe(ctx, lib.snapshot.Load().entityPTList...)
 }

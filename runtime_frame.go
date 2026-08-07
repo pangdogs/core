@@ -38,52 +38,52 @@ type _Frame struct {
 	statFPSFrames        int64
 }
 
-// TargetFPS 获取目标FPS
+// TargetFPS 返回目标 FPS。
 func (frame *_Frame) TargetFPS() float64 {
 	return frame.targetFPS
 }
 
-// CurFPS 获取当前FPS
+// CurFPS 返回最近一个统计周期内的实际 FPS。
 func (frame *_Frame) CurFPS() float64 {
 	return frame.curFPS
 }
 
-// TotalFrames 获取运行帧数上限
+// TotalFrames 返回最大运行帧数；0 表示不限制。
 func (frame *_Frame) TotalFrames() int64 {
 	return frame.totalFrames
 }
 
-// CurFrames 获取当前帧数
+// CurFrames 返回已经开始执行的帧数。
 func (frame *_Frame) CurFrames() int64 {
 	return frame.curFrames
 }
 
-// RunningBeginTime 获取运行开始时间
+// RunningBeginTime 返回帧循环的启动时间。
 func (frame *_Frame) RunningBeginTime() time.Time {
 	return frame.runningBeginTime
 }
 
-// RunningElapseTime 获取运行持续时间
+// RunningElapseTime 返回已累计的帧循环运行时长。
 func (frame *_Frame) RunningElapseTime() time.Duration {
 	return frame.runningElapseTime
 }
 
-// LoopBeginTime 获取当前帧循环开始时间（包含异步调用）
+// LoopBeginTime 返回当前帧循环的开始时间；循环包含异步调用处理。
 func (frame *_Frame) LoopBeginTime() time.Time {
 	return frame.loopBeginTime
 }
 
-// LastLoopElapseTime 获取上一帧循环耗时（包含异步调用）
+// LastLoopElapseTime 返回上一帧完整循环的耗时，包含异步调用处理。
 func (frame *_Frame) LastLoopElapseTime() time.Duration {
 	return frame.lastLoopElapseTime
 }
 
-// UpdateBeginTime 获取当前帧更新开始时间
+// UpdateBeginTime 返回当前帧更新阶段的开始时间。
 func (frame *_Frame) UpdateBeginTime() time.Time {
 	return frame.updateBeginTime
 }
 
-// LastUpdateElapseTime 获取上一次帧更新耗时
+// LastUpdateElapseTime 返回上一帧更新阶段的耗时。
 func (frame *_Frame) LastUpdateElapseTime() time.Duration {
 	return frame.lastUpdateElapseTime
 }

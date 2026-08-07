@@ -24,5 +24,8 @@ Package reinterpret 约定 InstanceProvider 暴露统一的实例缓存，然后
 
 这个机制常用于扩展实体、组件、service 或 runtime 的对外接口，而无需在调用点做
 重复的类型断言或显式保存多个接口引用。
+
+Cast 基于 iface.Cache 与 unsafe，不执行普通类型断言。目标接口必须与提供器缓存的实际
+实例兼容。
 */
 package reinterpret

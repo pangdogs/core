@@ -19,14 +19,14 @@
 
 package event
 
-// IEventCtrl 事件控制器接口
+// IEventCtrl 统一控制一个事件或一组事件。
 type IEventCtrl interface {
-	// SetPanicHandling 设置panic时的处理方式
+	// SetPanicHandling 设置订阅者 panic 的恢复与上报方式。
 	SetPanicHandling(autoRecover bool, reportError chan error)
-	// SetRecursion 设置发生事件递归时的处理方式
+	// SetRecursion 设置递归派发策略。
 	SetRecursion(recursion EventRecursion)
-	// SetEnabled 设置事件是否启用
+	// SetEnabled 设置事件是否启用；禁用会解绑全部订阅者。
 	SetEnabled(b bool)
-	// UnbindAll 解绑定所有订阅者
+	// UnbindAll 解绑全部订阅者。
 	UnbindAll()
 }

@@ -26,19 +26,20 @@ import (
 	"github.com/elliotchance/pie/v2"
 )
 
-// AddIn 定义通用插件，支持安装至运行时上下文和服务上下文
+// AddIn 创建可用于任意 extension.AddInProvider 的通用插件定义。
+// 未指定名称时使用 ADDIN_IFACE 的完整限定名；creator 为 nil 或名称无效时会 panic。
 func AddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADDIN_IFACE], name ...string) AddInDefinition[ADDIN_IFACE, SETTING] {
 	return defineAddIn[ADDIN_IFACE, SETTING](creator, pie.First(name))
 }
 
-// AddInDefinition 通用插件定义
+// AddInDefinition 封装通用插件的标识、构造和访问操作。
 type AddInDefinition[ADDIN_IFACE, SETTING any] struct {
-	Id        uint64                                                        // 插件Id
-	Name      string                                                        // 插件名称
-	Install   generic.ActionVar1[extension.AddInProvider, SETTING]          // 安装插件
-	Uninstall generic.Action1[extension.AddInProvider]                      // 卸载插件
-	Require   generic.Func1[extension.AddInProvider, ADDIN_IFACE]           // 依赖插件
-	Lookup    generic.FuncPair1[extension.AddInProvider, ADDIN_IFACE, bool] // 查找插件
+	Id        uint64                                                        // 由 Name 生成的插件 ID。
+	Name      string                                                        // 插件注册名称。
+	Install   generic.ActionVar1[extension.AddInProvider, SETTING]          // 构造插件并安装到给定提供者。
+	Uninstall generic.Action1[extension.AddInProvider]                      // 从给定提供者卸载插件。
+	Require   generic.Func1[extension.AddInProvider, ADDIN_IFACE]           // 获取正在运行的插件，不可用时 panic。
+	Lookup    generic.FuncPair1[extension.AddInProvider, ADDIN_IFACE, bool] // 查询管理器当前持有的插件。
 }
 
 func defineAddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADDIN_IFACE], name string) AddInDefinition[ADDIN_IFACE, SETTING] {

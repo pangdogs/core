@@ -23,7 +23,7 @@ import (
 	"git.golaxy.org/core/ec/pt"
 )
 
-// EntityLib 获取实体原型库
+// EntityLib 返回服务使用的实体原型库。
 func (ctx *ContextBehavior) EntityLib() pt.EntityLib {
 	return ctx.options.EntityLib
 }

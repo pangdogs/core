@@ -27,7 +27,7 @@ import (
 type iTreeNode interface {
 	iiTreeNode
 
-	// TreeNodeState 获取实体树节点状态
+	// TreeNodeState 返回实体在 Runtime 实体树中的状态。
 	TreeNodeState() TreeNodeState
 
 	IEntityTreeNodeEventTab
@@ -42,32 +42,32 @@ type iiTreeNode interface {
 	emitEventTreeNodeMoveTo(fromParentId, toParentId uid.Id)
 }
 
-// TreeNodeState 获取实体树节点状态
+// TreeNodeState 返回实体在 Runtime 实体树中的状态。
 func (entity *EntityBehavior) TreeNodeState() TreeNodeState {
 	return entity.treeNodeState
 }
 
-// EventTreeNodeAddChild 事件：实体节点添加子实体
+// EventTreeNodeAddChild 返回直接子实体添加事件。
 func (entity *EntityBehavior) EventTreeNodeAddChild() event.IEvent {
 	return entity.entityTreeNodeEventTab.EventTreeNodeAddChild()
 }
 
-// EventTreeNodeRemoveChild 事件：实体节点删除子实体
+// EventTreeNodeRemoveChild 返回直接子实体移除事件。
 func (entity *EntityBehavior) EventTreeNodeRemoveChild() event.IEvent {
 	return entity.entityTreeNodeEventTab.EventTreeNodeRemoveChild()
 }
 
-// EventTreeNodeAttachParent 事件：实体加入父实体节点
+// EventTreeNodeAttachParent 返回接入父节点事件。
 func (entity *EntityBehavior) EventTreeNodeAttachParent() event.IEvent {
 	return entity.entityTreeNodeEventTab.EventTreeNodeAttachParent()
 }
 
-// EventTreeNodeDetachParent 事件：实体离开父实体节点
+// EventTreeNodeDetachParent 返回脱离父节点事件。
 func (entity *EntityBehavior) EventTreeNodeDetachParent() event.IEvent {
 	return entity.entityTreeNodeEventTab.EventTreeNodeDetachParent()
 }
 
-// EventTreeNodeMoveTo 事件：实体切换父节点
+// EventTreeNodeMoveTo 返回父节点变更事件。
 func (entity *EntityBehavior) EventTreeNodeMoveTo() event.IEvent {
 	return entity.entityTreeNodeEventTab.EventTreeNodeMoveTo()
 }

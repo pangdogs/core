@@ -39,13 +39,13 @@ func genEventTab() {
 	dir := viper.GetString("dir")
 	tabName := viper.GetString("name")
 
-	// 解析事件定义
+	// 解析事件声明。
 	eventDeclTab := EventDeclTab{}
 	eventDeclTab.Parse()
 
 	code := &bytes.Buffer{}
 
-	// 生成注释
+	// 写入生成文件头。
 	{
 		program := strings.TrimSuffix(filepath.Base(os.Args[0]), filepath.Ext(os.Args[0]))
 		args := strings.Join(os.Args[1:], " ")
@@ -61,7 +61,7 @@ package %s
 `, copyright, program, args, pkg)
 	}
 
-	// 生成import
+	// 写入 import 声明。
 	{
 		importCode := &bytes.Buffer{}
 
@@ -75,13 +75,13 @@ package %s
 		fmt.Fprint(code, importCode.String())
 	}
 
-	// event包前缀
+	// 计算 event 包引用前缀；点导入时不需要前缀。
 	eventPrefix := ""
 	if packageEventAlias != "." {
 		eventPrefix = packageEventAlias + "."
 	}
 
-	// 生成事件表接口
+	// 生成事件表访问接口。
 	{
 		var eventsCode string
 
@@ -102,9 +102,9 @@ type i%[1]s interface {
 		}
 	}
 
-	// 生成事件表
+	// 生成事件表实现。
 	{
-		// 生成递归设置
+		// 生成整表默认值与事件级递归策略覆盖逻辑。
 		var allEventsSetRecursionCode, caseEventsSetRecursionCode string
 		caseEventsRecursion := map[int]string{}
 		getEventsSetRecursionCode := map[int]string{}
@@ -112,7 +112,7 @@ type i%[1]s interface {
 		for i, event := range eventDeclTab.Events {
 			eventRecursion := "recursion"
 
-			// 解析atti
+			// 解析事件表生成属性。
 			atti := parseGenAtti(event.Comment, "+event-tab-gen:")
 
 			if atti.Has("recursion") {
@@ -148,7 +148,7 @@ type i%[1]s interface {
 			caseEventsSetRecursionCode += "\n\t}"
 		}
 
-		// 生成事件Id
+		// 生成事件表 ID 与各事件 ID 的声明。
 		{
 			fmt.Fprintln(code, `
 var (`)
@@ -211,7 +211,7 @@ func (eventTab *%[1]s) %[2]s() %[4]sIEvent {%[5]s
 
 	log.Printf("EventTab: %s", tabName)
 
-	// 输出文件
+	// 将结果写入指定目录下的生成文件。
 	outFile := filepath.Base(strings.TrimSuffix(declFile, ".go"))
 	if !strings.HasSuffix(outFile, "_event") {
 		outFile = outFile + "_event"

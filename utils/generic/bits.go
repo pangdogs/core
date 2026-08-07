@@ -19,12 +19,15 @@
 
 package generic
 
+// Bits8 是 8 位标志集合；bit 应位于 [0, 7]。
 type Bits8 uint8
 
+// Is 报告指定标志位是否置位。
 func (bits Bits8) Is(bit int) bool {
 	return (bits)&(1<<bit) != 0
 }
 
+// Set 设置或清除指定标志位。
 func (bits *Bits8) Set(bit int, b bool) {
 	if b {
 		*bits |= 1 << bit
@@ -33,12 +36,15 @@ func (bits *Bits8) Set(bit int, b bool) {
 	}
 }
 
+// Bits16 是 16 位标志集合；bit 应位于 [0, 15]。
 type Bits16 uint16
 
+// Is 报告指定标志位是否置位。
 func (bits Bits16) Is(bit int) bool {
 	return (bits)&(1<<bit) != 0
 }
 
+// Set 设置或清除指定标志位。
 func (bits *Bits16) Set(bit int, b bool) {
 	if b {
 		*bits |= 1 << bit
@@ -47,12 +53,15 @@ func (bits *Bits16) Set(bit int, b bool) {
 	}
 }
 
-type Bits32 uint8
+// Bits32 是 32 位标志集合；bit 应位于 [0, 31]。
+type Bits32 uint32
 
+// Is 报告指定标志位是否置位。
 func (bits Bits32) Is(bit int) bool {
 	return (bits)&(1<<bit) != 0
 }
 
+// Set 设置或清除指定标志位。
 func (bits *Bits32) Set(bit int, b bool) {
 	if b {
 		*bits |= 1 << bit
@@ -61,12 +70,15 @@ func (bits *Bits32) Set(bit int, b bool) {
 	}
 }
 
-type Bits64 uint8
+// Bits64 是 64 位标志集合；bit 应位于 [0, 63]。
+type Bits64 uint64
 
+// Is 报告指定标志位是否置位。
 func (bits Bits64) Is(bit int) bool {
 	return (bits)&(1<<bit) != 0
 }
 
+// Set 设置或清除指定标志位。
 func (bits *Bits64) Set(bit int, b bool) {
 	if b {
 		*bits |= 1 << bit

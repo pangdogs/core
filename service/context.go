@@ -35,12 +35,13 @@ import (
 	"git.golaxy.org/core/utils/uid"
 )
 
-// NewContext 创建服务上下文
+// NewContext 创建服务上下文。
+// 未提供父上下文、持久化 ID、原型库或插件管理器时会自动创建默认值。
 func NewContext(settings ...option.Setting[ContextOptions]) Context {
 	return UnsafeNewContext(option.New(With.Default(), settings...))
 }
 
-// Deprecated: UnsafeNewContext 内部创建服务上下文
+// Deprecated: UnsafeNewContext 仅供框架内部使用，请改用 NewContext。
 func UnsafeNewContext(options ContextOptions) Context {
 	var ctx Context
 
@@ -54,7 +55,7 @@ func UnsafeNewContext(options ContextOptions) Context {
 	return ctx
 }
 
-// Context 服务上下文
+// Context 表示应用级共享作用域，并为多个 runtime 提供父上下文和全局资源。
 type Context interface {
 	iContext
 	corectx.Context
@@ -64,13 +65,13 @@ type Context interface {
 	Caller
 	fmt.Stringer
 
-	// Name 获取名称
+	// Name 返回服务名称。
 	Name() string
-	// Id 获取服务Id
+	// Id 返回服务的持久化 ID。
 	Id() uid.Id
-	// Reflected 获取反射值
+	// Reflected 返回实际服务上下文实例的反射值。
 	Reflected() reflect.Value
-	// EntityManager 获取实体管理器
+	// EntityManager 返回并发安全的全局实体索引。
 	EntityManager() EntityManager
 }
 
@@ -79,11 +80,12 @@ type iContext interface {
 	getOptions() *ContextOptions
 	getInstance() Context
 	emitEventRunningEvent(runningEvent RunningEvent, args ...any)
-	getAddInManager() extension.ServiceAddInManager
+	getAddInManager() AddInManager
 	getScoped() *atomic.Bool
 }
 
-// ContextBehavior 服务上下文行为，在扩展服务上下文能力时，匿名嵌入至服务上下文结构体中
+// ContextBehavior 提供 Context 的默认实现。
+// 扩展服务上下文时应匿名嵌入该类型，并通过 InstanceFace 传入扩展实例。
 type ContextBehavior struct {
 	corectx.ContextBehavior
 	options       ContextOptions
@@ -94,32 +96,32 @@ type ContextBehavior struct {
 	stringerCache string
 }
 
-// Name 获取名称
+// Name 返回服务名称。
 func (ctx *ContextBehavior) Name() string {
 	return ctx.options.Name
 }
 
-// Id 获取服务Id
+// Id 返回服务的持久化 ID。
 func (ctx *ContextBehavior) Id() uid.Id {
 	return ctx.options.PersistId
 }
 
-// Reflected 获取反射值
+// Reflected 返回实际服务上下文实例的反射值。
 func (ctx *ContextBehavior) Reflected() reflect.Value {
 	return ctx.reflected
 }
 
-// EntityManager 获取实体管理器
+// EntityManager 返回并发安全的全局实体索引。
 func (ctx *ContextBehavior) EntityManager() EntityManager {
 	return &ctx.entityManager
 }
 
-// InstanceFaceCache 支持重新解释类型
+// InstanceFaceCache 返回上下文实例的接口缓存，用于 reinterpret.Cast。
 func (ctx *ContextBehavior) InstanceFaceCache() iface.Cache {
 	return ctx.options.InstanceFace.Cache
 }
 
-// String implements fmt.Stringer
+// String 实现 fmt.Stringer，返回包含服务 ID 和名称的 JSON 文本。
 func (ctx *ContextBehavior) String() string {
 	ctx.stringerOnce.Do(func() {
 		ctx.stringerCache = fmt.Sprintf(`{"id":%q,"name":%q}`, ctx.Id(), ctx.Name())
@@ -147,7 +149,7 @@ func (ctx *ContextBehavior) init(options ContextOptions) {
 	}
 
 	if ctx.options.AddInManager == nil {
-		ctx.options.AddInManager = extension.NewServiceAddInManager()
+		ctx.options.AddInManager = NewAddInManager()
 	}
 
 	corectx.UnsafeContext(&ctx.ContextBehavior).Init(ctx.options.Context, ctx.options.AutoRecover, ctx.options.ReportError)

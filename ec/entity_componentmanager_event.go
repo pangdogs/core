@@ -21,28 +21,28 @@
 //go:generate go run git.golaxy.org/core/event/eventc eventtab --name=entityComponentManagerEventTab
 package ec
 
-// EventComponentManagerAddComponents 事件：实体的组件管理器添加组件
+// EventComponentManagerAddComponents 在一批组件加入实体后同步派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventComponentManagerAddComponents interface {
 	OnComponentManagerAddComponents(entity Entity, components []Component)
 }
 
-// EventComponentManagerRemoveComponent 事件：实体的组件管理器删除组件
+// EventComponentManagerRemoveComponent 在组件脱离实体时同步派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventComponentManagerRemoveComponent interface {
 	OnComponentManagerRemoveComponent(entity Entity, component Component)
 }
 
-// EventComponentManagerComponentEnableChanged 事件：实体组件管理器中的组件启用状态改变
+// EventComponentManagerComponentEnableChanged 在所属组件的启用标记发生变化时同步派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventComponentManagerComponentEnableChanged interface {
 	OnComponentManagerComponentEnableChanged(entity Entity, component Component, enable bool)
 }
 
-// EventComponentManagerFirstTouchComponent 事件：实体的组件管理器首次访问组件
+// EventComponentManagerFirstTouchComponent 在启用首次访问唤醒且 Attached 状态组件被访问时同步派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventComponentManagerFirstTouchComponent interface {

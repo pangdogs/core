@@ -26,6 +26,6 @@ import (
 )
 
 var (
-	ErrContext       = fmt.Errorf("%w: service-context", exception.ErrCore) // 服务上下文错误
-	ErrEntityManager = fmt.Errorf("%w: entity-manager", ErrContext)         // 实体管理器错误
+	ErrContext       = fmt.Errorf("%w: service-context", exception.ErrCore) // 服务上下文错误。
+	ErrEntityManager = fmt.Errorf("%w: entity-manager", ErrContext)         // 全局实体管理器错误。
 )

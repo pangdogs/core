@@ -25,10 +25,10 @@ import (
 	"git.golaxy.org/core/utils/exception"
 )
 
-// FaceAny face with any
+// FaceAny 是以 any 保存公开接口值的 Face。
 type FaceAny = Face[any]
 
-// NewFaceAny 创建 FaceAny
+// NewFaceAny 创建 FaceAny，并以 C 的接口视图建立缓存。
 func NewFaceAny[C any](cache C) FaceAny {
 	return Face[any]{
 		Iface: cache,
@@ -36,18 +36,18 @@ func NewFaceAny[C any](cache C) FaceAny {
 	}
 }
 
-// Face 面，用于存储接口与接口存储器，接口用于断言转换类型，接口存储器用于重解释接口
+// Face 同时保存公开接口值与用于快速重解释的接口缓存。
 type Face[T any] struct {
-	Iface T     // 接口
-	Cache Cache // 接口存储器
+	Iface T     // Iface 是安全访问与维持实例生命周期所用的接口值。
+	Cache Cache // Cache 是预先选择的接口视图缓存。
 }
 
-// IsNil 是否为空
+// IsNil 报告公开接口值或接口缓存是否为空。
 func (f *Face[T]) IsNil() bool {
 	return Iface2Cache[T](f.Iface) == NilCache || f.Cache == NilCache
 }
 
-// NewFaceT 创建面（Face），接口存储器重解释接口与接口类型相同
+// NewFaceT 创建公开接口与缓存接口类型相同的 Face。
 func NewFaceT[T any](iface T) Face[T] {
 	return Face[T]{
 		Iface: iface,
@@ -55,7 +55,8 @@ func NewFaceT[T any](iface T) Face[T] {
 	}
 }
 
-// NewFaceTC 创建面（Face），接口存储器重解释接口与接口类型可以不同
+// NewFaceTC 创建公开接口类型为 T、缓存接口类型为 C 的 Face。
+// iface 与 cache 必须引用同一实例，否则 panic。
 func NewFaceTC[T, C any](iface T, cache C) Face[T] {
 	if Iface2Cache(iface)[1] != Iface2Cache(cache)[1] {
 		exception.Panicf("%w: incorrect face pointer", exception.ErrCore)
@@ -66,7 +67,8 @@ func NewFaceTC[T, C any](iface T, cache C) Face[T] {
 	}
 }
 
-// NewFaceTReflectC 创建面（Face），自动反射获取接口存储器
+// NewFaceTReflectC 通过反射把 iface 断言为 C，并以该视图创建缓存。
+// iface 未实现 C 或为无效反射值时 panic。
 func NewFaceTReflectC[T, C any](iface T) Face[T] {
 	return Face[T]{
 		Iface: iface,

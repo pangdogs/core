@@ -526,7 +526,7 @@ func PrintEntityTreeForest(entityTree runtime.EntityTree) {
 
 func PrintEntityTree(entity ec.Entity, depth ...int) {
 	entityTree := runtime.Current(entity).EntityTree()
-	if b, _ := entityTree.IsFreedom(entity.Id()); b {
+	if b, _ := entityTree.IsFree(entity.Id()); b {
 		return
 	}
 

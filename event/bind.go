@@ -25,7 +25,10 @@ import (
 	"github.com/elliotchance/pie/v2"
 )
 
-// Bind 绑定事件与订阅者，可以设置优先级调整回调先后顺序（升序）
+// Bind 将 subscriber 绑定到 event，并返回可独立解绑的句柄。
+//
+// 订阅者按 priority 升序调用；同优先级保持绑定顺序。未指定 priority 时使用 0。
+// event 或 subscriber 无效以及事件已禁用时 panic。
 func Bind[T any](event IEvent, subscriber T, priority ...int32) Handle {
 	if event == nil {
 		exception.Panicf("%w: %w: event is nil", ErrEvent, exception.ErrArgs)
@@ -33,7 +36,10 @@ func Bind[T any](event IEvent, subscriber T, priority ...int32) Handle {
 	return event.addSubscriber(iface.NewFaceAny(subscriber), pie.First(priority))
 }
 
-// Unbind 解绑定事件与订阅者，在同个订阅者多次绑定事件的情况下，会以逆序依次解除，正常情况下应该使用事件句柄（Handle）解绑定，不应该使用该函数
+// Unbind 解除 subscriber 最近一次对 event 的绑定。
+//
+// 同一订阅者重复绑定时，重复调用会按绑定顺序的逆序逐个解除。通常应优先保存并使用
+// Handle，以避免误解绑；event 为 nil 或 subscriber 的动态类型不可比较时 panic。
 func Unbind(event IEvent, subscriber any) {
 	if event == nil {
 		exception.Panicf("%w: %w: event is nil", ErrEvent, exception.ErrArgs)

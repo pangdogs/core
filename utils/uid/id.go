@@ -22,29 +22,29 @@ package uid
 import "github.com/rs/xid"
 
 var (
-	// Nil is a nil id.
+	// Nil 是空 ID。
 	Nil Id = ""
 
-	// New generates a new id.
+	// New 生成新的 xid 字符串 ID。
 	New = func() Id {
 		return Id(xid.New().String())
 	}
 
-	// From generate id from string.
+	// From 将字符串直接转换为 ID，不执行格式校验。
 	From = func(str string) Id {
 		return Id(str)
 	}
 )
 
-// Id represents a global unique id.
+// Id 是框架统一使用的字符串标识类型。
 type Id string
 
-// IsNil checks if an Id is nil.
+// IsNil 报告 ID 是否为空。
 func (id Id) IsNil() bool {
 	return id == Nil
 }
 
-// String implements fmt.Stringer
+// String 返回 ID 的原始字符串。
 func (id Id) String() string {
 	return string(id)
 }

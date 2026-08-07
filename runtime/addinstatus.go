@@ -17,112 +17,109 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package extension
+package runtime
 
 import (
 	"fmt"
 	"reflect"
 
 	"git.golaxy.org/core/event"
+	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
 )
 
-// RuntimeAddInStatus 运行时插件状态信息
-type RuntimeAddInStatus interface {
-	iRuntimeAddInStatus
-	AddInStatus
+// AddInStatus 描述可热插拔运行时插件的状态。
+type AddInStatus interface {
+	iAddInStatus
+	extension.AddInStatus
 }
 
-type iRuntimeAddInStatus interface {
+type iAddInStatus interface {
 	started()
 	managedRuntimeRunningEventHandle(runtimeRunningEventHandle event.Handle)
 	managedUnbindRuntimeHandles()
 }
 
-const (
-	runtimeAddInStatusReentrancyGuard_uninstall = iota
-)
+const addInStatusReentrancyGuardUninstall = iota
 
-type _RuntimeAddInStatus struct {
-	mgr                   *_RuntimeAddInManager
+type _AddInStatus struct {
+	mgr                   *_AddInManager
 	id                    uint64
 	name                  string
 	instanceFace          iface.FaceAny
 	reflected             reflect.Value
-	state                 AddInState
+	state                 extension.AddInState
 	reentrancyGuard       generic.ReentrancyGuardBits8
 	idx                   int
 	ver                   int64
 	managedRuntimeHandles [1]event.Handle
-	stringerCache         string
+	stringer              string
 }
 
-// Id 插件Id
-func (s *_RuntimeAddInStatus) Id() uint64 {
+// Id 返回由插件名称生成的 ID。
+func (s *_AddInStatus) Id() uint64 {
 	return s.id
 }
 
-// Name 插件名称
-func (s *_RuntimeAddInStatus) Name() string {
+// Name 返回插件注册名称。
+func (s *_AddInStatus) Name() string {
 	return s.name
 }
 
-// InstanceFace 插件实例
-func (s *_RuntimeAddInStatus) InstanceFace() iface.FaceAny {
+// InstanceFace 返回插件实例及其接口缓存。
+func (s *_AddInStatus) InstanceFace() iface.FaceAny {
 	return s.instanceFace
 }
 
-// Reflected 插件反射值
-func (s *_RuntimeAddInStatus) Reflected() reflect.Value {
+// Reflected 返回插件实例的反射值。
+func (s *_AddInStatus) Reflected() reflect.Value {
 	return s.reflected
 }
 
-// State 状态
-func (s *_RuntimeAddInStatus) State() AddInState {
+// State 返回插件当前的生命周期状态。
+func (s *_AddInStatus) State() extension.AddInState {
 	return s.state
 }
 
-// String implements fmt.Stringer
-func (s *_RuntimeAddInStatus) String() string {
-	if s.stringerCache == "" {
-		s.stringerCache = fmt.Sprintf(`{"id":%d,"name":%q,"instance":%q}`, s.id, s.name, s.reflected.Type())
+// String 实现 fmt.Stringer，返回包含 ID、名称和实例类型的 JSON 文本。
+func (s *_AddInStatus) String() string {
+	if s.stringer == "" {
+		s.stringer = fmt.Sprintf(`{"id":%d,"name":%q,"instance":%q}`, s.id, s.name, s.reflected.Type())
 	}
-	return s.stringerCache
+	return s.stringer
 }
 
-func (s *_RuntimeAddInStatus) started() {
-	s.setState(AddInState_Running)
+func (s *_AddInStatus) started() {
+	s.setState(extension.AddInState_Running)
 }
 
-func (s *_RuntimeAddInStatus) managedRuntimeRunningEventHandle(runtimeRunningEventHandle event.Handle) {
+func (s *_AddInStatus) managedRuntimeRunningEventHandle(runtimeRunningEventHandle event.Handle) {
 	if s.managedRuntimeHandles[0] != runtimeRunningEventHandle {
 		s.managedRuntimeHandles[0].Unbind()
 	}
 	s.managedRuntimeHandles[0] = runtimeRunningEventHandle
 }
 
-func (s *_RuntimeAddInStatus) managedUnbindRuntimeHandles() {
+func (s *_AddInStatus) managedUnbindRuntimeHandles() {
 	event.UnbindHandles(s.managedRuntimeHandles[:])
 }
 
-func (s *_RuntimeAddInStatus) uninstall() {
-	s.reentrancyGuard.Call(runtimeAddInStatusReentrancyGuard_uninstall, func() {
+func (s *_AddInStatus) uninstall() {
+	s.reentrancyGuard.Call(addInStatusReentrancyGuardUninstall, func() {
 		s.mgr.uninstallIfVersion(s.idx, s.ver)
 	})
 }
 
-func (s *_RuntimeAddInStatus) setState(state AddInState) {
+func (s *_AddInStatus) setState(state extension.AddInState) {
 	slot := s.mgr.addInList.Get(s.idx)
 	if slot.Version() != s.ver {
 		return
 	}
-
 	if s.state >= state {
 		return
 	}
 
 	s.state = state
-
-	_EmitEventRuntimeAddInStateChanged(s.mgr, s, state)
+	_EmitEventAddInStateChanged(s.mgr, s, state)
 }

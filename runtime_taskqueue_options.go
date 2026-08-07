@@ -24,15 +24,15 @@ import (
 	"git.golaxy.org/core/utils/option"
 )
 
-// TaskQueueOptions 任务处理流水线的所有选项
+// TaskQueueOptions 定义运行时任务队列的容量策略。
 type TaskQueueOptions struct {
-	Unbounded bool // 是否无上限
-	Capacity  int  // 流水线大小
+	Unbounded bool // 是否使用无界队列。
+	Capacity  int  // 有界队列容量；使用无界队列时忽略。
 }
 
 type _TaskQueueOption struct{}
 
-// Default 默认值
+// Default 返回任务队列选项的默认设置。
 func (_TaskQueueOption) Default() option.Setting[TaskQueueOptions] {
 	return func(options *TaskQueueOptions) {
 		With.TaskQueue.Unbounded(true).Apply(options)
@@ -40,14 +40,14 @@ func (_TaskQueueOption) Default() option.Setting[TaskQueueOptions] {
 	}
 }
 
-// Unbounded 是否无上限
+// Unbounded 设置是否使用无界队列。
 func (_TaskQueueOption) Unbounded(b bool) option.Setting[TaskQueueOptions] {
 	return func(options *TaskQueueOptions) {
 		options.Unbounded = b
 	}
 }
 
-// Capacity 流水线大小
+// Capacity 设置队列容量，cap 必须大于 0。
 func (_TaskQueueOption) Capacity(cap int) option.Setting[TaskQueueOptions] {
 	return func(options *TaskQueueOptions) {
 		if cap <= 0 {

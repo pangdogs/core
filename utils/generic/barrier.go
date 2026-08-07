@@ -26,6 +26,10 @@ import (
 	"git.golaxy.org/core/utils/exception"
 )
 
+// Barrier 是可并发使用、关闭后不再接受新任务的等待屏障。
+//
+// 零值可用且首次使用后不可复制。内部初始持有一个基准计数；Close 会释放该计数并
+// 拒绝后续正增量，Wait 在 Close 且全部已加入任务完成后返回。
 type Barrier struct {
 	_                   noCopy
 	initOnce, closeOnce sync.Once
@@ -34,6 +38,10 @@ type Barrier struct {
 	done                chan struct{}
 }
 
+// Join 将计数增加 delta。
+//
+// delta 为 0 时 panic；屏障关闭时正增量会被拒绝并返回 false。负增量用于完成任务，
+// 通常应通过 Done 表达。
 func (b *Barrier) Join(delta int64) bool {
 	b.initOnce.Do(b.init)
 	if delta == 0 {
@@ -59,15 +67,18 @@ func (b *Barrier) Join(delta int64) bool {
 	return true
 }
 
+// Done 将任务计数减一。
 func (b *Barrier) Done() {
 	b.Join(-1)
 }
 
+// Wait 阻塞到屏障关闭且任务计数归零。
 func (b *Barrier) Wait() {
 	b.initOnce.Do(b.init)
 	<-b.done
 }
 
+// Close 关闭屏障、释放内部基准计数，并拒绝后续新任务；重复调用无效。
 func (b *Barrier) Close() {
 	b.initOnce.Do(b.init)
 	if b.closed.CompareAndSwap(false, true) {
@@ -77,11 +88,13 @@ func (b *Barrier) Close() {
 	}
 }
 
+// Closed 报告屏障是否已经关闭。
 func (b *Barrier) Closed() bool {
 	b.initOnce.Do(b.init)
 	return b.closed.Load()
 }
 
+// Count 返回当前内部计数；关闭前包含一个基准计数。
 func (b *Barrier) Count() int64 {
 	b.initOnce.Do(b.init)
 	return b.n.Load()

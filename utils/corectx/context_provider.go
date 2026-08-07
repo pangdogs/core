@@ -23,15 +23,15 @@ import (
 	"git.golaxy.org/core/utils/iface"
 )
 
-// CurrentContextProvider 当前上下文提供者
+// CurrentContextProvider 提供只能在所属执行协程中使用的当前上下文。
 type CurrentContextProvider interface {
 	ConcurrentContextProvider
-	// CurrentContext 获取当前上下文
+	// CurrentContext 返回当前上下文的接口缓存。
 	CurrentContext() iface.Cache
 }
 
-// ConcurrentContextProvider 多线程安全的上下文提供者
+// ConcurrentContextProvider 提供可跨协程使用的并发上下文。
 type ConcurrentContextProvider interface {
-	// ConcurrentContext 获取多线程安全的上下文
+	// ConcurrentContext 返回并发上下文的接口缓存。
 	ConcurrentContext() iface.Cache
 }

@@ -19,21 +19,23 @@
 
 package event
 
-// Handle 事件句柄，由BindEvent()创建并返回的绑定句柄，请勿自己创建
+// Handle 标识一次事件绑定；其零值表示未绑定。
+//
+// Handle 由 Bind 或生成的 BindXxx 创建，不应手工构造。它不支持并发访问。
 type Handle struct {
 	event *Event
 	idx   int
 	ver   int64
 }
 
-// Unbind 解绑定事件与订阅者
+// Unbind 解除该绑定；重复调用无效。
 func (handle Handle) Unbind() {
 	if handle.event != nil {
 		handle.event.subscribers.ReleaseIfVersion(handle.idx, handle.ver)
 	}
 }
 
-// Bound 是否已绑定事件
+// Bound 报告该句柄是否仍对应一个有效绑定。
 func (handle Handle) Bound() bool {
 	if handle.event == nil {
 		return false
@@ -42,7 +44,7 @@ func (handle Handle) Bound() bool {
 	return slot != nil && !slot.Orphaned() && !slot.Freed() && slot.Version() == handle.ver
 }
 
-// UnbindHandles 解绑定事件句柄（Handle）
+// UnbindHandles 依次解除全部句柄对应的绑定。
 func UnbindHandles(handles []Handle) {
 	for i := range handles {
 		handles[i].Unbind()

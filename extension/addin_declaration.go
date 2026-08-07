@@ -26,14 +26,14 @@ import (
 	"git.golaxy.org/core/utils/types"
 )
 
-// GenAddInId 生成插件Id
+// GenAddInId 使用插件名称的 FNV-1a 哈希生成稳定 ID。
 func GenAddInId(name string) uint64 {
 	h := fnv.New64a()
 	h.Write(types.String2Bytes(name))
 	return h.Sum64()
 }
 
-// GenAddInName 生成插件名称
+// GenAddInName 根据非 nil 插件实例的基础类型生成完整限定名。
 func GenAddInName(addIn any) string {
 	addInRT := reflect.TypeOf(addIn)
 
@@ -44,7 +44,7 @@ func GenAddInName(addIn any) string {
 	return types.FullNameRT(addInRT)
 }
 
-// GenAddInNameT 生成插件名称
+// GenAddInNameT 根据类型参数 T 生成插件的完整限定名。
 func GenAddInNameT[T any]() string {
 	return GenAddInName(types.New[T]())
 }

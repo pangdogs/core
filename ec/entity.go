@@ -36,12 +36,14 @@ import (
 	"git.golaxy.org/core/utils/uid"
 )
 
-// NewEntity 创建实体
+// NewEntity 创建处于 Born 状态的实体。
 func NewEntity(settings ...option.Setting[EntityOptions]) Entity {
 	return UnsafeNewEntity(option.New(With.Default(), settings...))
 }
 
-// Deprecated: UnsafeNewEntity 内部创建实体
+// UnsafeNewEntity 使用已解析的选项创建实体，供框架内部使用。
+//
+// Deprecated: 请使用 NewEntity。
 func UnsafeNewEntity(options EntityOptions) Entity {
 	var e Entity
 
@@ -55,7 +57,9 @@ func UnsafeNewEntity(options EntityOptions) Entity {
 	return e
 }
 
-// Entity 实体接口
+// Entity 表示由 Runtime 驱动生命周期的实体。
+//
+// 除 ConcurrentEntity 暴露的只读能力外，其方法应在所属 Runtime 的运行协程中调用。
 type Entity interface {
 	iEntity
 	iConcurrentEntity
@@ -66,21 +70,21 @@ type Entity interface {
 	reinterpret.InstanceProvider
 	fmt.Stringer
 
-	// Id 获取实体Id
+	// Id 返回实体 ID。
 	Id() uid.Id
-	// PT 获取实体原型信息
+	// PT 返回实体原型；无原型时返回空原型对象。
 	PT() EntityPT
-	// Scope 获取可访问作用域
+	// Scope 返回实体的可查询范围。
 	Scope() Scope
-	// State 获取实体状态
+	// State 返回当前生命周期状态。
 	State() EntityState
-	// Reflected 获取反射值
+	// Reflected 返回实际实体实例的反射值。
 	Reflected() reflect.Value
-	// Meta 获取Meta信息
+	// Meta 返回实体元数据。
 	Meta() meta.Meta
-	// Managed 托管事件句柄
+	// Managed 返回随实体销毁自动解绑的事件句柄集合。
 	Managed() *event.ManagedHandles
-	// Destroy 销毁
+	// Destroy 请求所属 Runtime 销毁实体；重复请求会被忽略。
 	Destroy()
 
 	IEntityEventTab
@@ -108,7 +112,7 @@ const (
 	entityReentrancyGuard_Destroy = iota
 )
 
-// EntityBehavior 实体行为，在扩展实体能力时，匿名嵌入至实体结构体中
+// EntityBehavior 提供 Entity 的默认实现，扩展实体时应将其匿名嵌入自定义结构体。
 type EntityBehavior struct {
 	context.Context
 	terminate             context.CancelFunc
@@ -135,12 +139,12 @@ type EntityBehavior struct {
 	entityTreeNodeEventTab         entityTreeNodeEventTab
 }
 
-// Id 获取实体Id
+// Id 返回实体 ID。
 func (entity *EntityBehavior) Id() uid.Id {
 	return entity.options.PersistId
 }
 
-// PT 获取实体原型
+// PT 返回实体原型；尚未绑定原型时返回空原型对象。
 func (entity *EntityBehavior) PT() EntityPT {
 	if entity.prototype == nil {
 		return noneEntityPT
@@ -148,17 +152,17 @@ func (entity *EntityBehavior) PT() EntityPT {
 	return entity.prototype
 }
 
-// Scope 获取可访问作用域
+// Scope 返回实体的可查询范围。
 func (entity *EntityBehavior) Scope() Scope {
 	return entity.options.Scope
 }
 
-// State 获取实体状态
+// State 返回当前生命周期状态。
 func (entity *EntityBehavior) State() EntityState {
 	return entity.state
 }
 
-// Reflected 获取反射值
+// Reflected 返回实际实体实例的反射值，并缓存首次解析结果。
 func (entity *EntityBehavior) Reflected() reflect.Value {
 	if entity.reflected.IsValid() {
 		return entity.reflected
@@ -167,17 +171,17 @@ func (entity *EntityBehavior) Reflected() reflect.Value {
 	return entity.reflected
 }
 
-// Meta 获取Meta信息
+// Meta 返回实体元数据。
 func (entity *EntityBehavior) Meta() meta.Meta {
 	return entity.options.Meta
 }
 
-// Managed 托管事件句柄
+// Managed 返回随实体销毁自动解绑的事件句柄集合。
 func (entity *EntityBehavior) Managed() *event.ManagedHandles {
 	return &entity.managedHandles
 }
 
-// Destroy 销毁
+// Destroy 请求所属 Runtime 销毁实体；实体离开活动阶段后调用无效。
 func (entity *EntityBehavior) Destroy() {
 	entity.reentrancyGuard.Call(entityReentrancyGuard_Destroy, func() {
 		if entity.state > EntityState_Alive {
@@ -187,27 +191,27 @@ func (entity *EntityBehavior) Destroy() {
 	})
 }
 
-// EventEntityDestroy 事件：实体销毁
+// EventEntityDestroy 返回实体销毁请求事件。
 func (entity *EntityBehavior) EventEntityDestroy() event.IEvent {
 	return entity.entityEventTab.EventEntityDestroy()
 }
 
-// CurrentContext 获取当前上下文
+// CurrentContext 返回实体所属 Runtime 的当前上下文。
 func (entity *EntityBehavior) CurrentContext() iface.Cache {
 	return entity.context
 }
 
-// ConcurrentContext 解析线程安全的上下文
+// ConcurrentContext 返回实体所属 Runtime 的并发上下文。
 func (entity *EntityBehavior) ConcurrentContext() iface.Cache {
 	return entity.context
 }
 
-// InstanceFaceCache 支持重新解释类型
+// InstanceFaceCache 返回实际实体实例的接口缓存，供类型重解释使用。
 func (entity *EntityBehavior) InstanceFaceCache() iface.Cache {
 	return entity.options.InstanceFace.Cache
 }
 
-// String implements fmt.Stringer
+// String 返回包含实体 ID 与原型名的 JSON 文本。
 func (entity *EntityBehavior) String() string {
 	entity.stringerOnce.Do(func() {
 		entity.stringerCache = fmt.Sprintf(`{"id":%q,"prototype":%q}`, entity.Id(), entity.PT().Prototype())
@@ -256,7 +260,7 @@ func (entity *EntityBehavior) setState(state EntityState) {
 	entity.state = state
 
 	switch entity.state {
-	case EntityState_Death:
+	case EntityState_Dead:
 		entity.terminate()
 		entity.entityEventTab.SetEnabled(false)
 		entity.entityComponentManagerEventTab.SetEnabled(false)

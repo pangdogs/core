@@ -21,8 +21,11 @@ package pt
 
 import (
 	"context"
+	"maps"
 	"reflect"
+	"slices"
 	"sync"
+	"sync/atomic"
 
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/utils/exception"
@@ -30,47 +33,61 @@ import (
 	"git.golaxy.org/core/utils/types"
 )
 
-// ComponentLib 组件原型库
+// ComponentLib 是可并发访问的组件原型注册表。
 type ComponentLib interface {
-	// Declare 声明组件原型
+	// Declare 声明组件原型；同一具名类型重复声明时返回已有原型。
 	Declare(comp any) ec.ComponentPT
-	// Get 查询组件原型
+	// Get 按完整原型名查询组件原型。
 	Get(prototype string) (ec.ComponentPT, bool)
-	// List 获取所有组件原型
+	// List 返回当前全部组件原型的快照。
 	List() []ec.ComponentPT
-	// Watch 监听组件声明
+	// Watch 依次发送当前快照及后续的新声明；ctx 结束后排空已排队项并关闭频道。
 	Watch(ctx context.Context) <-chan ec.ComponentPT
 }
 
 var compLib = NewComponentLib()
 
-// DefaultComponentLib 默认组件库
+// DefaultComponentLib 返回进程级默认组件原型库。
 func DefaultComponentLib() ComponentLib {
 	return compLib
 }
 
-// NewComponentLib 创建组件原型库
+// NewComponentLib 创建独立的空组件原型库。
 func NewComponentLib() ComponentLib {
-	return &_ComponentLib{
-		compPTNameIndex: map[string]int{},
-	}
+	lib := &_ComponentLib{}
+	lib.snapshot.Store(&_ComponentLibSnapshot{
+		compPTIndex: map[string]ec.ComponentPT{},
+	})
+	return lib
 }
 
 type _ComponentLib struct {
-	sync.RWMutex
-	compPTNameIndex map[string]int
-	compPTList      generic.FreeList[ec.ComponentPT]
-	eventStream     generic.EventStream[ec.ComponentPT]
+	mutex       sync.Mutex
+	snapshot    atomic.Pointer[_ComponentLibSnapshot]
+	eventStream generic.EventStream[ec.ComponentPT]
 }
 
-// Declare 声明组件原型
+// _ComponentLibSnapshot 是组件原型库的只读快照，发布后不再修改。
+type _ComponentLibSnapshot struct {
+	compPTIndex map[string]ec.ComponentPT
+	compPTList  []ec.ComponentPT
+}
+
+func (snapshot *_ComponentLibSnapshot) clone() *_ComponentLibSnapshot {
+	return &_ComponentLibSnapshot{
+		compPTIndex: maps.Clone(snapshot.compPTIndex),
+		compPTList:  slices.Clone(snapshot.compPTList),
+	}
+}
+
+// Declare 声明组件原型；同一具名类型重复声明时返回已有原型。
+//
+// comp 可以是组件值或 reflect.Type。匿名类型、nil 以及未实现 ec.Component 的类型
+// 会导致 panic。
 func (lib *_ComponentLib) Declare(comp any) ec.ComponentPT {
 	if comp == nil {
 		exception.Panicf("%w: %w: comp is nil", ErrPt, exception.ErrArgs)
 	}
-
-	lib.Lock()
-	defer lib.Unlock()
 
 	compRT, ok := comp.(reflect.Type)
 	if !ok {
@@ -91,9 +108,12 @@ func (lib *_ComponentLib) Declare(comp any) ec.ComponentPT {
 		exception.Panicf("%w: component %q not implement ec.Component", ErrPt, prototype)
 	}
 
-	compPTIdx, ok := lib.compPTNameIndex[prototype]
-	if ok {
-		return lib.compPTList.Get(compPTIdx).V
+	lib.mutex.Lock()
+	defer lib.mutex.Unlock()
+
+	snapshot := lib.snapshot.Load()
+	if compPT, ok := snapshot.compPTIndex[prototype]; ok {
+		return compPT
 	}
 
 	compPT := &_Component{
@@ -102,42 +122,36 @@ func (lib *_ComponentLib) Declare(comp any) ec.ComponentPT {
 	}
 	compPT.builtin = &ec.BuiltinComponent{PT: compPT, Offset: -1}
 
-	lib.compPTNameIndex[prototype] = lib.compPTList.PushBack(compPT).Index()
+	next := snapshot.clone()
+	next.compPTIndex[prototype] = compPT
+	next.compPTList = append(next.compPTList, compPT)
+	lib.snapshot.Store(next)
 
 	lib.eventStream.Publish(compPT)
 
 	return compPT
 }
 
-// Get 查询组件原型
+// Get 按完整原型名查询组件原型。
 func (lib *_ComponentLib) Get(prototype string) (ec.ComponentPT, bool) {
-	lib.RLock()
-	defer lib.RUnlock()
-
-	compPTIdx, ok := lib.compPTNameIndex[prototype]
-	if !ok {
-		return nil, false
-	}
-
-	return lib.compPTList.Get(compPTIdx).V, true
+	compPT, ok := lib.snapshot.Load().compPTIndex[prototype]
+	return compPT, ok
 }
 
-// List 获取所有组件原型
+// List 返回当前全部组件原型的快照。
 func (lib *_ComponentLib) List() []ec.ComponentPT {
-	lib.RLock()
-	defer lib.RUnlock()
-
-	return lib.compPTList.ToSlice()
+	return slices.Clone(lib.snapshot.Load().compPTList)
 }
 
-// Watch 监听组件声明
+// Watch 依次发送当前快照及后续的新声明；ctx 结束后排空已排队项并关闭频道。
+// nil ctx 按 context.Background 处理。
 func (lib *_ComponentLib) Watch(ctx context.Context) <-chan ec.ComponentPT {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	lib.Lock()
-	defer lib.Unlock()
+	lib.mutex.Lock()
+	defer lib.mutex.Unlock()
 
-	return lib.eventStream.Subscribe(ctx, lib.compPTList.ToSlice()...)
+	return lib.eventStream.Subscribe(ctx, lib.snapshot.Load().compPTList...)
 }

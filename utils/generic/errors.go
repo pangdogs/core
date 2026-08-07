@@ -19,6 +19,7 @@
 
 package generic
 
+// FuncError 优先返回 panicErr，其次返回 err；两者都为 nil 时返回 nil。
 func FuncError(err, panicErr error) error {
 	if panicErr != nil {
 		return panicErr
@@ -29,6 +30,7 @@ func FuncError(err, panicErr error) error {
 	return nil
 }
 
+// FuncPairError 保留 r，并优先返回 panicErr，其次返回 err。
 func FuncPairError[T any](r T, err, panicErr error) (T, error) {
 	if panicErr != nil {
 		return r, panicErr

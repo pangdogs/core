@@ -26,5 +26,5 @@ import (
 )
 
 var (
-	ErrExtension = fmt.Errorf("%w: extension", exception.ErrCore) // 插件系统错误
+	ErrExtension = fmt.Errorf("%w: extension", exception.ErrCore) // 插件系统错误。
 )

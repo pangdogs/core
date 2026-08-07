@@ -20,13 +20,13 @@
 //go:generate stringer -type TreeNodeState
 package ec
 
-// TreeNodeState 实体树节点状态
+// TreeNodeState 表示实体在 Runtime 实体树中的过渡状态。
 type TreeNodeState int8
 
 const (
-	TreeNodeState_Freedom   TreeNodeState = iota // 自由实体
-	TreeNodeState_Attaching                      // 正在加入实体树
-	TreeNodeState_Attached                       // 在实体树中
-	TreeNodeState_Detaching                      // 正在脱离实体树
-	TreeNodeState_Moving                         // 正在移动实体父节点
+	TreeNodeState_Free      TreeNodeState = iota // TreeNodeState_Free 表示实体不在实体树中。
+	TreeNodeState_Attaching                      // TreeNodeState_Attaching 表示实体正在加入实体树。
+	TreeNodeState_Attached                       // TreeNodeState_Attached 表示实体已在实体树中。
+	TreeNodeState_Detaching                      // TreeNodeState_Detaching 表示实体正在脱离实体树。
+	TreeNodeState_Moving                         // TreeNodeState_Moving 表示实体正在切换父节点。
 )

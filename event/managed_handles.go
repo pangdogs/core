@@ -28,14 +28,16 @@ type _TaggedHandleSpan struct {
 	head, count int
 }
 
-// ManagedHandles 托管事件句柄
+// ManagedHandles 按无标签或标签分组保存事件句柄，便于批量解绑。
+//
+// 零值可用；类型本身不提供并发保护。
 type ManagedHandles struct {
 	taggedHandleIndex   generic.SliceMap[string, _TaggedHandleSpan]
 	untaggedHandleCount int
 	handleList          generic.FreeList[Handle]
 }
 
-// AddEventHandles 托管事件句柄
+// AddEventHandles 记录当前仍有效的无标签句柄；无效句柄会被忽略。
 func (m *ManagedHandles) AddEventHandles(handles ...Handle) {
 	for _, handle := range handles {
 		if handle.Bound() {
@@ -45,7 +47,7 @@ func (m *ManagedHandles) AddEventHandles(handles ...Handle) {
 	}
 }
 
-// GetEventHandles 获取已托管的事件句柄
+// GetEventHandles 返回已记录无标签句柄的快照，其中可能包含后来失效的句柄。
 func (m *ManagedHandles) GetEventHandles() []Handle {
 	if m.untaggedHandleCount <= 0 {
 		return nil
@@ -63,7 +65,7 @@ func (m *ManagedHandles) GetEventHandles() []Handle {
 	return handles
 }
 
-// UnbindEventHandles 解绑定已托管的事件句柄
+// UnbindEventHandles 解绑并移除全部无标签句柄。
 func (m *ManagedHandles) UnbindEventHandles() {
 	if m.untaggedHandleCount <= 0 {
 		return
@@ -77,7 +79,7 @@ func (m *ManagedHandles) UnbindEventHandles() {
 	})
 }
 
-// AddTaggedEventHandles 使用标签托管事件句柄
+// AddTaggedEventHandles 将当前仍有效的句柄追加到 tag 分组；无效句柄会被忽略。
 func (m *ManagedHandles) AddTaggedEventHandles(tag string, handles ...Handle) {
 	spanIdx, ok := m.taggedHandleIndex.Index(tag)
 	if ok {
@@ -110,7 +112,7 @@ func (m *ManagedHandles) AddTaggedEventHandles(tag string, handles ...Handle) {
 	}
 }
 
-// GetTaggedEventHandles 使用标签获取已托管的事件句柄
+// GetTaggedEventHandles 返回 tag 分组的句柄快照；标签不存在时返回 nil。
 func (m *ManagedHandles) GetTaggedEventHandles(tag string) []Handle {
 	span, ok := m.taggedHandleIndex.Get(tag)
 	if !ok {
@@ -129,7 +131,7 @@ func (m *ManagedHandles) GetTaggedEventHandles(tag string) []Handle {
 	return handles
 }
 
-// UnbindTaggedEventHandles 使用标签解绑定已托管的事件句柄
+// UnbindTaggedEventHandles 解绑并移除 tag 分组中的全部句柄。
 func (m *ManagedHandles) UnbindTaggedEventHandles(tag string) {
 	span, ok := m.taggedHandleIndex.Get(tag)
 	if !ok {
@@ -148,7 +150,7 @@ func (m *ManagedHandles) UnbindTaggedEventHandles(tag string) {
 	m.taggedHandleIndex.Delete(tag)
 }
 
-// UnbindAllEventHandles 解绑定所有已托管的事件句柄
+// UnbindAllEventHandles 解绑并清空全部无标签与带标签句柄。
 func (m *ManagedHandles) UnbindAllEventHandles() {
 	m.handleList.TraversalEach(func(slot *generic.FreeSlot[Handle]) {
 		slot.V.Unbind()
@@ -158,7 +160,7 @@ func (m *ManagedHandles) UnbindAllEventHandles() {
 	m.untaggedHandleCount = 0
 }
 
-// ClearAllUnboundEventHandles 清除所有已失效的事件句柄
+// ClearAllUnboundEventHandles 移除全部已失效句柄，但不影响仍有效的绑定。
 func (m *ManagedHandles) ClearAllUnboundEventHandles() {
 	if count := m.untaggedHandleCount; count > 0 {
 		m.handleList.Traversal(func(slot *generic.FreeSlot[Handle]) bool {

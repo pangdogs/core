@@ -29,13 +29,15 @@ import (
 	"git.golaxy.org/core/utils/uid"
 )
 
-// EntityManager 实体管理器接口
+// EntityManager 提供跨运行时可并发访问的全局实体索引。
+// 只有 Scope_Global 实体会由运行时注册到该索引。
+// 注册与注销事件在调用方 goroutine 中同步派发，因此不同 Runtime 可能并发触发回调。
 type EntityManager interface {
-	// GetEntity 查询实体
+	// GetEntity 按 ID 查询全局实体。
 	GetEntity(id uid.Id) (ec.ConcurrentEntity, bool)
-	// GetOrAddEntity 查询或添加实体
+	// GetOrAddEntity 原子地查询或注册全局实体，并报告该 ID 是否已经存在。
 	GetOrAddEntity(entity ec.ConcurrentEntity) (ec.ConcurrentEntity, bool, error)
-	// RemoveEntity 删除实体
+	// RemoveEntity 按 ID 注销全局实体；实体不存在时不执行任何操作。
 	RemoveEntity(id uid.Id)
 }
 
@@ -44,7 +46,7 @@ type _EntityManager struct {
 	entities sync.Map
 }
 
-// GetEntity 查询实体
+// GetEntity 按 ID 查询全局实体。
 func (mgr *_EntityManager) GetEntity(id uid.Id) (ec.ConcurrentEntity, bool) {
 	v, ok := mgr.entities.Load(id)
 	if !ok {
@@ -54,7 +56,7 @@ func (mgr *_EntityManager) GetEntity(id uid.Id) (ec.ConcurrentEntity, bool) {
 	return v.(ec.ConcurrentEntity), true
 }
 
-// GetOrAddEntity 查询或添加实体
+// GetOrAddEntity 原子地查询或注册全局实体，并报告该 ID 是否已经存在。
 func (mgr *_EntityManager) GetOrAddEntity(entity ec.ConcurrentEntity) (ec.ConcurrentEntity, bool, error) {
 	if entity == nil {
 		return nil, false, fmt.Errorf("%w: %w: entity is nil", ErrEntityManager, exception.ErrArgs)
@@ -82,7 +84,7 @@ func (mgr *_EntityManager) GetOrAddEntity(entity ec.ConcurrentEntity) (ec.Concur
 	return actual.(ec.ConcurrentEntity), loaded, nil
 }
 
-// RemoveEntity 删除实体
+// RemoveEntity 按 ID 注销全局实体；实体不存在时不执行任何操作。
 func (mgr *_EntityManager) RemoveEntity(id uid.Id) {
 	entity, loaded := mgr.entities.LoadAndDelete(id)
 	if !loaded {

@@ -28,23 +28,25 @@ import (
 	"git.golaxy.org/core/utils/uid"
 )
 
-// ConcurrentEntity 多线程安全的实体接口
+// ConcurrentEntity 暴露可跨协程安全读取的实体信息与上下文。
+//
+// 组件管理、实体树和 Destroy 等操作仍须通过所属 Runtime 的运行协程执行。
 type ConcurrentEntity interface {
 	iConcurrentEntity
 	iContext
 	corectx.ConcurrentContextProvider
 	fmt.Stringer
 
-	// Id 获取实体Id
+	// Id 返回实体 ID。
 	Id() uid.Id
-	// PT 获取实体原型信息
+	// PT 返回实体原型。
 	PT() EntityPT
 }
 
 type iContext interface {
 	context.Context
 
-	// Terminated 已停止
+	// Terminated 返回实体完成销毁时兑现的 Future。
 	Terminated() async.Future
 }
 
@@ -52,7 +54,7 @@ type iConcurrentEntity interface {
 	getEntity() Entity
 }
 
-// Terminated 已停止
+// Terminated 返回实体进入 Destroyed 状态时兑现的 Future。
 func (entity *EntityBehavior) Terminated() async.Future {
 	return entity.terminated.Out()
 }

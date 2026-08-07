@@ -30,33 +30,35 @@ import (
 	"git.golaxy.org/core/utils/uid"
 )
 
-// Component 组件接口
+// Component 表示依附于实体、由实体所属 Runtime 驱动生命周期的组件。
+//
+// Component 的方法应在所属 Runtime 的运行协程中调用。
 type Component interface {
 	iComponent
 	corectx.CurrentContextProvider
 	fmt.Stringer
 
-	// Id 获取组件Id
+	// Id 返回组件 ID；未启用组件唯一 ID 时通常为 Nil。
 	Id() uid.Id
-	// Builtin 获取实体原型中的组件信息
+	// Builtin 返回组件在实体原型中的内建描述；动态组件返回空描述。
 	Builtin() BuiltinComponent
-	// Name 获取组件名称
+	// Name 返回组件在实体中的名称。
 	Name() string
-	// Entity 获取组件依附的实体
+	// Entity 返回组件所依附的实体。
 	Entity() Entity
-	// State 获取组件状态
+	// State 返回当前生命周期状态。
 	State() ComponentState
-	// Reflected 获取反射值
+	// Reflected 返回实际组件实例的反射值。
 	Reflected() reflect.Value
-	// Removable 是否可以删除
+	// Removable 报告组件是否允许动态删除。
 	Removable() bool
-	// Enabled 获取组件是否启用
+	// Enabled 报告组件是否已被标记为启用。
 	Enabled() bool
-	// SetEnabled 设置组件是否启用
+	// SetEnabled 请求切换启用状态；重复设置或组件已离开活动阶段时无效。
 	SetEnabled(b bool)
-	// Managed 托管事件句柄
+	// Managed 返回随组件销毁自动解绑的事件句柄集合。
 	Managed() *event.ManagedHandles
-	// Destroy 销毁
+	// Destroy 请求从实体删除组件；不可删除的组件会忽略该请求。
 	Destroy()
 
 	IComponentEventTab
@@ -83,7 +85,7 @@ const (
 	componentReentrancyGuard_Destroy
 )
 
-// ComponentBehavior 组件行为，在开发新组件时，匿名嵌入至组件结构体中
+// ComponentBehavior 提供 Component 的默认实现，扩展组件时应将其匿名嵌入自定义结构体。
 type ComponentBehavior struct {
 	id                    uid.Id
 	builtin               *BuiltinComponent
@@ -105,12 +107,12 @@ type ComponentBehavior struct {
 	componentEventTab componentEventTab
 }
 
-// Id 获取组件Id
+// Id 返回组件 ID。
 func (comp *ComponentBehavior) Id() uid.Id {
 	return comp.id
 }
 
-// Builtin 获取实体原型中的组件信息
+// Builtin 返回组件在实体原型中的内建描述；动态组件返回空描述。
 func (comp *ComponentBehavior) Builtin() BuiltinComponent {
 	if comp.builtin == nil {
 		return *noneBuiltinComponent
@@ -118,22 +120,22 @@ func (comp *ComponentBehavior) Builtin() BuiltinComponent {
 	return *comp.builtin
 }
 
-// Name 获取组件名称
+// Name 返回组件在实体中的名称。
 func (comp *ComponentBehavior) Name() string {
 	return comp.name
 }
 
-// Entity 获取组件依附的实体
+// Entity 返回组件所依附的实体。
 func (comp *ComponentBehavior) Entity() Entity {
 	return comp.entity
 }
 
-// State 获取组件状态
+// State 返回当前生命周期状态。
 func (comp *ComponentBehavior) State() ComponentState {
 	return comp.state
 }
 
-// Reflected 获取反射值
+// Reflected 返回实际组件实例的反射值，并缓存首次解析结果。
 func (comp *ComponentBehavior) Reflected() reflect.Value {
 	if comp.reflected.IsValid() {
 		return comp.reflected
@@ -142,17 +144,17 @@ func (comp *ComponentBehavior) Reflected() reflect.Value {
 	return comp.reflected
 }
 
-// Removable 是否可以删除
+// Removable 报告组件是否允许动态删除。
 func (comp *ComponentBehavior) Removable() bool {
 	return comp.removable
 }
 
-// Enabled 获取组件是否启用
+// Enabled 报告组件是否已被标记为启用。
 func (comp *ComponentBehavior) Enabled() bool {
 	return comp.enabled
 }
 
-// SetEnabled 设置组件是否启用
+// SetEnabled 请求切换启用状态，并同步派发组件及实体组件管理器事件。
 func (comp *ComponentBehavior) SetEnabled(b bool) {
 	comp.reentrancyGuard.Call(componentReentrancyGuard_SetEnable, func() {
 		if comp.state > ComponentState_Alive {
@@ -172,12 +174,12 @@ func (comp *ComponentBehavior) SetEnabled(b bool) {
 	})
 }
 
-// Managed 获取托管事件句柄
+// Managed 返回随组件销毁自动解绑的事件句柄集合。
 func (comp *ComponentBehavior) Managed() *event.ManagedHandles {
 	return &comp.managedHandles
 }
 
-// Destroy 销毁
+// Destroy 请求从实体删除组件；不可删除或已离开活动阶段时无效。
 func (comp *ComponentBehavior) Destroy() {
 	comp.reentrancyGuard.Call(componentReentrancyGuard_Destroy, func() {
 		if comp.state > ComponentState_Alive {
@@ -196,27 +198,27 @@ func (comp *ComponentBehavior) Destroy() {
 	})
 }
 
-// EventComponentEnableChanged 事件：组件启用状态改变
+// EventComponentEnableChanged 返回组件启用状态变更事件。
 func (comp *ComponentBehavior) EventComponentEnableChanged() event.IEvent {
 	return comp.componentEventTab.EventComponentEnableChanged()
 }
 
-// EventComponentDestroy 事件：组件销毁
+// EventComponentDestroy 返回组件销毁事件。
 func (comp *ComponentBehavior) EventComponentDestroy() event.IEvent {
 	return comp.componentEventTab.EventComponentDestroy()
 }
 
-// CurrentContext 获取当前上下文
+// CurrentContext 返回所属实体的当前上下文。
 func (comp *ComponentBehavior) CurrentContext() iface.Cache {
 	return comp.entity.CurrentContext()
 }
 
-// ConcurrentContext 获取多线程安全的上下文
+// ConcurrentContext 返回所属实体的并发上下文。
 func (comp *ComponentBehavior) ConcurrentContext() iface.Cache {
 	return comp.entity.ConcurrentContext()
 }
 
-// String implements fmt.Stringer
+// String 返回包含组件、实体及原型标识的 JSON 文本。
 func (comp *ComponentBehavior) String() string {
 	if comp.stringerCache == "" {
 		comp.stringerCache = fmt.Sprintf(`{"id":%q,"entity_id":%q,"name":%q,"prototype":%q}`, comp.Id(), comp.Entity().Id(), comp.Name(), comp.Builtin().PT.Prototype())
@@ -248,14 +250,14 @@ func (comp *ComponentBehavior) setState(state ComponentState) {
 	switch state {
 	case ComponentState_Idle:
 		switch comp.state {
-		case ComponentState_Enable, ComponentState_Start, ComponentState_Alive:
+		case ComponentState_Enabling, ComponentState_Starting, ComponentState_Alive:
 			break
 		default:
 			return
 		}
-	case ComponentState_Start:
+	case ComponentState_Starting:
 		switch comp.state {
-		case ComponentState_Enable, ComponentState_Idle:
+		case ComponentState_Enabling, ComponentState_Idle:
 			break
 		default:
 			return
@@ -269,7 +271,7 @@ func (comp *ComponentBehavior) setState(state ComponentState) {
 	comp.state = state
 
 	switch comp.state {
-	case ComponentState_Death:
+	case ComponentState_Dead:
 		comp.componentEventTab.SetEnabled(false)
 	case ComponentState_Destroyed:
 		comp.managedHandles.UnbindAllEventHandles()

@@ -26,36 +26,36 @@ import (
 	"git.golaxy.org/core/utils/generic"
 )
 
-// WaitGroup 等待组
+// WaitGroup 是用于协调宿主关闭的并发安全屏障。
 type WaitGroup interface {
-	// Join 添加任务
+	// Join 调整任务计数；屏障已关闭时拒绝正增量并返回 false，delta 为 0 时 panic。
 	Join(delta int64) bool
-	// Done 任务完成
+	// Done 将任务计数减一。
 	Done()
-	// Wait 等待所有任务完成
+	// Wait 阻塞到屏障关闭且全部已加入任务完成。
 	Wait()
-	// Closed 是否已关闭
+	// Closed 报告屏障是否已关闭并停止接收新任务。
 	Closed() bool
-	// Count 等待任务数量
+	// Count 返回内部屏障计数；关闭前包含一个宿主持有的基准计数。
 	Count() int64
 }
 
-// Context 上下文
+// Context 定义 Service 与 Runtime 共享的生命周期上下文能力。
 type Context interface {
 	iContext
 	context.Context
 
-	// ParentContext 获取父上下文
+	// ParentContext 返回创建当前上下文时使用的父上下文。
 	ParentContext() context.Context
-	// AutoRecover panic时是否自动恢复
+	// AutoRecover 报告框架回调是否自动恢复 panic。
 	AutoRecover() bool
-	// ReportError 在开启panic时自动恢复时，将会恢复并将错误写入此error channel
+	// ReportError 返回自动恢复 panic 后用于非阻塞上报错误的频道。
 	ReportError() chan error
-	// WaitGroup 获取等待组
+	// WaitGroup 返回用于协调关闭的任务屏障。
 	WaitGroup() WaitGroup
-	// Terminate 停止
+	// Terminate 发出取消信号，并返回宿主完成清理时兑现的 Future。
 	Terminate() async.Future
-	// Terminated 已停止
+	// Terminated 返回宿主完成清理时兑现的 Future。
 	Terminated() async.Future
 }
 
@@ -65,7 +65,7 @@ type iContext interface {
 	returnTerminated()
 }
 
-// ContextBehavior 上下文行为
+// ContextBehavior 提供 Context 的通用实现，供 Service 与 Runtime 上下文嵌入。
 type ContextBehavior struct {
 	context.Context
 	parentCtx   context.Context
@@ -76,33 +76,33 @@ type ContextBehavior struct {
 	terminated  async.FutureVoid
 }
 
-// ParentContext 获取父上下文
+// ParentContext 返回创建当前上下文时使用的父上下文。
 func (ctx *ContextBehavior) ParentContext() context.Context {
 	return ctx.parentCtx
 }
 
-// AutoRecover panic时是否自动恢复
+// AutoRecover 报告框架回调是否自动恢复 panic。
 func (ctx *ContextBehavior) AutoRecover() bool {
 	return ctx.autoRecover
 }
 
-// ReportError 在开启panic时自动恢复时，将会恢复并将错误写入此error channel
+// ReportError 返回自动恢复 panic 后用于非阻塞上报错误的频道。
 func (ctx *ContextBehavior) ReportError() chan error {
 	return ctx.reportError
 }
 
-// WaitGroup 获取等待组
+// WaitGroup 返回用于协调关闭的任务屏障。
 func (ctx *ContextBehavior) WaitGroup() WaitGroup {
 	return &ctx.barrier
 }
 
-// Terminate 停止
+// Terminate 发出取消信号，并返回宿主完成清理时兑现的 Future。
 func (ctx *ContextBehavior) Terminate() async.Future {
 	ctx.terminate()
 	return ctx.terminated.Out()
 }
 
-// Terminated 已停止
+// Terminated 返回宿主完成清理时兑现的 Future。
 func (ctx *ContextBehavior) Terminated() async.Future {
 	return ctx.terminated.Out()
 }

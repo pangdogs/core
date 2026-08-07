@@ -17,10 +17,11 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Package event 提供本地同步事件基础设施。
+// Package event 提供进程内同步信号式事件基础设施。
 /*
-Package event 是框架内部与业务代码共用的轻量事件系统，适合单线程或由调用方保证
-串行访问的场景。
+Package event 是框架内部与业务代码共用的轻量 signal/slot 风格事件系统。每个 Event
+保存一组订阅者；发送方发射信号时，会在当前 goroutine 中按优先级同步调用订阅者。
+派发不经过任务队列，也不提供跨进程传输，适合单线程或由调用方保证串行访问的场景。
 
 推荐工作流是：
 
@@ -36,5 +37,8 @@ Package event 是框架内部与业务代码共用的轻量事件系统，适合
 
 可参考 ec、runtime 和 core 包中的 `*_event.go` 与 `*_eventtab.gen.go` 文件了解
 推荐用法。
+
+事件绑定、解绑和信号派发均为同步操作，类型本身不提供并发保护。订阅者按 priority
+升序调用；priority 相同时保持绑定顺序。
 */
 package event

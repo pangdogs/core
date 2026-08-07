@@ -22,9 +22,11 @@
 Package runtime 表示 Actor 风格的单运行时执行作用域。一个运行时拥有自己的任务
 队列、可选帧循环、本地实体管理器、实体树、运行事件和 runtime add-in。
 
+runtime add-in 由 runtime 包内的管理器维护，可在运行协程中安装和卸载。
+
 所有会直接读写实体或组件状态的逻辑，通常都应回到所属 runtime 中执行。可以通过
 Context.CallAsync / CallVoidAsync，或者根包中的 CallAsync / Await 辅助函数，
-把工作调度回运行时线程。
+把工作调度回运行协程。
 
 用 NewContext 创建上下文后，再交给 core.NewRuntime 绑定和运行。实体实例通常在
 runtime.RunningEvent_Started 阶段通过 core.BuildEntity 创建。

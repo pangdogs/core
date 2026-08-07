@@ -19,7 +19,7 @@
 
 package core
 
-// Deprecated: UnsafeRuntime 访问运行时内部方法
+// Deprecated: UnsafeRuntime 暴露运行时内部能力，仅供框架集成代码使用。
 func UnsafeRuntime(runtime Runtime) _UnsafeRuntime {
 	return _UnsafeRuntime{
 		Runtime: runtime,
@@ -30,12 +30,12 @@ type _UnsafeRuntime struct {
 	Runtime
 }
 
-// Options 获取运行时所有选项
+// Options 返回运行时当前使用的选项。
 func (u _UnsafeRuntime) Options() *RuntimeOptions {
 	return u.getOptions()
 }
 
-// Instance 获取实例
+// Instance 返回运行时的实际实例。
 func (u _UnsafeRuntime) Instance() Runtime {
 	return u.getInstance()
 }

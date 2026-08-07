@@ -19,10 +19,10 @@
 
 package event
 
-// IEventTab 事件表接口，方便管理多个事件
+// IEventTab 按稳定 ID 管理一组事件。
 type IEventTab interface {
-	// Ctrl 事件控制器
+	// Ctrl 返回作用于整张事件表的控制器。
 	Ctrl() IEventCtrl
-	// Event 获取事件
+	// Event 按 ID 返回事件；ID 不属于该表时返回 nil。
 	Event(id uint64) IEvent
 }

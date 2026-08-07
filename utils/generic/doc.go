@@ -27,5 +27,12 @@ Package generic 包含三类能力：
 
 这些类型是 service、runtime、event、extension 等包的实现基础，也可以被业务代码
 直接复用来表达统一的泛型回调协议。
+
+Func/Action 的 UnsafeCall 不恢复 panic，SafeCall 会恢复并返回错误，Call 则允许调用方
+选择策略；nil 函数按零值或空操作处理。Delegate 按切片顺序调用多个函数，并可通过
+interrupt 回调提前终止。
+
+除 Barrier、EventStream 和 UnboundedChannel 明确提供并发保护外，容器与辅助类型默认
+要求调用方串行访问。
 */
 package generic

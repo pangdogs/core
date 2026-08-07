@@ -23,42 +23,42 @@ package runtime
 
 import "git.golaxy.org/core/ec"
 
-// EventEntityManagerAddEntity 事件：实体管理器添加实体
+// EventEntityManagerAddEntity 在实体加入本地管理器后派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventEntityManagerAddEntity interface {
 	OnEntityManagerAddEntity(entityManager EntityManager, entity ec.Entity)
 }
 
-// EventEntityManagerRemoveEntity 事件：实体管理器删除实体
+// EventEntityManagerRemoveEntity 在实体离开本地管理器前派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventEntityManagerRemoveEntity interface {
 	OnEntityManagerRemoveEntity(entityManager EntityManager, entity ec.Entity)
 }
 
-// EventEntityManagerEntityAddComponents 事件：实体管理器中的实体添加组件
+// EventEntityManagerEntityAddComponents 在受管实体添加组件后派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventEntityManagerEntityAddComponents interface {
 	OnEntityManagerEntityAddComponents(entityManager EntityManager, entity ec.Entity, components []ec.Component)
 }
 
-// EventEntityManagerEntityRemoveComponent 事件：实体管理器中的实体删除组件
+// EventEntityManagerEntityRemoveComponent 在受管实体删除组件前派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventEntityManagerEntityRemoveComponent interface {
 	OnEntityManagerEntityRemoveComponent(entityManager EntityManager, entity ec.Entity, component ec.Component)
 }
 
-// EventEntityManagerEntityComponentEnableChanged 事件：实体管理器中实体的组件启用状态改变
+// EventEntityManagerEntityComponentEnableChanged 在受管实体的组件启用状态改变后派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventEntityManagerEntityComponentEnableChanged interface {
 	OnEntityManagerEntityComponentEnableChanged(entityManager EntityManager, entity ec.Entity, component ec.Component, enable bool)
 }
 
-// EventEntityManagerEntityFirstTouchComponent 事件：实体管理器中的实体首次访问组件
+// EventEntityManagerEntityFirstTouchComponent 在受管实体首次访问延迟唤醒组件时派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventEntityManagerEntityFirstTouchComponent interface {

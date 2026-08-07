@@ -24,24 +24,24 @@ import (
 	"strings"
 )
 
-// Zero 创建零值
+// Zero 返回 T 的零值。
 func Zero[T any]() T {
 	var zero T
 	return zero
 }
 
-// New 新建零值
+// New 返回指向新 T 零值的指针。
 func New[T any]() *T {
 	var zero T
 	return &zero
 }
 
-// Pointer 转指针
+// Pointer 返回指向 src 副本的指针。
 func Pointer[T any](src T) *T {
 	return &src
 }
 
-// Name 类型名
+// Name 返回值或 reflect.Type 的具名类型名；参数没有动态类型时 panic。
 func Name(i any) string {
 	t, ok := i.(reflect.Type)
 	if !ok {
@@ -50,17 +50,17 @@ func Name(i any) string {
 	return t.Name()
 }
 
-// NameRT 类型名
+// NameRT 返回反射类型的具名类型名；t 为 nil 时 panic。
 func NameRT(t reflect.Type) string {
 	return t.Name()
 }
 
-// NameT 类型名
+// NameT 返回 T 的具名类型名。
 func NameT[T any]() string {
 	return reflect.TypeFor[T]().Name()
 }
 
-// FullName 类型全名
+// FullName 返回值或 reflect.Type 的“包导入路径.类型名”；参数没有动态类型时 panic。
 func FullName(i any) string {
 	t, ok := i.(reflect.Type)
 	if !ok {
@@ -69,7 +69,7 @@ func FullName(i any) string {
 	return FullNameRT(t)
 }
 
-// FullNameRT 类型全名
+// FullNameRT 返回 t 的“包导入路径.类型名”；无包路径时仅返回类型名。
 func FullNameRT(t reflect.Type) string {
 	pkgPath := t.PkgPath()
 	name := t.Name()
@@ -79,12 +79,12 @@ func FullNameRT(t reflect.Type) string {
 	return t.PkgPath() + "." + t.Name()
 }
 
-// FullNameT 类型全名
+// FullNameT 返回 T 的“包导入路径.类型名”。
 func FullNameT[T any]() string {
 	return FullNameRT(reflect.TypeFor[T]())
 }
 
-// WriteFullName 写入类型全名
+// WriteFullName 将值或 reflect.Type 的完整名称写入 sb。
 func WriteFullName(sb *strings.Builder, i any) {
 	t, ok := i.(reflect.Type)
 	if !ok {
@@ -93,7 +93,7 @@ func WriteFullName(sb *strings.Builder, i any) {
 	WriteFullNameRT(sb, t)
 }
 
-// WriteFullNameRT 写入类型全名
+// WriteFullNameRT 将 t 的完整名称写入 sb。
 func WriteFullNameRT(sb *strings.Builder, t reflect.Type) {
 	pkgPath := t.PkgPath()
 	name := t.Name()
@@ -106,7 +106,7 @@ func WriteFullNameRT(sb *strings.Builder, t reflect.Type) {
 	sb.WriteString(name)
 }
 
-// WriteFullNameT 写入类型全名
+// WriteFullNameT 将 T 的完整名称写入 sb。
 func WriteFullNameT[T any](sb *strings.Builder) {
 	WriteFullNameRT(sb, reflect.TypeFor[T]())
 }

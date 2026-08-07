@@ -19,7 +19,7 @@
 
 package core
 
-// Deprecated: UnsafeService 访问服务内部方法
+// Deprecated: UnsafeService 暴露服务内部能力，仅供框架集成代码使用。
 func UnsafeService(service Service) _UnsafeService {
 	return _UnsafeService{
 		Service: service,
@@ -30,12 +30,12 @@ type _UnsafeService struct {
 	Service
 }
 
-// Options 获取服务所有选项
+// Options 返回服务当前使用的选项。
 func (u _UnsafeService) Options() *ServiceOptions {
 	return u.getOptions()
 }
 
-// Instance 获取实例
+// Instance 返回服务的实际实例。
 func (u _UnsafeService) Instance() Service {
 	return u.getInstance()
 }

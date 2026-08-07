@@ -26,5 +26,5 @@ import (
 )
 
 var (
-	ErrPt = fmt.Errorf("%w: pt", exception.ErrCore) // 原型错误
+	ErrPt = fmt.Errorf("%w: pt", exception.ErrCore) // ErrPt 是原型模块错误的共同根错误。
 )

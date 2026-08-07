@@ -32,29 +32,30 @@ import (
 	"git.golaxy.org/core/utils/uid"
 )
 
-// EntityManager 实体管理器接口
+// EntityManager 管理当前运行时拥有的实体及其加入顺序。
+// 该接口不提供并发保护，应在所属运行时 goroutine 中使用。
 type EntityManager interface {
 	corectx.CurrentContextProvider
 
-	// AddEntity 添加实体
+	// AddEntity 接管 Born 状态的实体；运行时已启动时会同步推进其生命周期。
 	AddEntity(entity ec.Entity) error
-	// RemoveEntity 删除实体
+	// RemoveEntity 按 ID 请求销毁实体；实体不存在时不执行任何操作。
 	RemoveEntity(id uid.Id)
-	// GetEntity 查询实体
+	// GetEntity 按 ID 查询本地实体。
 	GetEntity(id uid.Id) (ec.Entity, bool)
-	// RangeEntities 遍历所有实体
+	// RangeEntities 按加入顺序遍历实体，回调返回 false 时停止。
 	RangeEntities(fun generic.Func1[ec.Entity, bool])
-	// EachEntities 遍历每个实体
+	// EachEntities 按加入顺序遍历全部实体。
 	EachEntities(fun generic.Action1[ec.Entity])
-	// ReversedRangeEntities 反向遍历所有实体
+	// ReversedRangeEntities 按加入顺序逆向遍历实体，回调返回 false 时停止。
 	ReversedRangeEntities(fun generic.Func1[ec.Entity, bool])
-	// ReversedEachEntities 反向遍历每个实体
+	// ReversedEachEntities 按加入顺序逆向遍历全部实体。
 	ReversedEachEntities(fun generic.Action1[ec.Entity])
-	// FilterEntities 过滤并获取实体
+	// FilterEntities 按加入顺序返回符合条件的实体。
 	FilterEntities(fun generic.Func1[ec.Entity, bool]) []ec.Entity
-	// ListEntities 获取所有实体
+	// ListEntities 按加入顺序返回实体切片副本。
 	ListEntities() []ec.Entity
-	// CountEntities 获取实体数量
+	// CountEntities 返回当前实体数。
 	CountEntities() int
 
 	IEntityManagerEventTab
@@ -77,23 +78,23 @@ type _EntityManager struct {
 	entityTreeEventTab
 }
 
-// CurrentContext 获取当前上下文
+// CurrentContext 返回所属运行时的当前上下文接口缓存。
 func (mgr *_EntityManager) CurrentContext() iface.Cache {
 	return mgr.ctx.CurrentContext()
 }
 
-// ConcurrentContext 获取多线程安全的上下文
+// ConcurrentContext 返回所属运行时的并发上下文接口缓存。
 func (mgr *_EntityManager) ConcurrentContext() iface.Cache {
 	return mgr.ctx.ConcurrentContext()
 }
 
-// AddEntity 添加实体
+// AddEntity 接管 Born 状态的实体并同步触发其加入事件。
 func (mgr *_EntityManager) AddEntity(entity ec.Entity) error {
 	if entity == nil {
 		exception.Panicf("%w: %w: entity is nil", ErrEntityManager, exception.ErrArgs)
 	}
 
-	if entity.State() != ec.EntityState_Birth {
+	if entity.State() != ec.EntityState_Born {
 		return fmt.Errorf("%w: invalid entity %q state %q", ErrEntityManager, entity.Id(), entity.State())
 	}
 
@@ -123,9 +124,9 @@ func (mgr *_EntityManager) AddEntity(entity ec.Entity) error {
 	entitySlot := mgr.entityList.PushBack(entity)
 	mgr.entityIdIndex[entity.Id()] = entitySlot.Index()
 
-	ec.UnsafeEntity(entity).SetState(ec.EntityState_Enter)
+	ec.UnsafeEntity(entity).SetState(ec.EntityState_Entered)
 	ec.UnsafeEntity(entity).SetEnteredHandle(entitySlot.Index(), entitySlot.Version())
-	ec.UnsafeEntity(entity).SetTreeNodeState(ec.TreeNodeState_Freedom)
+	ec.UnsafeEntity(entity).SetTreeNodeState(ec.TreeNodeState_Free)
 
 	mgr.observeEntity(entity)
 
@@ -134,7 +135,7 @@ func (mgr *_EntityManager) AddEntity(entity ec.Entity) error {
 	return nil
 }
 
-// RemoveEntity 删除实体
+// RemoveEntity 按 ID 请求销毁实体；实体不存在时不执行任何操作。
 func (mgr *_EntityManager) RemoveEntity(id uid.Id) {
 	slotIdx, ok := mgr.entityIdIndex[id]
 	if !ok {
@@ -144,7 +145,7 @@ func (mgr *_EntityManager) RemoveEntity(id uid.Id) {
 	entity.Destroy()
 }
 
-// GetEntity 查询实体
+// GetEntity 按 ID 查询本地实体。
 func (mgr *_EntityManager) GetEntity(id uid.Id) (ec.Entity, bool) {
 	slotIdx, ok := mgr.entityIdIndex[id]
 	if !ok {
@@ -153,35 +154,35 @@ func (mgr *_EntityManager) GetEntity(id uid.Id) (ec.Entity, bool) {
 	return mgr.entityList.Get(slotIdx).V, true
 }
 
-// RangeEntities 遍历所有实体
+// RangeEntities 按加入顺序遍历实体，回调返回 false 时停止。
 func (mgr *_EntityManager) RangeEntities(fun generic.Func1[ec.Entity, bool]) {
 	mgr.entityList.Traversal(func(slot *generic.FreeSlot[ec.Entity]) bool {
 		return fun.UnsafeCall(slot.V)
 	})
 }
 
-// EachEntities 遍历每个实体
+// EachEntities 按加入顺序遍历全部实体。
 func (mgr *_EntityManager) EachEntities(fun generic.Action1[ec.Entity]) {
 	mgr.entityList.TraversalEach(func(slot *generic.FreeSlot[ec.Entity]) {
 		fun.UnsafeCall(slot.V)
 	})
 }
 
-// ReversedRangeEntities 反向遍历所有实体
+// ReversedRangeEntities 按加入顺序逆向遍历实体，回调返回 false 时停止。
 func (mgr *_EntityManager) ReversedRangeEntities(fun generic.Func1[ec.Entity, bool]) {
 	mgr.entityList.ReversedTraversal(func(slot *generic.FreeSlot[ec.Entity]) bool {
 		return fun.UnsafeCall(slot.V)
 	})
 }
 
-// ReversedEachEntities 反向遍历每个实体
+// ReversedEachEntities 按加入顺序逆向遍历全部实体。
 func (mgr *_EntityManager) ReversedEachEntities(fun generic.Action1[ec.Entity]) {
 	mgr.entityList.ReversedTraversalEach(func(slot *generic.FreeSlot[ec.Entity]) {
 		fun.UnsafeCall(slot.V)
 	})
 }
 
-// FilterEntities 过滤并获取实体
+// FilterEntities 按加入顺序返回符合条件的实体。
 func (mgr *_EntityManager) FilterEntities(fun generic.Func1[ec.Entity, bool]) []ec.Entity {
 	var entities []ec.Entity
 
@@ -199,12 +200,12 @@ func (mgr *_EntityManager) FilterEntities(fun generic.Func1[ec.Entity, bool]) []
 	return entities
 }
 
-// ListEntities 获取所有实体
+// ListEntities 按加入顺序返回实体切片副本。
 func (mgr *_EntityManager) ListEntities() []ec.Entity {
 	return mgr.entityList.ToSlice()
 }
 
-// CountEntities 获取实体数量
+// CountEntities 返回当前实体数。
 func (mgr *_EntityManager) CountEntities() int {
 	return mgr.entityList.Len() - mgr.entityList.OrphanCount()
 }
@@ -319,13 +320,13 @@ func (mgr *_EntityManager) onEntityDestroyIfVersion(idx int, ver int64) {
 
 	entity := entitySlot.V
 
-	ec.UnsafeEntity(entity).SetState(ec.EntityState_Leave)
+	ec.UnsafeEntity(entity).SetState(ec.EntityState_Leaving)
 
 	mgr.onEntityDestroyRemoveNode(entity.Id())
 
 	_EmitEventEntityManagerRemoveEntity(mgr, mgr, entity)
 
-	ec.UnsafeEntity(entity).SetState(ec.EntityState_Death)
+	ec.UnsafeEntity(entity).SetState(ec.EntityState_Dead)
 
 	delete(mgr.entityIdIndex, entity.Id())
 	mgr.entityList.ReleaseIfVersion(idx, ver)

@@ -44,12 +44,12 @@ type _Entity struct {
 	stringerCache              string
 }
 
-// Prototype 实体原型名称
+// Prototype 返回实体原型名。
 func (pt *_Entity) Prototype() string {
 	return pt.prototype
 }
 
-// InstanceRT 实体实例反射类型
+// InstanceRT 返回实体实例的指针类型；使用默认实体实现时返回 nil。
 func (pt *_Entity) InstanceRT() reflect.Type {
 	if pt.instanceRT == nil {
 		return nil
@@ -57,32 +57,32 @@ func (pt *_Entity) InstanceRT() reflect.Type {
 	return reflect.PointerTo(pt.instanceRT)
 }
 
-// Scope 可访问作用域
+// Scope 返回原型的默认实体作用域。
 func (pt *_Entity) Scope() ec.Scope {
 	return pt.scope
 }
 
-// ComponentAwakeOnFirstTouch 当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
+// ComponentAwakeOnFirstTouch 报告组件是否在首次访问时推进至 Awakened。
 func (pt *_Entity) ComponentAwakeOnFirstTouch() bool {
 	return pt.componentAwakeOnFirstTouch
 }
 
-// ComponentUniqueID 是否为实体组件分配唯一Id
+// ComponentUniqueID 报告是否为组件分配唯一 ID。
 func (pt *_Entity) ComponentUniqueID() bool {
 	return pt.componentUniqueID
 }
 
-// Meta 原型Meta信息
+// Meta 返回实体原型元数据。
 func (pt *_Entity) Meta() meta.Meta {
 	return pt.meta
 }
 
-// CountComponents 组件数量
+// CountComponents 返回内建组件数。
 func (pt *_Entity) CountComponents() int {
 	return len(pt.components)
 }
 
-// GetComponent 获取组件
+// GetComponent 返回指定位置的内建组件描述；索引越界时 panic。
 func (pt *_Entity) GetComponent(idx int) ec.BuiltinComponent {
 	if idx < 0 || idx >= len(pt.components) {
 		exception.Panicf("%w: %w: idx out of range", ErrPt, exception.ErrArgs)
@@ -90,12 +90,12 @@ func (pt *_Entity) GetComponent(idx int) ec.BuiltinComponent {
 	return pt.components[idx]
 }
 
-// ListComponents 获取所有组件
+// ListComponents 返回全部内建组件描述的副本。
 func (pt *_Entity) ListComponents() []ec.BuiltinComponent {
 	return slices.Clone(pt.components)
 }
 
-// Construct 创建实体
+// Construct 根据原型创建处于 Born 状态的实体，并应用额外选项。
 func (pt *_Entity) Construct(settings ...option.Setting[ec.EntityOptions]) ec.Entity {
 	options := option.New(ec.With.Default())
 	if pt.instanceRT != nil {
@@ -109,7 +109,7 @@ func (pt *_Entity) Construct(settings ...option.Setting[ec.EntityOptions]) ec.En
 	return pt.assemble(ec.UnsafeNewEntity(options))
 }
 
-// String implements fmt.Stringer
+// String 返回实体原型的 JSON 文本；编码失败时 panic。
 func (pt *_Entity) String() string {
 	pt.stringerOnce.Do(func() {
 		data, err := json.Marshal(pt)
@@ -131,7 +131,7 @@ type _EntityJSON struct {
 	Components                 []ec.BuiltinComponent `json:"components"`
 }
 
-// MarshalJSON implements json.Marshaler
+// MarshalJSON 将实体原型编码为 JSON。
 func (pt *_Entity) MarshalJSON() ([]byte, error) {
 	entityStringer := _EntityJSON{
 		Prototype:                  pt.prototype,

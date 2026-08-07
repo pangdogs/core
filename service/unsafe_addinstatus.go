@@ -17,35 +17,23 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package extension
+package service
 
-// Deprecated: UnsafeServiceAddInStatus 访问服务插件状态信息的内部方法
-func UnsafeServiceAddInStatus(status ServiceAddInStatus) _UnsafeServiceAddInStatus {
-	return _UnsafeServiceAddInStatus{
-		ServiceAddInStatus: status,
-	}
+// Deprecated: UnsafeAddInStatus 暴露服务插件状态的生命周期操作，仅供 core 使用。
+func UnsafeAddInStatus(status AddInStatus) _UnsafeAddInStatus {
+	return _UnsafeAddInStatus{AddInStatus: status}
 }
 
-type _UnsafeServiceAddInStatus struct {
-	ServiceAddInStatus
+type _UnsafeAddInStatus struct {
+	AddInStatus
 }
 
-// Started 已启动
-func (u _UnsafeServiceAddInStatus) Started() {
+// Started 将已加载插件标记为正在运行。
+func (u _UnsafeAddInStatus) Started() {
 	u.started()
 }
 
-// Stopped 已停止
-func (u _UnsafeServiceAddInStatus) Stopped() {
+// Stopped 将插件从管理器移除并标记为已卸载。
+func (u _UnsafeAddInStatus) Stopped() {
 	u.stopped()
-}
-
-// DoInstallOnce 执行安装函数一次
-func (u _UnsafeServiceAddInStatus) DoInstallOnce(fun func()) {
-	u.doInstallOnce(fun)
-}
-
-// DoUninstallOnce 执行卸载函数一次
-func (u _UnsafeServiceAddInStatus) DoUninstallOnce(fun func()) {
-	u.doUninstallOnce(fun)
 }

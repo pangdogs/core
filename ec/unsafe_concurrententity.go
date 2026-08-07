@@ -19,7 +19,9 @@
 
 package ec
 
-// Deprecated: UnsafeConcurrentEntity 访问多线程安全的实体接口内部函数
+// UnsafeConcurrentEntity 暴露 ConcurrentEntity 的框架内部能力。
+//
+// Deprecated: 仅供框架内部使用。
 func UnsafeConcurrentEntity(entity ConcurrentEntity) _UnsafeConcurrentEntity {
 	return _UnsafeConcurrentEntity{
 		ConcurrentEntity: entity,
@@ -30,7 +32,7 @@ type _UnsafeConcurrentEntity struct {
 	ConcurrentEntity
 }
 
-// Entity 获取实体
+// Entity 返回底层实体；调用者必须自行保证运行协程约束。
 func (u _UnsafeConcurrentEntity) Entity() Entity {
 	return u.getEntity()
 }

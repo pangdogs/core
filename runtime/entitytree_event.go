@@ -25,21 +25,21 @@ import (
 	"git.golaxy.org/core/utils/uid"
 )
 
-// EventEntityTreeAddNode 事件：新增实体树节点
+// EventEntityTreeAddNode 在节点成功加入实体树后派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventEntityTreeAddNode interface {
 	OnEntityTreeAddNode(entityTree EntityTree, parentId, childId uid.Id)
 }
 
-// EventEntityTreeRemoveNode 事件：删除实体树节点
+// EventEntityTreeRemoveNode 在节点的树关系移除前派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventEntityTreeRemoveNode interface {
 	OnEntityTreeRemoveNode(entityTree EntityTree, parentId, childId uid.Id)
 }
 
-// EventEntityTreeMoveNode 事件：实体树移动节点
+// EventEntityTreeMoveNode 在节点切换父节点后派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventEntityTreeMoveNode interface {

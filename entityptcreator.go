@@ -28,7 +28,7 @@ import (
 	"github.com/elliotchance/pie/v2"
 )
 
-// BuildEntityPT 创建实体原型
+// BuildEntityPT 创建绑定到 svcCtx 实体原型库的构建器。
 func BuildEntityPT(svcCtx service.Context, prototype string) *EntityPTCreator {
 	if svcCtx == nil {
 		exception.Panicf("%w: %w: svcCtx is nil", ErrCore, ErrArgs)
@@ -39,14 +39,14 @@ func BuildEntityPT(svcCtx service.Context, prototype string) *EntityPTCreator {
 	}
 }
 
-// EntityPTCreator 实体原型构建器
+// EntityPTCreator 以链式方式配置并声明实体原型。
 type EntityPTCreator struct {
 	svcCtx service.Context
 	descr  *pt.EntityDescriptor
 	comps  []any
 }
 
-// SetInstance 设置实例，用于扩展实体能力
+// SetInstance 设置该原型用于构造自定义实体的实例或反射类型。
 func (c *EntityPTCreator) SetInstance(instance any) *EntityPTCreator {
 	if c.descr == nil {
 		exception.Panicf("%w: descr is nil", ErrCore)
@@ -55,7 +55,7 @@ func (c *EntityPTCreator) SetInstance(instance any) *EntityPTCreator {
 	return c
 }
 
-// SetScope 设置实体的可访问作用域
+// SetScope 设置由该原型创建的实体可访问作用域。
 func (c *EntityPTCreator) SetScope(scope ec.Scope) *EntityPTCreator {
 	if c.descr == nil {
 		exception.Panicf("%w: descr is nil", ErrCore)
@@ -64,7 +64,7 @@ func (c *EntityPTCreator) SetScope(scope ec.Scope) *EntityPTCreator {
 	return c
 }
 
-// SetComponentAwakeOnFirstTouch 设置当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
+// SetComponentAwakeOnFirstTouch 设置组件是否延迟到首次访问时进入 Awakened 状态。
 func (c *EntityPTCreator) SetComponentAwakeOnFirstTouch(b bool) *EntityPTCreator {
 	if c.descr == nil {
 		exception.Panicf("%w: descr is nil", ErrCore)
@@ -73,7 +73,7 @@ func (c *EntityPTCreator) SetComponentAwakeOnFirstTouch(b bool) *EntityPTCreator
 	return c
 }
 
-// SetComponentUniqueID 设置是否为实体组件分配唯一Id
+// SetComponentUniqueID 设置是否为每个组件分配独立 ID。
 func (c *EntityPTCreator) SetComponentUniqueID(b bool) *EntityPTCreator {
 	if c.descr == nil {
 		exception.Panicf("%w: descr is nil", ErrCore)
@@ -82,7 +82,7 @@ func (c *EntityPTCreator) SetComponentUniqueID(b bool) *EntityPTCreator {
 	return c
 }
 
-// SetMeta 设置原型Meta信息
+// SetMeta 用 dict 替换原型元数据。
 func (c *EntityPTCreator) SetMeta(dict map[string]any) *EntityPTCreator {
 	if c.descr == nil {
 		exception.Panicf("%w: descr is nil", ErrCore)
@@ -91,7 +91,7 @@ func (c *EntityPTCreator) SetMeta(dict map[string]any) *EntityPTCreator {
 	return c
 }
 
-// MergeMeta 合并原型Meta信息，如果存在则覆盖
+// MergeMeta 合并原型元数据；同名键会被覆盖。
 func (c *EntityPTCreator) MergeMeta(dict map[string]any) *EntityPTCreator {
 	if c.descr == nil {
 		exception.Panicf("%w: descr is nil", ErrCore)
@@ -100,7 +100,7 @@ func (c *EntityPTCreator) MergeMeta(dict map[string]any) *EntityPTCreator {
 	return c
 }
 
-// MergeMetaIfAbsent 合并原型Meta信息，如果存在则跳过
+// MergeMetaIfAbsent 合并原型元数据；已有的同名键保持不变。
 func (c *EntityPTCreator) MergeMetaIfAbsent(dict map[string]any) *EntityPTCreator {
 	if c.descr == nil {
 		exception.Panicf("%w: descr is nil", ErrCore)
@@ -109,7 +109,7 @@ func (c *EntityPTCreator) MergeMetaIfAbsent(dict map[string]any) *EntityPTCreato
 	return c
 }
 
-// AssignMeta 赋值原型Meta信息
+// AssignMeta 直接采用 m 作为原型元数据。
 func (c *EntityPTCreator) AssignMeta(m meta.Meta) *EntityPTCreator {
 	if c.descr == nil {
 		exception.Panicf("%w: descr is nil", ErrCore)
@@ -118,7 +118,8 @@ func (c *EntityPTCreator) AssignMeta(m meta.Meta) *EntityPTCreator {
 	return c
 }
 
-// AddComponent 添加组件
+// AddComponent 向原型追加一个内建组件。
+// comp 可以是组件实例或 ComponentDescriptor；未指定名称时使用组件类型名。
 func (c *EntityPTCreator) AddComponent(comp any, name ...string) *EntityPTCreator {
 	switch v := comp.(type) {
 	case pt.ComponentDescriptor, *pt.ComponentDescriptor:
@@ -129,7 +130,7 @@ func (c *EntityPTCreator) AddComponent(comp any, name ...string) *EntityPTCreato
 	return c
 }
 
-// Declare 声明实体原型
+// Declare 将构建结果注册到服务的实体原型库。
 func (c *EntityPTCreator) Declare() {
 	if c.svcCtx == nil {
 		exception.Panicf("%w: svcCtx is nil", ErrCore)

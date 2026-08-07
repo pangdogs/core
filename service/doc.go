@@ -25,11 +25,12 @@ Package service 表示应用的全局作用域，也是多个 runtime 的父上�
 
   - 持有父 context、等待组与终止状态；
   - 管理实体原型库与组件原型库；
-  - 提供全局实体索引，以及按实体 Id 发起异步调用；
-  - 承载 service add-in，并派发服务运行事件。
+  - 提供全局实体索引，以及按实体 ID 发起异步调用；
+  - 管理随服务同步启停的 service add-in，并派发服务运行事件。
 
 通常先用 NewContext 创建上下文，再交给 core.NewService 绑定和运行。
-原型声明、插件安装等启动逻辑，通常放在 service.With.RunningEventCB 处理
-service.RunningEvent_Birth 或 service.RunningEvent_Started 时完成。
+service add-in 只能在启动前安装或卸载；管理器会在 RunningEvent_Starting 时冻结，
+随后按注册顺序初始化插件，并在停服时按相反顺序关闭。原型声明、插件安装等准备
+逻辑可在创建上下文后完成，也可放在 service.RunningEvent_Birth 中。
 */
 package service

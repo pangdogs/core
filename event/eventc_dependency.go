@@ -24,15 +24,15 @@ import (
 	"git.golaxy.org/core/utils/iface"
 )
 
-// Cache 引用iface.Cache
+// Cache 是 iface.Cache 的别名，供 eventc 生成代码使用。
 type Cache = iface.Cache
 
-// Cache2Iface 引用iface.Cache2Iface
+// Cache2Iface 将接口缓存恢复为目标接口，供 eventc 生成代码使用。
 func Cache2Iface[T any](c Cache) T {
 	return iface.Cache2Iface[T](c)
 }
 
-// Panicf 引用exception.Panicf
+// Panicf 按框架约定抛出格式化 panic，供 eventc 生成代码使用。
 func Panicf(format string, args ...any) {
 	exception.Panicf(format, args...)
 }

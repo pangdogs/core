@@ -17,7 +17,7 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Package ec 定义实体组件模型。
+// Package ec 定义实体—组件模型及其生命周期状态。
 /*
 Package ec 提供框架核心的数据模型：Entity、Component、实体树节点状态、组件启停
 事件、作用域与原型描述接口。
@@ -31,5 +31,8 @@ Package ec 提供框架核心的数据模型：Entity、Component、实体树节
 
 ec 包负责实体与组件本身的状态机与事件表，不负责原型库的声明与注册。原型系统
 位于 ec/pt 包，运行时调度与生命周期推进则由根包 core 和 runtime 包完成。
+
+除 ConcurrentEntity 明确暴露的能力外，实体、组件及实体树操作都应在所属 Runtime
+的运行协程中执行。
 */
 package ec

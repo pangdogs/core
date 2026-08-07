@@ -28,5 +28,8 @@ Package corectx 抽象了框架中通用的上下文能力，包括：
 
 service.Context、runtime.Context，以及 entity/component 对当前上下文的暴露方式，
 都依赖这些基础接口。
+
+Terminate 只发出取消信号；Terminated 在宿主完成清理后才兑现。WaitGroup 是关闭屏障，
+宿主开始退出后不再接受新任务，并等待已经加入的任务完成。
 */
 package corectx

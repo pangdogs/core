@@ -28,7 +28,8 @@ import (
 //go:linkname getServiceContext git.golaxy.org/core/runtime.getServiceContext
 func getServiceContext(provider corectx.ConcurrentContextProvider) Context
 
-// Current 获取服务上下文
+// Current 返回 provider 所属运行时的服务上下文。
+// provider 为 nil 时会 panic；provider 未关联运行时上下文时返回 nil。
 func Current(provider corectx.ConcurrentContextProvider) Context {
 	return getServiceContext(provider)
 }

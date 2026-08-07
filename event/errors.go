@@ -26,6 +26,6 @@ import (
 )
 
 var (
-	ErrEvent = fmt.Errorf("%w: event", exception.ErrCore) // 事件错误
-	ErrArgs  = exception.ErrArgs                          // 参数错误
+	ErrEvent = fmt.Errorf("%w: event", exception.ErrCore) // ErrEvent 是事件模块错误的共同根错误。
+	ErrArgs  = exception.ErrArgs                          // ErrArgs 是为生成代码保留的参数错误别名。
 )

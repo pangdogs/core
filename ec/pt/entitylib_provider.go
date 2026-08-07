@@ -24,13 +24,13 @@ import (
 	"git.golaxy.org/core/utils/exception"
 )
 
-// EntityPTProvider 实体原型提供者
+// EntityPTProvider 提供实体原型库。
 type EntityPTProvider interface {
-	// EntityLib 获取实体原型库
+	// EntityLib 返回实体原型库。
 	EntityLib() EntityLib
 }
 
-// For 查询实体原型
+// For 从 provider 查询指定实体原型；provider 为 nil 或原型未声明时 panic。
 func For(provider EntityPTProvider, prototype string) ec.EntityPT {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrPt, exception.ErrArgs)

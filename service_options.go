@@ -24,21 +24,21 @@ import (
 	"git.golaxy.org/core/utils/option"
 )
 
-// ServiceOptions 创建服务的所有选项
+// ServiceOptions 定义创建服务时使用的选项。
 type ServiceOptions struct {
-	InstanceFace iface.Face[Service] // 实例，用于扩展服务能力
+	InstanceFace iface.Face[Service] // 自定义服务实例及其接口缓存。
 }
 
 type _ServiceOption struct{}
 
-// Default 默认值
+// Default 返回服务选项的默认设置。
 func (_ServiceOption) Default() option.Setting[ServiceOptions] {
 	return func(options *ServiceOptions) {
 		With.Service.InstanceFace(iface.Face[Service]{}).Apply(options)
 	}
 }
 
-// InstanceFace 实例，用于扩展服务能力
+// InstanceFace 设置用于扩展服务能力的自定义实例。
 func (_ServiceOption) InstanceFace(face iface.Face[Service]) option.Setting[ServiceOptions] {
 	return func(options *ServiceOptions) {
 		options.InstanceFace = face

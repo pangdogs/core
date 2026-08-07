@@ -29,34 +29,20 @@ import (
 	"git.golaxy.org/core/utils/uid"
 )
 
-// Caller 异步调用发起者
+// Caller 通过全局实体 ID 将调用调度到实体所属的运行时。
+// 调用不会阻塞发起方；回调在目标运行时 goroutine 中执行。目标 Runtime 启用
+// AutoRecover 时，panic 会写入 Result.Error；否则会继续向其工作循环传播。
 type Caller interface {
-	// CallAsync 查找实体并异步调用函数，有返回值。不会阻塞当前线程，会返回Future。
-	//
-	//	注意：
-	//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-	//	- 调用过程中的panic信息，均会转换为error返回。
+	// CallAsync 查找实体并异步执行有返回值的函数。
 	CallAsync(entityId uid.Id, fun generic.FuncVar1[ec.Entity, any, async.Result], args ...any) async.Future
 
-	// CallDelegateAsync 查找实体并异步调用委托，有返回值。不会阻塞当前线程，会返回Future。
-	//
-	//	注意：
-	//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-	//	- 调用过程中的panic信息，均会转换为error返回。
+	// CallDelegateAsync 查找实体并异步执行有返回值的委托。
 	CallDelegateAsync(entityId uid.Id, fun generic.DelegateVar1[ec.Entity, any, async.Result], args ...any) async.Future
 
-	// CallVoidAsync 查找实体并异步调用函数，无返回值。在运行时中。不会阻塞当前线程，会返回Future。
-	//
-	//	注意：
-	//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-	//	- 调用过程中的panic信息，均会转换为error返回。
+	// CallVoidAsync 查找实体并异步执行无返回值的函数。
 	CallVoidAsync(entityId uid.Id, fun generic.ActionVar1[ec.Entity, any], args ...any) async.Future
 
-	// CallDelegateVoidAsync 查找实体并异步调用委托，无返回值。在运行时中。不会阻塞当前线程，会返回Future。
-	//
-	//	注意：
-	//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-	//	- 调用过程中的panic信息，均会转换为error返回。
+	// CallDelegateVoidAsync 查找实体并异步执行无返回值的委托。
 	CallDelegateVoidAsync(entityId uid.Id, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) async.Future
 }
 
@@ -72,11 +58,8 @@ func callVoidAsync(entity ec.ConcurrentEntity, fun generic.ActionVar1[ec.Entity,
 //go:linkname callDelegateVoidAsync git.golaxy.org/core/runtime.callDelegateVoidAsync
 func callDelegateVoidAsync(entity ec.ConcurrentEntity, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) async.Future
 
-// CallAsync 查找实体并异步调用函数，有返回值。不会阻塞当前线程，会返回Future。
-//
-//	注意：
-//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-//	- 调用过程中的panic信息，均会转换为error返回。
+// CallAsync 查找实体并在其所属运行时异步执行有返回值的函数。
+// 实体不存在或调用失败时，错误通过 Future 的 Result.Error 返回。
 func (ctx *ContextBehavior) CallAsync(entityId uid.Id, fun generic.FuncVar1[ec.Entity, any, async.Result], args ...any) async.Future {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
@@ -85,11 +68,8 @@ func (ctx *ContextBehavior) CallAsync(entityId uid.Id, fun generic.FuncVar1[ec.E
 	return callAsync(entity, fun, args...)
 }
 
-// CallDelegateAsync 查找实体并异步调用委托，有返回值。不会阻塞当前线程，会返回Future。
-//
-//	注意：
-//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-//	- 调用过程中的panic信息，均会转换为error返回。
+// CallDelegateAsync 查找实体并在其所属运行时异步执行有返回值的委托。
+// 实体不存在或调用失败时，错误通过 Future 的 Result.Error 返回。
 func (ctx *ContextBehavior) CallDelegateAsync(entityId uid.Id, fun generic.DelegateVar1[ec.Entity, any, async.Result], args ...any) async.Future {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
@@ -98,11 +78,8 @@ func (ctx *ContextBehavior) CallDelegateAsync(entityId uid.Id, fun generic.Deleg
 	return callDelegateAsync(entity, fun, args...)
 }
 
-// CallVoidAsync 查找实体并异步调用函数，无返回值。在运行时中。不会阻塞当前线程，会返回Future。
-//
-//	注意：
-//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-//	- 调用过程中的panic信息，均会转换为error返回。
+// CallVoidAsync 查找实体并在其所属运行时异步执行无返回值的函数。
+// 实体不存在或调用失败时，错误通过 Future 的 Result.Error 返回。
 func (ctx *ContextBehavior) CallVoidAsync(entityId uid.Id, fun generic.ActionVar1[ec.Entity, any], args ...any) async.Future {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {
@@ -111,11 +88,8 @@ func (ctx *ContextBehavior) CallVoidAsync(entityId uid.Id, fun generic.ActionVar
 	return callVoidAsync(entity, fun, args...)
 }
 
-// CallDelegateVoidAsync 查找实体并异步调用委托，无返回值。在运行时中。不会阻塞当前线程，会返回Future。
-//
-//	注意：
-//	- 代码片段中的线程安全问题，如临界区访问、线程死锁等。
-//	- 调用过程中的panic信息，均会转换为error返回。
+// CallDelegateVoidAsync 查找实体并在其所属运行时异步执行无返回值的委托。
+// 实体不存在或调用失败时，错误通过 Future 的 Result.Error 返回。
 func (ctx *ContextBehavior) CallDelegateVoidAsync(entityId uid.Id, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) async.Future {
 	entity, err := ctx.getEntity(entityId)
 	if err != nil {

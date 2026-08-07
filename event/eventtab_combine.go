@@ -19,43 +19,45 @@
 
 package event
 
-// CombineEventTab 联合事件表，可以将多个事件表联合在一起，方便管理多个事件表
+// CombineEventTab 将多张事件表组合成一个 IEventTab 与 IEventCtrl。
+//
+// 查询按切片顺序进行，控制操作会依次作用于每张表。零值可用，但元素不能为 nil。
 type CombineEventTab []IEventTab
 
-// SetPanicHandling 设置panic时的处理方式
+// SetPanicHandling 为全部事件表设置订阅者 panic 的恢复与上报方式。
 func (c *CombineEventTab) SetPanicHandling(autoRecover bool, reportError chan error) {
 	for _, tab := range *c {
 		tab.Ctrl().SetPanicHandling(autoRecover, reportError)
 	}
 }
 
-// SetRecursion 设置发生事件递归时的处理方式
+// SetRecursion 为全部事件表设置默认递归派发策略。
 func (c *CombineEventTab) SetRecursion(recursion EventRecursion) {
 	for _, tab := range *c {
 		tab.Ctrl().SetRecursion(recursion)
 	}
 }
 
-// SetEnabled 设置事件是否启用
+// SetEnabled 设置全部事件表是否启用；禁用会解绑全部订阅者。
 func (c *CombineEventTab) SetEnabled(b bool) {
 	for _, tab := range *c {
 		tab.Ctrl().SetEnabled(b)
 	}
 }
 
-// UnbindAll 解绑定所有订阅者
+// UnbindAll 解绑全部事件表的所有订阅者。
 func (c *CombineEventTab) UnbindAll() {
 	for _, tab := range *c {
 		tab.Ctrl().UnbindAll()
 	}
 }
 
-// Ctrl 事件控制器
+// Ctrl 返回组合表自身作为控制器。
 func (c *CombineEventTab) Ctrl() IEventCtrl {
 	return c
 }
 
-// Event 获取事件
+// Event 按顺序查询首个匹配 ID 的事件；不存在时返回 nil。
 func (c *CombineEventTab) Event(id uint64) IEvent {
 	for _, tab := range *c {
 		event := tab.Event(id)

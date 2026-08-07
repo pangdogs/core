@@ -35,10 +35,11 @@ import (
 )
 
 var (
-	ErrNoFutureSucceeded = fmt.Errorf("%w: no future succeeded", ErrCore)
+	ErrNoFutureSucceeded = fmt.Errorf("%w: no future succeeded", ErrCore) // 所有候选 Future 均失败。
 )
 
-// Await 异步等待结果返回
+// Await 创建与 provider 当前运行时关联的异步等待分发器。
+// nil Future 会被忽略，后续回调均通过该运行时的任务队列执行。
 func Await(provider corectx.CurrentContextProvider, futures ...async.Future) AwaitDirector {
 	return AwaitDirector{
 		rtCtx:   runtime.Current(provider),
@@ -46,7 +47,7 @@ func Await(provider corectx.CurrentContextProvider, futures ...async.Future) Awa
 	}
 }
 
-// AwaitDirector 异步等待分发器
+// AwaitDirector 组合一个或多个 Future，并把后续回调调度回所属运行时。
 type AwaitDirector struct {
 	rtCtx   runtime.Context
 	futures []async.Future
@@ -67,7 +68,8 @@ func joinAwaitErrors(errs []error) error {
 	return fmt.Errorf("%w: %w", ErrNoFutureSucceeded, errors.Join(errs...))
 }
 
-// Any 异步等待任意一个结果返回，有返回值
+// Any 等待首个 Future 返回结果，再在所属运行时执行 fun。
+// 结果是否包含错误不影响选择。
 func (ad AwaitDirector) Any(fun generic.FuncVar2[runtime.Context, async.Result, any, async.Result], args ...any) async.Future {
 	if ad.rtCtx == nil {
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
@@ -134,7 +136,7 @@ func (ad AwaitDirector) Any(fun generic.FuncVar2[runtime.Context, async.Result, 
 	return resultFuture.Out()
 }
 
-// AnyVoid 异步等待任意一个结果返回，无返回值
+// AnyVoid 等待首个 Future 返回结果，再在所属运行时执行无返回值的 fun。
 func (ad AwaitDirector) AnyVoid(fun generic.ActionVar2[runtime.Context, async.Result, any], args ...any) async.Future {
 	if ad.rtCtx == nil {
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
@@ -201,7 +203,8 @@ func (ad AwaitDirector) AnyVoid(fun generic.ActionVar2[runtime.Context, async.Re
 	return resultFuture.Out()
 }
 
-// OK 异步等待任意一个结果成功返回，有返回值
+// OK 等待首个成功结果，再在所属运行时执行 fun。
+// 所有 Future 均失败时返回包装 ErrNoFutureSucceeded 的错误。
 func (ad AwaitDirector) OK(fun generic.FuncVar2[runtime.Context, async.Result, any, async.Result], args ...any) async.Future {
 	if ad.rtCtx == nil {
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
@@ -278,7 +281,8 @@ func (ad AwaitDirector) OK(fun generic.FuncVar2[runtime.Context, async.Result, a
 	return resultFuture.Out()
 }
 
-// OKVoid 异步等待任意一个结果成功返回，无返回值
+// OKVoid 等待首个成功结果，再在所属运行时执行无返回值的 fun。
+// 所有 Future 均失败时返回包装 ErrNoFutureSucceeded 的错误。
 func (ad AwaitDirector) OKVoid(fun generic.ActionVar2[runtime.Context, async.Result, any], args ...any) async.Future {
 	if ad.rtCtx == nil {
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
@@ -355,7 +359,7 @@ func (ad AwaitDirector) OKVoid(fun generic.ActionVar2[runtime.Context, async.Res
 	return resultFuture.Out()
 }
 
-// All 异步等待所有结果返回，有返回值
+// All 按传入顺序收集所有 Future 的结果，再在所属运行时执行 fun。
 func (ad AwaitDirector) All(fun generic.FuncVar2[runtime.Context, []async.Result, any, async.Result], args ...any) async.Future {
 	if ad.rtCtx == nil {
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
@@ -404,7 +408,7 @@ func (ad AwaitDirector) All(fun generic.FuncVar2[runtime.Context, []async.Result
 	return resultFuture.Out()
 }
 
-// AllVoid 异步等待所有结果返回，无返回值
+// AllVoid 按传入顺序收集所有 Future 的结果，再在所属运行时执行无返回值的 fun。
 func (ad AwaitDirector) AllVoid(fun generic.ActionVar2[runtime.Context, []async.Result, any], args ...any) async.Future {
 	if ad.rtCtx == nil {
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
@@ -453,7 +457,7 @@ func (ad AwaitDirector) AllVoid(fun generic.ActionVar2[runtime.Context, []async.
 	return resultFuture.Out()
 }
 
-// Transform 异步等待产出（yield）返回，并变换结果
+// Transform 合并所有 Future 的连续产出，在所属运行时逐项执行 fun，并产出转换结果。
 func (ad AwaitDirector) Transform(fun generic.FuncVar2[runtime.Context, async.Result, any, async.Result], args ...any) async.Future {
 	if ad.rtCtx == nil {
 		exception.Panicf("%w: rtCtx is nil", ErrCore)
@@ -510,7 +514,7 @@ func (ad AwaitDirector) Transform(fun generic.FuncVar2[runtime.Context, async.Re
 	return resultFuture.Out()
 }
 
-// Foreach 异步等待产出（yield）返回
+// Foreach 合并所有 Future 的连续产出，并在所属运行时逐项执行 fun。
 func (ad AwaitDirector) Foreach(fun generic.ActionVar2[runtime.Context, async.Result, any], args ...any) async.Future {
 	if ad.rtCtx == nil {
 		exception.Panicf("%w: rtCtx is nil", ErrCore)

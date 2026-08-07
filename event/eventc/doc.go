@@ -17,15 +17,15 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Command eventc 是 Golaxy 的事件代码生成工具。
+// Command eventc 是 Golaxy 的信号式事件代码生成工具。
 /*
-Command eventc 基于 go:generate 工作，用于从事件声明源文件中自动生成事件相关的辅助代码。
+Command eventc 基于 go:generate 工作，用于从信号式事件声明源文件中自动生成相关辅助代码。
 它面向两类生成目标：
 
 1. 事件辅助代码
 
-   由 `event` 子命令生成，主要包含事件绑定函数、事件触发函数，以及将普通函数适配为
-   事件处理器接口的辅助类型。
+   由 `event` 子命令生成，主要包含订阅者绑定函数、同步信号发射函数，以及将普通函数
+   适配为事件处理器接口的辅助类型。
 
 2. 事件表代码
 
@@ -57,8 +57,8 @@ event 子命令生成内容
 `event` 子命令会为每个符合条件的事件生成辅助代码，通常包括：
 
 - `BindXxx`：绑定订阅者。
-- `_EmitXxx` 或 `EmitXxx`：触发事件。
-- `_EmitXxxWithInterrupt` 或 `EmitXxxWithInterrupt`：支持中断判断的触发函数。
+- `_EmitXxx` 或 `EmitXxx`：同步发射信号。
+- `_EmitXxxWithInterrupt` 或 `EmitXxxWithInterrupt`：支持中断判断的信号发射函数。
 - `HandleXxx` 与 `XxxHandler`：将普通函数适配为事件接口实现。
 
 其中 `Emit` 函数是否导出、是否生成 auto 风格的辅助函数，可以通过注释指令或命令行

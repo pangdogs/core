@@ -8,23 +8,23 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[ComponentState_Birth-0]
-	_ = x[ComponentState_Attach-1]
-	_ = x[ComponentState_Awake-2]
-	_ = x[ComponentState_Enable-3]
+	_ = x[ComponentState_Born-0]
+	_ = x[ComponentState_Attached-1]
+	_ = x[ComponentState_Awakened-2]
+	_ = x[ComponentState_Enabling-3]
 	_ = x[ComponentState_Idle-4]
-	_ = x[ComponentState_Start-5]
+	_ = x[ComponentState_Starting-5]
 	_ = x[ComponentState_Alive-6]
-	_ = x[ComponentState_Detach-7]
-	_ = x[ComponentState_Shut-8]
-	_ = x[ComponentState_Disable-9]
-	_ = x[ComponentState_Death-10]
+	_ = x[ComponentState_Detaching-7]
+	_ = x[ComponentState_Shutting-8]
+	_ = x[ComponentState_Disabling-9]
+	_ = x[ComponentState_Dead-10]
 	_ = x[ComponentState_Destroyed-11]
 }
 
-const _ComponentState_name = "ComponentState_BirthComponentState_AttachComponentState_AwakeComponentState_EnableComponentState_IdleComponentState_StartComponentState_AliveComponentState_DetachComponentState_ShutComponentState_DisableComponentState_DeathComponentState_Destroyed"
+const _ComponentState_name = "ComponentState_BornComponentState_AttachedComponentState_AwakenedComponentState_EnablingComponentState_IdleComponentState_StartingComponentState_AliveComponentState_DetachingComponentState_ShuttingComponentState_DisablingComponentState_DeadComponentState_Destroyed"
 
-var _ComponentState_index = [...]uint8{0, 20, 41, 61, 82, 101, 121, 141, 162, 181, 203, 223, 247}
+var _ComponentState_index = [...]uint16{0, 19, 42, 65, 88, 107, 130, 150, 174, 197, 221, 240, 264}
 
 func (i ComponentState) String() string {
 	idx := int(i) - 0

@@ -27,7 +27,9 @@ import (
 	"git.golaxy.org/core/utils/uid"
 )
 
-// Deprecated: UnsafeComponent 访问组件内部函数
+// UnsafeComponent 暴露组件状态机与运行时句柄等框架内部能力。
+//
+// Deprecated: 仅供框架内部使用。
 func UnsafeComponent(comp Component) _UnsafeComponent {
 	return _UnsafeComponent{
 		Component: comp,
@@ -38,57 +40,57 @@ type _UnsafeComponent struct {
 	Component
 }
 
-// Instance 获取实例
+// Instance 返回实际组件实例。
 func (u _UnsafeComponent) Instance() Component {
 	return u.getInstance()
 }
 
-// SetId 设置Id
+// SetId 设置组件 ID。
 func (u _UnsafeComponent) SetId(id uid.Id) {
 	u.setId(id)
 }
 
-// SetState 设置状态
+// SetState 推进组件生命周期状态。
 func (u _UnsafeComponent) SetState(state ComponentState) {
 	u.setState(state)
 }
 
-// SetReflected 设置反射值
+// SetReflected 缓存实际组件实例的反射值。
 func (u _UnsafeComponent) SetReflected(v reflect.Value) {
 	u.setReflected(v)
 }
 
-// SetBuiltin 设置实体原型中的组件信息
+// SetBuiltin 绑定组件在实体原型中的内建描述。
 func (u _UnsafeComponent) SetBuiltin(builtin *BuiltinComponent) {
 	u.setBuiltin(builtin)
 }
 
-// SetRemovable 设置是否可以删除
+// SetRemovable 设置组件是否允许动态删除。
 func (u _UnsafeComponent) SetRemovable(b bool) {
 	u.setRemovable(b)
 }
 
-// ProcessedStateBits 获取已处理状态标志位
+// ProcessedStateBits 返回生命周期阶段的已处理标志位。
 func (u _UnsafeComponent) ProcessedStateBits() *generic.Bits16 {
 	return u.getProcessedStateBits()
 }
 
-// AttachedHandle 获取加入实体时的句柄
+// AttachedHandle 返回组件在实体组件表中的位置与版本。
 func (u _UnsafeComponent) AttachedHandle() (int, int64) {
 	return u.getAttachedHandle()
 }
 
-// ManagedRuntimeUpdateHandle 托管运行时更新句柄
+// ManagedRuntimeUpdateHandle 替换并托管 Runtime 更新事件句柄。
 func (u _UnsafeComponent) ManagedRuntimeUpdateHandle(updateHandle event.Handle) {
 	u.managedRuntimeUpdateHandle(updateHandle)
 }
 
-// ManagedRuntimeLateUpdateHandle 托管运行时延迟更新句柄
+// ManagedRuntimeLateUpdateHandle 替换并托管 Runtime 后置更新事件句柄。
 func (u _UnsafeComponent) ManagedRuntimeLateUpdateHandle(lateUpdateHandle event.Handle) {
 	u.managedRuntimeLateUpdateHandle(lateUpdateHandle)
 }
 
-// ManagedUnbindRuntimeHandles 解绑定托管的运行时句柄
+// ManagedUnbindRuntimeHandles 解绑全部托管的 Runtime 更新事件句柄。
 func (u _UnsafeComponent) ManagedUnbindRuntimeHandles() {
 	u.managedUnbindRuntimeHandles()
 }

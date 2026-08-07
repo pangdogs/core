@@ -45,13 +45,13 @@ func genEvent() {
 	fast := viper.Get("file_ast").(*ast.File)
 	fset := viper.Get("file_set").(*token.FileSet)
 
-	// 解析事件定义
+	// 解析事件声明。
 	eventDeclTab := EventDeclTab{}
 	eventDeclTab.Parse()
 
 	code := &bytes.Buffer{}
 
-	// 生成注释
+	// 写入生成文件头。
 	{
 		program := strings.TrimSuffix(filepath.Base(os.Args[0]), filepath.Ext(os.Args[0]))
 		args := strings.Join(os.Args[1:], " ")
@@ -67,7 +67,7 @@ package %s
 `, copyright, program, args, eventDeclTab.Package)
 	}
 
-	// 生成import
+	// 写入 import 声明，并复用事件声明文件中的依赖。
 	{
 		importCode := &bytes.Buffer{}
 
@@ -99,18 +99,18 @@ package %s
 		fmt.Fprint(code, importCode.String())
 	}
 
-	// event包前缀
+	// 计算 event 包引用前缀；点导入时不需要前缀。
 	eventPrefix := ""
 	if packageEventAlias != "." {
 		eventPrefix = packageEventAlias + "."
 	}
 
-	// 生成事件发送代码
+	// 为每个事件生成绑定、派发与处理器适配代码。
 	for _, eventDecl := range eventDeclTab.Events {
-		// 解析atti
+		// 解析事件级生成属性。
 		atti := parseGenAtti(eventDecl.Comment, "+event-gen:")
 
-		// 是否导出事件发送代码
+		// 决定派发辅助函数是否导出。
 		exportEmitStr := "_Emit"
 		if defExportEmit {
 			exportEmitStr = "Emit"
@@ -126,7 +126,7 @@ package %s
 			}
 		}
 
-		// 是否生成事件auto代码
+		// 决定是否生成从宿主对象自动取得事件的辅助代码。
 		auto := defAuto
 
 		if atti.Has("auto") {
@@ -135,14 +135,14 @@ package %s
 			}
 		}
 
-		// 事件可见性
+		// 未导出的事件生成未导出的处理器辅助类型。
 		var visibility string
 
 		if !unicode.IsUpper(rune(eventDecl.Name[0])) {
 			visibility = "_"
 		}
 
-		// 生成代码
+		// 写入当前事件的代码。
 		if auto {
 			if eventDecl.FuncHasRet {
 				fmt.Fprintf(code, `
@@ -306,7 +306,7 @@ func (h %[5]s%[1]sHandler) %[2]s(%[3]s) {
 		log.Printf("Event: %s", eventDecl.Name)
 	}
 
-	// 输出文件
+	// 将结果写入声明文件同目录下的生成文件。
 	outFile := filepath.Base(strings.TrimSuffix(declFile, ".go"))
 	if !strings.HasSuffix(outFile, "_event") {
 		outFile = outFile + "_event"

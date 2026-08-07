@@ -29,58 +29,59 @@ import (
 )
 
 var (
-	// ForestNodeId 实体树森林节点ID
+	// ForestNodeId 是所有根实体共用的虚拟父节点 ID；它是保留哨兵，不应修改。
 	ForestNodeId = uid.From("d5rh7sbr1n96c63fs3vg")
-	// forestNodeIdx 实体树森林节点索引
+	// forestNodeIdx 是虚拟森林节点在内部索引中的保留值。
 	forestNodeIdx = -1
 )
 
-// EntityTree 实体树接口
+// EntityTree 管理当前运行时实体之间的父子关系。
+// 树操作不提供并发保护，应在所属运行时 goroutine 中执行。
 type EntityTree interface {
 	corectx.CurrentContextProvider
 
-	// MakeRoot 创建根节点
+	// MakeRoot 将自由实体作为根节点加入实体树。
 	MakeRoot(entityId uid.Id) error
-	// AddChild 新增子节点
+	// AddChild 将自由实体 childId 挂到 parentId 下。
 	AddChild(parentId, childId uid.Id) error
-	// RemoveNode 删除子节点，会后序遍历递归删除所有子节点
+	// RemoveNode 按后序递归移除整个子树的树关系；实体本身不会被销毁。
 	RemoveNode(childId uid.Id) error
-	// DetachNode 脱离父节点，成为根节点
+	// DetachNode 将节点从当前父实体移到虚拟森林节点下，使其成为根节点。
 	DetachNode(childId uid.Id) error
-	// MoveNode 修改父节点
+	// MoveNode 将节点移动到新的父节点下。
 	MoveNode(childId, parentId uid.Id) error
-	// IsFreedom 是否是自由节点
-	IsFreedom(entityId uid.Id) (bool, error)
-	// IsRoot 是否是根节点
+	// IsFree 报告实体是否尚未加入实体树。
+	IsFree(entityId uid.Id) (bool, error)
+	// IsRoot 报告实体是否直接挂在虚拟森林节点下。
 	IsRoot(entityId uid.Id) (bool, error)
-	// IsLeaf 是否是叶子节点
+	// IsLeaf 报告实体是否没有子节点。
 	IsLeaf(entityId uid.Id) (bool, error)
-	// GetParent 获取父实体
+	// GetParent 返回父实体；根节点没有实体父节点，因此返回错误。
 	GetParent(childId uid.Id) (ec.Entity, error)
-	// RangeChildren 遍历所有子节点
+	// RangeChildren 按加入顺序遍历直接子节点，回调返回 false 时停止。
 	RangeChildren(parentId uid.Id, fun generic.Func1[ec.Entity, bool]) error
-	// EachChildren 遍历每个子节点
+	// EachChildren 按加入顺序遍历全部直接子节点。
 	EachChildren(parentId uid.Id, fun generic.Action1[ec.Entity]) error
-	// ReversedRangeChildren 反向遍历所有子节点
+	// ReversedRangeChildren 按加入顺序逆向遍历直接子节点，回调返回 false 时停止。
 	ReversedRangeChildren(parentId uid.Id, fun generic.Func1[ec.Entity, bool]) error
-	// ReversedEachChildren 反向遍历每个子节点
+	// ReversedEachChildren 按加入顺序逆向遍历全部直接子节点。
 	ReversedEachChildren(parentId uid.Id, fun generic.Action1[ec.Entity]) error
-	// FilterChildren 过滤并获取子节点
+	// FilterChildren 按加入顺序返回符合条件的直接子节点。
 	FilterChildren(parentId uid.Id, fun generic.Func1[ec.Entity, bool]) ([]ec.Entity, error)
-	// ListChildren 获取所有子节点
+	// ListChildren 按加入顺序返回直接子节点切片。
 	ListChildren(parentId uid.Id) ([]ec.Entity, error)
-	// CountChildren 获取子节点数量
+	// CountChildren 返回直接子节点数。
 	CountChildren(parentId uid.Id) (int, error)
 
 	IEntityTreeEventTab
 }
 
-// MakeRoot 创建根节点
+// MakeRoot 将自由实体作为根节点加入实体树。
 func (mgr *_EntityManager) MakeRoot(entityId uid.Id) error {
 	return mgr.AddChild(ForestNodeId, entityId)
 }
 
-// AddChild 新增子节点
+// AddChild 将自由实体 childId 挂到 parentId 下。
 func (mgr *_EntityManager) AddChild(parentId, childId uid.Id) error {
 	parentSlotIdx, parentTreeNode := mgr.getTreeNode(parentId)
 	if parentSlotIdx < 0 {
@@ -94,7 +95,7 @@ func (mgr *_EntityManager) AddChild(parentId, childId uid.Id) error {
 
 		parentEntity := mgr.entityList.Get(parentSlotIdx).V
 
-		if parentEntity.State() < ec.EntityState_Awake || parentEntity.State() > ec.EntityState_Alive {
+		if parentEntity.State() < ec.EntityState_Awakened || parentEntity.State() > ec.EntityState_Alive {
 			return fmt.Errorf("%w: parent entity %q is in an unexpected state %q", ErrEntityTree, parentId, parentEntity.State())
 		}
 	}
@@ -109,11 +110,11 @@ func (mgr *_EntityManager) AddChild(parentId, childId uid.Id) error {
 
 	childEntity := mgr.entityList.Get(childSlotIdx).V
 
-	if childEntity.State() < ec.EntityState_Awake || childEntity.State() > ec.EntityState_Alive {
+	if childEntity.State() < ec.EntityState_Awakened || childEntity.State() > ec.EntityState_Alive {
 		return fmt.Errorf("%w: child entity %q is in an unexpected state %q", ErrEntityTree, childId, childEntity.State())
 	}
 
-	if childEntity.TreeNodeState() != ec.TreeNodeState_Freedom {
+	if childEntity.TreeNodeState() != ec.TreeNodeState_Free {
 		return fmt.Errorf("%w: child entity %q is in an unexpected tree node state %q", ErrEntityTree, childId, childEntity.TreeNodeState())
 	}
 
@@ -159,7 +160,7 @@ func (mgr *_EntityManager) AddChild(parentId, childId uid.Id) error {
 	return nil
 }
 
-// RemoveNode 删除子节点，会后序遍历递归删除所有子节点
+// RemoveNode 按后序递归移除整个子树的树关系；实体本身不会被销毁。
 func (mgr *_EntityManager) RemoveNode(childId uid.Id) error {
 	childSlotIdx, childTreeNode := mgr.getTreeNode(childId)
 	if childSlotIdx < 0 {
@@ -171,7 +172,7 @@ func (mgr *_EntityManager) RemoveNode(childId uid.Id) error {
 
 	childEntity := mgr.entityList.Get(childSlotIdx).V
 
-	if childEntity.State() < ec.EntityState_Awake || childEntity.State() > ec.EntityState_Alive {
+	if childEntity.State() < ec.EntityState_Awakened || childEntity.State() > ec.EntityState_Alive {
 		return fmt.Errorf("%w: child entity %q is in an unexpected state %q", ErrEntityTree, childId, childEntity.State())
 	}
 
@@ -226,17 +227,17 @@ func (mgr *_EntityManager) RemoveNode(childId uid.Id) error {
 	delete(mgr.entityTreeNodes, childSlotIdx)
 	parentTreeNode.children.ReleaseIfVersion(childTreeNode.attachedIndex, childTreeNode.attachedVersion)
 
-	ec.UnsafeEntity(childEntity).SetTreeNodeState(ec.TreeNodeState_Freedom)
+	ec.UnsafeEntity(childEntity).SetTreeNodeState(ec.TreeNodeState_Free)
 
 	return nil
 }
 
-// DetachNode 脱离父节点，成为根节点
+// DetachNode 将节点从当前父实体移到虚拟森林节点下，使其成为根节点。
 func (mgr *_EntityManager) DetachNode(childId uid.Id) error {
 	return mgr.MoveNode(childId, ForestNodeId)
 }
 
-// MoveNode 修改父节点
+// MoveNode 将节点移动到新的父节点下。
 func (mgr *_EntityManager) MoveNode(childId, parentId uid.Id) error {
 	toParentSlotIdx, toParentTreeNode := mgr.getTreeNode(parentId)
 	if toParentSlotIdx < 0 {
@@ -250,7 +251,7 @@ func (mgr *_EntityManager) MoveNode(childId, parentId uid.Id) error {
 
 		toParentEntity := mgr.entityList.Get(toParentSlotIdx).V
 
-		if toParentEntity.State() < ec.EntityState_Awake || toParentEntity.State() > ec.EntityState_Alive {
+		if toParentEntity.State() < ec.EntityState_Awakened || toParentEntity.State() > ec.EntityState_Alive {
 			return fmt.Errorf("%w: parent entity %q is in an unexpected state %q", ErrEntityTree, parentId, toParentEntity.State())
 		}
 	}
@@ -265,7 +266,7 @@ func (mgr *_EntityManager) MoveNode(childId, parentId uid.Id) error {
 
 	childEntity := mgr.entityList.Get(childSlotIdx).V
 
-	if childEntity.State() < ec.EntityState_Awake || childEntity.State() > ec.EntityState_Alive {
+	if childEntity.State() < ec.EntityState_Awakened || childEntity.State() > ec.EntityState_Alive {
 		return fmt.Errorf("%w: child entity %q is in an unexpected state %q", ErrEntityTree, childId, childEntity.State())
 	}
 
@@ -345,8 +346,8 @@ func (mgr *_EntityManager) MoveNode(childId, parentId uid.Id) error {
 	return nil
 }
 
-// IsFreedom 是否是自由节点
-func (mgr *_EntityManager) IsFreedom(entityId uid.Id) (bool, error) {
+// IsFree 报告实体是否尚未加入实体树。
+func (mgr *_EntityManager) IsFree(entityId uid.Id) (bool, error) {
 	slotIdx, treeNode := mgr.getTreeNode(entityId)
 	if slotIdx < 0 {
 		return false, fmt.Errorf("%w: entity %q not exists", ErrEntityTree, entityId)
@@ -354,7 +355,7 @@ func (mgr *_EntityManager) IsFreedom(entityId uid.Id) (bool, error) {
 	return treeNode == nil, nil
 }
 
-// IsRoot 是否是根节点
+// IsRoot 报告实体是否直接挂在虚拟森林节点下。
 func (mgr *_EntityManager) IsRoot(entityId uid.Id) (bool, error) {
 	slotIdx, treeNode := mgr.getTreeNode(entityId)
 	if slotIdx < 0 {
@@ -366,7 +367,7 @@ func (mgr *_EntityManager) IsRoot(entityId uid.Id) (bool, error) {
 	return treeNode.parent == forestNodeIdx, nil
 }
 
-// IsLeaf 是否是叶子节点
+// IsLeaf 报告实体是否没有子节点。
 func (mgr *_EntityManager) IsLeaf(entityId uid.Id) (bool, error) {
 	slotIdx, treeNode := mgr.getTreeNode(entityId)
 	if slotIdx < 0 {
@@ -378,7 +379,7 @@ func (mgr *_EntityManager) IsLeaf(entityId uid.Id) (bool, error) {
 	return treeNode.children.Len()-treeNode.children.OrphanCount() <= 0, nil
 }
 
-// GetParent 获取父实体
+// GetParent 返回父实体；根节点没有实体父节点，因此返回错误。
 func (mgr *_EntityManager) GetParent(childId uid.Id) (ec.Entity, error) {
 	slotIdx, treeNode := mgr.getTreeNode(childId)
 	if slotIdx < 0 {
@@ -393,7 +394,7 @@ func (mgr *_EntityManager) GetParent(childId uid.Id) (ec.Entity, error) {
 	return mgr.entityList.Get(treeNode.parent).V, nil
 }
 
-// RangeChildren 遍历所有子节点
+// RangeChildren 按加入顺序遍历直接子节点，回调返回 false 时停止。
 func (mgr *_EntityManager) RangeChildren(parentId uid.Id, fun generic.Func1[ec.Entity, bool]) error {
 	_, treeNode := mgr.getTreeNode(parentId)
 	if treeNode == nil {
@@ -405,7 +406,7 @@ func (mgr *_EntityManager) RangeChildren(parentId uid.Id, fun generic.Func1[ec.E
 	return nil
 }
 
-// EachChildren 遍历每个子节点
+// EachChildren 按加入顺序遍历全部直接子节点。
 func (mgr *_EntityManager) EachChildren(parentId uid.Id, fun generic.Action1[ec.Entity]) error {
 	_, treeNode := mgr.getTreeNode(parentId)
 	if treeNode == nil {
@@ -417,7 +418,7 @@ func (mgr *_EntityManager) EachChildren(parentId uid.Id, fun generic.Action1[ec.
 	return nil
 }
 
-// ReversedRangeChildren 反向遍历所有子节点
+// ReversedRangeChildren 按加入顺序逆向遍历直接子节点，回调返回 false 时停止。
 func (mgr *_EntityManager) ReversedRangeChildren(parentId uid.Id, fun generic.Func1[ec.Entity, bool]) error {
 	_, treeNode := mgr.getTreeNode(parentId)
 	if treeNode == nil {
@@ -429,7 +430,7 @@ func (mgr *_EntityManager) ReversedRangeChildren(parentId uid.Id, fun generic.Fu
 	return nil
 }
 
-// ReversedEachChildren 反向遍历每个子节点
+// ReversedEachChildren 按加入顺序逆向遍历全部直接子节点。
 func (mgr *_EntityManager) ReversedEachChildren(parentId uid.Id, fun generic.Action1[ec.Entity]) error {
 	_, treeNode := mgr.getTreeNode(parentId)
 	if treeNode == nil {
@@ -441,7 +442,7 @@ func (mgr *_EntityManager) ReversedEachChildren(parentId uid.Id, fun generic.Act
 	return nil
 }
 
-// FilterChildren 过滤并获取子节点
+// FilterChildren 按加入顺序返回符合条件的直接子节点。
 func (mgr *_EntityManager) FilterChildren(parentId uid.Id, fun generic.Func1[ec.Entity, bool]) ([]ec.Entity, error) {
 	_, treeNode := mgr.getTreeNode(parentId)
 	if treeNode == nil {
@@ -464,7 +465,7 @@ func (mgr *_EntityManager) FilterChildren(parentId uid.Id, fun generic.Func1[ec.
 	return entities, nil
 }
 
-// ListChildren 获取所有子节点
+// ListChildren 按加入顺序返回直接子节点切片。
 func (mgr *_EntityManager) ListChildren(parentId uid.Id) ([]ec.Entity, error) {
 	_, treeNode := mgr.getTreeNode(parentId)
 	if treeNode == nil {
@@ -480,7 +481,7 @@ func (mgr *_EntityManager) ListChildren(parentId uid.Id) ([]ec.Entity, error) {
 	return entities, nil
 }
 
-// CountChildren 获取子节点数量
+// CountChildren 返回直接子节点数。
 func (mgr *_EntityManager) CountChildren(parentId uid.Id) (int, error) {
 	_, treeNode := mgr.getTreeNode(parentId)
 	if treeNode == nil {
@@ -527,7 +528,7 @@ func (mgr *_EntityManager) onEntityDestroyRemoveNode(childId uid.Id) {
 	delete(mgr.entityTreeNodes, childSlotIdx)
 	parentTreeNode.children.ReleaseIfVersion(childTreeNode.attachedIndex, childTreeNode.attachedVersion)
 
-	ec.UnsafeEntity(childEntity).SetTreeNodeState(ec.TreeNodeState_Freedom)
+	ec.UnsafeEntity(childEntity).SetTreeNodeState(ec.TreeNodeState_Free)
 }
 
 func (mgr *_EntityManager) getTreeNode(entityId uid.Id) (int, *_TreeNode) {

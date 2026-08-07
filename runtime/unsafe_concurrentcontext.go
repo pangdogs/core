@@ -19,7 +19,7 @@
 
 package runtime
 
-// Deprecated: UnsafeConcurrentContext 访问多线程安全的上下文接口内部函数
+// Deprecated: UnsafeConcurrentContext 暴露并发上下文的内部能力，仅供框架集成代码使用。
 func UnsafeConcurrentContext(context ConcurrentContext) _UnsafeConcurrentContext {
 	return _UnsafeConcurrentContext{
 		ConcurrentContext: context,
@@ -30,7 +30,7 @@ type _UnsafeConcurrentContext struct {
 	ConcurrentContext
 }
 
-// Context 获取运行时上下文
+// Context 返回完整运行时上下文；调用方必须自行保证运行协程归属。
 func (u _UnsafeConcurrentContext) Context() Context {
 	return u.getContext()
 }

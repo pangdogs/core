@@ -21,6 +21,7 @@ package async
 
 import "fmt"
 
+// NewResult 将 value 与 err 组合为异步结果。
 func NewResult(value any, err error) Result {
 	return Result{
 		Value: value,
@@ -28,15 +29,18 @@ func NewResult(value any, err error) Result {
 	}
 }
 
+// Result 保存 Future 的一次产出值或错误。
 type Result struct {
-	Value any
-	Error error
+	Value any   // Value 是本次产出携带的返回值。
+	Error error // Error 非 nil 时表示本次产出失败。
 }
 
+// OK 报告结果是否不含错误。
 func (ret Result) OK() bool {
 	return ret.Error == nil
 }
 
+// String 返回错误文本；无错误时返回 Value 的默认格式。
 func (ret Result) String() string {
 	if ret.Error != nil {
 		return ret.Error.Error()

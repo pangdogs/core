@@ -24,35 +24,37 @@ import (
 	"git.golaxy.org/core/service"
 )
 
-// LifecycleAddInInit 插件初始化回调，插件实现此接口即可使用，当插件安装在服务上时，rtCtx为nil
+// LifecycleAddInInit 在插件激活时调用。
+// 服务插件的 rtCtx 为 nil；运行时插件会同时收到所属服务和运行时上下文。
 type LifecycleAddInInit interface {
 	Init(svcCtx service.Context, rtCtx runtime.Context)
 }
 
-// LifecycleAddInShut 插件结束回调，插件实现此接口即可使用，当插件安装在服务上时，rtCtx为nil
+// LifecycleAddInShut 在插件停用时调用。
+// 服务插件的 rtCtx 为 nil；运行时插件会同时收到所属服务和运行时上下文。
 type LifecycleAddInShut interface {
 	Shut(svcCtx service.Context, rtCtx runtime.Context)
 }
 
-// LifecycleRuntimeAddInInit 运行时插件初始化回调，当插件安装在运行时上时，实现此接口即可使用
+// LifecycleRuntimeAddInInit 在运行时插件激活时调用。
 type LifecycleRuntimeAddInInit interface {
 	Init(rtCtx runtime.Context)
 }
 
-// LifecycleRuntimeAddInShut 运行时插件结束回调，当插件安装在运行时上时，实现此接口即可使用
+// LifecycleRuntimeAddInShut 在运行时插件停用时调用。
 type LifecycleRuntimeAddInShut interface {
 	Shut(rtCtx runtime.Context)
 }
 
-// LifecycleAddInOnRuntimeRunningEvent 运行事件，当插件安装在运行时上时，实现此接口即可使用
+// LifecycleAddInOnRuntimeRunningEvent 使运行时插件接收激活后的运行事件。
 type LifecycleAddInOnRuntimeRunningEvent = runtime.EventContextRunningEvent
 
-// LifecycleServiceAddInInit 服务插件初始化回调，当插件安装在服务上时，实现此接口即可使用
+// LifecycleServiceAddInInit 在服务插件激活时调用。
 type LifecycleServiceAddInInit interface {
 	Init(svcCtx service.Context)
 }
 
-// LifecycleServiceAddInShut 服务插件结束回调，当插件安装在服务上时，实现此接口即可使用
+// LifecycleServiceAddInShut 在服务插件停用时调用。
 type LifecycleServiceAddInShut interface {
 	Shut(svcCtx service.Context)
 }

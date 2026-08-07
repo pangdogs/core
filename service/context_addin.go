@@ -23,11 +23,11 @@ import (
 	"git.golaxy.org/core/extension"
 )
 
-// AddInManager 获取插件管理器
+// AddInManager 返回服务插件管理器的公共接口。
 func (ctx *ContextBehavior) AddInManager() extension.AddInManager {
 	return ctx.options.AddInManager
 }
 
-func (ctx *ContextBehavior) getAddInManager() extension.ServiceAddInManager {
+func (ctx *ContextBehavior) getAddInManager() AddInManager {
 	return ctx.options.AddInManager
 }

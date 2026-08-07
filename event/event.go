@@ -25,23 +25,25 @@ import (
 	"git.golaxy.org/core/utils/iface"
 )
 
-// EventRecursion 发生事件递归时的处理方式（事件递归：事件发送过程中，在订阅者的逻辑中，再次发送这个事件）
+// EventRecursion 定义订阅者在派发过程中再次派发同一事件时的处理策略。
 type EventRecursion int8
 
 const (
-	EventRecursion_Allow        EventRecursion = iota // 允许事件递归，可能会无限递归
-	EventRecursion_Disallow                           // 不允许事件递归，递归时会panic
-	EventRecursion_Discard                            // 丢弃递归的事件，不会再发送给任何订阅者
-	EventRecursion_SkipReceived                       // 发送递归事件时跳过已接收事件的订阅者
-	EventRecursion_ReceiveOnce                        // 订阅者在整个事件发送过程中只接收一次
+	EventRecursion_Allow        EventRecursion = iota // EventRecursion_Allow 允许递归派发，仍受递归深度上限约束。
+	EventRecursion_Disallow                           // EventRecursion_Disallow 在递归派发时 panic。
+	EventRecursion_Discard                            // EventRecursion_Discard 丢弃整次递归派发。
+	EventRecursion_SkipReceived                       // EventRecursion_SkipReceived 跳过仍位于当前递归调用栈中的订阅者。
+	EventRecursion_ReceiveOnce                        // EventRecursion_ReceiveOnce 使每个订阅者在一次顶层派发中至多接收一次。
 )
 
 var (
-	// EventRecursionLimit 事件递归次数上限，超过此上限会panic
+	// EventRecursionLimit 是同一事件的最大递归深度；达到上限时 panic。
 	EventRecursionLimit = 128
 )
 
-// IEvent 事件接口
+// IEvent 是生成代码和 Bind 使用的信号式事件接口。
+//
+// 它不提供并发保护，绑定、解绑与派发必须由调用方串行化。
 type IEvent interface {
 	ctrl() IEventCtrl
 	emit(fun generic.Func1[iface.Cache, bool])
@@ -56,7 +58,9 @@ type _Subscriber struct {
 	receivedEmitted int64
 }
 
-// Event 事件
+// Event 保存一个进程内同步信号式事件的订阅者列表与派发策略。
+//
+// Event 的零值可用，默认允许递归且不会恢复订阅者 panic。Event 不支持并发访问。
 type Event struct {
 	autoRecover bool
 	reportError chan error
@@ -66,33 +70,36 @@ type Event struct {
 	emitted     int64
 }
 
-// PanicHandling 获取panic时的处理方式
+// PanicHandling 返回订阅者 panic 的恢复与上报设置。
 func (event *Event) PanicHandling() (autoRecover bool, reportError chan error) {
 	return event.autoRecover, event.reportError
 }
 
-// SetPanicHandling 设置panic时的处理方式
+// SetPanicHandling 设置订阅者 panic 的处理方式。
+//
+// autoRecover 为 true 时，panic 会被转换为带堆栈的错误并尝试非阻塞写入 reportError；
+// 写入失败或 reportError 为 nil 时错误只作为本次调用结果被内部丢弃，派发继续。
 func (event *Event) SetPanicHandling(autoRecover bool, reportError chan error) {
 	event.autoRecover = autoRecover
 	event.reportError = reportError
 }
 
-// Recursion 获取发生事件递归时的处理方式
+// Recursion 返回当前递归派发策略。
 func (event *Event) Recursion() EventRecursion {
 	return event.recursion
 }
 
-// SetRecursion 设置发生事件递归时的处理方式
+// SetRecursion 设置递归派发策略。
 func (event *Event) SetRecursion(recursion EventRecursion) {
 	event.recursion = recursion
 }
 
-// Enabled 获取事件是否启用
+// Enabled 报告事件是否启用。
 func (event *Event) Enabled() bool {
 	return !event.disabled
 }
 
-// SetEnabled 设置事件是否启用
+// SetEnabled 设置事件是否启用；禁用时会立即解绑全部订阅者。
 func (event *Event) SetEnabled(b bool) {
 	if !event.disabled == b {
 		return
@@ -105,7 +112,7 @@ func (event *Event) SetEnabled(b bool) {
 	}
 }
 
-// UnbindAll 解绑定所有订阅者
+// UnbindAll 解绑全部订阅者，并使已有 Handle 失效。
 func (event *Event) UnbindAll() {
 	event.subscribers.TraversalEach(func(slot *generic.FreeSlot[_Subscriber]) { slot.Free() })
 }

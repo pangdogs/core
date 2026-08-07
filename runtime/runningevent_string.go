@@ -31,17 +31,17 @@ func _() {
 	_ = x[RunningEvent_EntityActivated-20]
 	_ = x[RunningEvent_EntityDeactivating-21]
 	_ = x[RunningEvent_EntityDeactivated-22]
-	_ = x[RunningEvent_EntityAddingComponents-23]
-	_ = x[RunningEvent_EntityComponentsAdditionAborted-24]
-	_ = x[RunningEvent_EntityComponentsAdded-25]
-	_ = x[RunningEvent_EntityRemovingComponent-26]
-	_ = x[RunningEvent_EntityComponentRemoved-27]
-	_ = x[RunningEvent_EntityComponentRemovalAborted-28]
+	_ = x[RunningEvent_EntityComponentsActivating-23]
+	_ = x[RunningEvent_EntityComponentsActivationAborted-24]
+	_ = x[RunningEvent_EntityComponentsActivated-25]
+	_ = x[RunningEvent_EntityComponentDeactivating-26]
+	_ = x[RunningEvent_EntityComponentDeactivationAborted-27]
+	_ = x[RunningEvent_EntityComponentDeactivated-28]
 }
 
-const _RunningEvent_name = "RunningEvent_BirthRunningEvent_StartingRunningEvent_StartedRunningEvent_FrameLoopBeginRunningEvent_FrameUpdateBeginRunningEvent_FrameUpdateEndRunningEvent_FrameLoopEndRunningEvent_RunCallBeginRunningEvent_RunCallEndRunningEvent_RunGCBeginRunningEvent_RunGCEndRunningEvent_TerminatingRunningEvent_TerminatedRunningEvent_AddInActivatingRunningEvent_AddInActivationAbortedRunningEvent_AddInActivatedRunningEvent_AddInDeactivatingRunningEvent_AddInDeactivatedRunningEvent_EntityActivatingRunningEvent_EntityActivationAbortedRunningEvent_EntityActivatedRunningEvent_EntityDeactivatingRunningEvent_EntityDeactivatedRunningEvent_EntityAddingComponentsRunningEvent_EntityComponentsAdditionAbortedRunningEvent_EntityComponentsAddedRunningEvent_EntityRemovingComponentRunningEvent_EntityComponentRemovedRunningEvent_EntityComponentRemovalAborted"
+const _RunningEvent_name = "RunningEvent_BirthRunningEvent_StartingRunningEvent_StartedRunningEvent_FrameLoopBeginRunningEvent_FrameUpdateBeginRunningEvent_FrameUpdateEndRunningEvent_FrameLoopEndRunningEvent_RunCallBeginRunningEvent_RunCallEndRunningEvent_RunGCBeginRunningEvent_RunGCEndRunningEvent_TerminatingRunningEvent_TerminatedRunningEvent_AddInActivatingRunningEvent_AddInActivationAbortedRunningEvent_AddInActivatedRunningEvent_AddInDeactivatingRunningEvent_AddInDeactivatedRunningEvent_EntityActivatingRunningEvent_EntityActivationAbortedRunningEvent_EntityActivatedRunningEvent_EntityDeactivatingRunningEvent_EntityDeactivatedRunningEvent_EntityComponentsActivatingRunningEvent_EntityComponentsActivationAbortedRunningEvent_EntityComponentsActivatedRunningEvent_EntityComponentDeactivatingRunningEvent_EntityComponentDeactivationAbortedRunningEvent_EntityComponentDeactivated"
 
-var _RunningEvent_index = [...]uint16{0, 18, 39, 59, 86, 115, 142, 167, 192, 215, 238, 259, 283, 306, 334, 369, 396, 426, 455, 484, 520, 548, 579, 609, 644, 688, 722, 758, 793, 835}
+var _RunningEvent_index = [...]uint16{0, 18, 39, 59, 86, 115, 142, 167, 192, 215, 238, 259, 283, 306, 334, 369, 396, 426, 455, 484, 520, 548, 579, 609, 648, 694, 732, 772, 819, 858}
 
 func (i RunningEvent) String() string {
 	idx := int(i) - 0

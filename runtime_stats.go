@@ -19,27 +19,27 @@
 
 package core
 
-// TaskQueueStats 任务队列统计信息
+// TaskQueueStats 描述一类运行时任务的累计队列指标。
 type TaskQueueStats struct {
-	Enqueued  int64
-	Pending   int64
-	Rejected  int64
-	Completed int64
+	Enqueued  int64 // 成功入队的任务总数。
+	Pending   int64 // 当前等待执行的任务数。
+	Rejected  int64 // 因队列关闭或已满而拒绝的任务总数。
+	Completed int64 // 已完成的任务总数。
 }
 
-// RuntimeStats 运行时统计信息
+// RuntimeStats 描述运行时当前的等待组和任务队列状态。
 type RuntimeStats struct {
-	WaitGroupCount  int64             // 等待组任务数量
-	WaitGroupClosed bool              // 等待组是否已关闭
-	TaskQueue       [2]TaskQueueStats // 任务队列统计信息
+	WaitGroupCount  int64             // 尚未完成的等待组任务数。
+	WaitGroupClosed bool              // 等待组是否已经关闭并拒绝新任务。
+	TaskQueue       [2]TaskQueueStats // 按 TaskType 索引的任务队列统计信息。
 }
 
 type iRuntimeStats interface {
-	// Stats 获取运行时统计信息
+	// Stats 返回运行时统计信息的当前快照。
 	Stats() RuntimeStats
 }
 
-// Stats 获取运行时统计信息
+// Stats 返回运行时统计信息的当前快照。
 func (rt *RuntimeBehavior) Stats() RuntimeStats {
 	return RuntimeStats{
 		WaitGroupCount:  rt.ctx.WaitGroup().Count(),

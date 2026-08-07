@@ -17,19 +17,30 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package extension
+package runtime
 
-// EventServiceInstallAddIn 服务安装插件事件
-type EventServiceInstallAddIn struct {
-	Status ServiceAddInStatus
+import "git.golaxy.org/core/event"
+
+// Deprecated: UnsafeAddInStatus 暴露运行时插件状态的生命周期操作，仅供 core 使用。
+func UnsafeAddInStatus(status AddInStatus) _UnsafeAddInStatus {
+	return _UnsafeAddInStatus{AddInStatus: status}
 }
 
-// EventServiceUninstallAddIn 服务卸载插件事件
-type EventServiceUninstallAddIn struct {
-	Status ServiceAddInStatus
+type _UnsafeAddInStatus struct {
+	AddInStatus
 }
 
-// EventServiceAddInSnapshot 服务插件快照事件
-type EventServiceAddInSnapshot struct {
-	Statuses []ServiceAddInStatus
+// Started 将已加载插件标记为正在运行。
+func (u _UnsafeAddInStatus) Started() {
+	u.started()
+}
+
+// ManagedRuntimeRunningEventHandle 托管插件订阅的运行时事件句柄。
+func (u _UnsafeAddInStatus) ManagedRuntimeRunningEventHandle(runtimeRunningEventHandle event.Handle) {
+	u.managedRuntimeRunningEventHandle(runtimeRunningEventHandle)
+}
+
+// ManagedUnbindRuntimeHandles 解绑插件托管的全部运行时事件句柄。
+func (u _UnsafeAddInStatus) ManagedUnbindRuntimeHandles() {
+	u.managedUnbindRuntimeHandles()
 }

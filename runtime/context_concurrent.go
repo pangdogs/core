@@ -29,10 +29,11 @@ import (
 	"git.golaxy.org/core/utils/uid"
 )
 
-// ConcurrentContextProvider 多线程安全的上下文提供者
+// ConcurrentContextProvider 提供可跨 goroutine 使用的运行时上下文缓存。
 type ConcurrentContextProvider = corectx.ConcurrentContextProvider
 
-// ConcurrentContext 多线程安全的运行时上下文接口
+// ConcurrentContext 暴露可跨 goroutine 安全调用的运行时能力。
+// 需要读写实体或其他运行时局部状态时，应通过 Caller 调度回运行时 goroutine。
 type ConcurrentContext interface {
 	iConcurrentContext
 	corectx.Context
@@ -40,9 +41,9 @@ type ConcurrentContext interface {
 	Caller
 	fmt.Stringer
 
-	// Name 获取名称
+	// Name 返回运行时名称。
 	Name() string
-	// Id 获取运行时Id
+	// Id 返回运行时的持久化 ID。
 	Id() uid.Id
 }
 
@@ -54,7 +55,7 @@ func (ctx *ContextBehavior) getContext() Context {
 	return ctx.options.InstanceFace.Iface
 }
 
-// Concurrent 获取多线程安全的运行时上下文
+// Concurrent 从 provider 获取可跨 goroutine 使用的运行时上下文；provider 为 nil 时会 panic。
 func Concurrent(provider corectx.ConcurrentContextProvider) ConcurrentContext {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrContext, exception.ErrArgs)

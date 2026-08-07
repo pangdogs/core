@@ -25,11 +25,12 @@ import (
 	"git.golaxy.org/core/utils/generic"
 )
 
+// TaskType 标识运行时任务队列中的任务类别。
 type TaskType int8
 
 const (
-	TaskType_Call TaskType = iota
-	TaskType_Frame
+	TaskType_Call  TaskType = iota // 普通异步调用任务。
+	TaskType_Frame                 // 帧循环内部任务。
 )
 
 type _Task struct {

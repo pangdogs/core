@@ -26,7 +26,7 @@ import (
 	"github.com/elliotchance/pie/v2"
 )
 
-// ServiceAddIn 定义服务插件，支持安装至服务上下文
+// ServiceAddIn 创建服务插件定义，其 Require 和 Lookup 直接接受 service.Context。
 func ServiceAddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADDIN_IFACE], name ...string) ServiceAddInDefinition[ADDIN_IFACE, SETTING] {
 	addIn := defineAddIn[ADDIN_IFACE, SETTING](creator, pie.First(name))
 
@@ -40,12 +40,12 @@ func ServiceAddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, AD
 	}
 }
 
-// ServiceAddInDefinition 服务插件定义
+// ServiceAddInDefinition 封装服务插件的标识、构造和访问操作。
 type ServiceAddInDefinition[ADDIN_IFACE, SETTING any] struct {
-	Id        uint64                                                // 插件Id
-	Name      string                                                // 插件名称
-	Install   generic.ActionVar1[extension.AddInProvider, SETTING]  // 安装插件
-	Uninstall generic.Action1[extension.AddInProvider]              // 卸载插件
-	Require   generic.Func1[service.Context, ADDIN_IFACE]           // 依赖插件
-	Lookup    generic.FuncPair1[service.Context, ADDIN_IFACE, bool] // 查找插件
+	Id        uint64                                                // 由 Name 生成的插件 ID。
+	Name      string                                                // 插件注册名称。
+	Install   generic.ActionVar1[extension.AddInProvider, SETTING]  // 构造插件并安装到给定提供者。
+	Uninstall generic.Action1[extension.AddInProvider]              // 从给定提供者卸载插件。
+	Require   generic.Func1[service.Context, ADDIN_IFACE]           // 从服务获取正在运行的插件，不可用时 panic。
+	Lookup    generic.FuncPair1[service.Context, ADDIN_IFACE, bool] // 查询服务管理器当前持有的插件。
 }

@@ -19,11 +19,12 @@
 
 package core
 
+// With 汇总 Runtime、Frame、TaskQueue 与 Service 的选项构造器。
 var With _Option
 
 type _Option struct {
-	Runtime   _RuntimeOption   // 运行时的选项
-	Frame     _FrameOption     // 帧的选项
-	TaskQueue _TaskQueueOption // 任务处理流水线的选项
-	Service   _ServiceOption   // 服务的选项
+	Runtime   _RuntimeOption   // 运行时选项。
+	Frame     _FrameOption     // 帧循环选项。
+	TaskQueue _TaskQueueOption // 任务队列选项。
+	Service   _ServiceOption   // 服务选项。
 }

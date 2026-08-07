@@ -23,7 +23,9 @@ import (
 	"context"
 )
 
-// Deprecated: UnsafeContext 访问上下文内部方法
+// UnsafeContext 暴露上下文初始化与完成信号等框架内部能力。
+//
+// Deprecated: 仅供框架内部使用。
 func UnsafeContext(ctx Context) _UnsafeContext {
 	return _UnsafeContext{
 		Context: ctx,
@@ -34,17 +36,17 @@ type _UnsafeContext struct {
 	Context
 }
 
-// Init 初始化
+// Init 使用父上下文及 panic 处理策略初始化上下文。
 func (u _UnsafeContext) Init(parentCtx context.Context, autoRecover bool, reportError chan error) {
 	u.init(parentCtx, autoRecover, reportError)
 }
 
-// CloseWaitGroup 关闭等待组
+// CloseWaitGroup 关闭任务屏障，使其不再接受新任务。
 func (u _UnsafeContext) CloseWaitGroup() {
 	u.closeWaitGroup()
 }
 
-// ReturnTerminated 返回已停止
+// ReturnTerminated 兑现宿主已完成清理的 Future。
 func (u _UnsafeContext) ReturnTerminated() {
 	u.returnTerminated()
 }

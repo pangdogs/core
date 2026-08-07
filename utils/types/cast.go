@@ -26,22 +26,22 @@ import (
 	"unsafe"
 )
 
-// Signed 有符号整形
+// Signed 约束所有有符号整数及其自定义底层类型。
 type Signed interface {
 	~int | ~int8 | ~int16 | ~int32 | ~int64
 }
 
-// Unsigned 无符号整形
+// Unsigned 约束所有无符号整数及其自定义底层类型。
 type Unsigned interface {
 	~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr
 }
 
-// Integer 整形
+// Integer 约束所有整数类型。
 type Integer interface {
 	Signed | Unsigned
 }
 
-// Bool2Int bool转int
+// Bool2Int 将 false 转为 0、true 转为 1，并返回目标整数类型。
 func Bool2Int[T Integer](b bool) T {
 	if b {
 		return 1
@@ -49,7 +49,7 @@ func Bool2Int[T Integer](b bool) T {
 	return 0
 }
 
-// Int2Bool int转bool
+// Int2Bool 将 0 转为 false、其他整数转为 true。
 func Int2Bool[T Integer](v T) bool {
 	if v != 0 {
 		return true
@@ -57,7 +57,9 @@ func Int2Bool[T Integer](v T) bool {
 	return false
 }
 
-// String2Bytes 快速string转bytes
+// String2Bytes 将字符串零拷贝重解释为字节切片。
+//
+// 返回值与 s 共享存储，绝不能修改；违反约束可能导致崩溃或未定义行为。
 func String2Bytes(s string) []byte {
 	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
 	bh := reflect.SliceHeader{
@@ -68,12 +70,14 @@ func String2Bytes(s string) []byte {
 	return *(*[]byte)(unsafe.Pointer(&bh))
 }
 
-// Bytes2String 快速bytes转string
+// Bytes2String 将字节切片零拷贝重解释为字符串。
+//
+// 返回值与 b 共享存储；字符串存活期间不得修改或并发写入 b。
 func Bytes2String(b []byte) string {
 	return *(*string)(unsafe.Pointer(&b))
 }
 
-// Panic2Err panic转换为error
+// Panic2Err 将 recover 的结果转换为 error；nil 保持为 nil。
 func Panic2Err(panicInfo any) error {
 	switch info := panicInfo.(type) {
 	case nil:

@@ -29,6 +29,6 @@ Package utils 本身不承载业务逻辑，主要用于组织框架内部共享
   - exception：错误与 panic 辅助；
   - generic：泛型函数类型、容器与并发基础设施；
   - iface / reinterpret：高性能接口缓存与重新解释工具；
-  - meta、option、types、uid：元数据、选项、反射类型和唯一 Id 辅助。
+  - meta、option、types、uid：元数据、选项、反射类型和唯一 ID 辅助。
 */
 package utils

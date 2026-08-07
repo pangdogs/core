@@ -25,6 +25,10 @@ import (
 	"git.golaxy.org/core/utils/exception"
 )
 
+// YieldReturn 尝试向 future 产出一项结果。
+//
+// nil ctx 按 context.Background 处理。写入成功返回 true；ctx 先结束时返回 false。
+// future 为零值或非结果 Future 时 panic。该函数不会结束 Future。
 func YieldReturn(ctx context.Context, future FutureChan, ret Result) bool {
 	if ctx == nil {
 		ctx = context.Background()
@@ -42,6 +46,8 @@ func YieldReturn(ctx context.Context, future FutureChan, ret Result) bool {
 	}
 }
 
+// YieldBreak 结束产出，关闭结果与完成频道，并返回消费者视图。
+// future 为零值或已经结束时 panic。
 func YieldBreak(future FutureChan) Future {
 	if future.ch == nil || future.done == nil {
 		exception.Panic("future is void result, cannot yield break")

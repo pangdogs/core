@@ -26,18 +26,18 @@ import (
 	"git.golaxy.org/core/utils/iface"
 )
 
-// AddInStatus 插件状态信息
+// AddInStatus 描述一个已安装或曾经安装的插件实例及其生命周期状态。
 type AddInStatus interface {
 	fmt.Stringer
 
-	// Id 插件Id
+	// Id 返回由插件名称生成的 ID。
 	Id() uint64
-	// Name 插件名称
+	// Name 返回插件注册名称。
 	Name() string
-	// InstanceFace 插件实例
+	// InstanceFace 返回插件实例及其接口缓存。
 	InstanceFace() iface.FaceAny
-	// Reflected 插件反射值
+	// Reflected 返回插件实例的反射值。
 	Reflected() reflect.Value
-	// State 状态
+	// State 返回插件当前的生命周期状态。
 	State() AddInState
 }

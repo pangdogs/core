@@ -17,28 +17,23 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package extension
+package service
 
-//go:generate go run git.golaxy.org/core/event/eventc event
-//go:generate go run git.golaxy.org/core/event/eventc eventtab --name=runtimeAddInManagerEventTab
-
-// EventRuntimeInstallAddIn 事件：运行时安装插件
-// +event-gen:export_emit=0
-// +event-tab-gen:recursion=allow
-type EventRuntimeInstallAddIn interface {
-	OnRuntimeInstallAddIn(status RuntimeAddInStatus)
+// Deprecated: UnsafeAddInManager 暴露服务插件管理器的生命周期操作，仅供 core 使用。
+func UnsafeAddInManager(mgr AddInManager) _UnsafeAddInManager {
+	return _UnsafeAddInManager{AddInManager: mgr}
 }
 
-// EventRuntimeUninstallAddIn 事件：运行时卸载插件
-// +event-gen:export_emit=0
-// +event-tab-gen:recursion=allow
-type EventRuntimeUninstallAddIn interface {
-	OnRuntimeUninstallAddIn(status RuntimeAddInStatus)
+type _UnsafeAddInManager struct {
+	AddInManager
 }
 
-// EventRuntimeAddInStateChanged 事件：运行时插件状态改变
-// +event-gen:export_emit=0
-// +event-tab-gen:recursion=allow
-type EventRuntimeAddInStateChanged interface {
-	OnRuntimeAddInStateChanged(status RuntimeAddInStatus, state AddInState)
+// Freeze 冻结安装与卸载入口，并按安装顺序返回插件状态。
+func (mgr _UnsafeAddInManager) Freeze() []AddInStatus {
+	return mgr.freeze()
+}
+
+// List 按安装顺序返回当前服务插件状态的副本。
+func (mgr _UnsafeAddInManager) List() []AddInStatus {
+	return mgr.getList()
 }

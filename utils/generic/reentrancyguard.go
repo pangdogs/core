@@ -19,8 +19,11 @@
 
 package generic
 
+// ReentrancyGuardBits8 按 8 位操作编号阻止同一调用链中的重复进入。
+// 该类型不提供并发保护。
 type ReentrancyGuardBits8 Bits8
 
+// Call 在 bit 当前未执行时调用 fun；同一 bit 的重入调用会被忽略。
 func (g *ReentrancyGuardBits8) Call(bit int, fun func()) {
 	if (*Bits8)(g).Is(bit) {
 		return
@@ -32,8 +35,11 @@ func (g *ReentrancyGuardBits8) Call(bit int, fun func()) {
 	fun()
 }
 
+// ReentrancyGuardBits16 按 16 位操作编号阻止同一调用链中的重复进入。
+// 该类型不提供并发保护。
 type ReentrancyGuardBits16 Bits16
 
+// Call 在 bit 当前未执行时调用 fun；同一 bit 的重入调用会被忽略。
 func (g *ReentrancyGuardBits16) Call(bit int, fun func()) {
 	if (*Bits16)(g).Is(bit) {
 		return
@@ -45,8 +51,11 @@ func (g *ReentrancyGuardBits16) Call(bit int, fun func()) {
 	fun()
 }
 
+// ReentrancyGuardBits32 按 32 位操作编号阻止同一调用链中的重复进入。
+// 该类型不提供并发保护。
 type ReentrancyGuardBits32 Bits32
 
+// Call 在 bit 当前未执行时调用 fun；同一 bit 的重入调用会被忽略。
 func (g *ReentrancyGuardBits32) Call(bit int, fun func()) {
 	if (*Bits32)(g).Is(bit) {
 		return
@@ -58,8 +67,11 @@ func (g *ReentrancyGuardBits32) Call(bit int, fun func()) {
 	fun()
 }
 
+// ReentrancyGuardBits64 按 64 位操作编号阻止同一调用链中的重复进入。
+// 该类型不提供并发保护。
 type ReentrancyGuardBits64 Bits64
 
+// Call 在 bit 当前未执行时调用 fun；同一 bit 的重入调用会被忽略。
 func (g *ReentrancyGuardBits64) Call(bit int, fun func()) {
 	if (*Bits64)(g).Is(bit) {
 		return

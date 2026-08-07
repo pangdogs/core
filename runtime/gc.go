@@ -19,16 +19,16 @@
 
 package runtime
 
-// GC GC接口
+// GC 表示可由运行时延迟清理的对象。
 type GC interface {
-	// GC GC
+	// GC 执行实际清理。
 	GC()
-	// NeedGC 是否需要GC
+	// NeedGC 报告对象当前是否需要清理。
 	NeedGC() bool
 }
 
-// GCCollector GC收集器接口
+// GCCollector 收集需要在后续运行时 GC 阶段清理的对象。
 type GCCollector interface {
-	// CollectGC 收集GC
+	// CollectGC 在 gc 需要清理时将其加入当前运行时的待清理队列。
 	CollectGC(gc GC)
 }

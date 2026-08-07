@@ -30,7 +30,8 @@ import (
 	"git.golaxy.org/core/utils/generic"
 )
 
-// Run 运行
+// Run 在新 goroutine 中启动运行时循环，并返回运行时终止时完成的 Future。
+// 运行时只能启动一次；上下文已经取消或运行时已经启动时会 panic。
 func (rt *RuntimeBehavior) Run() async.Future {
 	ctx := rt.ctx
 
@@ -58,12 +59,12 @@ func (rt *RuntimeBehavior) Run() async.Future {
 	return ctx.Terminated()
 }
 
-// Terminate 停止
+// Terminate 请求停止运行时，并返回运行时终止时完成的 Future。
 func (rt *RuntimeBehavior) Terminate() async.Future {
 	return rt.ctx.Terminate()
 }
 
-// Terminated 已停止
+// Terminated 返回运行时终止时完成的 Future。
 func (rt *RuntimeBehavior) Terminated() async.Future {
 	return rt.ctx.Terminated()
 }
@@ -85,6 +86,8 @@ func (rt *RuntimeBehavior) running() {
 
 	corectx.UnsafeContext(ctx).CloseWaitGroup()
 	ctx.WaitGroup().Wait()
+
+	rt.shutAddIn()
 
 	rt.emitEventRunningEvent(runtime.RunningEvent_Terminated)
 
@@ -120,18 +123,16 @@ func (rt *RuntimeBehavior) onAfterContextRunningEvent(ctx runtime.Context, runni
 		if rt.options.AutoRun {
 			rt.getInstance().Run()
 		}
-	case runtime.RunningEvent_Terminated:
-		rt.shutAddIn()
 	}
 }
 
 func (rt *RuntimeBehavior) initAddIn() {
 	addInManager := runtime.UnsafeContext(rt.ctx).AddInManager()
 
-	rt.managedAddInManagerHandles[0] = extension.BindEventRuntimeInstallAddIn(addInManager, extension.HandleEventRuntimeInstallAddIn(rt.activateAddIn))
-	rt.managedAddInManagerHandles[1] = extension.BindEventRuntimeUninstallAddIn(addInManager, extension.HandleEventRuntimeUninstallAddIn(rt.deactivateAddIn))
+	rt.managedAddInManagerHandles[0] = runtime.BindEventInstallAddIn(addInManager, runtime.HandleEventInstallAddIn(rt.activateAddIn))
+	rt.managedAddInManagerHandles[1] = runtime.BindEventUninstallAddIn(addInManager, runtime.HandleEventUninstallAddIn(rt.deactivateAddIn))
 
-	statuses := extension.UnsafeRuntimeAddInManager(addInManager).List()
+	statuses := runtime.UnsafeAddInManager(addInManager).List()
 	for i := range statuses {
 		rt.activateAddIn(statuses[i])
 	}
@@ -142,7 +143,7 @@ func (rt *RuntimeBehavior) shutAddIn() {
 
 	rt.managedAddInManagerHandles[0].Unbind()
 
-	statuses := extension.UnsafeRuntimeAddInManager(addInManager).List()
+	statuses := runtime.UnsafeAddInManager(addInManager).List()
 	for i := len(statuses) - 1; i >= 0; i-- {
 		addInManager.Uninstall(statuses[i].Name())
 	}
@@ -150,7 +151,7 @@ func (rt *RuntimeBehavior) shutAddIn() {
 	rt.managedAddInManagerHandles[1].Unbind()
 }
 
-func (rt *RuntimeBehavior) activateAddIn(status extension.RuntimeAddInStatus) {
+func (rt *RuntimeBehavior) activateAddIn(status runtime.AddInStatus) {
 	if status.State() != extension.AddInState_Loaded {
 		return
 	}
@@ -173,7 +174,7 @@ func (rt *RuntimeBehavior) activateAddIn(status extension.RuntimeAddInStatus) {
 		return
 	}
 
-	extension.UnsafeRuntimeAddInStatus(status).Started()
+	runtime.UnsafeAddInStatus(status).Started()
 
 	if status.State() != extension.AddInState_Running {
 		rt.emitEventRunningEvent(runtime.RunningEvent_AddInActivationAborted, status)
@@ -187,13 +188,13 @@ func (rt *RuntimeBehavior) activateAddIn(status extension.RuntimeAddInStatus) {
 	}
 
 	if cb, ok := status.InstanceFace().Iface.(LifecycleAddInOnRuntimeRunningEvent); ok {
-		extension.UnsafeRuntimeAddInStatus(status).ManagedRuntimeRunningEventHandle(
+		runtime.UnsafeAddInStatus(status).ManagedRuntimeRunningEventHandle(
 			runtime.BindEventContextRunningEvent(rt.ctx, runtime.HandleEventContextRunningEvent(cb.OnContextRunningEvent)),
 		)
 	}
 }
 
-func (rt *RuntimeBehavior) deactivateAddIn(status extension.RuntimeAddInStatus) {
+func (rt *RuntimeBehavior) deactivateAddIn(status runtime.AddInStatus) {
 	if status.State() != extension.AddInState_Running {
 		return
 	}

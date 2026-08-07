@@ -36,12 +36,13 @@ import (
 	"git.golaxy.org/core/utils/uid"
 )
 
-// NewContext 创建运行时上下文
+// NewContext 创建隶属于 svcCtx 的运行时上下文。
+// 未提供父上下文、持久化 ID 或插件管理器时会自动创建默认值。
 func NewContext(svcCtx service.Context, settings ...option.Setting[ContextOptions]) Context {
 	return UnsafeNewContext(svcCtx, option.New(With.Default(), settings...))
 }
 
-// Deprecated: UnsafeNewContext 内部创建运行时上下文
+// Deprecated: UnsafeNewContext 仅供框架内部使用，请改用 NewContext。
 func UnsafeNewContext(svcCtx service.Context, options ContextOptions) Context {
 	var ctx Context
 
@@ -55,7 +56,8 @@ func UnsafeNewContext(svcCtx service.Context, options ContextOptions) Context {
 	return ctx
 }
 
-// Context 运行时上下文接口
+// Context 表示单个 Actor 风格运行时的当前执行作用域。
+// 实体、实体树、帧和插件的直接操作应在所属运行时 goroutine 中进行。
 type Context interface {
 	iContext
 	iConcurrentContext
@@ -67,19 +69,19 @@ type Context interface {
 	GCCollector
 	fmt.Stringer
 
-	// Name 获取名称
+	// Name 返回运行时名称。
 	Name() string
-	// Id 获取运行时Id
+	// Id 返回运行时的持久化 ID。
 	Id() uid.Id
-	// Reflected 获取反射值
+	// Reflected 返回实际运行时上下文实例的反射值。
 	Reflected() reflect.Value
-	// Frame 获取帧
+	// Frame 返回帧统计接口；未启用帧循环时返回 nil。
 	Frame() Frame
-	// EntityManager 获取实体管理器
+	// EntityManager 返回当前运行时的本地实体管理器。
 	EntityManager() EntityManager
-	// EntityTree 获取实体树
+	// EntityTree 返回当前运行时的实体树。
 	EntityTree() EntityTree
-	// Managed 托管事件句柄
+	// Managed 返回随运行时上下文统一解绑的事件句柄集合。
 	Managed() *event.ManagedHandles
 
 	IContextRunningEventTab
@@ -93,12 +95,13 @@ type iContext interface {
 	setFrame(frame Frame)
 	setCallee(callee Callee)
 	getServiceContext() service.Context
-	getAddInManager() extension.RuntimeAddInManager
+	getAddInManager() AddInManager
 	getScoped() *atomic.Bool
 	gc()
 }
 
-// ContextBehavior 运行时上下文行为，在扩展运行时上下文能力时，匿名嵌入至运行时上下文结构体中
+// ContextBehavior 提供 Context 的默认实现。
+// 扩展运行时上下文时应匿名嵌入该类型，并通过 InstanceFace 传入扩展实例。
 type ContextBehavior struct {
 	corectx.ContextBehavior
 	svcCtx        service.Context
@@ -116,62 +119,62 @@ type ContextBehavior struct {
 	contextRunningEventTab contextRunningEventTab
 }
 
-// Name 获取名称
+// Name 返回运行时名称。
 func (ctx *ContextBehavior) Name() string {
 	return ctx.options.Name
 }
 
-// Id 获取运行时Id
+// Id 返回运行时的持久化 ID。
 func (ctx *ContextBehavior) Id() uid.Id {
 	return ctx.options.PersistId
 }
 
-// Reflected 获取反射值
+// Reflected 返回实际运行时上下文实例的反射值。
 func (ctx *ContextBehavior) Reflected() reflect.Value {
 	return ctx.reflected
 }
 
-// Frame 获取帧
+// Frame 返回帧统计接口；未启用帧循环时返回 nil。
 func (ctx *ContextBehavior) Frame() Frame {
 	return ctx.frame
 }
 
-// EntityManager 获取实体管理器
+// EntityManager 返回当前运行时的本地实体管理器。
 func (ctx *ContextBehavior) EntityManager() EntityManager {
 	return &ctx.entityManager
 }
 
-// EntityTree 获取主实体树
+// EntityTree 返回当前运行时的实体树。
 func (ctx *ContextBehavior) EntityTree() EntityTree {
 	return &ctx.entityManager
 }
 
-// Managed 托管事件句柄
+// Managed 返回随运行时上下文统一解绑的事件句柄集合。
 func (ctx *ContextBehavior) Managed() *event.ManagedHandles {
 	return &ctx.managed
 }
 
-// EventContextRunningEvent 事件：接收运行事件
+// EventContextRunningEvent 返回运行时运行事件。
 func (ctx *ContextBehavior) EventContextRunningEvent() event.IEvent {
 	return ctx.contextRunningEventTab.EventContextRunningEvent()
 }
 
-// CurrentContext 获取当前上下文
+// CurrentContext 返回仅供运行时 goroutine 使用的上下文接口缓存。
 func (ctx *ContextBehavior) CurrentContext() iface.Cache {
 	return iface.Iface2Cache[Context](ctx.options.InstanceFace.Iface)
 }
 
-// ConcurrentContext 获取多线程安全的上下文
+// ConcurrentContext 返回可跨 goroutine 使用的上下文接口缓存。
 func (ctx *ContextBehavior) ConcurrentContext() iface.Cache {
 	return iface.Iface2Cache[Context](ctx.options.InstanceFace.Iface)
 }
 
-// InstanceFaceCache 支持重新解释类型
+// InstanceFaceCache 返回上下文实例的接口缓存，用于 reinterpret.Cast。
 func (ctx *ContextBehavior) InstanceFaceCache() iface.Cache {
 	return ctx.options.InstanceFace.Cache
 }
 
-// CollectGC 收集GC
+// CollectGC 将需要清理的对象加入本轮运行时 GC 队列。
 func (ctx *ContextBehavior) CollectGC(gc GC) {
 	if gc == nil || !gc.NeedGC() {
 		return
@@ -180,7 +183,7 @@ func (ctx *ContextBehavior) CollectGC(gc GC) {
 	ctx.gcList = append(ctx.gcList, gc)
 }
 
-// String implements fmt.Stringer
+// String 实现 fmt.Stringer，返回包含运行时 ID 和名称的 JSON 文本。
 func (ctx *ContextBehavior) String() string {
 	ctx.stringerOnce.Do(func() {
 		ctx.stringerCache = fmt.Sprintf(`{"id":%q,"name":%q}`, ctx.Id(), ctx.Name())
@@ -208,7 +211,7 @@ func (ctx *ContextBehavior) init(svcCtx service.Context, options ContextOptions)
 	}
 
 	if ctx.options.AddInManager == nil {
-		ctx.options.AddInManager = extension.NewRuntimeAddInManager()
+		ctx.options.AddInManager = NewAddInManager()
 	}
 
 	corectx.UnsafeContext(&ctx.ContextBehavior).Init(ctx.options.Context, ctx.options.AutoRecover, ctx.options.ReportError)
@@ -219,9 +222,9 @@ func (ctx *ContextBehavior) init(svcCtx service.Context, options ContextOptions)
 
 	ctx.entityManager.init(ctx.getInstance())
 
-	event.UnsafeEvent(ctx.getAddInManager().EventRuntimeInstallAddIn()).Ctrl().SetPanicHandling(ctx.AutoRecover(), ctx.ReportError())
-	event.UnsafeEvent(ctx.getAddInManager().EventRuntimeUninstallAddIn()).Ctrl().SetPanicHandling(ctx.AutoRecover(), ctx.ReportError())
-	event.UnsafeEvent(ctx.getAddInManager().EventRuntimeAddInStateChanged()).Ctrl().SetPanicHandling(ctx.AutoRecover(), ctx.ReportError())
+	event.UnsafeEvent(ctx.getAddInManager().EventInstallAddIn()).Ctrl().SetPanicHandling(ctx.AutoRecover(), ctx.ReportError())
+	event.UnsafeEvent(ctx.getAddInManager().EventUninstallAddIn()).Ctrl().SetPanicHandling(ctx.AutoRecover(), ctx.ReportError())
+	event.UnsafeEvent(ctx.getAddInManager().EventAddInStateChanged()).Ctrl().SetPanicHandling(ctx.AutoRecover(), ctx.ReportError())
 
 	if ctx.options.RunningEventCB != nil {
 		BindEventContextRunningEvent(ctx, HandleEventContextRunningEvent(ctx.options.RunningEventCB))

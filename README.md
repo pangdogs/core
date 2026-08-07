@@ -5,7 +5,8 @@
 `core` is the execution kernel of the
 [**Golaxy Distributed Service Development Framework**](https://github.com/pangdogs/framework).
 It combines a service scope, actor-like runtime scopes, an entity-component
-model, prototype libraries, local events, add-ins, and async helpers into one
+model, prototype libraries, in-process synchronous signal-style events,
+add-ins, and async helpers into one
 coherent server-side programming model.
 
 The repository is aimed at realtime backend scenarios such as game servers,
@@ -21,8 +22,9 @@ runtime ownership and message-style execution.
   flow, dynamic component changes, and tree relationships.
 - An **entity prototype system** for declaring reusable entity/component
   compositions before runtimes start creating instances.
-- A **local event system** driven by code generation, used heavily throughout
-  the framework and available to application code.
+- An **in-process synchronous signal-style event system** driven by code
+  generation, used heavily throughout the framework and available to
+  application code.
 - **Async/Future helpers** for scheduling work back onto the owning runtime and
   coordinating concurrent results.
 
@@ -32,8 +34,15 @@ runtime ownership and message-style execution.
 - `runtime.Context` is an actor-like execution scope. It owns a task queue, an
   optional frame loop, the local entity manager, the entity tree, and runtime
   running events.
+- Service add-ins form a fixed startup set: install them before the service
+  enters `Starting`. The manager freezes at that transition, starts add-ins in
+  installation order, and stops them in reverse order.
+- Runtime add-ins remain hot-pluggable after startup. Their manager is serial
+  rather than concurrency-safe, so install, uninstall, and lookup operations
+  belong on the owning runtime goroutine.
 - Entities and components live inside a runtime. Their lifecycle is advanced by
-  `core.Runtime`, not by ad-hoc goroutine access.
+  `core.Runtime`, not by ad-hoc goroutine access. Only entities with
+  `Scope_Global` also appear in the service-level entity index.
 - Cross-goroutine or cross-runtime work should usually be marshaled back through
   `CallAsync`, `CallVoidAsync`, `Await`, or the caller APIs on `service.Context`
   and `runtime.Context`.
@@ -99,8 +108,19 @@ func main() {
 }
 ```
 
-## Local Events and Code Generation
-The event system is meant to be used through `go generate`.
+## Signal-Style Events and Code Generation
+Signal-style event helpers are meant to be generated through `go generate`.
+
+These events follow a signal/slot model: the sender emits synchronously on the
+current goroutine, and subscribers receive the signal in priority order. No
+task queue or cross-process transport is involved.
+
+Repository-wide generation also runs the checked-in `stringer` directives.
+Install `stringer` first and ensure `$GOBIN` (or `$GOPATH/bin`) is in `PATH`:
+
+```bash
+go install golang.org/x/tools/cmd/stringer@latest
+```
 
 1. Define an event interface in a `*_event.go` file.
 2. Add `//go:generate go run git.golaxy.org/core/event/eventc event`.
@@ -118,14 +138,14 @@ In-repo references:
 | Package | Responsibility |
 | --- | --- |
 | [`/`](https://github.com/pangdogs/core) | Public entry points, lifecycle interfaces, async helpers, and runtime/service wrappers. |
-| [`/service`](https://github.com/pangdogs/core/tree/main/service) | Service context, prototype access, global entity calls, and service running events. |
-| [`/runtime`](https://github.com/pangdogs/core/tree/main/runtime) | Runtime context, task scheduling, frame loop, entity manager, and entity tree. |
+| [`/service`](https://github.com/pangdogs/core/tree/main/service) | Service context, fixed-lifecycle add-in manager, prototype access, global entity index/calls, and running events. |
+| [`/runtime`](https://github.com/pangdogs/core/tree/main/runtime) | Runtime context, hot-pluggable add-in manager, task scheduling, frame loop, entity manager, and entity tree. |
 | [`/ec`](https://github.com/pangdogs/core/tree/main/ec) | Entity/component model, state machines, events, and tree-node behavior. |
 | [`/ec/pt`](https://github.com/pangdogs/core/tree/main/ec/pt) | Entity/component prototype descriptors, libraries, and construction support. |
 | [`/define`](https://github.com/pangdogs/core/tree/main/define) | Typed add-in definitions with `Install`, `Require`, `Lookup`, and `Uninstall` helpers. |
-| [`/extension`](https://github.com/pangdogs/core/tree/main/extension) | Low-level add-in managers, status objects, and add-in lifecycle events. |
-| [`/event`](https://github.com/pangdogs/core/tree/main/event) | Local event primitives, handles, recursion control, and event-table abstractions. |
-| [`/event/eventc`](https://github.com/pangdogs/core/tree/main/event/eventc) | Event code generator used through `go:generate`. |
+| [`/extension`](https://github.com/pangdogs/core/tree/main/extension) | Shared add-in contracts, declarations, lifecycle state, status interfaces, and provider helpers. |
+| [`/event`](https://github.com/pangdogs/core/tree/main/event) | In-process synchronous signal-style events, handles, recursion control, and event-table abstractions. |
+| [`/event/eventc`](https://github.com/pangdogs/core/tree/main/event/eventc) | Signal-style event code generator used through `go:generate`. |
 | [`/utils`](https://github.com/pangdogs/core/tree/main/utils) | Shared helper packages such as `assertion`, `async`, `corectx`, `generic`, `iface`, `meta`, `option`, `types`, and `uid`. |
 
 ## Installation

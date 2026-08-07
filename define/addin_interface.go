@@ -26,17 +26,18 @@ import (
 	"github.com/elliotchance/pie/v2"
 )
 
-// AddInInterface 定义通用插件接口，支持安装至运行时上下文和服务上下文，通常用于为同类插件的不同实现提供统一的接口
+// AddInInterface 创建不绑定构造函数的通用插件接口定义。
+// 它适合用同一名称约定访问同类插件的不同实现。
 func AddInInterface[ADDIN_IFACE any](name ...string) AddInInterfaceDefinition[ADDIN_IFACE] {
 	return defineAddInInterface[ADDIN_IFACE](pie.First(name))
 }
 
-// AddInInterfaceDefinition 通用插件接口定义
+// AddInInterfaceDefinition 封装通用插件接口的标识和访问操作。
 type AddInInterfaceDefinition[ADDIN_IFACE any] struct {
-	Id      uint64                                                        // 插件Id
-	Name    string                                                        // 插件名称
-	Require generic.Func1[extension.AddInProvider, ADDIN_IFACE]           // 依赖插件
-	Lookup  generic.FuncPair1[extension.AddInProvider, ADDIN_IFACE, bool] // 查找插件
+	Id      uint64                                                        // 由 Name 生成的插件 ID。
+	Name    string                                                        // 插件注册名称。
+	Require generic.Func1[extension.AddInProvider, ADDIN_IFACE]           // 获取正在运行的插件，不可用时 panic。
+	Lookup  generic.FuncPair1[extension.AddInProvider, ADDIN_IFACE, bool] // 查询管理器当前持有的插件。
 }
 
 func defineAddInInterface[ADDIN_IFACE any](name string) AddInInterfaceDefinition[ADDIN_IFACE] {

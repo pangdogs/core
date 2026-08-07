@@ -29,23 +29,23 @@ import (
 )
 
 type (
-	CustomGC = generic.Action1[Runtime] // 自定义GC函数
+	CustomGC = generic.Action1[Runtime] // 运行时完成内置清理后调用的自定义 GC 函数。
 )
 
-// RuntimeOptions 创建运行时的所有选项
+// RuntimeOptions 定义创建运行时及其工作循环时使用的选项。
 type RuntimeOptions struct {
-	InstanceFace                    iface.Face[Runtime] // 实例，用于扩展运行时能力
-	AutoRun                         bool                // 是否开启自动运行
-	ContinueOnActivatingEntityPanic bool                // 激活实体时发生panic是否继续，不继续将会主动删除实体
-	Frame                           FrameOptions        // 帧配置
-	TaskQueue                       TaskQueueOptions    // 任务处理流水线配置
-	GCInterval                      time.Duration       // GC间隔时长
-	CustomGC                        CustomGC            // 自定义GC
+	InstanceFace                    iface.Face[Runtime] // 自定义运行时实例及其接口缓存。
+	AutoRun                         bool                // 是否在 RunningEvent_Birth 后自动启动运行时。
+	ContinueOnActivatingEntityPanic bool                // 激活实体发生 panic 后是否继续；为 false 时销毁该实体。
+	Frame                           FrameOptions        // 帧循环配置。
+	TaskQueue                       TaskQueueOptions    // 任务队列配置。
+	GCInterval                      time.Duration       // 两次运行时 GC 之间的最短间隔。
+	CustomGC                        CustomGC            // 内置清理完成后执行的自定义 GC。
 }
 
 type _RuntimeOption struct{}
 
-// Default 运行时的默认值
+// Default 返回运行时选项的默认设置。
 func (_RuntimeOption) Default() option.Setting[RuntimeOptions] {
 	return func(options *RuntimeOptions) {
 		With.Runtime.InstanceFace(iface.Face[Runtime]{}).Apply(options)
@@ -58,42 +58,43 @@ func (_RuntimeOption) Default() option.Setting[RuntimeOptions] {
 	}
 }
 
-// InstanceFace 实例，用于扩展运行时能力
+// InstanceFace 设置用于扩展运行时能力的自定义实例。
 func (_RuntimeOption) InstanceFace(face iface.Face[Runtime]) option.Setting[RuntimeOptions] {
 	return func(options *RuntimeOptions) {
 		options.InstanceFace = face
 	}
 }
 
-// AutoRun 运行时是否开启自动运行
+// AutoRun 设置是否在 RunningEvent_Birth 后自动启动运行时。
 func (_RuntimeOption) AutoRun(b bool) option.Setting[RuntimeOptions] {
 	return func(options *RuntimeOptions) {
 		options.AutoRun = b
 	}
 }
 
-// ContinueOnActivatingEntityPanic 激活实体时发生panic是否继续，不继续将会主动删除实体
+// ContinueOnActivatingEntityPanic 设置激活实体发生 panic 后是否继续。
+// 设置为 false 时，运行时会主动销毁激活失败的实体。
 func (_RuntimeOption) ContinueOnActivatingEntityPanic(b bool) option.Setting[RuntimeOptions] {
 	return func(options *RuntimeOptions) {
 		options.ContinueOnActivatingEntityPanic = b
 	}
 }
 
-// Frame 帧配置
+// Frame 追加帧循环设置。
 func (_RuntimeOption) Frame(settings ...option.Setting[FrameOptions]) option.Setting[RuntimeOptions] {
 	return func(options *RuntimeOptions) {
 		options.Frame = option.Append(options.Frame, settings...)
 	}
 }
 
-// TaskQueue 任务处理流水线配置
+// TaskQueue 追加任务队列设置。
 func (_RuntimeOption) TaskQueue(settings ...option.Setting[TaskQueueOptions]) option.Setting[RuntimeOptions] {
 	return func(options *RuntimeOptions) {
 		options.TaskQueue = option.Append(options.TaskQueue, settings...)
 	}
 }
 
-// GCInterval 运行时的GC间隔时长
+// GCInterval 设置运行时 GC 的最短间隔，dur 必须大于 0。
 func (_RuntimeOption) GCInterval(dur time.Duration) option.Setting[RuntimeOptions] {
 	return func(options *RuntimeOptions) {
 		if dur <= 0 {
@@ -103,7 +104,7 @@ func (_RuntimeOption) GCInterval(dur time.Duration) option.Setting[RuntimeOption
 	}
 }
 
-// CustomGC 运行时的自定义GC
+// CustomGC 设置内置清理完成后执行的自定义 GC 函数。
 func (_RuntimeOption) CustomGC(fn CustomGC) option.Setting[RuntimeOptions] {
 	return func(options *RuntimeOptions) {
 		options.CustomGC = fn

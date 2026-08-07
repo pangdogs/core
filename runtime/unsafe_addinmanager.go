@@ -17,20 +17,18 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package extension
+package runtime
 
-// Deprecated: UnsafeRuntimeAddInManager 访问运行时插件管理器的内部方法
-func UnsafeRuntimeAddInManager(mgr RuntimeAddInManager) _UnsafeRuntimeAddInManager {
-	return _UnsafeRuntimeAddInManager{
-		RuntimeAddInManager: mgr,
-	}
+// Deprecated: UnsafeAddInManager 暴露运行时插件管理器的内部列表，仅供 core 使用。
+func UnsafeAddInManager(mgr AddInManager) _UnsafeAddInManager {
+	return _UnsafeAddInManager{AddInManager: mgr}
 }
 
-type _UnsafeRuntimeAddInManager struct {
-	RuntimeAddInManager
+type _UnsafeAddInManager struct {
+	AddInManager
 }
 
-// List 获取运行时插件状态列表
-func (mgr _UnsafeRuntimeAddInManager) List() []RuntimeAddInStatus {
+// List 按安装顺序返回当前运行时插件状态的副本。
+func (mgr _UnsafeAddInManager) List() []AddInStatus {
 	return mgr.getList()
 }

@@ -25,13 +25,14 @@ import (
 	"git.golaxy.org/core/utils/types"
 )
 
-// AddInProvider 插件提供者
+// AddInProvider 提供插件管理器。
 type AddInProvider interface {
-	// AddInManager 获取插件管理器
+	// AddInManager 返回关联的插件管理器。
 	AddInManager() AddInManager
 }
 
-// Install 安装插件
+// Install 将 addIn 安装到 provider，并返回插件状态。
+// provider 为 nil 时会 panic；具体生命周期和并发约束由管理器决定。
 func Install[T any](provider AddInProvider, addIn T, name ...string) AddInStatus {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrExtension, exception.ErrArgs)
@@ -39,7 +40,7 @@ func Install[T any](provider AddInProvider, addIn T, name ...string) AddInStatus
 	return provider.AddInManager().Install(iface.NewFaceAny(addIn), name...)
 }
 
-// Uninstall 卸载插件
+// Uninstall 从 provider 卸载指定名称的插件。
 func Uninstall(provider AddInProvider, name string) {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrExtension, exception.ErrArgs)
@@ -47,7 +48,9 @@ func Uninstall(provider AddInProvider, name string) {
 	provider.AddInManager().Uninstall(name)
 }
 
-// Require 依赖插件
+// Require 返回指定 ID 且处于 Running 状态的插件实例。
+// 插件不存在、尚未运行、已经卸载或 provider 为 nil 时会 panic。
+// T 必须是插件实际实例实现的接口类型。
 func Require[T any](provider AddInProvider, id uint64) T {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrExtension, exception.ErrArgs)
@@ -65,7 +68,9 @@ func Require[T any](provider AddInProvider, id uint64) T {
 	return iface.Cache2Iface[T](status.InstanceFace().Cache)
 }
 
-// Lookup 查找插件
+// Lookup 查询指定 ID 的插件实例。
+// 只要管理器仍持有该插件就会返回 true，不要求插件处于 Running 状态。
+// T 必须是插件实际实例实现的接口类型。
 func Lookup[T any](provider AddInProvider, id uint64) (T, bool) {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrExtension, exception.ErrArgs)

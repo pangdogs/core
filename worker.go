@@ -22,10 +22,10 @@ package core
 import "git.golaxy.org/core/utils/async"
 
 type iWorker interface {
-	// Run 运行
+	// Run 启动工作循环并返回终止信号。
 	Run() async.Future
-	// Terminate 停止
+	// Terminate 请求停止并返回终止信号。
 	Terminate() async.Future
-	// Terminated 已停止
+	// Terminated 返回终止信号。
 	Terminated() async.Future
 }

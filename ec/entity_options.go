@@ -26,21 +26,22 @@ import (
 	"git.golaxy.org/core/utils/uid"
 )
 
-// EntityOptions 创建实体的所有选项
+// EntityOptions 定义实体的构造选项。
 type EntityOptions struct {
-	InstanceFace               iface.Face[Entity] // 实例，用于扩展实体能力
-	Scope                      Scope              // 可访问作用域
-	PersistId                  uid.Id             // 实体持久化Id
-	ComponentAwakeOnFirstTouch bool               // 当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
-	ComponentUniqueID          bool               // 是否为实体组件分配唯一Id
-	Meta                       meta.Meta          // Meta信息
+	InstanceFace               iface.Face[Entity] // InstanceFace 是用于扩展实体行为的实际实例。
+	Scope                      Scope              // Scope 是实体的可查询范围。
+	PersistId                  uid.Id             // PersistId 是实体的持久化 ID；Nil 表示由框架分配。
+	ComponentAwakeOnFirstTouch bool               // ComponentAwakeOnFirstTouch 指示组件首次被访问时是否推进至 Awakened。
+	ComponentUniqueID          bool               // ComponentUniqueID 指示是否为每个组件分配唯一 ID。
+	Meta                       meta.Meta          // Meta 是随实体携带的元数据。
 }
 
+// With 提供实体选项构造器。
 var With _EntityOption
 
 type _EntityOption struct{}
 
-// Default 默认值
+// Default 返回实体选项的默认设置。
 func (_EntityOption) Default() option.Setting[EntityOptions] {
 	return func(options *EntityOptions) {
 		With.InstanceFace(iface.Face[Entity]{}).Apply(options)
@@ -52,42 +53,42 @@ func (_EntityOption) Default() option.Setting[EntityOptions] {
 	}
 }
 
-// InstanceFace 实例，用于扩展实体能力
+// InstanceFace 设置用于扩展实体行为的实际实例。
 func (_EntityOption) InstanceFace(face iface.Face[Entity]) option.Setting[EntityOptions] {
 	return func(options *EntityOptions) {
 		options.InstanceFace = face
 	}
 }
 
-// Scope 可访问作用域
+// Scope 设置实体的可查询范围。
 func (_EntityOption) Scope(scope Scope) option.Setting[EntityOptions] {
 	return func(options *EntityOptions) {
 		options.Scope = scope
 	}
 }
 
-// PersistId 实体持久化Id
+// PersistId 设置实体的持久化 ID。
 func (_EntityOption) PersistId(id uid.Id) option.Setting[EntityOptions] {
 	return func(options *EntityOptions) {
 		options.PersistId = id
 	}
 }
 
-// ComponentAwakeOnFirstTouch 当实体组件首次被访问时，生命周期是否进入唤醒（Awake）
+// ComponentAwakeOnFirstTouch 设置组件是否在首次被访问时推进至 Awakened。
 func (_EntityOption) ComponentAwakeOnFirstTouch(b bool) option.Setting[EntityOptions] {
 	return func(options *EntityOptions) {
 		options.ComponentAwakeOnFirstTouch = b
 	}
 }
 
-// ComponentUniqueID 是否为实体组件分配唯一Id
+// ComponentUniqueID 设置是否为实体的每个组件分配唯一 ID。
 func (_EntityOption) ComponentUniqueID(b bool) option.Setting[EntityOptions] {
 	return func(options *EntityOptions) {
 		options.ComponentUniqueID = b
 	}
 }
 
-// Meta Meta信息
+// Meta 设置实体元数据。
 func (_EntityOption) Meta(m meta.Meta) option.Setting[EntityOptions] {
 	return func(options *EntityOptions) {
 		options.Meta = m

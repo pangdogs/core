@@ -19,28 +19,28 @@
 
 package core
 
-// LifecycleEntityAwake 实体的生命周期进入唤醒（Awake）时的回调，与死亡（Death）成对，只会调用一次，实体实现此接口即可使用
+// LifecycleEntityAwake 在实体进入 Awakened 状态时调用，每个实体最多调用一次。
 type LifecycleEntityAwake interface {
 	Awake()
 }
 
-// LifecycleEntityStart 实体的生命周期进入开始（Start）时的回调，与结束（Shut）成对，只会调用一次，实体实现此接口即可使用
+// LifecycleEntityStart 在实体进入 Starting 状态时调用，每个实体最多调用一次。
 type LifecycleEntityStart interface {
 	Start()
 }
 
-// LifecycleEntityUpdate 如果开启运行时的帧更新特性，那么实体状态为活跃（Alive）时，将会收到这个帧更新（Update）回调，实体实现此接口即可使用
+// LifecycleEntityUpdate 在启用帧循环且实体处于 Alive 状态时接收每帧更新。
 type LifecycleEntityUpdate = eventUpdate
 
-// LifecycleEntityLateUpdate 如果开启运行时的帧更新特性，那么实体状态为活跃（Alive）时，将会收到这个帧迟滞更新（Late Update）回调，实体实现此接口即可使用
+// LifecycleEntityLateUpdate 在每帧普通更新结束后接收后置更新。
 type LifecycleEntityLateUpdate = eventLateUpdate
 
-// LifecycleEntityShut 实体的生命周期进入结束（Shut）时的回调，与开始（Start）成对，只会调用一次，实体实现此接口即可使用
+// LifecycleEntityShut 在已开始的实体进入 Shutting 状态时调用，与 LifecycleEntityStart 成对。
 type LifecycleEntityShut interface {
 	Shut()
 }
 
-// LifecycleEntityDispose 实体的生命周期进入死亡（Death）时的回调，与唤醒（Awake）成对，只会调用一次，实体实现此接口即可使用
+// LifecycleEntityDispose 在已唤醒的实体进入 Dead 状态时调用，与 LifecycleEntityAwake 成对。
 type LifecycleEntityDispose interface {
 	Dispose()
 }

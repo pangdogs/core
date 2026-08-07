@@ -8,20 +8,20 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[EntityState_Birth-0]
-	_ = x[EntityState_Enter-1]
-	_ = x[EntityState_Awake-2]
-	_ = x[EntityState_Start-3]
+	_ = x[EntityState_Born-0]
+	_ = x[EntityState_Entered-1]
+	_ = x[EntityState_Awakened-2]
+	_ = x[EntityState_Starting-3]
 	_ = x[EntityState_Alive-4]
-	_ = x[EntityState_Leave-5]
-	_ = x[EntityState_Shut-6]
-	_ = x[EntityState_Death-7]
+	_ = x[EntityState_Leaving-5]
+	_ = x[EntityState_Shutting-6]
+	_ = x[EntityState_Dead-7]
 	_ = x[EntityState_Destroyed-8]
 }
 
-const _EntityState_name = "EntityState_BirthEntityState_EnterEntityState_AwakeEntityState_StartEntityState_AliveEntityState_LeaveEntityState_ShutEntityState_DeathEntityState_Destroyed"
+const _EntityState_name = "EntityState_BornEntityState_EnteredEntityState_AwakenedEntityState_StartingEntityState_AliveEntityState_LeavingEntityState_ShuttingEntityState_DeadEntityState_Destroyed"
 
-var _EntityState_index = [...]uint8{0, 17, 34, 51, 68, 85, 102, 118, 135, 156}
+var _EntityState_index = [...]uint8{0, 16, 35, 55, 75, 92, 111, 131, 147, 168}
 
 func (i EntityState) String() string {
 	idx := int(i) - 0

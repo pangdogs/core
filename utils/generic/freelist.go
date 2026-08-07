@@ -24,7 +24,7 @@ import (
 	"git.golaxy.org/core/utils/types"
 )
 
-// NewFreeList 创建自由链表
+// NewFreeList 创建空槽链表；FreeList 的零值同样可用。
 func NewFreeList[T any]() *FreeList[T] {
 	return &FreeList[T]{}
 }
@@ -37,7 +37,10 @@ const (
 	freeSlotState_Orphaned
 )
 
-// FreeSlot 自由链表槽位
+// FreeSlot 是 FreeList 中可复用的槽位。
+//
+// Index 会被后续元素复用，应与 Version 一起作为句柄校验。扩容可能使已保存的槽位指针
+// 指向旧切片，因此槽位指针只适合短期使用。
 type FreeSlot[T any] struct {
 	V               T
 	idx, prev, next int
@@ -47,12 +50,12 @@ type FreeSlot[T any] struct {
 	state           freeSlotState
 }
 
-// Version 被占用时的数据版本号
+// Version 返回该槽位当前占用或移动版本。
 func (s *FreeSlot[T]) Version() int64 {
 	return s.ver
 }
 
-// Prev 前一个槽位
+// Prev 返回链表顺序中的前一槽位；不存在或当前槽位已释放时返回 nil。
 func (s *FreeSlot[T]) Prev() *FreeSlot[T] {
 	if s.list == nil || s.Freed() {
 		return nil
@@ -64,7 +67,7 @@ func (s *FreeSlot[T]) Prev() *FreeSlot[T] {
 	return slotPrev
 }
 
-// Next 下一个槽位
+// Next 返回链表顺序中的后一槽位；不存在或当前槽位已释放时返回 nil。
 func (s *FreeSlot[T]) Next() *FreeSlot[T] {
 	if s.list == nil || s.Freed() {
 		return nil
@@ -76,12 +79,13 @@ func (s *FreeSlot[T]) Next() *FreeSlot[T] {
 	return slotNext
 }
 
-// Index 槽位索引
+// Index 返回可复用的槽位索引。
 func (s *FreeSlot[T]) Index() int {
 	return s.idx
 }
 
-// Free 释放
+// Free 释放当前版本的槽位；重复调用无效。
+// 遍历期间释放会先将槽位置为悬空，待最外层遍历结束后回收。
 func (s *FreeSlot[T]) Free() {
 	if s.list == nil {
 		return
@@ -89,17 +93,20 @@ func (s *FreeSlot[T]) Free() {
 	s.list.ReleaseIfVersion(s.idx, s.ver)
 }
 
-// Orphaned 是否悬空准备释放
+// Orphaned 报告槽位是否已标记释放、正等待遍历结束后回收。
 func (s *FreeSlot[T]) Orphaned() bool {
 	return s.state == freeSlotState_Orphaned
 }
 
-// Freed 是否已被释放
+// Freed 报告槽位是否已回收到空闲链。
 func (s *FreeSlot[T]) Freed() bool {
 	return s.state == freeSlotState_Freed
 }
 
-// FreeList 自由链表
+// FreeList 是以可复用切片槽位实现的有序链表。
+//
+// 它提供稳定索引与版本组合句柄，并允许遍历回调释放元素。零值可用、首次使用后不可
+// 复制，且不提供并发保护。
 type FreeList[T any] struct {
 	_               noCopy
 	slots           []FreeSlot[T]
@@ -114,32 +121,32 @@ type FreeList[T any] struct {
 	depth           int
 }
 
-// Cap 总容量
+// Cap 返回当前已分配的槽位数量。
 func (l *FreeList[T]) Cap() int {
 	return len(l.slots)
 }
 
-// Len 链表长度
+// Len 返回链表中的槽位数；遍历期间包含尚未回收的悬空槽位。
 func (l *FreeList[T]) Len() int {
 	return l.len
 }
 
-// Version 数据版本号
+// Version 返回链表最近一次结构变更的版本。
 func (l *FreeList[T]) Version() int64 {
 	return l.ver
 }
 
-// OrphanCount 悬空槽位数量
+// OrphanCount 返回等待遍历结束后回收的槽位数。
 func (l *FreeList[T]) OrphanCount() int {
 	return l.orphanCount
 }
 
-// Depth 遍历递归深度
+// Depth 返回当前嵌套遍历深度。
 func (l *FreeList[T]) Depth() int {
 	return l.depth
 }
 
-// Front 链表头部
+// Front 返回链表头槽位；空表返回 nil。遍历期间返回值可能已悬空。
 func (l *FreeList[T]) Front() *FreeSlot[T] {
 	if l.ver <= 0 || l.head < 0 {
 		return nil
@@ -147,7 +154,7 @@ func (l *FreeList[T]) Front() *FreeSlot[T] {
 	return &l.slots[l.head]
 }
 
-// Back 链表尾部
+// Back 返回链表尾槽位；空表返回 nil。遍历期间返回值可能已悬空。
 func (l *FreeList[T]) Back() *FreeSlot[T] {
 	if l.ver <= 0 || l.tail < 0 {
 		return nil
@@ -155,7 +162,8 @@ func (l *FreeList[T]) Back() *FreeSlot[T] {
 	return &l.slots[l.tail]
 }
 
-// Get 获取槽位
+// Get 返回底层指定索引的槽位；索引无效时返回 nil。
+// 返回的槽位可能尚未使用、已悬空或已释放，调用方必须检查其状态和版本。
 func (l *FreeList[T]) Get(idx int) *FreeSlot[T] {
 	if l.ver <= 0 || idx < 0 || idx >= len(l.slots) {
 		return nil
@@ -163,7 +171,7 @@ func (l *FreeList[T]) Get(idx int) *FreeSlot[T] {
 	return &l.slots[idx]
 }
 
-// Release 释放槽位
+// Release 释放指定索引当前对应的槽位；索引无效或已释放时无效。
 func (l *FreeList[T]) Release(idx int) {
 	slot := l.Get(idx)
 	if slot == nil || slot.Freed() {
@@ -176,7 +184,7 @@ func (l *FreeList[T]) Release(idx int) {
 	l.release(slot)
 }
 
-// ReleaseIfVersion 数据版本号匹配时释放槽位
+// ReleaseIfVersion 仅在索引与版本同时匹配时释放槽位。
 func (l *FreeList[T]) ReleaseIfVersion(idx int, ver int64) {
 	slot := l.Get(idx)
 	if slot == nil || slot.Freed() || slot.Version() != ver {
@@ -189,7 +197,7 @@ func (l *FreeList[T]) ReleaseIfVersion(idx int, ver int64) {
 	l.release(slot)
 }
 
-// ReleaseOrphans 释放悬空槽位
+// ReleaseOrphans 回收全部悬空槽位；仍处于遍历中时无效。
 func (l *FreeList[T]) ReleaseOrphans() {
 	if l.ver <= 0 {
 		return
@@ -197,19 +205,19 @@ func (l *FreeList[T]) ReleaseOrphans() {
 	l.releaseOrphans()
 }
 
-// PushFront 在链表头部插入数据
+// PushFront 在链表头部插入值并返回新槽位。
 func (l *FreeList[T]) PushFront(value T) *FreeSlot[T] {
 	l.lazyInit()
 	return l.appendValue(value, -1)
 }
 
-// PushBack 在链表尾部插入数据
+// PushBack 在链表尾部插入值并返回新槽位。
 func (l *FreeList[T]) PushBack(value T) *FreeSlot[T] {
 	l.lazyInit()
 	return l.appendValue(value, l.tail)
 }
 
-// PopFront 弹出链表头部数据
+// PopFront 移除并返回头部值；空表返回 T 的零值与 false。
 func (l *FreeList[T]) PopFront() (T, bool) {
 	slot := l.Front()
 	if slot == nil {
@@ -220,7 +228,7 @@ func (l *FreeList[T]) PopFront() (T, bool) {
 	return v, true
 }
 
-// PopBack 弹出链表尾部数据
+// PopBack 移除并返回尾部值；空表返回 T 的零值与 false。
 func (l *FreeList[T]) PopBack() (T, bool) {
 	slot := l.Back()
 	if slot == nil {
@@ -231,7 +239,7 @@ func (l *FreeList[T]) PopBack() (T, bool) {
 	return v, true
 }
 
-// InsertBefore 在链表指定位置前插入数据
+// InsertBefore 在索引 at 对应槽位前插入值；位置无效时返回 nil。
 func (l *FreeList[T]) InsertBefore(value T, at int) *FreeSlot[T] {
 	slotAt := l.Get(at)
 	if slotAt == nil || slotAt.Freed() {
@@ -240,7 +248,7 @@ func (l *FreeList[T]) InsertBefore(value T, at int) *FreeSlot[T] {
 	return l.appendValue(value, slotAt.prev)
 }
 
-// InsertAfter 在链表指定位置后插入数据
+// InsertAfter 在索引 at 对应槽位后插入值；位置无效时返回 nil。
 func (l *FreeList[T]) InsertAfter(value T, at int) *FreeSlot[T] {
 	slotAt := l.Get(at)
 	if slotAt == nil || slotAt.Freed() {
@@ -249,7 +257,7 @@ func (l *FreeList[T]) InsertAfter(value T, at int) *FreeSlot[T] {
 	return l.appendValue(value, at)
 }
 
-// MoveToFront 移动槽位至链表头部
+// MoveToFront 将指定槽位移动到链表头；位置无效时无效。
 func (l *FreeList[T]) MoveToFront(idx int) {
 	slot := l.Get(idx)
 	if slot == nil || slot.Freed() {
@@ -258,7 +266,7 @@ func (l *FreeList[T]) MoveToFront(idx int) {
 	l.moveAfter(slot, -1)
 }
 
-// MoveToBack 移动槽位至链表尾部
+// MoveToBack 将指定槽位移动到链表尾；位置无效时无效。
 func (l *FreeList[T]) MoveToBack(idx int) {
 	slot := l.Get(idx)
 	if slot == nil || slot.Freed() {
@@ -267,7 +275,7 @@ func (l *FreeList[T]) MoveToBack(idx int) {
 	l.moveAfter(slot, l.tail)
 }
 
-// MoveBefore 移动槽位至链表指定位置前
+// MoveBefore 将 idx 对应槽位移动到 at 对应槽位之前；任一位置无效时无效。
 func (l *FreeList[T]) MoveBefore(idx, at int) {
 	if idx == at {
 		return
@@ -283,7 +291,7 @@ func (l *FreeList[T]) MoveBefore(idx, at int) {
 	l.moveAfter(slot, slotAt.prev)
 }
 
-// MoveAfter 移动槽位至链表指定位置后
+// MoveAfter 将 idx 对应槽位移动到 at 对应槽位之后；任一位置无效时无效。
 func (l *FreeList[T]) MoveAfter(idx, at int) {
 	if idx == at {
 		return
@@ -299,7 +307,7 @@ func (l *FreeList[T]) MoveAfter(idx, at int) {
 	l.moveAfter(slot, at)
 }
 
-// PushFrontList 在链表头部插入其他链表，跳过悬空节点，可以传入自身
+// PushFrontList 将 other 的活动值副本插入头部并保持原顺序；other 可以是自身。
 func (l *FreeList[T]) PushFrontList(other *FreeList[T]) {
 	if other == nil {
 		return
@@ -312,7 +320,7 @@ func (l *FreeList[T]) PushFrontList(other *FreeList[T]) {
 	}
 }
 
-// PushBackList 在链表尾部插入其他链表，跳过悬空节点，可以传入自身
+// PushBackList 将 other 的活动值副本追加到尾部并保持原顺序；other 可以是自身。
 func (l *FreeList[T]) PushBackList(other *FreeList[T]) {
 	if other == nil {
 		return
@@ -325,7 +333,8 @@ func (l *FreeList[T]) PushBackList(other *FreeList[T]) {
 	}
 }
 
-// Traversal 遍历槽位，跳过悬空节点
+// Traversal 从头到尾遍历活动槽位；visitor 返回 false 时停止。
+// visitor 为 nil 时无效，回调中释放的槽位会延迟到最外层遍历结束后回收。
 func (l *FreeList[T]) Traversal(visitor func(slot *FreeSlot[T]) bool) {
 	if l.ver <= 0 || visitor == nil {
 		return
@@ -346,7 +355,7 @@ func (l *FreeList[T]) Traversal(visitor func(slot *FreeSlot[T]) bool) {
 	}
 }
 
-// TraversalEach 遍历每个槽位，跳过悬空节点
+// TraversalEach 从头到尾遍历全部活动槽位。
 func (l *FreeList[T]) TraversalEach(visitor func(slot *FreeSlot[T])) {
 	if l.ver <= 0 || visitor == nil {
 		return
@@ -365,7 +374,7 @@ func (l *FreeList[T]) TraversalEach(visitor func(slot *FreeSlot[T])) {
 	}
 }
 
-// TraversalAt 从指定位置开始遍历槽位，跳过悬空节点
+// TraversalAt 从索引 at 对应槽位开始向后遍历；visitor 返回 false 时停止。
 func (l *FreeList[T]) TraversalAt(visitor func(slot *FreeSlot[T]) bool, at int) {
 	if l.ver <= 0 || visitor == nil {
 		return
@@ -390,7 +399,7 @@ func (l *FreeList[T]) TraversalAt(visitor func(slot *FreeSlot[T]) bool, at int) 
 	}
 }
 
-// TraversalEachAt 从指定位置开始遍历每个槽位，跳过悬空节点
+// TraversalEachAt 从索引 at 对应槽位开始向后遍历全部活动槽位。
 func (l *FreeList[T]) TraversalEachAt(visitor func(slot *FreeSlot[T]), at int) {
 	if l.ver <= 0 || visitor == nil {
 		return
@@ -413,7 +422,7 @@ func (l *FreeList[T]) TraversalEachAt(visitor func(slot *FreeSlot[T]), at int) {
 	}
 }
 
-// ReversedTraversal 反向遍历槽位，跳过悬空节点
+// ReversedTraversal 从尾到头遍历活动槽位；visitor 返回 false 时停止。
 func (l *FreeList[T]) ReversedTraversal(visitor func(slot *FreeSlot[T]) bool) {
 	if l.ver <= 0 || visitor == nil {
 		return
@@ -434,7 +443,7 @@ func (l *FreeList[T]) ReversedTraversal(visitor func(slot *FreeSlot[T]) bool) {
 	}
 }
 
-// ReversedTraversalAt 从指定位置开始反向遍历槽位，跳过悬空节点
+// ReversedTraversalAt 从索引 at 对应槽位开始向前遍历；visitor 返回 false 时停止。
 func (l *FreeList[T]) ReversedTraversalAt(visitor func(slot *FreeSlot[T]) bool, at int) {
 	if l.ver <= 0 || visitor == nil {
 		return
@@ -459,7 +468,7 @@ func (l *FreeList[T]) ReversedTraversalAt(visitor func(slot *FreeSlot[T]) bool, 
 	}
 }
 
-// ReversedTraversalEach 反向遍历槽位，跳过悬空节点
+// ReversedTraversalEach 从尾到头遍历全部活动槽位。
 func (l *FreeList[T]) ReversedTraversalEach(visitor func(slot *FreeSlot[T])) {
 	if l.ver <= 0 || visitor == nil {
 		return
@@ -478,7 +487,7 @@ func (l *FreeList[T]) ReversedTraversalEach(visitor func(slot *FreeSlot[T])) {
 	}
 }
 
-// ReversedTraversalEachAt 从指定位置开始反向遍历每个槽位，跳过悬空节点
+// ReversedTraversalEachAt 从索引 at 对应槽位开始向前遍历全部活动槽位。
 func (l *FreeList[T]) ReversedTraversalEachAt(visitor func(slot *FreeSlot[T]), at int) {
 	if l.ver <= 0 || visitor == nil {
 		return
@@ -501,7 +510,7 @@ func (l *FreeList[T]) ReversedTraversalEachAt(visitor func(slot *FreeSlot[T]), a
 	}
 }
 
-// Clone 拷贝链表，跳过悬空节点
+// Clone 返回仅包含活动值的浅拷贝；nil 接收者返回 nil。
 func (l *FreeList[T]) Clone() *FreeList[T] {
 	if l == nil {
 		return nil
@@ -520,7 +529,7 @@ func (l *FreeList[T]) Clone() *FreeList[T] {
 	return copied
 }
 
-// ToSlice 链表所有数据转换为切片，跳过悬空节点
+// ToSlice 按链表顺序返回全部活动值的切片副本。
 func (l *FreeList[T]) ToSlice() []T {
 	slice := make([]T, 0, l.Len()-l.OrphanCount())
 	l.TraversalEach(func(slot *FreeSlot[T]) {

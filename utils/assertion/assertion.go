@@ -32,38 +32,12 @@ import (
 	"git.golaxy.org/core/utils/types"
 )
 
-// As 从实体中提取一些需要的组件，复合在一起直接使用。
-/*
-示例：
-	type IA interface {
-		MethodA()
-	}
-	...
-	type IB interface {
-		MethodB()
-	}
-	...
-	type CompositeAB struct {
-		IA `ec:"A"`			// 指定组件名
-		IB `ec:",CompB"`	// 指定组件原型名
-	}
-	...
-	entity.AddComponent("A", compA)
-	entity.AddComponent("B", compB)
-	...
-	v, ok := As[CompositeAB](entity)
-	if ok {
-		v.MethodA()
-		v.MethodB()
-	}
-
-注意：
-	1.类型参数必须为结构体类型，可以是匿名结构体。
-	2.内部逻辑有使用反射，为了提高性能，可以使用一次后存储转换结果重复使用。
-	3.实体更新组件后，需要重新提取。
-	4.需要使用tag标记组件名或组件原型名，若没有标记，将会尝试使用字段名作为组件名去查找。
-	5.提取失败会返回false。
-*/
+// As 创建 T 并从 entity 向其字段注入匹配组件。
+//
+// T 必须是结构体。字段标签格式为 `ec:"组件名,完整组件原型名"`；指针字段未标注
+// 标签时会按字段类型推导名称和原型。未找到组件的字段保持零值，不影响 ok；只有注入
+// 参数或动态添加组件出错时 ok 才为 false。返回值反映调用时的组件快照，实体组件变化后
+// 应重新提取。
 func As[T any](entity ec.Entity) (*T, bool) {
 	target := types.New[T]()
 
@@ -74,35 +48,8 @@ func As[T any](entity ec.Entity) (*T, bool) {
 	return target, true
 }
 
-// Cast 从实体中提取一些需要的组件，复合在一起直接使用，提取失败会panic。
-/*
-示例：
-	type IA interface {
-		MethodA()
-	}
-	...
-	type IB interface {
-		MethodB()
-	}
-	...
-	type CompositeAB struct {
-		IA `ec:"A"`			// 指定组件名
-		IB `ec:",CompB"`	// 指定组件原型名
-	}
-	...
-	entity.AddComponent("A", compA)
-	entity.AddComponent("B", compB)
-	...
-	Cast[CompositeAB](entity).MethodA()
-	Cast[CompositeAB](entity).MethodB()
-
-注意：
-	1.类型参数必须为结构体类型，可以是匿名结构体。
-	2.内部逻辑有使用反射，为了提高性能，可以使用一次后存储转换结果重复使用。
-	3.实体更新组件后，需要重新提取。
-	4.需要使用tag标记组件名或组件原型名，若没有标记，将会尝试使用字段名作为组件名去查找。
-	5.提取失败会panic。
-*/
+// Cast 与 As 相同地创建并注入 T，但在 InjectRV 返回错误时 panic。
+// 未找到匹配组件的字段仍保持零值，不会单独触发 panic。
 func Cast[T any](entity ec.Entity) *T {
 	target := types.New[T]()
 
@@ -113,12 +60,15 @@ func Cast[T any](entity ec.Entity) *T {
 	return target
 }
 
-// Inject 向目标注入组件
+// Inject 使用反射向非 nil 结构体指针 target 注入 entity 的匹配组件。
+// 该操作可能按已声明原型创建并添加缺失组件。
 func Inject(entity ec.Entity, target any) error {
 	return InjectRV(entity, reflect.ValueOf(target))
 }
 
-// InjectRV 向目标注入组件
+// InjectRV 向可寻址结构体或可解引用到结构体的 target 注入匹配组件。
+// 未找到匹配组件时保留字段原值；entity 为 nil、target 可解引用但为 nil、
+// target 类型不受支持或动态添加失败时返回错误。无效的 reflect.Value 会在读取类型时 panic。
 func InjectRV(entity ec.Entity, target reflect.Value) error {
 	if entity == nil {
 		return fmt.Errorf("%w: %w: entity is nil", exception.ErrCore, exception.ErrArgs)

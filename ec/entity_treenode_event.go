@@ -23,35 +23,35 @@ package ec
 
 import "git.golaxy.org/core/utils/uid"
 
-// EventTreeNodeAddChild 事件：实体节点添加子实体
+// EventTreeNodeAddChild 在实体节点加入直接子实体时同步派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventTreeNodeAddChild interface {
 	OnTreeNodeAddChild(entity Entity, childId uid.Id)
 }
 
-// EventTreeNodeRemoveChild 事件：实体节点删除子实体
+// EventTreeNodeRemoveChild 在直接子实体离开实体节点时同步派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventTreeNodeRemoveChild interface {
 	OnTreeNodeRemoveChild(entity Entity, childId uid.Id)
 }
 
-// EventTreeNodeAttachParent 事件：实体加入父实体节点
+// EventTreeNodeAttachParent 在实体接入父节点时同步派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventTreeNodeAttachParent interface {
 	OnTreeNodeAttachParent(entity Entity, parentId uid.Id)
 }
 
-// EventTreeNodeDetachParent 事件：实体离开父实体节点
+// EventTreeNodeDetachParent 在实体脱离父节点时同步派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventTreeNodeDetachParent interface {
 	OnTreeNodeDetachParent(entity Entity, parentId uid.Id)
 }
 
-// EventTreeNodeMoveTo 事件：实体切换父节点
+// EventTreeNodeMoveTo 在实体从一个父节点移动到另一个父节点时同步派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventTreeNodeMoveTo interface {

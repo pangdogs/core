@@ -24,20 +24,22 @@ import (
 )
 
 var (
-	NilCache Cache // nil cache
+	NilCache Cache // NilCache 是空接口缓存。
 )
 
-// Cache 接口存储器，因为Golang原生的接口转换性能较差，所以在某些性能要求较高的场景下，需要尽量较少接口转换。
-// 如果必须转换接口，那么目前可用的优化方案是，在编码时已知接口类型，可以将接口转换为[2]unsafe.Pointer，使用时再转换回接口。
-// Cache套件就是使用此优化方案，注意不安全，在明确了解此方案时再使用。
+// Cache 保存 Go 接口值的类型字与数据字，用于跳过高频接口断言。
+// Cache 只能保存接口值，不能直接保存具体类型值。
+//
+// 该表示依赖 Go 运行时内部布局。恢复时的目标必须是缓存对象确实实现的接口类型；
+// Cache2Iface 不会进行运行时兼容性检查，错误使用可能导致未定义行为。
 type Cache [2]unsafe.Pointer
 
-// Cache2Iface 接口存储器（Cache）转换为接口
+// Cache2Iface 将 c 直接重解释为 T，不执行类型兼容性检查；T 必须是接口类型。
 func Cache2Iface[T any](c Cache) T {
 	return *(*T)(unsafe.Pointer(&c))
 }
 
-// Iface2Cache 接口转换为接口存储器（Cache）
+// Iface2Cache 将接口值 i 的内部表示保存为 Cache；T 必须是接口类型，不能是具体类型。
 func Iface2Cache[T any](i T) Cache {
 	return *(*Cache)(unsafe.Pointer(&i))
 }

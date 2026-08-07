@@ -21,13 +21,15 @@ package reinterpret
 
 import "git.golaxy.org/core/utils/iface"
 
-// InstanceProvider 支持重新解释类型
+// InstanceProvider 提供实际实例的接口缓存，以支持快速重解释。
 type InstanceProvider interface {
-	// InstanceFaceCache 获取实例接口缓存
+	// InstanceFaceCache 返回实际实例的接口缓存。
 	InstanceFaceCache() iface.Cache
 }
 
-// Cast 重新解释类型
+// Cast 将 cp 缓存的实际实例重解释为 T。
+//
+// 该函数不执行类型兼容性检查；cp 必须非 nil 且实例必须实现 T。
 func Cast[T any](cp InstanceProvider) T {
 	return iface.Cache2Iface[T](cp.InstanceFaceCache())
 }

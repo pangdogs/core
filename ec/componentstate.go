@@ -20,20 +20,20 @@
 //go:generate stringer -type ComponentState
 package ec
 
-// ComponentState 组件状态
+// ComponentState 表示组件生命周期所处的阶段；状态通常由所属实体的 Runtime 推进。
 type ComponentState int8
 
 const (
-	ComponentState_Birth     ComponentState = iota // 出生
-	ComponentState_Attach                          // 附着
-	ComponentState_Awake                           // 唤醒
-	ComponentState_Enable                          // 启用
-	ComponentState_Idle                            // 空闲
-	ComponentState_Start                           // 开始
-	ComponentState_Alive                           // 活跃
-	ComponentState_Detach                          // 脱离
-	ComponentState_Shut                            // 结束
-	ComponentState_Disable                         // 禁用
-	ComponentState_Death                           // 死亡
-	ComponentState_Destroyed                       // 已销毁
+	ComponentState_Born      ComponentState = iota // ComponentState_Born 表示组件已构造、尚未依附实体。
+	ComponentState_Attached                        // ComponentState_Attached 表示组件已加入实体。
+	ComponentState_Awakened                        // ComponentState_Awakened 表示组件已完成唤醒。
+	ComponentState_Enabling                        // ComponentState_Enabling 表示组件正在执行启用阶段。
+	ComponentState_Idle                            // ComponentState_Idle 表示组件已唤醒但当前未启用。
+	ComponentState_Starting                        // ComponentState_Starting 表示组件正在执行启动阶段。
+	ComponentState_Alive                           // ComponentState_Alive 表示组件已启动并处于活动状态。
+	ComponentState_Detaching                       // ComponentState_Detaching 表示组件正在脱离实体。
+	ComponentState_Shutting                        // ComponentState_Shutting 表示组件正在执行关闭阶段。
+	ComponentState_Disabling                       // ComponentState_Disabling 表示组件正在执行禁用阶段。
+	ComponentState_Dead                            // ComponentState_Dead 表示组件已死亡，事件表已停用。
+	ComponentState_Destroyed                       // ComponentState_Destroyed 表示组件已完成销毁并释放托管句柄。
 )

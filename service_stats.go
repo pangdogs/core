@@ -19,18 +19,18 @@
 
 package core
 
-// ServiceStats 服务统计信息
+// ServiceStats 描述服务当前的等待组状态。
 type ServiceStats struct {
-	WaitGroupCount  int64 // 等待组任务数量
-	WaitGroupClosed bool  // 等待组是否已关闭
+	WaitGroupCount  int64 // 尚未完成的等待组任务数。
+	WaitGroupClosed bool  // 等待组是否已经关闭并拒绝新任务。
 }
 
 type iServiceStats interface {
-	// Stats 获取服务统计信息
+	// Stats 返回服务统计信息的当前快照。
 	Stats() ServiceStats
 }
 
-// Stats 获取服务统计信息
+// Stats 返回服务统计信息的当前快照。
 func (svc *ServiceBehavior) Stats() ServiceStats {
 	return ServiceStats{
 		WaitGroupCount:  svc.ctx.WaitGroup().Count(),

@@ -29,5 +29,8 @@ Package pt 用于声明、查询和构造实体原型与组件原型。
 
 服务启动阶段通常会通过 service.Context.EntityLib() 或根包的 BuildEntityPT 声明
 实体原型；运行时创建实体时，再根据原型生成实体与内建组件。
+
+EntityLib 与 ComponentLib 均可并发使用。组件原型的重复声明会返回已有对象；实体
+原型的同名声明则会替换旧对象并向观察者发布新版本。
 */
 package pt

@@ -24,16 +24,25 @@ import (
 	"sync"
 )
 
+// NewEventStream 创建空事件流；EventStream 的零值同样可用。
 func NewEventStream[T any]() *EventStream[T] {
 	return &EventStream[T]{}
 }
 
+// EventStream 将每次 Publish 广播给所有当前订阅者。
+//
+// EventStream 可并发使用且首次使用后不可复制。每个订阅者使用无界队列，慢消费者
+// 不会丢失事件，但可能持续占用内存。
 type EventStream[T any] struct {
 	_           noCopy
 	mutex       sync.RWMutex
 	subscribers map[*UnboundedChannel[T]]chan struct{}
 }
 
+// Subscribe 创建订阅，并先按参数顺序发送 catchUp，再接收后续发布。
+//
+// nil ctx 按 context.Background 处理。ctx 结束或 Clear 被调用时，返回频道会在已排队
+// 事件处理完毕后关闭。
 func (es *EventStream[T]) Subscribe(ctx context.Context, catchUp ...T) <-chan T {
 	if ctx == nil {
 		ctx = context.Background()
@@ -75,6 +84,7 @@ func (es *EventStream[T]) Subscribe(ctx context.Context, catchUp ...T) <-chan T 
 	return subscriber.Out()
 }
 
+// Publish 向调用时存在的全部订阅者广播 event。
 func (es *EventStream[T]) Publish(event T) {
 	es.mutex.RLock()
 	defer es.mutex.RUnlock()
@@ -84,6 +94,7 @@ func (es *EventStream[T]) Publish(event T) {
 	}
 }
 
+// Clear 关闭并移除全部当前订阅；清空后的 EventStream 可以继续订阅和发布。
 func (es *EventStream[T]) Clear() {
 	es.mutex.Lock()
 	defer es.mutex.Unlock()

@@ -29,12 +29,13 @@ import (
 	"git.golaxy.org/core/utils/reinterpret"
 )
 
-// NewService 创建服务
+// NewService 创建服务并将 svcCtx 绑定到该服务。
+// 同一个服务上下文只能绑定一次；创建期间会同步触发 RunningEvent_Birth。
 func NewService(svcCtx service.Context, settings ...option.Setting[ServiceOptions]) Service {
 	return UnsafeNewService(svcCtx, option.New(With.Service.Default(), settings...))
 }
 
-// Deprecated: UnsafeNewService 内部创建服务
+// Deprecated: UnsafeNewService 仅供框架内部使用，请改用 NewService。
 func UnsafeNewService(svcCtx service.Context, options ServiceOptions) Service {
 	var svc Service
 
@@ -48,14 +49,14 @@ func UnsafeNewService(svcCtx service.Context, options ServiceOptions) Service {
 	return svc
 }
 
-// Service 服务
+// Service 编排服务上下文的启动与停止生命周期。
 type Service interface {
 	iService
 	iWorker
 	iServiceStats
 	reinterpret.InstanceProvider
 
-	// Context 获取服务上下文
+	// Context 返回绑定的服务上下文。
 	Context() service.Context
 }
 
@@ -65,18 +66,20 @@ type iService interface {
 	getInstance() Service
 }
 
+// ServiceBehavior 提供 Service 的默认实现。
+// 扩展服务类型时应匿名嵌入该类型，并通过 InstanceFace 传入扩展实例。
 type ServiceBehavior struct {
 	ctx       service.Context
 	options   ServiceOptions
 	isRunning atomic.Bool
 }
 
-// Context 获取服务上下文
+// Context 返回绑定的服务上下文。
 func (svc *ServiceBehavior) Context() service.Context {
 	return svc.ctx
 }
 
-// InstanceFaceCache 支持重新解释类型
+// InstanceFaceCache 返回服务实例的接口缓存，用于 reinterpret.Cast。
 func (svc *ServiceBehavior) InstanceFaceCache() iface.Cache {
 	return svc.options.InstanceFace.Cache
 }
