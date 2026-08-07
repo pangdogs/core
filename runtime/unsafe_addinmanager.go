@@ -28,7 +28,7 @@ type _UnsafeAddInManager struct {
 	AddInManager
 }
 
-// List 按安装顺序返回当前运行时插件状态的副本。
-func (mgr _UnsafeAddInManager) List() []AddInStatus {
-	return mgr.getList()
+// ListStatuses 按安装顺序返回当前运行时插件状态的副本。
+func (mgr _UnsafeAddInManager) ListStatuses() []AddInStatus {
+	return mgr.getListStatuses()
 }

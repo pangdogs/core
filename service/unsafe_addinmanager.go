@@ -33,7 +33,7 @@ func (mgr _UnsafeAddInManager) Freeze() []AddInStatus {
 	return mgr.freeze()
 }
 
-// List 按安装顺序返回当前服务插件状态的副本。
-func (mgr _UnsafeAddInManager) List() []AddInStatus {
-	return mgr.getList()
+// ListStatuses 按安装顺序返回当前服务插件状态的副本。
+func (mgr _UnsafeAddInManager) ListStatuses() []AddInStatus {
+	return mgr.getListStatuses()
 }

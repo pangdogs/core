@@ -44,7 +44,7 @@ type AddInManager interface {
 
 type iAddInManager interface {
 	freeze() []AddInStatus
-	getList() []AddInStatus
+	getListStatuses() []AddInStatus
 }
 
 // NewAddInManager 创建一个未冻结的空服务插件管理器。
@@ -223,8 +223,8 @@ func (mgr *_AddInManager) freeze() []AddInStatus {
 	}
 }
 
-// getList 按安装顺序返回当前插件状态的内部接口副本。
-func (mgr *_AddInManager) getList() []AddInStatus {
+// getListStatuses 按安装顺序返回当前插件状态的内部接口副本。
+func (mgr *_AddInManager) getListStatuses() []AddInStatus {
 	addInList := mgr.snapshot.Load().addInList
 	statuses := make([]AddInStatus, len(addInList))
 	for i, status := range addInList {

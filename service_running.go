@@ -143,7 +143,7 @@ func (svc *ServiceBehavior) initAddIn() {
 func (svc *ServiceBehavior) shutAddIn() {
 	addInManager := service.UnsafeContext(svc.ctx).AddInManager()
 
-	statuses := service.UnsafeAddInManager(addInManager).List()
+	statuses := service.UnsafeAddInManager(addInManager).ListStatuses()
 	for i := len(statuses) - 1; i >= 0; i-- {
 		svc.deactivateAddIn(statuses[i])
 	}

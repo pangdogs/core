@@ -42,7 +42,7 @@ type AddInManager interface {
 }
 
 type iAddInManager interface {
-	getList() []AddInStatus
+	getListStatuses() []AddInStatus
 }
 
 // NewAddInManager 创建一个空的运行时插件管理器。
@@ -152,8 +152,8 @@ func (mgr *_AddInManager) ListStatuses() []extension.AddInStatus {
 	return statuses
 }
 
-// getList 按安装顺序返回当前插件状态的内部接口副本。
-func (mgr *_AddInManager) getList() []AddInStatus {
+// getListStatuses 按安装顺序返回当前插件状态的内部接口副本。
+func (mgr *_AddInManager) getListStatuses() []AddInStatus {
 	statuses := make([]AddInStatus, 0, mgr.addInList.Len())
 	mgr.addInList.TraversalEach(func(slot *generic.FreeSlot[*_AddInStatus]) {
 		statuses = append(statuses, slot.V)
