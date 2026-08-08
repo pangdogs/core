@@ -34,9 +34,12 @@ Core 是可独立嵌入 Go 进程的状态型业务执行内核，也是上层 F
 | --- | --- | --- |
 | Golaxy Core | 进程内执行模型、状态所有权和业务对象生命周期 | Service、Runtime、Entity、Component、Prototype、Event、Future、Add-in |
 | Golaxy Framework | 分布式服务装配和基础设施接入 | 应用启动、配置、日志、RPC、Gate、GAP/GTP、NATS、ETCD、数据库 |
-| Scaffold / 业务项目 | 产品级服务和部署结构 | 玩家、战斗、场景、好友、邮件、公会、运营接口等业务模块 |
+| Golaxy Scaffold | 游戏工程脚手架与构建期工具 | Protobuf 的 Go/Godot 代码生成，以及 Excel 配表的 schema、代码和数据处理 |
+| 业务项目 | 产品级服务和部署结构 | 通过长连接承载的玩家、房间、战斗、场景等实时业务，以及独立 HTTP 好友、邮件和运营服务 |
 
 Core 本身不提供网络监听、RPC 传输、服务发现、消息代理、数据库驱动或配置中心。需要这些能力时，应在 Core 之上使用 Framework，或者自行实现 add-in 与外部系统集成。
+
+好友、邮件等只是业务项目中常见的 HTTP 服务，不是 Scaffold 内置模块。Scaffold 负责项目起步和构建产物生成，不负责具体产品业务的实现。
 
 ### 适合的场景
 
@@ -595,7 +598,7 @@ go generate ./...
 ## 生态与许可证
 
 - [Golaxy Framework](https://github.com/pangdogs/framework)：基于 Core 提供分布式通信、RPC、Gate、协议栈和基础设施接入。
-- [Golaxy Scaffold](https://github.com/pangdogs/scaffold)：游戏服务端工程脚手架。
+- [Golaxy Scaffold](https://github.com/pangdogs/scaffold)：游戏工程脚手架，重点提供 Protobuf 协议生成和 Excel 配表处理工具链。
 - [Golaxy Examples](https://github.com/pangdogs/examples)：端到端示例。
 
 本项目采用 [GNU Lesser General Public License v2.1](./LICENSE)。

@@ -34,9 +34,12 @@ Core is a stateful business execution kernel that can be embedded independently 
 | --- | --- | --- |
 | Golaxy Core | In-process execution, state ownership, and business-object lifecycles | Service, Runtime, Entity, Component, Prototype, Event, Future, Add-in |
 | Golaxy Framework | Distributed service assembly and infrastructure integration | Application bootstrap, configuration, logging, RPC, Gate, GAP/GTP, NATS, ETCD, databases |
-| Scaffold / application | Product services and deployment structure | Player, battle, scene, friend, mail, guild, and operations modules |
+| Golaxy Scaffold | Game-project scaffold and build-time tooling | Protobuf code generation for Go/Godot, plus Excel-table schema, code, and data processing |
+| Application services | Product services and deployment structure | Player, room, battle, and scene workloads reached through long-lived connections, plus independent HTTP friend, mail, and operations services |
 
 Core itself does not provide network listeners, RPC transport, service discovery, message brokers, database drivers, or a configuration center. Use Framework above Core when those features are required, or implement custom add-ins to integrate external systems.
+
+Friend and mail systems are common HTTP application services, not built-in Scaffold modules. Scaffold bootstraps projects and generates build artifacts; it does not implement product-domain services.
 
 ### Good fits
 
@@ -595,7 +598,7 @@ Before committing, confirm that generated `*.gen.go` and `*_string.go` files are
 ## Ecosystem and license
 
 - [Golaxy Framework](https://github.com/pangdogs/framework): distributed communication, RPC, Gate, protocol stack, and infrastructure integration built on Core.
-- [Golaxy Scaffold](https://github.com/pangdogs/scaffold): game-server project scaffold.
+- [Golaxy Scaffold](https://github.com/pangdogs/scaffold): game-project scaffold centered on Protobuf generation and Excel-table processing.
 - [Golaxy Examples](https://github.com/pangdogs/examples): end-to-end examples.
 
 This project is licensed under the [GNU Lesser General Public License v2.1](./LICENSE).
