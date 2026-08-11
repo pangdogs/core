@@ -20,12 +20,10 @@
 package ec
 
 import (
-	"context"
 	"reflect"
 
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/utils/generic"
-	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/uid"
 )
 
@@ -40,11 +38,6 @@ func UnsafeEntity(entity Entity) _UnsafeEntity {
 
 type _UnsafeEntity struct {
 	Entity
-}
-
-// WithContext 创建由 ctx 派生的实体生命周期上下文。
-func (u _UnsafeEntity) WithContext(ctx context.Context) {
-	u.withContext(ctx)
 }
 
 // Options 返回实体当前持有的构造选项。
@@ -67,8 +60,8 @@ func (u _UnsafeEntity) SetPT(prototype EntityPT) {
 	u.setPT(prototype)
 }
 
-// SetContext 设置实体所属 Runtime 的上下文缓存。
-func (u _UnsafeEntity) SetContext(ctx iface.Cache) {
+// SetContext 绑定实体所属 Runtime，并初始化实体及已有组件的异步生命周期。
+func (u _UnsafeEntity) SetContext(ctx runtimeContext) {
 	u.setContext(ctx)
 }
 

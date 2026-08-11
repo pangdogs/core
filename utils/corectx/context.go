@@ -44,6 +44,7 @@ type WaitGroup interface {
 type Context interface {
 	iContext
 	context.Context
+	AsyncScopeProvider
 
 	// ParentContext 返回创建当前上下文时使用的父上下文。
 	ParentContext() context.Context
@@ -53,10 +54,10 @@ type Context interface {
 	ReportError() chan error
 	// WaitGroup 返回用于协调关闭的任务屏障。
 	WaitGroup() WaitGroup
-	// Terminate 发出取消信号，并返回宿主完成清理时兑现的 Future。
-	Terminate() async.Future
-	// Terminated 返回宿主完成清理时兑现的 Future。
-	Terminated() async.Future
+	// Terminate 发出取消信号，并返回宿主完成清理时兑现的 Signal。
+	Terminate() async.Signal
+	// Terminated 返回宿主完成清理时兑现的 Signal。
+	Terminated() async.Signal
 }
 
 type iContext interface {
@@ -72,8 +73,8 @@ type ContextBehavior struct {
 	autoRecover bool
 	reportError chan error
 	barrier     generic.Barrier
-	terminate   context.CancelFunc
-	terminated  async.FutureVoid
+	asyncScope  *async.Scope
+	terminated  async.Completer
 }
 
 // ParentContext 返回创建当前上下文时使用的父上下文。
@@ -96,15 +97,20 @@ func (ctx *ContextBehavior) WaitGroup() WaitGroup {
 	return &ctx.barrier
 }
 
-// Terminate 发出取消信号，并返回宿主完成清理时兑现的 Future。
-func (ctx *ContextBehavior) Terminate() async.Future {
-	ctx.terminate()
-	return ctx.terminated.Out()
+// AsyncScope 返回绑定宿主生命周期的后台任务作用域。
+func (ctx *ContextBehavior) AsyncScope() *async.Scope {
+	return ctx.asyncScope
 }
 
-// Terminated 返回宿主完成清理时兑现的 Future。
-func (ctx *ContextBehavior) Terminated() async.Future {
-	return ctx.terminated.Out()
+// Terminate 发出取消信号，并返回宿主完成清理时兑现的 Signal。
+func (ctx *ContextBehavior) Terminate() async.Signal {
+	ctx.asyncScope.Close()
+	return ctx.terminated.Signal()
+}
+
+// Terminated 返回宿主完成清理时兑现的 Signal。
+func (ctx *ContextBehavior) Terminated() async.Signal {
+	return ctx.terminated.Signal()
 }
 
 func (ctx *ContextBehavior) init(parentCtx context.Context, autoRecover bool, reportError chan error) {
@@ -115,8 +121,9 @@ func (ctx *ContextBehavior) init(parentCtx context.Context, autoRecover bool, re
 	}
 	ctx.autoRecover = autoRecover
 	ctx.reportError = reportError
-	ctx.Context, ctx.terminate = context.WithCancel(ctx.parentCtx)
-	ctx.terminated = async.NewFutureVoid()
+	ctx.asyncScope = async.NewScope(ctx.parentCtx)
+	ctx.Context = ctx.asyncScope.Context()
+	ctx.terminated, _ = async.NewSignal()
 }
 
 func (ctx *ContextBehavior) closeWaitGroup() {
@@ -124,5 +131,5 @@ func (ctx *ContextBehavior) closeWaitGroup() {
 }
 
 func (ctx *ContextBehavior) returnTerminated() {
-	async.ReturnVoid(ctx.terminated)
+	ctx.terminated.Complete()
 }

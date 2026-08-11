@@ -30,7 +30,7 @@ type _UnsafeConcurrentContext struct {
 	ConcurrentContext
 }
 
-// Context 返回完整运行时上下文；调用方必须自行保证运行协程归属。
-func (u _UnsafeConcurrentContext) Context() Context {
-	return u.getContext()
+// Instance 返回实际运行时上下文实例；调用者必须自行保证运行协程约束。
+func (u _UnsafeConcurrentContext) Instance() Context {
+	return u.getInstance()
 }

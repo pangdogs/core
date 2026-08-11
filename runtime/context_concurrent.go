@@ -23,6 +23,7 @@ import (
 	"fmt"
 
 	"git.golaxy.org/core/service"
+	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/corectx"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/iface"
@@ -45,13 +46,52 @@ type ConcurrentContext interface {
 	Name() string
 	// Id 返回运行时的持久化 ID。
 	Id() uid.Id
+	// ExecutorID 返回进程内 Runtime 执行器 ID。
+	ExecutorID() async.ExecutorID
+	// BlockedFutureID 返回当前阻塞等待的 Future ID。
+	BlockedFutureID() uint64
+	// LastWaitRejectID 返回最近一次被 Runtime 等待规则拒绝的 Future ID。
+	LastWaitRejectID() uint64
 }
 
 type iConcurrentContext interface {
-	getContext() Context
+	getInstance() Context
 }
 
-func (ctx *ContextBehavior) getContext() Context {
+// ConcurrentContextCache 返回可跨 goroutine 使用的上下文接口缓存。
+func (ctx *ContextBehavior) ConcurrentContextCache() iface.Cache {
+	return iface.Iface2Cache[Context](ctx.options.InstanceFace.Iface)
+}
+
+// ExecutorID 返回用于 Future 完成归属和 Runtime 自等待检测的进程内执行器 ID。
+func (ctx *ContextBehavior) ExecutorID() async.ExecutorID {
+	return ctx.executorID
+}
+
+// BlockedFutureID 返回当前阻塞等待的 Future ID。
+func (ctx *ContextBehavior) BlockedFutureID() uint64 {
+	return ctx.blockedFuture.Load()
+}
+
+// LastWaitRejectID 返回最近一次被 Runtime 等待规则拒绝的 Future ID。
+func (ctx *ContextBehavior) LastWaitRejectID() uint64 {
+	return ctx.lastWaitReject.Load()
+}
+
+// String 实现 fmt.Stringer，返回包含运行时 ID 和名称的 JSON 文本。
+func (ctx *ContextBehavior) String() string {
+	if cached := ctx.stringerCache.Load(); cached != nil {
+		return *cached
+	}
+
+	value := fmt.Sprintf(`{"id":%q,"name":%q}`, ctx.Id(), ctx.Name())
+	if ctx.stringerCache.CompareAndSwap(nil, &value) {
+		return value
+	}
+	return *ctx.stringerCache.Load()
+}
+
+func (ctx *ContextBehavior) getInstance() Context {
 	return ctx.options.InstanceFace.Iface
 }
 
@@ -60,14 +100,14 @@ func Concurrent(provider corectx.ConcurrentContextProvider) ConcurrentContext {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrContext, exception.ErrArgs)
 	}
-	return iface.Cache2Iface[Context](provider.ConcurrentContext())
+	return iface.Cache2Iface[Context](provider.ConcurrentContextCache())
 }
 
 func getServiceContext(provider corectx.ConcurrentContextProvider) service.Context {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrContext, exception.ErrArgs)
 	}
-	ctx := iface.Cache2Iface[Context](provider.ConcurrentContext())
+	ctx := iface.Cache2Iface[Context](provider.ConcurrentContextCache())
 	if ctx == nil {
 		return nil
 	}

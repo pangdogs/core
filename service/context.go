@@ -23,7 +23,6 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"sync"
 	"sync/atomic"
 
 	"git.golaxy.org/core/ec/pt"
@@ -92,8 +91,7 @@ type ContextBehavior struct {
 	reflected     reflect.Value
 	entityManager _EntityManager
 	scoped        atomic.Bool
-	stringerOnce  sync.Once
-	stringerCache string
+	stringerCache atomic.Pointer[string]
 }
 
 // Name 返回服务名称。
@@ -123,10 +121,15 @@ func (ctx *ContextBehavior) InstanceFaceCache() iface.Cache {
 
 // String 实现 fmt.Stringer，返回包含服务 ID 和名称的 JSON 文本。
 func (ctx *ContextBehavior) String() string {
-	ctx.stringerOnce.Do(func() {
-		ctx.stringerCache = fmt.Sprintf(`{"id":%q,"name":%q}`, ctx.Id(), ctx.Name())
-	})
-	return ctx.stringerCache
+	if cached := ctx.stringerCache.Load(); cached != nil {
+		return *cached
+	}
+
+	value := fmt.Sprintf(`{"id":%q,"name":%q}`, ctx.Id(), ctx.Name())
+	if ctx.stringerCache.CompareAndSwap(nil, &value) {
+		return value
+	}
+	return *ctx.stringerCache.Load()
 }
 
 func (ctx *ContextBehavior) init(options ContextOptions) {

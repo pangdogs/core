@@ -20,9 +20,14 @@
 package generic
 
 import (
+	"fmt"
+
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/types"
 )
+
+// ErrFreeList 是 FreeList 错误的共同根错误。
+var ErrFreeList = fmt.Errorf("%w: free-list", exception.ErrCore)
 
 // NewFreeList 创建空槽链表；FreeList 的零值同样可用。
 func NewFreeList[T any]() *FreeList[T] {
@@ -130,7 +135,7 @@ func (l *FreeList[T]) Cap() int {
 // capacity 为负数时 panic。
 func (l *FreeList[T]) Reserve(capacity int) {
 	if capacity < 0 {
-		exception.Panicf("FreeList: capacity %d is negative", capacity)
+		exception.Panicf("%w: %w: capacity %d is negative", ErrFreeList, exception.ErrArgs, capacity)
 	}
 	if capacity <= len(l.slots) {
 		return
@@ -598,7 +603,7 @@ func (l *FreeList[T]) appendValue(value T, at int) *FreeSlot[T] {
 		l.freeHead = slot.next
 	} else {
 		if l.unused >= slotsCap {
-			exception.Panic("FreeList: no free slot")
+			exception.Panicf("%w: no free slot", ErrFreeList)
 		}
 		slot = &l.slots[l.unused]
 		slot.list = l

@@ -23,7 +23,7 @@ import (
 	"encoding/json"
 	"reflect"
 	"slices"
-	"sync"
+	"sync/atomic"
 
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/utils/exception"
@@ -40,8 +40,7 @@ type _Entity struct {
 	componentUniqueID          bool
 	meta                       meta.Meta
 	components                 []ec.BuiltinComponent
-	stringerOnce               sync.Once
-	stringerCache              string
+	stringerCache              atomic.Pointer[string]
 }
 
 // Prototype 返回实体原型名。
@@ -111,14 +110,19 @@ func (pt *_Entity) Construct(settings ...option.Setting[ec.EntityOptions]) ec.En
 
 // String 返回实体原型的 JSON 文本；编码失败时 panic。
 func (pt *_Entity) String() string {
-	pt.stringerOnce.Do(func() {
-		data, err := json.Marshal(pt)
-		if err != nil {
-			exception.Panicf("%w: unexpected failure marshaling entity: %s", ErrPt, err)
-		}
-		pt.stringerCache = string(data)
-	})
-	return pt.stringerCache
+	if cached := pt.stringerCache.Load(); cached != nil {
+		return *cached
+	}
+
+	data, err := json.Marshal(pt)
+	if err != nil {
+		exception.Panicf("%w: unexpected failure marshaling entity: %s", ErrPt, err)
+	}
+	value := string(data)
+	if pt.stringerCache.CompareAndSwap(nil, &value) {
+		return value
+	}
+	return *pt.stringerCache.Load()
 }
 
 type _EntityJSON struct {

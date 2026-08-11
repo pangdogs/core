@@ -78,14 +78,14 @@ type _EntityManager struct {
 	entityTreeEventTab
 }
 
-// CurrentContext 返回所属运行时的当前上下文接口缓存。
-func (mgr *_EntityManager) CurrentContext() iface.Cache {
-	return mgr.ctx.CurrentContext()
+// CurrentContextCache 返回所属运行时的当前上下文接口缓存。
+func (mgr *_EntityManager) CurrentContextCache() iface.Cache {
+	return mgr.ctx.CurrentContextCache()
 }
 
-// ConcurrentContext 返回所属运行时的并发上下文接口缓存。
-func (mgr *_EntityManager) ConcurrentContext() iface.Cache {
-	return mgr.ctx.ConcurrentContext()
+// ConcurrentContextCache 返回所属运行时的并发上下文接口缓存。
+func (mgr *_EntityManager) ConcurrentContextCache() iface.Cache {
+	return mgr.ctx.ConcurrentContextCache()
 }
 
 // AddEntity 接管 Born 状态的实体并同步触发其加入事件。
@@ -266,8 +266,7 @@ func (mgr *_EntityManager) initEntity(entity ec.Entity) {
 	if entity.Id().IsNil() {
 		ec.UnsafeEntity(entity).SetId(uid.New())
 	}
-	ec.UnsafeEntity(entity).SetContext(iface.Iface2Cache[Context](mgr.ctx))
-	ec.UnsafeEntity(entity).WithContext(mgr.ctx)
+	ec.UnsafeEntity(entity).SetContext(mgr.ctx)
 
 	event.UnsafeEvent(entity.EventEntityDestroy()).Ctrl().SetPanicHandling(mgr.ctx.AutoRecover(), mgr.ctx.ReportError())
 

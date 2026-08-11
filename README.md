@@ -2,7 +2,7 @@
 
 **English** | [简体中文](./README.zh_CN.md)
 
-Golaxy Core is the execution kernel and programming-model foundation of the [Golaxy Distributed Service Development Framework](https://github.com/pangdogs/framework). It hosts EC (Entity-Component) business objects inside Actor-style serialized Runtime domains and provides lifecycles, prototypes, entity trees, in-process events, add-ins, and Future/Await primitives.
+Golaxy Core is the execution kernel and programming-model foundation of the [Golaxy Distributed Service Development Framework](https://github.com/pangdogs/framework). It hosts EC (Entity-Component) business objects inside Actor-style serialized Runtime domains and provides lifecycles, prototypes, entity trees, in-process events, add-ins, structured concurrency, and Future continuations.
 
 > **Core determines how business code executes and who owns state. Framework connects that execution model to configuration, logging, RPC, Gate, GAP/GTP, NATS, ETCD, databases, and other production infrastructure.**
 
@@ -32,7 +32,7 @@ Core is a stateful business execution kernel that can be embedded independently 
 
 | Layer | Primary responsibility | Typical contents |
 | --- | --- | --- |
-| Golaxy Core | In-process execution, state ownership, and business-object lifecycles | Service, Runtime, Entity, Component, Prototype, Event, Future, Add-in |
+| Golaxy Core | In-process execution, state ownership, and business-object lifecycles | Service, Runtime, Entity, Component, Prototype, Event, Scope, Future, Add-in |
 | Golaxy Framework | Distributed service assembly and infrastructure integration | Application bootstrap, configuration, logging, RPC, Gate, GAP/GTP, NATS, ETCD, databases |
 | Golaxy Scaffold | Game-project scaffold and build-time tooling | Protobuf code generation for Go/Godot, plus Excel-table schema, code, and data processing |
 | Application services | Product services and deployment structure | Player, room, battle, and scene workloads reached through long-lived connections, plus independent HTTP friend, mail, and operations services |
@@ -62,10 +62,10 @@ Friend and mail systems are common HTTP application services, not built-in Scaff
 - **EC business model**: Entity supplies identity, scope, and lifecycle; Component supplies composable behavior and state.
 - **Prototype system**: declares entity types, default scope, metadata, and built-in component compositions before constructing instances.
 - **Entity tree**: maintains parent-child relationships within one Runtime, with attach, detach, move, post-order removal, and ordered traversal.
-- **Async coordination**: provides Runtime scheduling, background goroutines, timers, Channel-to-Future bridges, and `Any`, `OK`, `All`, `Transform`, and `Foreach` Await strategies.
+- **Async coordination**: uses `Submit` / `Post` for Actor mailbox delivery, `Scope` / `Spawn` for background-task lifetimes, `Future` / `Promise` for one-shot results, and `ContinueOn` for returning continuations to a Runtime.
 - **Synchronous events**: offers an in-process signal/slot system with priorities, recursion policies, managed unbinding, and code generation.
 - **Add-in extension**: distinguishes fixed-startup Service add-ins from hot-pluggable Runtime add-ins.
-- **Lifecycle and statistics**: drives Service, Runtime, Entity, Component, and Add-in lifecycles and exposes wait-group, task-queue, and frame statistics.
+- **Lifecycle, health, and statistics**: drives Service, Runtime, Entity, Component, and Add-in lifecycles and exposes Scope, Submit/Post/Frame queue, rejected-wait, and frame statistics.
 
 ## Architecture
 
@@ -77,9 +77,9 @@ flowchart TB
     ServiceContext --> ServiceAddins[Service add-ins]
     ServiceContext --> GlobalIndex[Global Entity index]
 
-    subgraph RuntimeScope[Runtime serialized execution domain]
+    subgraph RuntimeDomain[Runtime Actor serialized execution domain]
         RuntimeObject[core.Runtime] --> RuntimeContext[runtime.Context]
-        ExternalWork[external goroutine / timer / I/O] -->|CallAsync / Await| TaskQueue[Task queue]
+        ExternalCaller[External caller] -->|Submit or Post| TaskQueue[Actor mailbox]
         FrameScheduler[optional frame scheduler] -->|frame task| TaskQueue
         TaskQueue --> RuntimeLoop[Runtime goroutine]
         RuntimeLoop --> RuntimeContext
@@ -92,6 +92,14 @@ flowchart TB
     LocalManager --> Entity[Entity]
     Entity --> Component[Components]
     LocalManager -.->|Scope_Global| GlobalIndex
+
+    subgraph AsyncWork[Scope-owned background work]
+        LifetimeScope[Service / Runtime / Entity / Component Scope] --> SpawnTask[Spawn goroutine / I/O]
+        SpawnTask --> Promise[Promise completes Future]
+    end
+
+    ServiceContext --> LifetimeScope
+    Promise -->|ContinueOn| TaskQueue
 ```
 
 ### Core objects
@@ -102,10 +110,11 @@ flowchart TB
 | `service.Context` | Holds service resources, prototype libraries, the global entity index, and the shutdown barrier. | Individual capabilities have specific rules; the global entity index is concurrency-safe. |
 | `core.Runtime` | Drives the task queue, frame loop, GC, entities, and Runtime add-ins. | One Runtime owns one serialized running goroutine. |
 | `runtime.Context` | Exposes Runtime-local objects and current execution capabilities. | Direct local-state access is restricted to the owning Runtime goroutine. |
-| `runtime.ConcurrentContext` | Exposes a Runtime subset usable from other goroutines. | Cross-goroutine work returns through `CallAsync`. |
+| `runtime.ConcurrentContext` | Exposes a Runtime subset usable from other goroutines. | Cross-goroutine work returns through `Submit` or `Post`. |
 | `ec.Entity` | A business object with an ID, scope, metadata, component collection, and tree-node state. | Ordinary methods belong to the Runtime serialization domain. |
 | `ec.ConcurrentEntity` | Exposes ID, prototype, Context, and termination state through a concurrent view. | Safe to read across goroutines; mutation must still return to the Runtime. |
 | `ec.Component` | A unit of business behavior or state attached to an Entity. | Lifecycle and state mutation belong to the Runtime serialization domain. |
+| `ec.ConcurrentComponent` | Exposes the component ID, name, concurrent Runtime Context, and Component Lifetime Scope. | Usable across goroutines; does not expose `State`, `Enabled`, `Entity`, or `Destroy`. |
 
 ## Actor + EC execution model
 
@@ -116,14 +125,16 @@ The Actor boundary in Core is the `Runtime`, not an individual Entity. A Runtime
 ```mermaid
 sequenceDiagram
     participant Source as External goroutine / timer / I/O
-    participant Queue as Runtime task queue
+    participant ResultFuture as Future
+    participant Queue as Runtime Actor mailbox
     participant RuntimeLoop as Runtime goroutine
     participant Model as Entity / Components
-    Source->>Queue: Enqueue CallAsync or Await continuation
+    Source->>Queue: Submit or Post
     Queue->>RuntimeLoop: Dequeue in order
     RuntimeLoop->>Model: Execute logic and mutate state
     Model-->>RuntimeLoop: Return async.Result
-    RuntimeLoop-->>Source: Complete Future
+    RuntimeLoop-->>ResultFuture: Complete Submit Future
+    ResultFuture->>Queue: ContinueOn enqueues continuation
     Note over Queue,RuntimeLoop: Frame updates, entity lifecycles, and ordinary calls share one boundary
 ```
 
@@ -132,8 +143,9 @@ This has several direct consequences:
 - Ordinary tasks, lifecycle callbacks, and frame callbacks do not run concurrently inside one Runtime, so their business state normally needs no locks.
 - Placing multiple entities in one Runtime gives them a shared order of execution and a shared single-thread throughput limit.
 - Entities do not create goroutines automatically, and there is no independent mailbox per Entity.
-- Code outside the Runtime must not directly mutate entities, components, the entity tree, or Runtime add-ins. Use `CallAsync`, `CallVoidAsync`, or an entity-ID call.
-- `GoAsync` is suitable for blocking I/O and independent computation, but its background function must not touch Runtime-local state directly. Use `Await` to schedule result handling back onto the Runtime.
+- Code outside the Runtime must not directly mutate entities, components, the entity tree, or Runtime add-ins. Use `Submit` when a result is needed, `Post` for fire-and-forget delivery, or a Service call by global Entity ID.
+- Use the owning object's `AsyncScope()` with `Spawn` for blocking I/O and independent computation. A background function must not touch Runtime-local state directly; use `ContinueOn` to enqueue result handling back onto the Runtime.
+- `Submit`, `Post`, and `ContinueOn` always enqueue, even when called from the owning Runtime, so the Actor ordering boundary remains consistent.
 
 ### Local and global Entity addressing
 
@@ -141,7 +153,7 @@ Every Entity exists in the local `EntityManager` of its owning Runtime:
 
 - `Scope_Local`: the Entity is visible only through the local Runtime index.
 - `Scope_Global`: the Entity is also registered in the concurrency-safe Service-level index.
-- `service.Context.CallAsync(entityId, ...)` resolves a `ConcurrentEntity` from the global index, then enqueues the call onto the target Runtime.
+- `service.Context.Submit(entityId, ...)` or `Post(entityId, ...)` resolves a `ConcurrentEntity` from the global index, then enqueues work onto the target Runtime.
 - “Global” in Core means addressable across runtimes within the same Service process. Cross-node addressing belongs to Framework distributed-entity and RPC capabilities.
 
 ## Lifecycles
@@ -159,7 +171,7 @@ Every Entity exists in the local `EntityManager` of its owning Runtime:
 | `Started` | The Service is running; runtimes are commonly created here. |
 | `Heartbeat` | Emits once per second. |
 | `Terminating` | The Context is canceled; closes the wait-group entry point and waits for runtimes and other children. |
-| `Terminated` | Service add-ins have shut down in reverse order and the termination Future completes. |
+| `Terminated` | Service add-ins have shut down in reverse order and the termination `Signal` completes. |
 
 A Service can run only once, and a `service.Context` can be bound to only one `core.Service`.
 
@@ -176,7 +188,7 @@ A Service can run only once, and a `service.Context` can be bound to only one `c
 | `Started` | Entities can be created and activated. Entities added before startup are activated here as well. |
 | Running | Serially handles calls, frame tasks, and entity lifecycles, and periodically runs Runtime GC. |
 | `Terminating` | The Context is canceled and the task queue has been closed and drained; entities are then destroyed in reverse order. |
-| `Terminated` | The wait group is empty, Runtime add-ins are stopped, managed event handles are unbound, and the termination Future completes. |
+| `Terminated` | The wait group is empty, Runtime add-ins are stopped, managed event handles are unbound, and the termination `Signal` completes. |
 
 A `runtime.Context` can be bound to only one `core.Runtime`, and a Runtime can run only once.
 
@@ -204,21 +216,25 @@ Important ordering rules:
 3. During destruction, Entity `Shut` runs first; components run `Shut`, `OnDisable`, and `Dispose` in reverse insertion order; Entity `Dispose` runs last.
 4. `Awake`, `Start`, `Shut`, and `Dispose` run at most once. `OnEnable` and `OnDisable` may repeat as enabled state changes.
 5. Adding components dynamically to a running Entity synchronously advances the new component activation flow.
-6. Destroying an Entity cancels its Context, removes it from the tree and indexes, and automatically unbinds managed Entity and Component event handles.
+6. Destroying an Entity closes its Entity Scope, cancels owned background tasks, removes it from the tree and indexes, and automatically unbinds managed Entity and Component event handles.
+7. Removing a Component, or destroying it with its Entity, closes that Component's Lifetime Scope. `SetEnabled(false)` does not close the Scope, so the same lifetime remains available after re-enabling.
 
 ## Runtime scheduling and frame loop
 
 ### Task queue
 
-Ordinary calls enter the task queue through `runtime.Context.CallAsync`, `CallVoidAsync`, or the equivalent root-package helpers.
+The Runtime mailbox distinguishes `Submit`, `Post`, and internal `Frame` tasks. One Runtime goroutine executes all three serially.
 
 - The default queue is **unbounded**. `Capacity=128` matters only after switching to bounded mode.
-- A bounded queue uses non-blocking enqueue; a full queue returns `ErrTaskQueueFull` through the Future.
-- New tasks return `ErrTaskQueueClosed` after Runtime closes the queue.
+- `Submit` allocates a Future. A full bounded queue or a closed queue completes that Future with the enqueue error.
+- `Post` is a no-Future fire-and-forget path. It synchronously reports enqueue errors such as `ErrTaskQueueFull` and `ErrTaskQueueClosed`, but has no execution result.
+- `SubmitDelegate`, `SubmitDelegateVoid`, and `PostDelegate` retain Delegate / DelegateVoid invocation support.
+- `Post` enters the mailbox even when called by the owning Runtime, so it can avoid synchronous reentrancy; it does not guarantee next-frame execution. Core currently has no separate deferred/next-frame scheduling semantic.
 - Shutdown drains tasks that were already accepted, then performs a final GC pass.
-- `Runtime.Stats()` reports `Enqueued`, `Pending`, `Rejected`, and `Completed` separately for ordinary calls and frame tasks.
+- `Runtime.Stats().Tasks` exposes `Accepted`, `Queued`, `Running`, `Completed`, `Canceled`, `Panicked`, `RejectedClosed`, and `RejectedFull` for `Submit`, `Post`, and `Frame` independently.
+- `Runtime.Stats().Health.LastProgressTime` records the most recent task start or completion time. A Service-level monitor can combine it with the per-category `Running` counters to detect a Runtime that has stopped making progress; Core does not keep one resident watchdog goroutine per Runtime.
 
-An unbounded queue prevents immediate rejection during a transient burst, but a backlog consumes memory and increases latency. Production systems should monitor `Pending` and call latency and apply admission control at external entry points.
+An unbounded queue prevents immediate rejection during a transient burst, but a backlog consumes memory and increases latency. Production systems should monitor `Queued`, `Running`, rejection counters, and `Health.LastProgressTime`, and apply admission control at external entry points.
 
 ### Frame loop
 
@@ -279,6 +295,8 @@ Prototypes keep reusable construction definitions in the Service scope:
 - Components added dynamically at runtime are removable by default.
 - Components reuse the Entity ID by default. Enable `ComponentUniqueID` to allocate an independent ID for every Component.
 - `SetEnabled(false)` unbinds frame updates and invokes `OnDisable`; enabling again invokes `OnEnable`.
+- `AsyncScope()` returns the Component Lifetime Scope; removal closes it, while disabling keeps it alive.
+- `ConcurrentComponent` is the concurrency-safe narrow view of a Component; business state must still be accessed on the Runtime through `Submit`, `Post`, or `ContinueOn`.
 - `ComponentAwakeOnFirstTouch` defers component awakening until first access.
 - Event handles stored in `Managed()` are unbound automatically during component destruction.
 
@@ -295,40 +313,163 @@ Every Runtime exposes an EntityTree with a virtual forest root:
 
 ## Async programming
 
-### Future
+Core separates asynchronous behavior into five independent capabilities instead of making one type carry results, streams, lifecycles, and Actor scheduling at once:
 
-`utils/async` provides `Result`, `Future`, `FutureChan`, and `FutureVoid`:
-
-- `Future.Wait(ctx)` waits for the next result or Context cancellation.
-- `Future.Chan()` consumes one or more yielded results.
-- `Future.Done()` closes when the producer ends the Future.
-- `Future.Context(ctx)` derives a Context that is canceled when the Future completes.
-- A Future result channel uses **competing consumption**, not broadcast semantics. Multiple consumers race for the same results.
-- A producer must either call `Return` once, or call `YieldReturn` zero or more times followed by one `YieldBreak`.
-
-### Async entry points
-
-| API | Execution location | Purpose |
+| Capability | Type / API | Semantics |
 | --- | --- | --- |
-| `CallAsync` / `CallVoidAsync` | Target Runtime goroutine | Safely read or mutate Runtime-local state. |
-| `GoAsync` / `GoVoidAsync` | New goroutine | Blocking I/O, independent computation, or work that does not touch Runtime state. |
-| `TimeAfterAsync` / `TimeAtAsync` | Internal timer goroutine | One-shot timed result. |
-| `TimeTickAsync` | Internal timer goroutine | Continuous ticks until Context cancellation. |
-| `ReadChanAsync` | Internal bridge goroutine | Converts Channel values into a stream of Future results. |
+| One-shot result | `Promise` / `Future` | One `async.Result`, replayable to any number of consumers after completion. |
+| Result-free completion | `Completer` / `Signal` | Expresses only “completed”; used for Service, Runtime, and Entity lifecycles. |
+| Continuous data | `Emitter` / `Stream` | Multiple `Result` values with single-consumer semantics; multiple readers compete for items. |
+| Background-task lifetime | `Scope` / `Spawn` | Binds goroutine cancellation, rejection after close, joining, and statistics to an owning object. |
+| Actor continuation | `ContinueOn` | Subscribes to a Future and re-enqueues state mutation onto a target Runtime. |
 
-### Await
+### Future and Promise
 
-`Await(provider, futures...)` waits in the background but schedules continuations back onto the Runtime that owns `provider`:
+`Future` is a non-generic, one-shot, replayable consumer view. `Promise` is its single-completion producer view:
 
-| Strategy | Semantics |
-| --- | --- |
-| `Any` / `AnyVoid` | Uses the first result that becomes available, whether successful or failed. |
-| `OK` / `OKVoid` | Uses the first successful result; returns `ErrNoFutureSucceeded` if all fail. |
-| `All` / `AllVoid` | Takes one result from each Future and preserves input order. |
-| `Transform` | Merges streaming results, transforms each item on the Runtime, and yields transformed results. |
-| `Foreach` | Merges streaming results and executes a void callback for each item on the Runtime. |
+```go
+promise, future := async.NewPromise()
 
-Avoid a long `Future.Wait` directly on the Runtime goroutine because it blocks the entire serialization domain. The usual pattern is “wait in the background, then return to the Runtime through `Await`.”
+go func() {
+	value, err := load()
+	promise.Resolve(async.NewResult(value, err))
+}()
+
+result := future.Wait(context.Background())
+sameResult := future.Wait(context.Background()) // immediately replays the same result
+```
+
+- `Resolve` has one-completion semantics; only the first completer receives `true`.
+- `TryGet` reads without blocking, `Wait` waits for completion or Context cancellation, and `Done` exposes the shared completion channel.
+- `OnComplete` registers a completion subscription. If the Future has completed, the callback runs immediately on the subscribing goroutine.
+- Completion callbacks run on the completing goroutine outside the state lock and must return quickly. Use `ContinueOn` when Actor state must change.
+- A Future stores its result, diagnostic ID, and completion-executor ID directly. It does not start a polling or timeout-checking goroutine.
+
+### Signal and Stream
+
+`Signal` carries no `Result`, making it suitable for lifecycles where only completion matters:
+
+```go
+terminated := runtime.Run()
+if err := terminated.Wait(ctx); err != nil {
+	return err
+}
+```
+
+`Stream` specifically represents continuous sources such as timer ticks and Channel bridges:
+
+```go
+ticks := core.Every(ctx, time.Second)
+for {
+	result, ok := ticks.Next(ctx)
+	if !ok {
+		break
+	}
+	_ = result.Value.(time.Time)
+}
+```
+
+A `Stream` is a single-consumer stream, not a broadcast bus. `Close` wakes blocked producers and closes the data channel safely after registered senders exit. Use `event` or a higher-level message facility when broadcast is required.
+
+### Scope and Spawn
+
+Service, Runtime, Entity, and Component each expose a Lifetime Scope:
+
+```mermaid
+flowchart LR
+    ServiceScope[Service Scope] --> RuntimeScope[Runtime Scope]
+    RuntimeScope --> EntityScope[Entity Scope]
+    EntityScope --> ComponentScope[Component Scope]
+    ComponentScope --> BackgroundTask[Spawn task]
+    ComponentScope -->|Component removal| CancelTask[Cancel and reject new tasks]
+```
+
+A Scope provides:
+
+1. A cancelable Context for owned tasks.
+2. Rejection of new tasks after the owner closes.
+3. `Spawned`, `Active`, `Completed`, `Canceled`, and `Rejected` statistics.
+4. `Done()` for joining all registered tasks.
+
+`Scope.Close` cannot forcibly kill a goroutine; a task must observe the Context it receives. A Component Scope closes on removal, but not on `SetEnabled(false)`. Entity, Runtime, and Service scopes close with their respective lifecycles.
+
+Service and Runtime scopes are created with their respective Contexts. An Entity creates its Scope once when it binds to its owning Runtime and directly uses the Scope Context as its Entity Context, avoiding an additional cancellation layer. A Component Scope is created when the Component enters the lifetime of its Entity's Runtime. Every Scope closes synchronously with its owner lifecycle.
+
+```go
+future := core.Spawn(
+	component.AsyncScope(),
+	func(ctx context.Context, _ ...any) async.Result {
+		data, err := repository.Load(ctx, playerID)
+		return async.NewResult(data, err)
+	},
+)
+```
+
+### Submit, Post, and ContinueOn
+
+| API | Future | Execution location | Purpose |
+| --- | --- | --- | --- |
+| `Submit` / `SubmitDelegate` | Yes | Target Runtime goroutine | Actor tasks that produce a business result. |
+| `SubmitVoid` / `SubmitDelegateVoid` | Yes | Target Runtime goroutine | No business value, but execution errors or completion still matter. |
+| `Post` / `PostDelegate` | No | Target Runtime goroutine | Fire-and-forget messages where only successful enqueue matters. |
+| `Spawn` / `SpawnVoid` | Yes | New goroutine | Blocking I/O or independent computation; must not mutate Runtime-local state directly. |
+| `ContinueOn` and Delegate/Void variants | Yes | Target Runtime goroutine | Serial Actor-state updates after a Future completes. |
+| `After` / `At` | Yes | Timer callback | One-shot timed results. |
+| `Every` / `FromChan` | Stream | Bridge goroutine | Continuous ticks or Channel data. |
+
+The complete “background I/O → Actor continuation” pattern is:
+
+```go
+loadFuture := core.Spawn(
+	component.AsyncScope(),
+	func(ctx context.Context, _ ...any) async.Result {
+		data, err := repository.Load(ctx, playerID)
+		return async.NewResult(data, err)
+	},
+)
+
+next := core.ContinueOn(
+	component,
+	loadFuture,
+	func(ctx runtime.Context, result async.Result, _ ...any) async.Result {
+		if result.Error != nil {
+			return result
+		}
+		component.Data = result.Value.(*PlayerData)
+		return async.NewResult(nil, nil)
+	},
+)
+```
+
+`ContinueOn` checks the owning Scope when subscribing, enqueuing, and immediately before execution. Queue closure, insufficient capacity, an inactive owner, Scope closure, and continuation panics are reported through the returned Future. Future completion triggers a lightweight subscription directly, so a fast RPC response needs no extra waiter goroutine and incurs no polling delay.
+
+### Future combinators
+
+Combinators use completion subscriptions, atomic counters, and one-completion guards. They do not start one waiting goroutine per input Future:
+
+| API | Semantics | Empty input |
+| --- | --- | --- |
+| `Race` | First completion, whether successful or failed. | `ErrNoCandidates` |
+| `FirstSuccess` | First success; `ErrNoFutureSucceeded` if every candidate fails. | `ErrNoCandidates` |
+| `All` | Returns `[]any` in input order; fails immediately on any failure. | Successful empty slice |
+| `AllSettled` | Returns every `[]Result` in input order. | Successful empty slice |
+| `Zip2` | Returns `async.Pair` after both inputs succeed. | `ErrNoCandidates` if either argument is nil |
+| `Map` | Synchronously maps one completed result. | Not applicable |
+| `FlatMap` | Flattens a Future selected from one completed result. | Not applicable |
+| `Timeout` | The source, Context cancellation, or duration wins—whichever completes first. | Not applicable |
+
+Combinators cancel only their own subscriptions by default, not source tasks, because a Future may be shared. Close the owning Scope or cancel the supplied Context when the producer itself should stop.
+
+### Runtime self-wait protection
+
+Blocking on a pending Future from the Runtime goroutine would freeze the entire Actor. Core stores a completion-executor ID in each Future and implements wait guards on Runtime and Entity contexts:
+
+- Waiting for a pending Future completed by the same Runtime mailbox immediately returns `runtime.ErrRuntimeSelfWait`.
+- Waiting for any other pending Future with a Runtime Context immediately returns `runtime.ErrBlockingWaitInRuntime`.
+- A completed Future remains safe to read immediately through `TryGet` or `Wait`.
+- `Runtime.Stats().Health.LastWaitRejectID` retains the most recently rejected Future ID for diagnosis.
+
+This detects known Future self-waits. A business callback, synchronous I/O call, or infinite loop that stalls for another reason is observable when a task category remains `Running` while `Health.LastProgressTime` stops advancing, and should be checked by an external monitor.
 
 ## Events and code generation
 
@@ -401,7 +542,8 @@ The `define` package declares type-safe add-in definitions and exposes consisten
 
 - A Service Context derives from `context.Background()` by default.
 - A Runtime Context derives from its owning Service Context by default.
-- An Entity Context derives from its owning Runtime Context.
+- An Entity Scope derives directly from its owning Runtime Context, and the Entity Context reuses that Scope Context.
+- Service, Runtime, Entity, and Component expose separate Lifetime `AsyncScope()` values; lower-level scopes are canceled with their parent Context.
 - Parent cancellation propagates downward, but `Terminated()` completes only after the corresponding object finishes cleanup.
 
 ### Shutdown barrier
@@ -413,6 +555,8 @@ Service and Runtime contexts both carry a `WaitGroup` barrier:
 - `Done()` completes one registered unit.
 - `Terminate()` requests cancellation; `Terminated()` means cleanup has actually finished.
 - Starting a Runtime automatically joins its parent Service barrier, so Service waits for all runtimes to exit.
+
+Use the `WaitGroup` for host-level external resources. Prefer `AsyncScope` for new background business tasks. Service and Runtime shutdown close and join their scopes before closing and waiting on the legacy barrier.
 
 ### Panic handling
 
@@ -537,8 +681,8 @@ See [`core_test.go`](./core_test.go) for more scenario-style examples.
 ├── runtime/         # Runtime Context, calls, EntityManager, and EntityTree
 ├── service/         # Service Context, global entity index, and Service add-ins
 ├── utils/           # async, corectx, generic, iface, meta, uid, and other utilities
-├── async.go         # Root-package async entry points
-├── await.go         # Await composition strategies
+├── async.go         # Submit/Post, Spawn, timer, and stream entry points
+├── continue.go      # Future-to-Runtime Actor continuations
 ├── runtime*.go      # Runtime loop, frame, task queue, GC, and lifecycles
 └── service*.go      # Service loop and lifecycle
 ```
@@ -550,14 +694,14 @@ See [`core_test.go`](./core_test.go) for more scenario-style examples.
 | [`/`](./) | Public entry points, Service/Runtime drivers, lifecycle contracts, entity builders, and async helpers. |
 | [`/service`](./service) | Service Context, prototype access, global entity index, cross-Runtime entity calls, and Service add-ins. |
 | [`/runtime`](./runtime) | Runtime Context, task scheduling, frame statistics, local EntityManager, EntityTree, and Runtime add-ins. |
-| [`/ec`](./ec) | Entity/Component model, state machines, component management, scopes, and tree-node events. |
+| [`/ec`](./ec) | Entity/Component model, concurrent narrow views, state machines, component management, scopes, and tree-node events. |
 | [`/ec/pt`](./ec/pt) | Entity/Component Prototypes, descriptors, concurrent libraries, and instance construction. |
 | [`/event`](./event) | Synchronous events, priorities, recursion policies, Handle, ManagedHandles, and event tables. |
 | [`/event/eventc`](./event/eventc) | Type-safe event code generator used through `go:generate`. |
 | [`/extension`](./extension) | Common Add-in contracts, states, installation, lookup, and dependency helpers. |
 | [`/define`](./define) | Generic Service, Runtime, and common Add-in definitions. |
-| [`/utils/async`](./utils/async) | Future, Result, Return, and Yield infrastructure. |
-| [`/utils/corectx`](./utils/corectx) | Shared Service/Runtime Context, wait-group, and shutdown protocol. |
+| [`/utils/async`](./utils/async) | Result, Promise/Future, Signal, Stream, Scope, and waiter-free combinators. |
+| [`/utils/corectx`](./utils/corectx) | Shared Service/Runtime Context, AsyncScope, wait-group, and shutdown protocol. |
 | [`/utils`](./utils) | Generic containers, interface caches, metadata, options, type helpers, and UIDs. |
 
 ## Development and verification

@@ -26,8 +26,10 @@ import (
 )
 
 var (
-	ErrContext       = fmt.Errorf("%w: runtime-context", exception.ErrCore) // 运行时上下文错误。
-	ErrEntityTree    = fmt.Errorf("%w: entity-tree", ErrContext)            // 实体树错误。
-	ErrEntityManager = fmt.Errorf("%w: entity-manager", ErrContext)         // 本地实体管理器错误。
-	ErrFrame         = fmt.Errorf("%w: frame", ErrContext)                  // 帧循环错误。
+	ErrContext               = fmt.Errorf("%w: runtime-context", exception.ErrCore)         // 运行时上下文错误。
+	ErrEntityTree            = fmt.Errorf("%w: entity-tree", ErrContext)                    // 实体树错误。
+	ErrEntityManager         = fmt.Errorf("%w: entity-manager", ErrContext)                 // 本地实体管理器错误。
+	ErrFrame                 = fmt.Errorf("%w: frame", ErrContext)                          // 帧循环错误。
+	ErrRuntimeSelfWait       = fmt.Errorf("%w: runtime waits for its own task", ErrContext) // Runtime 等待自身队列结果。
+	ErrBlockingWaitInRuntime = fmt.Errorf("%w: blocking wait in runtime", ErrContext)       // Runtime 内阻塞等待 pending Future。
 )

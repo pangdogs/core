@@ -30,165 +30,126 @@ import (
 	"git.golaxy.org/core/utils/generic"
 )
 
-// CallAsync 将 fun 提交到 provider 所属运行时执行，并返回承载调用结果的 Future。
-func CallAsync(provider corectx.ConcurrentContextProvider, fun generic.FuncVar1[runtime.Context, any, async.Result], args ...any) async.Future {
-	return runtime.Concurrent(provider).CallAsync(fun, args...)
+// Submit 将有返回值函数投递到 provider 所属 Runtime，并返回执行结果 Future。
+func Submit(provider corectx.ConcurrentContextProvider, fun generic.FuncVar1[runtime.Context, any, async.Result], args ...any) async.Future {
+	return runtime.Concurrent(provider).Submit(fun, args...)
 }
 
-// CallVoidAsync 将无返回值的 fun 提交到 provider 所属运行时执行，并返回完成信号。
-func CallVoidAsync(provider corectx.ConcurrentContextProvider, fun generic.ActionVar1[runtime.Context, any], args ...any) async.Future {
-	return runtime.Concurrent(provider).CallVoidAsync(fun, args...)
+// SubmitDelegate 将有返回值委托投递到 provider 所属 Runtime。
+func SubmitDelegate(provider corectx.ConcurrentContextProvider, fun generic.DelegateVar1[runtime.Context, any, async.Result], args ...any) async.Future {
+	return runtime.Concurrent(provider).SubmitDelegate(fun, args...)
 }
 
-// GoAsync 在新的 goroutine 中执行 fun，并返回承载调用结果的 Future。
-// nil 上下文会替换为 context.Background；panic 会转换为 Result.Error。
-func GoAsync(ctx context.Context, fun generic.FuncVar1[context.Context, any, async.Result], args ...any) async.Future {
+// SubmitVoid 将无业务返回值函数投递到 provider 所属 Runtime，并返回可等待错误的 Future。
+func SubmitVoid(provider corectx.ConcurrentContextProvider, fun generic.ActionVar1[runtime.Context, any], args ...any) async.Future {
+	return runtime.Concurrent(provider).SubmitVoid(fun, args...)
+}
+
+// SubmitDelegateVoid 将无业务返回值委托投递到 provider 所属 Runtime。
+func SubmitDelegateVoid(provider corectx.ConcurrentContextProvider, fun generic.DelegateVoidVar1[runtime.Context, any], args ...any) async.Future {
+	return runtime.Concurrent(provider).SubmitDelegateVoid(fun, args...)
+}
+
+// Post 将无返回值函数投递到 provider 所属 Runtime，不创建 Future。
+// 仅返回队列关闭、容量不足等同步入队错误。
+func Post(provider corectx.ConcurrentContextProvider, fun generic.ActionVar1[runtime.Context, any], args ...any) error {
+	return runtime.Concurrent(provider).Post(fun, args...)
+}
+
+// PostDelegate 将无返回值委托投递到 provider 所属 Runtime，不创建 Future。
+func PostDelegate(provider corectx.ConcurrentContextProvider, fun generic.DelegateVoidVar1[runtime.Context, any], args ...any) error {
+	return runtime.Concurrent(provider).PostDelegate(fun, args...)
+}
+
+// Spawn 在 scope 中启动后台 goroutine。fun 不得直接访问 Runtime 局部状态。
+func Spawn(scope *async.Scope, fun generic.FuncVar1[context.Context, any, async.Result], args ...any) async.Future {
+	return async.Spawn(scope, func(ctx context.Context) async.Result {
+		return fun.UnsafeCall(ctx, args...)
+	})
+}
+
+// SpawnVoid 在 scope 中启动无业务返回值的后台 goroutine。
+func SpawnVoid(scope *async.Scope, fun generic.ActionVar1[context.Context, any], args ...any) async.Future {
+	return async.SpawnVoid(scope, func(ctx context.Context) {
+		fun.UnsafeCall(ctx, args...)
+	})
+}
+
+// After 在 dur 后以当前时间完成 Future；ctx 取消时以 ctx.Err 完成。
+func After(ctx context.Context, dur time.Duration) async.Future {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-
-	future := async.NewFutureChan()
-
-	go func() {
-		ret, panicErr := fun.SafeCall(ctx, args...)
-		if panicErr != nil {
-			ret.Error = panicErr
-		}
-		async.Return(future, ret)
-	}()
-
-	return future.Out()
+	if dur < 0 {
+		dur = 0
+	}
+	promise, future := async.NewPromise()
+	timer := time.AfterFunc(dur, func() {
+		promise.Resolve(async.NewResult(time.Now(), nil))
+	})
+	stopContext := context.AfterFunc(ctx, func() {
+		promise.Resolve(async.NewResult(nil, ctx.Err()))
+	})
+	future.OnComplete(func(async.Result) {
+		timer.Stop()
+		stopContext()
+	})
+	return future
 }
 
-// GoVoidAsync 在新的 goroutine 中执行无返回值的 fun，并返回完成信号。
-// nil 上下文会替换为 context.Background；panic 会转换为 Result.Error。
-func GoVoidAsync(ctx context.Context, fun generic.ActionVar1[context.Context, any], args ...any) async.Future {
+// At 在指定时间以当前时间完成 Future；ctx 取消时以 ctx.Err 完成。
+func At(ctx context.Context, at time.Time) async.Future {
+	return After(ctx, time.Until(at))
+}
+
+// Every 按 dur 周期持续产出当前时间，直到 ctx 取消。
+func Every(ctx context.Context, dur time.Duration) async.Stream {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-
-	future := async.NewFutureChan()
-
-	go func() {
-		async.Return(future, async.NewResult(nil, fun.SafeCall(ctx, args...)))
-	}()
-
-	return future.Out()
-}
-
-// TimeAfterAsync 在 dur 后产出一次当前时间并结束。
-// 上下文取消时不再产出结果并直接结束。
-func TimeAfterAsync(ctx context.Context, dur time.Duration) async.Future {
-	if ctx == nil {
-		ctx = context.Background()
+	if dur <= 0 {
+		exception.Panicf("%w: %w: duration must be positive", ErrCore, ErrArgs)
 	}
-
-	future := async.NewFutureChan()
-
+	emitter, stream := async.NewStream()
 	go func() {
-		timer := time.NewTimer(dur)
-		defer timer.Stop()
-
-		select {
-		case t := <-timer.C:
-			async.YieldReturn(ctx, future, async.NewResult(t, nil))
-		case <-ctx.Done():
-		}
-
-		async.YieldBreak(future)
-	}()
-
-	return future.Out()
-}
-
-// TimeAtAsync 在 at 到达时产出一次当前时间并结束。
-// 上下文取消时不再产出结果并直接结束。
-func TimeAtAsync(ctx context.Context, at time.Time) async.Future {
-	if ctx == nil {
-		ctx = context.Background()
-	}
-
-	future := async.NewFutureChan()
-
-	go func() {
-		timer := time.NewTimer(time.Until(at))
-		defer timer.Stop()
-
-		select {
-		case t := <-timer.C:
-			async.YieldReturn(ctx, future, async.NewResult(t, nil))
-		case <-ctx.Done():
-		}
-
-		async.YieldBreak(future)
-	}()
-
-	return future.Out()
-}
-
-// TimeTickAsync 按 dur 周期持续产出当前时间，直到上下文取消。
-// dur 小于等于 0 时 time.NewTicker 会 panic；消费端停止读取时，生产协程可能阻塞到
-// 上下文取消。
-func TimeTickAsync(ctx context.Context, dur time.Duration) async.Future {
-	if ctx == nil {
-		ctx = context.Background()
-	}
-
-	future := async.NewFutureChan()
-
-	go func() {
-		tick := time.NewTicker(dur)
-		defer tick.Stop()
-
-	loop:
+		defer emitter.Close()
+		ticker := time.NewTicker(dur)
+		defer ticker.Stop()
 		for {
 			select {
-			case t := <-tick.C:
-				if !async.YieldReturn(ctx, future, async.NewResult(t, nil)) {
-					break loop
+			case now := <-ticker.C:
+				if !emitter.Emit(ctx, async.NewResult(now, nil)) {
+					return
 				}
 			case <-ctx.Done():
-				break loop
+				return
 			}
 		}
-
-		async.YieldBreak(future)
 	}()
-
-	return future.Out()
+	return stream
 }
 
-// ReadChanAsync 将 ch 中的每个值转换为 Future 的连续产出。
-// ch 关闭或上下文取消时结束；ch 为 nil 时会 panic。消费端停止读取时，生产协程可能
-// 阻塞到上下文取消。
-func ReadChanAsync[T any](ctx context.Context, ch <-chan T) async.Future {
+// FromChan 将 ch 中的值转换为 Stream，直到 ch 关闭或 ctx 取消。
+func FromChan[T any](ctx context.Context, ch <-chan T) async.Stream {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-
 	if ch == nil {
 		exception.Panicf("%w: %w: ch is nil", ErrCore, ErrArgs)
 	}
-
-	future := async.NewFutureChan(cap(ch))
-
+	emitter, stream := async.NewStream(cap(ch))
 	go func() {
-	loop:
+		defer emitter.Close()
 		for {
 			select {
-			case v, ok := <-ch:
-				if !ok {
-					break loop
-				}
-				if !async.YieldReturn(ctx, future, async.NewResult(v, nil)) {
-					break loop
+			case value, ok := <-ch:
+				if !ok || !emitter.Emit(ctx, async.NewResult(value, nil)) {
+					return
 				}
 			case <-ctx.Done():
-				break loop
+				return
 			}
 		}
-		async.YieldBreak(future)
 	}()
-
-	return future.Out()
+	return stream
 }

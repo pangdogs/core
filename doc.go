@@ -33,7 +33,9 @@ Package core 把 service、runtime、ec、event 和 extension 等子包串联成
 此外，根包还提供：
 
   - 实体、组件、插件的生命周期接口；
-  - 异步调度与等待工具，例如 CallAsync、Await、GoAsync 和 TimeAfterAsync；
+  - Submit/Post Actor 邮箱调度，以及保留 Delegate/DelegateVoid 的对应变体；
+  - Scope/Spawn 结构化后台任务与 ContinueOn Runtime 续体；
+  - After、Every 等定时和连续流入口；
   - Service、Runtime、Frame 与 TaskQueue 的选项构造器；
   - 面向框架集成与高级扩展场景的 unsafe 辅助入口。
 

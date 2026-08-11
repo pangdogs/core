@@ -20,10 +20,11 @@
 package ec
 
 import (
-	"fmt"
 	"reflect"
+	"sync/atomic"
 
 	"git.golaxy.org/core/event"
+	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/corectx"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
@@ -32,17 +33,18 @@ import (
 
 // Component 表示依附于实体、由实体所属 Runtime 驱动生命周期的组件。
 //
-// Component 的方法应在所属 Runtime 的运行协程中调用。
+// 除 ConcurrentComponent 暴露的能力外，Component 的方法应在所属 Runtime 的
+// 运行 goroutine 中调用。
 type Component interface {
 	iComponent
+	ConcurrentComponent
 	corectx.CurrentContextProvider
-	fmt.Stringer
 
-	// Id 返回组件 ID；未启用组件唯一 ID 时通常为 Nil。
+	// Id 返回组件 ID；未启用组件唯一 ID 时通常与 Entity ID 相同。
 	Id() uid.Id
 	// Builtin 返回组件在实体原型中的内建描述；动态组件返回空描述。
 	Builtin() BuiltinComponent
-	// Name 返回组件在实体中的名称。
+	// Name 返回组件在 Entity 中的名称。
 	Name() string
 	// Entity 返回组件所依附的实体。
 	Entity() Entity
@@ -66,7 +68,6 @@ type Component interface {
 
 type iComponent interface {
 	init(name string, entity Entity, instance Component)
-	getInstance() Component
 	setId(id uid.Id)
 	setBuiltin(builtin *BuiltinComponent)
 	setState(state ComponentState)
@@ -91,6 +92,7 @@ type ComponentBehavior struct {
 	builtin               *BuiltinComponent
 	name                  string
 	entity                Entity
+	asyncScope            *async.Scope
 	instance              Component
 	state                 ComponentState
 	reflected             reflect.Value
@@ -102,7 +104,7 @@ type ComponentBehavior struct {
 	attachedVersion       int64
 	managedHandles        event.ManagedHandles
 	managedRuntimeHandles [2]event.Handle
-	stringerCache         string
+	stringerCache         atomic.Pointer[string]
 
 	componentEventTab componentEventTab
 }
@@ -208,22 +210,9 @@ func (comp *ComponentBehavior) EventComponentDestroy() event.IEvent {
 	return comp.componentEventTab.EventComponentDestroy()
 }
 
-// CurrentContext 返回所属实体的当前上下文。
-func (comp *ComponentBehavior) CurrentContext() iface.Cache {
-	return comp.entity.CurrentContext()
-}
-
-// ConcurrentContext 返回所属实体的并发上下文。
-func (comp *ComponentBehavior) ConcurrentContext() iface.Cache {
-	return comp.entity.ConcurrentContext()
-}
-
-// String 返回包含组件、实体及原型标识的 JSON 文本。
-func (comp *ComponentBehavior) String() string {
-	if comp.stringerCache == "" {
-		comp.stringerCache = fmt.Sprintf(`{"id":%q,"entity_id":%q,"name":%q,"prototype":%q}`, comp.Id(), comp.Entity().Id(), comp.Name(), comp.Builtin().PT.Prototype())
-	}
-	return comp.stringerCache
+// CurrentContextCache 返回所属实体的当前上下文接口缓存。
+func (comp *ComponentBehavior) CurrentContextCache() iface.Cache {
+	return comp.entity.CurrentContextCache()
 }
 
 func (comp *ComponentBehavior) init(name string, entity Entity, instance Component) {
@@ -232,10 +221,6 @@ func (comp *ComponentBehavior) init(name string, entity Entity, instance Compone
 	comp.instance = instance
 	comp.removable = true
 	comp.enabled = true
-}
-
-func (comp *ComponentBehavior) getInstance() Component {
-	return comp.instance
 }
 
 func (comp *ComponentBehavior) setId(id uid.Id) {
@@ -272,6 +257,9 @@ func (comp *ComponentBehavior) setState(state ComponentState) {
 
 	switch comp.state {
 	case ComponentState_Dead:
+		if comp.asyncScope != nil {
+			comp.asyncScope.Close()
+		}
 		comp.componentEventTab.SetEnabled(false)
 	case ComponentState_Destroyed:
 		comp.managedHandles.UnbindAllEventHandles()

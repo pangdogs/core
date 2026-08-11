@@ -21,9 +21,8 @@ package ec
 
 import (
 	"context"
-	"fmt"
 	"reflect"
-	"sync"
+	"sync/atomic"
 
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/utils/async"
@@ -62,17 +61,15 @@ func UnsafeNewEntity(options EntityOptions) Entity {
 // 除 ConcurrentEntity 暴露的只读能力外，其方法应在所属 Runtime 的运行协程中调用。
 type Entity interface {
 	iEntity
-	iConcurrentEntity
-	iContext
 	iComponentManager
 	iTreeNode
+	ConcurrentEntity
 	corectx.CurrentContextProvider
 	reinterpret.InstanceProvider
-	fmt.Stringer
 
 	// Id 返回实体 ID。
 	Id() uid.Id
-	// PT 返回实体原型；无原型时返回空原型对象。
+	// PT 返回实体原型；尚未绑定原型时返回空原型对象。
 	PT() EntityPT
 	// Scope 返回实体的可查询范围。
 	Scope() Scope
@@ -92,12 +89,9 @@ type Entity interface {
 
 type iEntity interface {
 	init(options EntityOptions)
-	withContext(ctx context.Context)
 	getOptions() *EntityOptions
-	getInstance() Entity
 	setId(id uid.Id)
 	setPT(prototype EntityPT)
-	setContext(ctx iface.Cache)
 	setState(state EntityState)
 	setReflected(v reflect.Value)
 	getProcessedStateBits() *generic.Bits16
@@ -115,11 +109,12 @@ const (
 // EntityBehavior 提供 Entity 的默认实现，扩展实体时应将其匿名嵌入自定义结构体。
 type EntityBehavior struct {
 	context.Context
-	terminate             context.CancelFunc
-	terminated            async.FutureVoid
 	options               EntityOptions
 	prototype             EntityPT
-	context               iface.Cache
+	asyncScope            *async.Scope
+	waitGuard             async.WaitGuard
+	terminated            async.Completer
+	runtimeCtxCache       iface.Cache
 	componentNameIndex    generic.SliceMap[string, int]
 	componentList         generic.FreeList[Component]
 	state                 EntityState
@@ -131,8 +126,7 @@ type EntityBehavior struct {
 	enteredVersion        int64
 	managedHandles        event.ManagedHandles
 	managedRuntimeHandles [2]event.Handle
-	stringerOnce          sync.Once
-	stringerCache         string
+	stringerCache         atomic.Pointer[string]
 
 	entityEventTab                 entityEventTab
 	entityComponentManagerEventTab entityComponentManagerEventTab
@@ -196,27 +190,14 @@ func (entity *EntityBehavior) EventEntityDestroy() event.IEvent {
 	return entity.entityEventTab.EventEntityDestroy()
 }
 
-// CurrentContext 返回实体所属 Runtime 的当前上下文。
-func (entity *EntityBehavior) CurrentContext() iface.Cache {
-	return entity.context
-}
-
-// ConcurrentContext 返回实体所属 Runtime 的并发上下文。
-func (entity *EntityBehavior) ConcurrentContext() iface.Cache {
-	return entity.context
+// CurrentContextCache 返回实体所属 Runtime 的当前上下文接口缓存。
+func (entity *EntityBehavior) CurrentContextCache() iface.Cache {
+	return entity.runtimeCtxCache
 }
 
 // InstanceFaceCache 返回实际实体实例的接口缓存，供类型重解释使用。
 func (entity *EntityBehavior) InstanceFaceCache() iface.Cache {
 	return entity.options.InstanceFace.Cache
-}
-
-// String 返回包含实体 ID 与原型名的 JSON 文本。
-func (entity *EntityBehavior) String() string {
-	entity.stringerOnce.Do(func() {
-		entity.stringerCache = fmt.Sprintf(`{"id":%q,"prototype":%q}`, entity.Id(), entity.PT().Prototype())
-	})
-	return entity.stringerCache
 }
 
 func (entity *EntityBehavior) init(options EntityOptions) {
@@ -227,17 +208,8 @@ func (entity *EntityBehavior) init(options EntityOptions) {
 	}
 }
 
-func (entity *EntityBehavior) withContext(ctx context.Context) {
-	entity.Context, entity.terminate = context.WithCancel(ctx)
-	entity.terminated = async.NewFutureVoid()
-}
-
 func (entity *EntityBehavior) getOptions() *EntityOptions {
 	return &entity.options
-}
-
-func (entity *EntityBehavior) getInstance() Entity {
-	return entity.options.InstanceFace.Iface
 }
 
 func (entity *EntityBehavior) setId(id uid.Id) {
@@ -246,10 +218,6 @@ func (entity *EntityBehavior) setId(id uid.Id) {
 
 func (entity *EntityBehavior) setPT(prototype EntityPT) {
 	entity.prototype = prototype
-}
-
-func (entity *EntityBehavior) setContext(ctx iface.Cache) {
-	entity.context = ctx
 }
 
 func (entity *EntityBehavior) setState(state EntityState) {
@@ -261,14 +229,14 @@ func (entity *EntityBehavior) setState(state EntityState) {
 
 	switch entity.state {
 	case EntityState_Dead:
-		entity.terminate()
+		entity.asyncScope.Close()
 		entity.entityEventTab.SetEnabled(false)
 		entity.entityComponentManagerEventTab.SetEnabled(false)
 		entity.entityTreeNodeEventTab.SetEnabled(false)
 	case EntityState_Destroyed:
 		entity.managedHandles.UnbindAllEventHandles()
 		entity.managedUnbindRuntimeHandles()
-		async.ReturnVoid(entity.terminated)
+		entity.terminated.Complete()
 	}
 }
 

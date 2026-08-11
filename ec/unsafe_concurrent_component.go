@@ -19,20 +19,18 @@
 
 package ec
 
-// UnsafeConcurrentEntity 暴露 ConcurrentEntity 的框架内部能力。
+// UnsafeConcurrentComponent 暴露 ConcurrentComponent 的框架内部能力。
 //
 // Deprecated: 仅供框架内部使用。
-func UnsafeConcurrentEntity(entity ConcurrentEntity) _UnsafeConcurrentEntity {
-	return _UnsafeConcurrentEntity{
-		ConcurrentEntity: entity,
-	}
+func UnsafeConcurrentComponent(component ConcurrentComponent) _UnsafeConcurrentComponent {
+	return _UnsafeConcurrentComponent{ConcurrentComponent: component}
 }
 
-type _UnsafeConcurrentEntity struct {
-	ConcurrentEntity
+type _UnsafeConcurrentComponent struct {
+	ConcurrentComponent
 }
 
-// Entity 返回底层实体；调用者必须自行保证运行协程约束。
-func (u _UnsafeConcurrentEntity) Entity() Entity {
-	return u.getEntity()
+// Instance 返回实际组件实例；调用者必须自行保证 Runtime goroutine 约束。
+func (u _UnsafeConcurrentComponent) Instance() Component {
+	return u.getInstance()
 }

@@ -20,6 +20,9 @@
 package core
 
 import (
+	"context"
+	"time"
+
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/runtime"
@@ -30,9 +33,9 @@ import (
 	"git.golaxy.org/core/utils/generic"
 )
 
-// Run 在新 goroutine 中启动运行时循环，并返回运行时终止时完成的 Future。
+// Run 在新 goroutine 中启动运行时循环，并返回运行时终止时完成的 Signal。
 // 运行时只能启动一次；上下文已经取消或运行时已经启动时会 panic。
-func (rt *RuntimeBehavior) Run() async.Future {
+func (rt *RuntimeBehavior) Run() async.Signal {
 	ctx := rt.ctx
 
 	select {
@@ -59,13 +62,13 @@ func (rt *RuntimeBehavior) Run() async.Future {
 	return ctx.Terminated()
 }
 
-// Terminate 请求停止运行时，并返回运行时终止时完成的 Future。
-func (rt *RuntimeBehavior) Terminate() async.Future {
+// Terminate 请求停止运行时，并返回运行时终止时完成的 Signal。
+func (rt *RuntimeBehavior) Terminate() async.Signal {
 	return rt.ctx.Terminate()
 }
 
-// Terminated 返回运行时终止时完成的 Future。
-func (rt *RuntimeBehavior) Terminated() async.Future {
+// Terminated 返回运行时终止时完成的 Signal。
+func (rt *RuntimeBehavior) Terminated() async.Signal {
 	return rt.ctx.Terminated()
 }
 
@@ -83,6 +86,9 @@ func (rt *RuntimeBehavior) running() {
 	rt.emitEventRunningEvent(runtime.RunningEvent_Terminating)
 
 	rt.loopStop(handles)
+
+	ctx.AsyncScope().Close()
+	_ = ctx.AsyncScope().Done().Wait(context.Background())
 
 	corectx.UnsafeContext(ctx).CloseWaitGroup()
 	ctx.WaitGroup().Wait()
@@ -244,15 +250,31 @@ func (rt *RuntimeBehavior) mainLoop() {
 }
 
 func (rt *RuntimeBehavior) runTask(task _Task) {
+	rt.taskQueue.start(task.typ)
+	rt.lastProgressTime.Store(time.Now().UnixNano())
+
+	var panicked bool
+	defer func() {
+		if panicValue := recover(); panicValue != nil {
+			panicked = true
+			rt.finishTask(task.typ, panicked)
+			panic(panicValue)
+		}
+		rt.finishTask(task.typ, panicked)
+	}()
 	switch task.typ {
-	case TaskType_Call:
+	case TaskType_Submit, TaskType_Post:
 		rt.emitEventRunningEvent(runtime.RunningEvent_RunCallBegin)
-		task.run(rt.ctx)
+		panicked = task.run(rt.ctx)
 		rt.emitEventRunningEvent(runtime.RunningEvent_RunCallEnd)
 	case TaskType_Frame:
-		task.run(rt.ctx)
+		panicked = task.run(rt.ctx)
 	}
-	rt.taskQueue.complete(task.typ)
+}
+
+func (rt *RuntimeBehavior) finishTask(taskType TaskType, panicked bool) {
+	rt.taskQueue.complete(taskType, panicked)
+	rt.lastProgressTime.Store(time.Now().UnixNano())
 }
 
 func (rt *RuntimeBehavior) runGC() {

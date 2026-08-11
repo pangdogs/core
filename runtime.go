@@ -21,6 +21,7 @@ package core
 
 import (
 	"sync/atomic"
+	"time"
 
 	"git.golaxy.org/core/ec"
 	"git.golaxy.org/core/event"
@@ -85,18 +86,19 @@ type RuntimeBehavior struct {
 	handleEventEntityManagerEntityComponentEnableChanged runtime.EventEntityManagerEntityComponentEnableChanged
 	handleEventEntityManagerEntityFirstTouchComponent    runtime.EventEntityManagerEntityFirstTouchComponent
 	managedAddInManagerHandles                           [2]event.Handle
+	lastProgressTime                                     atomic.Int64
 
 	runtimeEventTab runtimeEventTab
 }
 
-// CurrentContext 返回仅供运行时 goroutine 使用的上下文接口缓存。
-func (rt *RuntimeBehavior) CurrentContext() iface.Cache {
-	return rt.ctx.CurrentContext()
+// CurrentContextCache 返回仅供运行时 goroutine 使用的上下文接口缓存。
+func (rt *RuntimeBehavior) CurrentContextCache() iface.Cache {
+	return rt.ctx.CurrentContextCache()
 }
 
-// ConcurrentContext 返回可跨 goroutine 使用的上下文接口缓存。
-func (rt *RuntimeBehavior) ConcurrentContext() iface.Cache {
-	return rt.ctx.ConcurrentContext()
+// ConcurrentContextCache 返回可跨 goroutine 使用的上下文接口缓存。
+func (rt *RuntimeBehavior) ConcurrentContextCache() iface.Cache {
+	return rt.ctx.ConcurrentContextCache()
 }
 
 // InstanceFaceCache 返回运行时实例的接口缓存，用于 reinterpret.Cast。
@@ -115,6 +117,7 @@ func (rt *RuntimeBehavior) init(rtCtx runtime.Context, options RuntimeOptions) {
 
 	rt.ctx = rtCtx
 	rt.options = options
+	rt.lastProgressTime.Store(time.Now().UnixNano())
 
 	if rt.options.InstanceFace.IsNil() {
 		rt.options.InstanceFace = iface.NewFaceT[Runtime](rt)

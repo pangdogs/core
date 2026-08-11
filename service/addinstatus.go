@@ -22,7 +22,6 @@ package service
 import (
 	"fmt"
 	"reflect"
-	"sync"
 	"sync/atomic"
 
 	"git.golaxy.org/core/extension"
@@ -41,14 +40,13 @@ type iAddInStatus interface {
 }
 
 type _AddInStatus struct {
-	mgr          *_AddInManager
-	id           uint64
-	name         string
-	instanceFace iface.FaceAny
-	reflected    reflect.Value
-	state        atomic.Int32
-	stringerOnce sync.Once
-	stringer     string
+	mgr           *_AddInManager
+	id            uint64
+	name          string
+	instanceFace  iface.FaceAny
+	reflected     reflect.Value
+	state         atomic.Int32
+	stringerCache atomic.Pointer[string]
 }
 
 // Id 返回由插件名称生成的 ID。
@@ -78,10 +76,15 @@ func (s *_AddInStatus) State() extension.AddInState {
 
 // String 实现 fmt.Stringer，返回包含 ID、名称和实例类型的 JSON 文本。
 func (s *_AddInStatus) String() string {
-	s.stringerOnce.Do(func() {
-		s.stringer = fmt.Sprintf(`{"id":%d,"name":%q,"instance":%q}`, s.id, s.name, s.reflected.Type())
-	})
-	return s.stringer
+	if cached := s.stringerCache.Load(); cached != nil {
+		return *cached
+	}
+
+	value := fmt.Sprintf(`{"id":%d,"name":%q,"instance":%q}`, s.id, s.name, s.reflected.Type())
+	if s.stringerCache.CompareAndSwap(nil, &value) {
+		return value
+	}
+	return *s.stringerCache.Load()
 }
 
 func (s *_AddInStatus) started() {

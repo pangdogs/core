@@ -24,8 +24,9 @@ Package service 表示应用的全局作用域，也是多个 runtime 的父上�
 服务上下文负责：
 
   - 持有父 context、等待组与终止状态；
+  - 提供随服务关闭并汇合后台任务的 AsyncScope；
   - 管理实体原型库与组件原型库；
-  - 提供全局实体索引，以及按实体 ID 发起异步调用；
+  - 提供全局实体索引，以及按实体 ID Submit 或 Post 到所属 Runtime；
   - 管理随服务同步启停的 service add-in，并派发服务运行事件。
 
 通常先用 NewContext 创建上下文，再交给 core.NewService 绑定和运行。

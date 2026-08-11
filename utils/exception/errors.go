@@ -42,6 +42,11 @@ func (e ErrorWithStack) Error() string {
 	return fmt.Sprintf("%s\n\n%s\n", e.Err, e.Stack)
 }
 
+// Unwrap 返回附加堆栈前的原始错误。
+func (e ErrorWithStack) Unwrap() error {
+	return e.Err
+}
+
 // TraceStack 捕获当前协程堆栈并将其附加到 err。
 func TraceStack(err error) error {
 	stackBuf := make([]byte, 4096)

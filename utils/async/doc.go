@@ -17,20 +17,24 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-// Package async 提供 Future 与异步结果类型。
+// Package async 提供一次性结果、完成信号、连续流和结构化异步作用域。
 /*
-Package async 定义了 Result、Future、FutureVoid 以及一组 Return/Yield 辅助函数，
-用于在 service/runtime 异步调用和独立 goroutine 任务之间传递结果。
+Package async 将不同异步语义拆分为独立类型：
 
-Future 支持：
+  - Promise/Future：非泛型、一次性、可重放的 Result；
+  - Completer/Signal：不携带 Result 的生命周期完成通知；
+  - Emitter/Stream：连续 Result 的单消费流；
+  - Scope/Spawn：绑定宿主生命周期的后台任务取消、汇合与统计；
+  - Race、FirstSuccess、All、AllSettled、Zip2、Map、FlatMap 和 Timeout：
+    基于完成订阅的 Future 组合器。
 
-  - Wait：等待单个结果；
-  - Chan：消费 yield 式多次产出；
-  - Context：把 future 完成态转换为 context 取消信号。
+Future 内部保存完成结果，并通过 OnComplete 在完成者 goroutine 中直接通知订阅者；
+多个 Wait、TryGet 或 OnComplete 消费者读取的是同一个可重放结果，不会竞争消费，
+也不会为每个订阅者启动等待 goroutine。
 
-根包 core 的 CallAsync、GoAsync、Await 等 API 都建立在该包之上。
+Stream 采用单消费语义；多个消费者会竞争元素。需要广播时应使用 event 或上层消息
+设施。Scope.Close 只负责取消 Context 和等待协作式退出，不能强制终止 goroutine。
 
-Future 的结果频道是消费式而非广播式：多个 Wait 或 Chan 消费者会竞争同一批结果。
-Return、ReturnVoid 与 YieldBreak 负责结束 Future，每个 Future 只能结束一次。
+根包 core 的 Submit、Post、Spawn 和 ContinueOn 建立在这些能力之上。
 */
 package async

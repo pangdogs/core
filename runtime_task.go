@@ -25,12 +25,14 @@ import (
 	"git.golaxy.org/core/utils/generic"
 )
 
-// TaskType 标识运行时任务队列中的任务类别。
+// TaskType 标识 Runtime 邮箱中的调度类别。
 type TaskType int8
 
 const (
-	TaskType_Call  TaskType = iota // 普通异步调用任务。
-	TaskType_Frame                 // 帧循环内部任务。
+	TaskType_Submit TaskType = iota // 创建 Future 的可等待任务。
+	TaskType_Post                   // 不创建 Future 的 fire-and-forget 任务。
+	TaskType_Frame                  // 帧循环内部任务。
+	taskTypeCount
 )
 
 type _Task struct {
@@ -40,11 +42,11 @@ type _Task struct {
 	delegate     generic.DelegateVar1[runtime.Context, any, async.Result]
 	delegateVoid generic.DelegateVoidVar1[runtime.Context, any]
 	args         []any
-	future       async.FutureChan
+	promise      async.Promise
 	done         chan struct{}
 }
 
-func (task _Task) run(ctx runtime.Context) {
+func (task _Task) run(ctx runtime.Context) (panicked bool) {
 	var ret async.Result
 	var panicErr error
 
@@ -62,10 +64,11 @@ func (task _Task) run(ctx runtime.Context) {
 	if panicErr != nil {
 		ret.Value = nil
 		ret.Error = panicErr
+		panicked = true
 	}
 
-	if !task.future.IsNil() {
-		async.Return(task.future, ret)
+	if !task.promise.IsNil() {
+		task.promise.Resolve(ret)
 	}
 
 	if task.done != nil {
@@ -74,4 +77,5 @@ func (task _Task) run(ctx runtime.Context) {
 		default:
 		}
 	}
+	return panicked
 }

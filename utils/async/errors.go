@@ -20,39 +20,15 @@
 package async
 
 import (
-	"context"
+	"fmt"
 
 	"git.golaxy.org/core/utils/exception"
 )
 
-// YieldReturn 尝试向 future 产出一项结果。
-//
-// nil ctx 按 context.Background 处理。写入成功返回 true；ctx 先结束时返回 false。
-// future 为零值或非结果 Future 时 panic。该函数不会结束 Future。
-func YieldReturn(ctx context.Context, future FutureChan, ret Result) bool {
-	if ctx == nil {
-		ctx = context.Background()
-	}
-
-	if future.ch == nil || future.done == nil {
-		exception.Panic("future is void result, cannot yield return")
-	}
-
-	select {
-	case future.ch <- ret:
-		return true
-	case <-ctx.Done():
-		return false
-	}
-}
-
-// YieldBreak 结束产出，关闭结果与完成频道，并返回消费者视图。
-// future 为零值或已经结束时 panic。
-func YieldBreak(future FutureChan) Future {
-	if future.ch == nil || future.done == nil {
-		exception.Panic("future is void result, cannot yield break")
-	}
-	close(future.ch)
-	close(future.done)
-	return future.Out()
-}
+var (
+	ErrAsync             = fmt.Errorf("%w: async", exception.ErrCore)       // ErrAsync 是异步模块错误的共同根错误。
+	ErrScopeClosed       = fmt.Errorf("%w: scope closed", ErrAsync)         // ErrScopeClosed 表示异步作用域已经关闭。
+	ErrNoCandidates      = fmt.Errorf("%w: no future candidates", ErrAsync) // ErrNoCandidates 表示组合器没有可用的候选 Future。
+	ErrNoFutureSucceeded = fmt.Errorf("%w: no future succeeded", ErrAsync)  // ErrNoFutureSucceeded 表示所有候选 Future 均失败。
+	ErrFutureTimeout     = fmt.Errorf("%w: future timeout", ErrAsync)       // ErrFutureTimeout 表示 Future 等待超时。
+)

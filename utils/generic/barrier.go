@@ -20,11 +20,15 @@
 package generic
 
 import (
+	"fmt"
 	"sync"
 	"sync/atomic"
 
 	"git.golaxy.org/core/utils/exception"
 )
+
+// ErrBarrier 是 Barrier 错误的共同根错误。
+var ErrBarrier = fmt.Errorf("%w: barrier", exception.ErrCore)
 
 // Barrier 是可并发使用、关闭后不再接受新任务的等待屏障。
 //
@@ -45,7 +49,7 @@ type Barrier struct {
 func (b *Barrier) Join(delta int64) bool {
 	b.initOnce.Do(b.init)
 	if delta == 0 {
-		exception.Panic("Barrier: delta must not be zero")
+		exception.Panicf("%w: %w: delta must not be zero", ErrBarrier, exception.ErrArgs)
 	}
 	if delta > 0 && b.closed.Load() {
 		return false

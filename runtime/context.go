@@ -20,14 +20,13 @@
 package runtime
 
 import (
-	"fmt"
 	"reflect"
-	"sync"
 	"sync/atomic"
 
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/extension"
 	"git.golaxy.org/core/service"
+	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/corectx"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/iface"
@@ -60,14 +59,12 @@ func UnsafeNewContext(svcCtx service.Context, options ContextOptions) Context {
 // 实体、实体树、帧和插件的直接操作应在所属运行时 goroutine 中进行。
 type Context interface {
 	iContext
-	iConcurrentContext
-	corectx.Context
+	ConcurrentContext
 	corectx.CurrentContextProvider
+	async.WaitGuard
 	reinterpret.InstanceProvider
 	extension.AddInProvider
-	Caller
 	GCCollector
-	fmt.Stringer
 
 	// Name 返回运行时名称。
 	Name() string
@@ -90,7 +87,6 @@ type Context interface {
 type iContext interface {
 	init(svcCtx service.Context, options ContextOptions)
 	getOptions() *ContextOptions
-	getInstance() Context
 	emitEventRunningEvent(runningEvent RunningEvent, args ...any)
 	setFrame(frame Frame)
 	setCallee(callee Callee)
@@ -104,17 +100,19 @@ type iContext interface {
 // 扩展运行时上下文时应匿名嵌入该类型，并通过 InstanceFace 传入扩展实例。
 type ContextBehavior struct {
 	corectx.ContextBehavior
-	svcCtx        service.Context
-	options       ContextOptions
-	reflected     reflect.Value
-	frame         Frame
-	entityManager _EntityManager
-	callee        Callee
-	scoped        atomic.Bool
-	gcList        []GC
-	managed       event.ManagedHandles
-	stringerOnce  sync.Once
-	stringerCache string
+	svcCtx         service.Context
+	options        ContextOptions
+	reflected      reflect.Value
+	frame          Frame
+	entityManager  _EntityManager
+	callee         Callee
+	scoped         atomic.Bool
+	gcList         []GC
+	managed        event.ManagedHandles
+	executorID     async.ExecutorID
+	blockedFuture  atomic.Uint64
+	lastWaitReject atomic.Uint64
+	stringerCache  atomic.Pointer[string]
 
 	contextRunningEventTab contextRunningEventTab
 }
@@ -159,14 +157,25 @@ func (ctx *ContextBehavior) EventContextRunningEvent() event.IEvent {
 	return ctx.contextRunningEventTab.EventContextRunningEvent()
 }
 
-// CurrentContext 返回仅供运行时 goroutine 使用的上下文接口缓存。
-func (ctx *ContextBehavior) CurrentContext() iface.Cache {
+// CurrentContextCache 返回仅供运行时 goroutine 使用的上下文接口缓存。
+func (ctx *ContextBehavior) CurrentContextCache() iface.Cache {
 	return iface.Iface2Cache[Context](ctx.options.InstanceFace.Iface)
 }
 
-// ConcurrentContext 返回可跨 goroutine 使用的上下文接口缓存。
-func (ctx *ContextBehavior) ConcurrentContext() iface.Cache {
-	return iface.Iface2Cache[Context](ctx.options.InstanceFace.Iface)
+// BeforeFutureWait 实现 async.WaitGuard。Runtime Context 只允许读取已经完成的
+// Future；对 pending Future 的等待会破坏 Actor 串行执行语义。
+func (ctx *ContextBehavior) BeforeFutureWait(futureID uint64, completionExecutorID async.ExecutorID) error {
+	ctx.blockedFuture.Store(futureID)
+	ctx.lastWaitReject.Store(futureID)
+	if completionExecutorID != 0 && completionExecutorID == ctx.executorID {
+		return ErrRuntimeSelfWait
+	}
+	return ErrBlockingWaitInRuntime
+}
+
+// AfterFutureWait 清除诊断中的等待 Future ID。
+func (ctx *ContextBehavior) AfterFutureWait(futureID uint64) {
+	ctx.blockedFuture.CompareAndSwap(futureID, 0)
 }
 
 // InstanceFaceCache 返回上下文实例的接口缓存，用于 reinterpret.Cast。
@@ -183,20 +192,13 @@ func (ctx *ContextBehavior) CollectGC(gc GC) {
 	ctx.gcList = append(ctx.gcList, gc)
 }
 
-// String 实现 fmt.Stringer，返回包含运行时 ID 和名称的 JSON 文本。
-func (ctx *ContextBehavior) String() string {
-	ctx.stringerOnce.Do(func() {
-		ctx.stringerCache = fmt.Sprintf(`{"id":%q,"name":%q}`, ctx.Id(), ctx.Name())
-	})
-	return ctx.stringerCache
-}
-
 func (ctx *ContextBehavior) init(svcCtx service.Context, options ContextOptions) {
 	if svcCtx == nil {
 		exception.Panicf("%w: %w: svcCtx is nil", ErrContext, exception.ErrArgs)
 	}
 
 	ctx.options = options
+	ctx.executorID = async.GenExecutorID()
 
 	if ctx.options.InstanceFace.IsNil() {
 		ctx.options.InstanceFace = iface.NewFaceT[Context](ctx)
@@ -234,10 +236,6 @@ func (ctx *ContextBehavior) init(svcCtx service.Context, options ContextOptions)
 
 func (ctx *ContextBehavior) getOptions() *ContextOptions {
 	return &ctx.options
-}
-
-func (ctx *ContextBehavior) getInstance() Context {
-	return ctx.options.InstanceFace.Iface
 }
 
 func (ctx *ContextBehavior) emitEventRunningEvent(runningEvent RunningEvent, args ...any) {

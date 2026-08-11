@@ -29,73 +29,82 @@ import (
 	"git.golaxy.org/core/utils/uid"
 )
 
-// Caller 通过全局实体 ID 将调用调度到实体所属的运行时。
-// 调用不会阻塞发起方；回调在目标运行时 goroutine 中执行。目标 Runtime 启用
-// AutoRecover 时，panic 会写入 Result.Error；否则会继续向其工作循环传播。
+// Caller 通过全局 Entity ID 把任务投递到实体所属 Runtime。
 type Caller interface {
-	// CallAsync 查找实体并异步执行有返回值的函数。
-	CallAsync(entityId uid.Id, fun generic.FuncVar1[ec.Entity, any, async.Result], args ...any) async.Future
-
-	// CallDelegateAsync 查找实体并异步执行有返回值的委托。
-	CallDelegateAsync(entityId uid.Id, fun generic.DelegateVar1[ec.Entity, any, async.Result], args ...any) async.Future
-
-	// CallVoidAsync 查找实体并异步执行无返回值的函数。
-	CallVoidAsync(entityId uid.Id, fun generic.ActionVar1[ec.Entity, any], args ...any) async.Future
-
-	// CallDelegateVoidAsync 查找实体并异步执行无返回值的委托。
-	CallDelegateVoidAsync(entityId uid.Id, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) async.Future
+	Submit(entityID uid.Id, fun generic.FuncVar1[ec.Entity, any, async.Result], args ...any) async.Future
+	SubmitDelegate(entityID uid.Id, fun generic.DelegateVar1[ec.Entity, any, async.Result], args ...any) async.Future
+	SubmitVoid(entityID uid.Id, fun generic.ActionVar1[ec.Entity, any], args ...any) async.Future
+	SubmitDelegateVoid(entityID uid.Id, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) async.Future
+	Post(entityID uid.Id, fun generic.ActionVar1[ec.Entity, any], args ...any) error
+	PostDelegate(entityID uid.Id, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) error
 }
 
-//go:linkname callAsync git.golaxy.org/core/runtime.callAsync
-func callAsync(entity ec.ConcurrentEntity, fun generic.FuncVar1[ec.Entity, any, async.Result], args ...any) async.Future
+//go:linkname submit git.golaxy.org/core/runtime.submit
+func submit(entity ec.ConcurrentEntity, fun generic.FuncVar1[ec.Entity, any, async.Result], args ...any) async.Future
 
-//go:linkname callDelegateAsync git.golaxy.org/core/runtime.callDelegateAsync
-func callDelegateAsync(entity ec.ConcurrentEntity, fun generic.DelegateVar1[ec.Entity, any, async.Result], args ...any) async.Future
+//go:linkname submitDelegate git.golaxy.org/core/runtime.submitDelegate
+func submitDelegate(entity ec.ConcurrentEntity, fun generic.DelegateVar1[ec.Entity, any, async.Result], args ...any) async.Future
 
-//go:linkname callVoidAsync git.golaxy.org/core/runtime.callVoidAsync
-func callVoidAsync(entity ec.ConcurrentEntity, fun generic.ActionVar1[ec.Entity, any], args ...any) async.Future
+//go:linkname submitVoid git.golaxy.org/core/runtime.submitVoid
+func submitVoid(entity ec.ConcurrentEntity, fun generic.ActionVar1[ec.Entity, any], args ...any) async.Future
 
-//go:linkname callDelegateVoidAsync git.golaxy.org/core/runtime.callDelegateVoidAsync
-func callDelegateVoidAsync(entity ec.ConcurrentEntity, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) async.Future
+//go:linkname submitDelegateVoid git.golaxy.org/core/runtime.submitDelegateVoid
+func submitDelegateVoid(entity ec.ConcurrentEntity, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) async.Future
 
-// CallAsync 查找实体并在其所属运行时异步执行有返回值的函数。
-// 实体不存在或调用失败时，错误通过 Future 的 Result.Error 返回。
-func (ctx *ContextBehavior) CallAsync(entityId uid.Id, fun generic.FuncVar1[ec.Entity, any, async.Result], args ...any) async.Future {
-	entity, err := ctx.getEntity(entityId)
+//go:linkname post git.golaxy.org/core/runtime.post
+func post(entity ec.ConcurrentEntity, fun generic.ActionVar1[ec.Entity, any], args ...any) error
+
+//go:linkname postDelegate git.golaxy.org/core/runtime.postDelegate
+func postDelegate(entity ec.ConcurrentEntity, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) error
+
+func (ctx *ContextBehavior) Submit(entityID uid.Id, fun generic.FuncVar1[ec.Entity, any, async.Result], args ...any) async.Future {
+	entity, err := ctx.getEntity(entityID)
 	if err != nil {
-		return async.Return(async.NewFutureChan(), async.NewResult(nil, err))
+		return async.Rejected(err)
 	}
-	return callAsync(entity, fun, args...)
+	return submit(entity, fun, args...)
 }
 
-// CallDelegateAsync 查找实体并在其所属运行时异步执行有返回值的委托。
-// 实体不存在或调用失败时，错误通过 Future 的 Result.Error 返回。
-func (ctx *ContextBehavior) CallDelegateAsync(entityId uid.Id, fun generic.DelegateVar1[ec.Entity, any, async.Result], args ...any) async.Future {
-	entity, err := ctx.getEntity(entityId)
+func (ctx *ContextBehavior) SubmitDelegate(entityID uid.Id, fun generic.DelegateVar1[ec.Entity, any, async.Result], args ...any) async.Future {
+	entity, err := ctx.getEntity(entityID)
 	if err != nil {
-		return async.Return(async.NewFutureChan(), async.NewResult(nil, err))
+		return async.Rejected(err)
 	}
-	return callDelegateAsync(entity, fun, args...)
+	return submitDelegate(entity, fun, args...)
 }
 
-// CallVoidAsync 查找实体并在其所属运行时异步执行无返回值的函数。
-// 实体不存在或调用失败时，错误通过 Future 的 Result.Error 返回。
-func (ctx *ContextBehavior) CallVoidAsync(entityId uid.Id, fun generic.ActionVar1[ec.Entity, any], args ...any) async.Future {
-	entity, err := ctx.getEntity(entityId)
+func (ctx *ContextBehavior) SubmitVoid(entityID uid.Id, fun generic.ActionVar1[ec.Entity, any], args ...any) async.Future {
+	entity, err := ctx.getEntity(entityID)
 	if err != nil {
-		return async.Return(async.NewFutureChan(), async.NewResult(nil, err))
+		return async.Rejected(err)
 	}
-	return callVoidAsync(entity, fun, args...)
+	return submitVoid(entity, fun, args...)
 }
 
-// CallDelegateVoidAsync 查找实体并在其所属运行时异步执行无返回值的委托。
-// 实体不存在或调用失败时，错误通过 Future 的 Result.Error 返回。
-func (ctx *ContextBehavior) CallDelegateVoidAsync(entityId uid.Id, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) async.Future {
-	entity, err := ctx.getEntity(entityId)
+func (ctx *ContextBehavior) SubmitDelegateVoid(entityID uid.Id, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) async.Future {
+	entity, err := ctx.getEntity(entityID)
 	if err != nil {
-		return async.Return(async.NewFutureChan(), async.NewResult(nil, err))
+		return async.Rejected(err)
 	}
-	return callDelegateVoidAsync(entity, fun, args...)
+	return submitDelegateVoid(entity, fun, args...)
+}
+
+// Post 只报告实体查询和入队错误；任务执行前实体已经失活时会静默丢弃。
+func (ctx *ContextBehavior) Post(entityID uid.Id, fun generic.ActionVar1[ec.Entity, any], args ...any) error {
+	entity, err := ctx.getEntity(entityID)
+	if err != nil {
+		return err
+	}
+	return post(entity, fun, args...)
+}
+
+// PostDelegate 是 Post 的 DelegateVoid 版本。
+func (ctx *ContextBehavior) PostDelegate(entityID uid.Id, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) error {
+	entity, err := ctx.getEntity(entityID)
+	if err != nil {
+		return err
+	}
+	return postDelegate(entity, fun, args...)
 }
 
 func (ctx *ContextBehavior) getEntity(id uid.Id) (ec.ConcurrentEntity, error) {

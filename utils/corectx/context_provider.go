@@ -20,18 +20,25 @@
 package corectx
 
 import (
+	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/iface"
 )
+
+// AsyncScopeProvider 提供绑定对象生命周期的异步任务作用域。
+// 返回的 Scope 可跨 goroutine 安全使用；具体关闭时机由实现对象的生命周期决定。
+type AsyncScopeProvider interface {
+	AsyncScope() *async.Scope
+}
 
 // CurrentContextProvider 提供只能在所属执行协程中使用的当前上下文。
 type CurrentContextProvider interface {
 	ConcurrentContextProvider
-	// CurrentContext 返回当前上下文的接口缓存。
-	CurrentContext() iface.Cache
+	// CurrentContextCache 返回当前上下文的接口缓存。
+	CurrentContextCache() iface.Cache
 }
 
 // ConcurrentContextProvider 提供可跨协程使用的并发上下文。
 type ConcurrentContextProvider interface {
-	// ConcurrentContext 返回并发上下文的接口缓存。
-	ConcurrentContext() iface.Cache
+	// ConcurrentContextCache 返回并发上下文的接口缓存。
+	ConcurrentContextCache() iface.Cache
 }

@@ -23,9 +23,9 @@ import "git.golaxy.org/core/utils/async"
 
 type iWorker interface {
 	// Run 启动工作循环并返回终止信号。
-	Run() async.Future
+	Run() async.Signal
 	// Terminate 请求停止并返回终止信号。
-	Terminate() async.Future
+	Terminate() async.Signal
 	// Terminated 返回终止信号。
-	Terminated() async.Future
+	Terminated() async.Signal
 }

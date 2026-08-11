@@ -66,7 +66,7 @@ func (mgr *_EntityManager) GetOrAddEntity(entity ec.ConcurrentEntity) (ec.Concur
 		return nil, false, fmt.Errorf("%w: entity id is nil", ErrEntityManager)
 	}
 
-	if entity.ConcurrentContext() == iface.NilCache {
+	if entity.ConcurrentContextCache() == iface.NilCache {
 		return nil, false, fmt.Errorf("%w: entity context is nil", ErrEntityManager)
 	}
 

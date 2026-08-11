@@ -17,25 +17,22 @@
  * Copyright (c) 2024 pangdogs.
  */
 
-package async
+package ec
 
-import "git.golaxy.org/core/utils/exception"
-
-// Return 向 future 写入最后一项结果，关闭结果与完成频道，并返回消费者视图。
+// UnsafeConcurrentEntity 暴露 ConcurrentEntity 的框架内部能力。
 //
-// future 为零值、已结束或缓冲区已满且没有消费者时，调用会分别 panic 或阻塞。
-func Return(future FutureChan, ret Result) Future {
-	if future.ch == nil || future.done == nil {
-		exception.Panic("future is void result, cannot return")
+// Deprecated: 仅供框架内部使用。
+func UnsafeConcurrentEntity(entity ConcurrentEntity) _UnsafeConcurrentEntity {
+	return _UnsafeConcurrentEntity{
+		ConcurrentEntity: entity,
 	}
-	future.ch <- ret
-	close(future.ch)
-	close(future.done)
-	return future.Out()
 }
 
-// ReturnVoid 关闭无结果 Future 并返回消费者视图；重复关闭会 panic。
-func ReturnVoid(future FutureVoid) Future {
-	close(future)
-	return future.Out()
+type _UnsafeConcurrentEntity struct {
+	ConcurrentEntity
+}
+
+// Instance 返回实际实体实例；调用者必须自行保证运行协程约束。
+func (u _UnsafeConcurrentEntity) Instance() Entity {
+	return u.getInstance()
 }

@@ -33,12 +33,12 @@ func Current(provider corectx.CurrentContextProvider) Context {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrContext, exception.ErrArgs)
 	}
-	return iface.Cache2Iface[Context](provider.CurrentContext())
+	return iface.Cache2Iface[Context](provider.CurrentContextCache())
 }
 
 func getRuntimeContext(provider corectx.CurrentContextProvider) Context {
 	if provider == nil {
 		exception.Panicf("%w: %w: provider is nil", ErrContext, exception.ErrArgs)
 	}
-	return iface.Cache2Iface[Context](provider.CurrentContext())
+	return iface.Cache2Iface[Context](provider.CurrentContextCache())
 }
