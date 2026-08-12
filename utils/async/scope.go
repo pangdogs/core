@@ -84,6 +84,11 @@ func NewScope(parent context.Context) *Scope {
 	return scope
 }
 
+// AsyncScope 返回自身，使 Scope 可直接作为生命周期 Scope 提供者使用。
+func (scope *Scope) AsyncScope() *Scope {
+	return scope
+}
+
 // Context 返回传递给所属异步任务的取消上下文。
 func (scope *Scope) Context() context.Context {
 	if scope == nil {

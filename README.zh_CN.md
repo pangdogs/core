@@ -144,7 +144,7 @@ sequenceDiagram
 - 多个 Entity 放入同一 Runtime，意味着它们共享执行顺序，也共享单点吞吐上限。
 - Entity 不会自动创建 goroutine，也不存在每个 Entity 独立邮箱。
 - Runtime 外部不能直接修改 Entity、Component、EntityTree 或 Runtime add-in；需要结果时使用 `Submit`，只需投递时使用 `Post`，也可以通过 Service 按全局实体 ID 投递。
-- 阻塞 I/O 和独立计算应使用所属对象的 `AsyncScope()` 配合 `Spawn`；后台函数不能直接触碰 Runtime 局部状态，应使用 `ContinueOn` 把结果处理重新投递回来。
+- 阻塞 I/O 和独立计算应将提供 `AsyncScope()` 的所属对象传给 `Spawn`；后台函数不能直接触碰 Runtime 局部状态，应使用 `ContinueOn` 把结果处理重新投递回来。
 - `Submit`、`Post` 和 `ContinueOn` 即使从所属 Runtime 内调用也始终入队，不会内联执行，因此 Actor 的顺序边界保持一致。
 
 ### Entity 的本地与全局寻址
@@ -397,7 +397,7 @@ Service 与 Runtime Scope 在各自 Context 初始化时创建；Entity 在绑�
 
 ```go
 future := core.Spawn(
-	component.AsyncScope(),
+	component,
 	func(ctx context.Context, _ ...any) async.Result {
 		data, err := repository.Load(ctx, playerID)
 		return async.NewResult(data, err)
@@ -421,7 +421,7 @@ future := core.Spawn(
 
 ```go
 loadFuture := core.Spawn(
-	component.AsyncScope(),
+	component,
 	func(ctx context.Context, _ ...any) async.Result {
 		data, err := repository.Load(ctx, playerID)
 		return async.NewResult(data, err)

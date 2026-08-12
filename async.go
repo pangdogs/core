@@ -61,16 +61,23 @@ func PostDelegate(provider corectx.ConcurrentContextProvider, fun generic.Delega
 	return runtime.Concurrent(provider).PostDelegate(fun, args...)
 }
 
-// Spawn 在 scope 中启动后台 goroutine。fun 不得直接访问 Runtime 局部状态。
-func Spawn(scope *async.Scope, fun generic.FuncVar1[context.Context, any, async.Result], args ...any) async.Future {
-	return async.Spawn(scope, func(ctx context.Context) async.Result {
+// Spawn 在 provider 的生命周期 Scope 中启动后台 goroutine。
+// fun 不得直接访问 Runtime 局部状态。
+func Spawn(provider corectx.AsyncScopeProvider, fun generic.FuncVar1[context.Context, any, async.Result], args ...any) async.Future {
+	if provider == nil {
+		exception.Panicf("%w: %w: provider is nil", ErrCore, ErrArgs)
+	}
+	return async.Spawn(provider.AsyncScope(), func(ctx context.Context) async.Result {
 		return fun.UnsafeCall(ctx, args...)
 	})
 }
 
-// SpawnVoid 在 scope 中启动无业务返回值的后台 goroutine。
-func SpawnVoid(scope *async.Scope, fun generic.ActionVar1[context.Context, any], args ...any) async.Future {
-	return async.SpawnVoid(scope, func(ctx context.Context) {
+// SpawnVoid 在 provider 的生命周期 Scope 中启动无业务返回值的后台 goroutine。
+func SpawnVoid(provider corectx.AsyncScopeProvider, fun generic.ActionVar1[context.Context, any], args ...any) async.Future {
+	if provider == nil {
+		exception.Panicf("%w: %w: provider is nil", ErrCore, ErrArgs)
+	}
+	return async.SpawnVoid(provider.AsyncScope(), func(ctx context.Context) {
 		fun.UnsafeCall(ctx, args...)
 	})
 }

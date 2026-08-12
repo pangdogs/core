@@ -144,7 +144,7 @@ This has several direct consequences:
 - Placing multiple entities in one Runtime gives them a shared order of execution and a shared single-thread throughput limit.
 - Entities do not create goroutines automatically, and there is no independent mailbox per Entity.
 - Code outside the Runtime must not directly mutate entities, components, the entity tree, or Runtime add-ins. Use `Submit` when a result is needed, `Post` for fire-and-forget delivery, or a Service call by global Entity ID.
-- Use the owning object's `AsyncScope()` with `Spawn` for blocking I/O and independent computation. A background function must not touch Runtime-local state directly; use `ContinueOn` to enqueue result handling back onto the Runtime.
+- Use `Spawn` with an owning object that provides an `AsyncScope()` for blocking I/O and independent computation. A background function must not touch Runtime-local state directly; use `ContinueOn` to enqueue result handling back onto the Runtime.
 - `Submit`, `Post`, and `ContinueOn` always enqueue, even when called from the owning Runtime, so the Actor ordering boundary remains consistent.
 
 ### Local and global Entity addressing
@@ -397,7 +397,7 @@ Service and Runtime scopes are created with their respective Contexts. An Entity
 
 ```go
 future := core.Spawn(
-	component.AsyncScope(),
+	component,
 	func(ctx context.Context, _ ...any) async.Result {
 		data, err := repository.Load(ctx, playerID)
 		return async.NewResult(data, err)
@@ -421,7 +421,7 @@ The complete “background I/O → Actor continuation” pattern is:
 
 ```go
 loadFuture := core.Spawn(
-	component.AsyncScope(),
+	component,
 	func(ctx context.Context, _ ...any) async.Result {
 		data, err := repository.Load(ctx, playerID)
 		return async.NewResult(data, err)
