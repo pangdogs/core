@@ -217,6 +217,7 @@ func (mgr *_EntityManager) OnEntityDestroy(entity ec.Entity) {
 func (mgr *_EntityManager) OnComponentManagerAddComponents(entity ec.Entity, components []ec.Component) {
 	for i := range components {
 		mgr.initComponent(entity, components[i])
+		ec.UnsafeComponent(components[i]).SetConcurrentReady()
 	}
 	_EmitEventEntityManagerEntityAddComponents(mgr, mgr, entity, components)
 }

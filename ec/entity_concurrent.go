@@ -31,6 +31,9 @@ import (
 
 // ConcurrentEntity 暴露可跨协程安全读取的实体信息与上下文。
 //
+// 实体进入 Runtime（EntityState_Entered）后，才能跨 goroutine 使用此接口；提前调用
+// 除 AsyncScope 和 String 外的方法属于未定义行为。
+//
 // 组件管理、实体树和 Destroy 等操作仍须通过所属 Runtime 的运行协程执行。
 type ConcurrentEntity interface {
 	iConcurrentEntity
@@ -65,6 +68,7 @@ type runtimeContext interface {
 type iConcurrentEntity interface {
 	getInstance() Entity
 	setContext(rtCtx runtimeContext)
+	setConcurrentReady()
 }
 
 // ConcurrentContextCache 返回实体所属 Runtime 的并发上下文接口缓存。
@@ -72,8 +76,11 @@ func (entity *EntityBehavior) ConcurrentContextCache() iface.Cache {
 	return entity.runtimeCtxCache
 }
 
-// AsyncScope 返回绑定实体生命周期的后台任务作用域。
+// AsyncScope 返回绑定实体生命周期的后台任务作用域；实体尚未进入 Runtime 时返回 nil。
 func (entity *EntityBehavior) AsyncScope() *async.Scope {
+	if !entity.concurrentReady.Load() {
+		return nil
+	}
 	return entity.asyncScope
 }
 
@@ -97,10 +104,14 @@ func (entity *EntityBehavior) AfterFutureWait(futureID uint64) {
 	}
 }
 
-// String 返回包含实体 ID 与原型名的 JSON 文本；首次调用应发生在实体进入 Runtime 后。
+// String 返回包含实体 ID 与原型名的 JSON 文本；实体尚未进入 Runtime 时返回空字符串。
 func (entity *EntityBehavior) String() string {
 	if cached := entity.stringerCache.Load(); cached != nil {
 		return *cached
+	}
+
+	if !entity.concurrentReady.Load() {
+		return ""
 	}
 
 	value := fmt.Sprintf(`{"id":%q,"prototype":%q}`, entity.Id(), entity.PT().Prototype())
@@ -123,4 +134,8 @@ func (entity *EntityBehavior) setContext(rtCtx runtimeContext) {
 	entity.runtimeCtxCache = rtCtx.CurrentContextCache()
 	entity.waitGuard = rtCtx
 	entity.terminated, _ = async.NewSignal()
+}
+
+func (entity *EntityBehavior) setConcurrentReady() {
+	entity.concurrentReady.Store(true)
 }

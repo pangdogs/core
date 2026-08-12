@@ -111,6 +111,7 @@ type EntityBehavior struct {
 	context.Context
 	options               EntityOptions
 	prototype             EntityPT
+	concurrentReady       atomic.Bool
 	asyncScope            *async.Scope
 	waitGuard             async.WaitGuard
 	terminated            async.Completer
@@ -228,6 +229,11 @@ func (entity *EntityBehavior) setState(state EntityState) {
 	entity.state = state
 
 	switch entity.state {
+	case EntityState_Entered:
+		entity.setConcurrentReady()
+		entity.componentList.TraversalEach(func(slot *generic.FreeSlot[Component]) {
+			slot.V.setConcurrentReady()
+		})
 	case EntityState_Dead:
 		entity.asyncScope.Close()
 		entity.entityEventTab.SetEnabled(false)

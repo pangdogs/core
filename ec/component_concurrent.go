@@ -30,9 +30,11 @@ import (
 
 // ConcurrentComponent 暴露可跨 goroutine 使用的组件身份、字符串表示、并发上下文和生命周期 Scope。
 //
+// 组件随 Entity 进入 Runtime，或动态加入运行中 Entity 并完成 Runtime 初始化后，才能
+// 跨 goroutine 使用此接口；提前调用除 AsyncScope 和 String 外的方法属于未定义行为。
+//
 // 该视图不暴露 State、Enabled、Entity、Destroy 等 Runtime 局部能力。需要读取或修改
-// 这些状态时，应通过 Submit、Post 或 ContinueOn 回到组件所属 Runtime。String 的首次调用
-// 应发生在组件随实体进入 Runtime 后。
+// 这些状态时，应通过 Submit、Post 或 ContinueOn 回到组件所属 Runtime。
 type ConcurrentComponent interface {
 	iConcurrentComponent
 	corectx.ConcurrentContextProvider
@@ -47,6 +49,7 @@ type ConcurrentComponent interface {
 
 type iConcurrentComponent interface {
 	getInstance() Component
+	setConcurrentReady()
 }
 
 // ConcurrentContextCache 返回所属 Entity 的并发 Runtime 上下文接口缓存。
@@ -56,10 +59,14 @@ func (comp *ComponentBehavior) ConcurrentContextCache() iface.Cache {
 
 // AsyncScope 返回绑定组件 Lifetime 的后台任务作用域。
 // Scope 在组件从 Entity 移除或随 Entity 销毁时关闭；SetEnabled(false) 不会关闭它。
-// 组件尚未进入 Runtime 时返回 nil。
+// 组件尚未完成 Runtime 初始化时返回 nil。
 func (comp *ComponentBehavior) AsyncScope() *async.Scope {
 	if asyncScope := comp.asyncScope.Load(); asyncScope != nil {
 		return asyncScope
+	}
+
+	if !comp.concurrentReady.Load() {
+		return nil
 	}
 
 	asyncScope := async.NewScope(comp.entity)
@@ -75,10 +82,14 @@ func (comp *ComponentBehavior) AsyncScope() *async.Scope {
 	return asyncScope
 }
 
-// String 返回包含组件、实体及原型标识的 JSON 文本；首次调用应发生在组件随实体进入 Runtime 后。
+// String 返回包含组件、实体及原型标识的 JSON 文本；组件尚未完成 Runtime 初始化时返回空字符串。
 func (comp *ComponentBehavior) String() string {
 	if cached := comp.stringerCache.Load(); cached != nil {
 		return *cached
+	}
+
+	if !comp.concurrentReady.Load() {
+		return ""
 	}
 
 	value := fmt.Sprintf(`{"id":%q,"entity_id":%q,"name":%q,"prototype":%q}`, comp.Id(), comp.Entity().Id(), comp.Name(), comp.Builtin().PT.Prototype())
@@ -90,4 +101,8 @@ func (comp *ComponentBehavior) String() string {
 
 func (comp *ComponentBehavior) getInstance() Component {
 	return comp.instance
+}
+
+func (comp *ComponentBehavior) setConcurrentReady() {
+	comp.concurrentReady.Store(true)
 }
