@@ -25,6 +25,7 @@ import (
 	"sync/atomic"
 
 	"git.golaxy.org/core/utils/exception"
+	"git.golaxy.org/core/utils/generic"
 )
 
 // ExecutorID 标识进程内的异步结果完成执行器。零值表示结果由外部执行器完成或归属未知。
@@ -50,9 +51,8 @@ type WaitGuard interface {
 // Runtime 执行器，外部 I/O、后台 goroutine 或未知来源使用零值。
 func NewPromise(completionExecutorID ...ExecutorID) (Promise, Future) {
 	state := &futureState{
-		id:          futureIDGen.Add(1),
-		done:        make(chan struct{}),
-		subscribers: make(map[uint64]func(Result)),
+		id:   futureIDGen.Add(1),
+		done: make(chan struct{}),
 	}
 	if len(completionExecutorID) > 0 {
 		state.completionExecutorID = completionExecutorID[0]
@@ -110,14 +110,8 @@ func (promise Promise) Resolve(ret Result) bool {
 
 	state.completed = true
 	state.result = ret
-	callbacks := make([]func(Result), 0, len(state.subscribers))
-	for _, id := range state.subscriberOrder {
-		if callback, ok := state.subscribers[id]; ok {
-			callbacks = append(callbacks, callback)
-		}
-	}
+	callbacks := state.subscribers.Values()
 	state.subscribers = nil
-	state.subscriberOrder = nil
 	close(state.done)
 	state.mu.Unlock()
 
@@ -236,8 +230,7 @@ func (future Future) OnComplete(callback func(Result)) Subscription {
 
 	state.nextSubscriberID++
 	id := state.nextSubscriberID
-	state.subscribers[id] = callback
-	state.subscriberOrder = append(state.subscriberOrder, id)
+	state.subscribers.Add(id, callback)
 	state.mu.Unlock()
 	return Subscription{state: state, id: id}
 }
@@ -267,23 +260,10 @@ func (subscription Subscription) Cancel() bool {
 
 	subscription.state.mu.Lock()
 	defer subscription.state.mu.Unlock()
-	if subscription.state.completed || subscription.state.subscribers == nil {
+	if subscription.state.completed {
 		return false
 	}
-	if _, ok := subscription.state.subscribers[subscription.id]; !ok {
-		return false
-	}
-	delete(subscription.state.subscribers, subscription.id)
-	if len(subscription.state.subscriberOrder) > 64 && len(subscription.state.subscribers)*2 < len(subscription.state.subscriberOrder) {
-		order := make([]uint64, 0, len(subscription.state.subscribers))
-		for _, id := range subscription.state.subscriberOrder {
-			if _, ok := subscription.state.subscribers[id]; ok {
-				order = append(order, id)
-			}
-		}
-		subscription.state.subscriberOrder = order
-	}
-	return true
+	return subscription.state.subscribers.Delete(subscription.id)
 }
 
 var (
@@ -299,6 +279,5 @@ type futureState struct {
 	result               Result
 	done                 chan struct{}
 	nextSubscriberID     uint64
-	subscribers          map[uint64]func(Result)
-	subscriberOrder      []uint64
+	subscribers          generic.SliceMap[uint64, func(Result)]
 }
