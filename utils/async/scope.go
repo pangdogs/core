@@ -149,35 +149,6 @@ func (scope *Scope) Stats() ScopeStats {
 	return stats
 }
 
-// Spawn 在 Scope 中启动后台任务并返回其一次性结果 Future。
-// panic 会转换为带堆栈的 Result.Error。
-func Spawn(scope *Scope, task func(context.Context) Result) Future {
-	if task == nil {
-		exception.Panicf("%w: %w: async task is nil", ErrAsync, exception.ErrArgs)
-	}
-	if scope == nil || !scope.begin() {
-		return Rejected(ErrScopeClosed)
-	}
-
-	promise, future := NewPromise()
-	go func() {
-		defer scope.end()
-		promise.Resolve(safeTaskCall(task, scope.Context()))
-	}()
-	return future
-}
-
-// SpawnVoid 在 Scope 中启动无业务返回值的后台任务，并返回可等待错误的 Future。
-func SpawnVoid(scope *Scope, task func(context.Context)) Future {
-	if task == nil {
-		exception.Panicf("%w: %w: async void task is nil", ErrAsync, exception.ErrArgs)
-	}
-	return Spawn(scope, func(ctx context.Context) Result {
-		task(ctx)
-		return NewResult(nil, nil)
-	})
-}
-
 func (scope *Scope) begin() bool {
 	if scope == nil {
 		return false
@@ -206,6 +177,35 @@ func (scope *Scope) end() {
 	if complete {
 		scope.completer.Complete()
 	}
+}
+
+// Spawn 在 Scope 中启动后台任务并返回其一次性结果 Future。
+// panic 会转换为带堆栈的 Result.Error。
+func Spawn(scope *Scope, task func(context.Context) Result) Future {
+	if task == nil {
+		exception.Panicf("%w: %w: async task is nil", ErrAsync, exception.ErrArgs)
+	}
+	if scope == nil || !scope.begin() {
+		return Rejected(ErrScopeClosed)
+	}
+
+	promise, future := NewPromise()
+	go func() {
+		defer scope.end()
+		promise.Resolve(safeTaskCall(task, scope.Context()))
+	}()
+	return future
+}
+
+// SpawnVoid 在 Scope 中启动无业务返回值的后台任务，并返回可等待错误的 Future。
+func SpawnVoid(scope *Scope, task func(context.Context)) Future {
+	if task == nil {
+		exception.Panicf("%w: %w: async void task is nil", ErrAsync, exception.ErrArgs)
+	}
+	return Spawn(scope, func(ctx context.Context) Result {
+		task(ctx)
+		return NewResult(nil, nil)
+	})
 }
 
 func safeTaskCall(task func(context.Context) Result, ctx context.Context) (ret Result) {

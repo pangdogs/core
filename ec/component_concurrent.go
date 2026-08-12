@@ -20,7 +20,6 @@
 package ec
 
 import (
-	"context"
 	"fmt"
 
 	"git.golaxy.org/core/utils/async"
@@ -48,7 +47,6 @@ type ConcurrentComponent interface {
 
 type iConcurrentComponent interface {
 	getInstance() Component
-	setContext(parent context.Context)
 }
 
 // ConcurrentContextCache 返回所属 Entity 的并发 Runtime 上下文接口缓存。
@@ -60,7 +58,21 @@ func (comp *ComponentBehavior) ConcurrentContextCache() iface.Cache {
 // Scope 在组件从 Entity 移除或随 Entity 销毁时关闭；SetEnabled(false) 不会关闭它。
 // 组件尚未进入 Runtime 时返回 nil。
 func (comp *ComponentBehavior) AsyncScope() *async.Scope {
-	return comp.asyncScope
+	if asyncScope := comp.asyncScope.Load(); asyncScope != nil {
+		return asyncScope
+	}
+
+	asyncScope := async.NewScope(comp.entity)
+	if !comp.asyncScope.CompareAndSwap(nil, asyncScope) {
+		asyncScope.Close()
+		return comp.asyncScope.Load()
+	}
+
+	if comp.asyncScopeClosed.Load() {
+		asyncScope.Close()
+	}
+
+	return asyncScope
 }
 
 // String 返回包含组件、实体及原型标识的 JSON 文本；首次调用应发生在组件随实体进入 Runtime 后。
@@ -78,11 +90,4 @@ func (comp *ComponentBehavior) String() string {
 
 func (comp *ComponentBehavior) getInstance() Component {
 	return comp.instance
-}
-
-func (comp *ComponentBehavior) setContext(parent context.Context) {
-	if comp.asyncScope != nil {
-		return
-	}
-	comp.asyncScope = async.NewScope(parent)
 }

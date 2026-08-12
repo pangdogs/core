@@ -116,6 +116,23 @@ func (emitter Emitter) Close() bool {
 	return true
 }
 
+func (emitter Emitter) beginSend() bool {
+	emitter.state.mu.Lock()
+	defer emitter.state.mu.Unlock()
+	if emitter.state.closed {
+		return false
+	}
+	emitter.state.activeSenders++
+	return true
+}
+
+func (emitter Emitter) endSend() {
+	emitter.state.mu.Lock()
+	emitter.state.activeSenders--
+	emitter.state.closeDataIfIdle()
+	emitter.state.mu.Unlock()
+}
+
 // Stream 是连续 Result 的只读消费者视图。
 //
 // Stream 采用单消费语义；多个消费者读取 Chan 会竞争元素。需要广播时应在更高层
@@ -168,23 +185,6 @@ type streamState struct {
 	dataClosed    bool
 	ch            chan Result
 	done          chan struct{}
-}
-
-func (emitter Emitter) beginSend() bool {
-	emitter.state.mu.Lock()
-	defer emitter.state.mu.Unlock()
-	if emitter.state.closed {
-		return false
-	}
-	emitter.state.activeSenders++
-	return true
-}
-
-func (emitter Emitter) endSend() {
-	emitter.state.mu.Lock()
-	emitter.state.activeSenders--
-	emitter.state.closeDataIfIdle()
-	emitter.state.mu.Unlock()
 }
 
 func (state *streamState) closeDataIfIdle() {

@@ -92,7 +92,8 @@ type ComponentBehavior struct {
 	builtin               *BuiltinComponent
 	name                  string
 	entity                Entity
-	asyncScope            *async.Scope
+	asyncScope            atomic.Pointer[async.Scope]
+	asyncScopeClosed      atomic.Bool
 	instance              Component
 	state                 ComponentState
 	reflected             reflect.Value
@@ -257,8 +258,10 @@ func (comp *ComponentBehavior) setState(state ComponentState) {
 
 	switch comp.state {
 	case ComponentState_Dead:
-		if comp.asyncScope != nil {
-			comp.asyncScope.Close()
+		if comp.asyncScopeClosed.CompareAndSwap(false, true) {
+			if asyncScope := comp.asyncScope.Load(); asyncScope != nil {
+				asyncScope.Close()
+			}
 		}
 		comp.componentEventTab.SetEnabled(false)
 	case ComponentState_Destroyed:

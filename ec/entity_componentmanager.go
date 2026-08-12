@@ -451,9 +451,6 @@ func (entity *EntityBehavior) getComponentSlotByPT(prototype string) (*generic.F
 
 func (entity *EntityBehavior) addComponent(name string, component Component) {
 	component.init(name, entity.getInstance(), component)
-	if entity.asyncScope != nil {
-		component.setContext(entity.getInstance())
-	}
 
 	var compSlot *generic.FreeSlot[Component]
 

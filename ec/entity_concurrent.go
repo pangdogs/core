@@ -25,7 +25,6 @@ import (
 
 	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/corectx"
-	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/uid"
 )
@@ -65,7 +64,7 @@ type runtimeContext interface {
 
 type iConcurrentEntity interface {
 	getInstance() Entity
-	setContext(parent runtimeContext)
+	setContext(rtCtx runtimeContext)
 }
 
 // ConcurrentContextCache 返回实体所属 Runtime 的并发上下文接口缓存。
@@ -115,16 +114,13 @@ func (entity *EntityBehavior) getInstance() Entity {
 	return entity.options.InstanceFace.Iface
 }
 
-func (entity *EntityBehavior) setContext(parent runtimeContext) {
+func (entity *EntityBehavior) setContext(rtCtx runtimeContext) {
 	if entity.asyncScope != nil {
 		return
 	}
-	entity.asyncScope = async.NewScope(parent)
+	entity.asyncScope = async.NewScope(rtCtx)
 	entity.Context = entity.asyncScope.Context()
-	entity.runtimeCtxCache = parent.CurrentContextCache()
-	entity.waitGuard = parent
+	entity.runtimeCtxCache = rtCtx.CurrentContextCache()
+	entity.waitGuard = rtCtx
 	entity.terminated, _ = async.NewSignal()
-	entity.componentList.TraversalEach(func(slot *generic.FreeSlot[Component]) {
-		slot.V.setContext(entity.getInstance())
-	})
 }
