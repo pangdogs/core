@@ -168,11 +168,11 @@ func (comp *ComponentBehavior) SetEnabled(b bool) {
 		}
 		comp.enabled = b
 
+		_EmitEventComponentEnableChanged(comp, comp.instance, b)
+
 		if comp.entity != nil {
 			comp.entity.onComponentEnableChangedIfVersion(comp.attachedIndex, comp.attachedVersion)
 		}
-
-		_EmitEventComponentEnableChanged(comp, comp.instance, b)
 	})
 }
 
@@ -192,11 +192,11 @@ func (comp *ComponentBehavior) Destroy() {
 			return
 		}
 
+		_EmitEventComponentDestroy(comp, comp.instance)
+
 		if comp.entity != nil {
 			comp.entity.onComponentDestroyIfVersion(comp.attachedIndex, comp.attachedVersion)
 		}
-
-		_EmitEventComponentDestroy(comp, comp.instance)
 	})
 }
 
