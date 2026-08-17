@@ -431,10 +431,12 @@ func (rt *RuntimeBehavior) onEntityManagerEntityComponentEnableChanged(entityMan
 				return
 			}
 
-			if !caller.Call(func() {
-				rt.startComponent(component)
-			}) {
-				return
+			if entity.State() >= ec.EntityState_Starting {
+				if !caller.Call(func() {
+					rt.startComponent(component)
+				}) {
+					return
+				}
 			}
 
 		} else {
@@ -684,10 +686,15 @@ func (rt *RuntimeBehavior) disableComponent(comp ec.Component) {
 		return
 	}
 
-	rt.unobserveComponent(comp)
-
 	{
 		caller := newComponentLifecycleCaller(comp)
+
+		if !caller.IsProcessed(ec.ComponentState_Enabling) {
+			ec.UnsafeComponent(comp).SetState(ec.ComponentState_Idle)
+			return
+		}
+
+		rt.unobserveComponent(comp)
 
 		if !caller.Call(func() {
 			if cb, ok := comp.(LifecycleComponentOnDisable); ok {
