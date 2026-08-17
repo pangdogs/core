@@ -207,14 +207,24 @@ The normal enabled Component path is:
 
 `Born → Attached → Awaking → Enabling → Starting → Alive`
 
+The Component enable/disable branch and runtime-managed individual-removal path are:
+
+`Enabling / Starting / Alive → Idle → Starting → Alive`
+
+`Detaching → Shutting → Disabling → Dead → Destroyed`
+
 `Attached` is the pending state before a Component enters its `Awake` stage. During normal activation,
 Components advance from `Attached` to `Awaking` one at a time. First-touch ordering can advance a
 referenced Component early. `Awaking` begins before the `Awake` callback and ends when the Runtime
 advances the Component to `Enabling`.
 
-Disabling from `Enabling`, `Starting`, or `Alive` enters `Idle`. Re-enabling invokes `OnEnable` and passes
-through `Starting` to `Alive`, but does not invoke `Start` again. Removing an individual Component uses
-`Detaching`; destruction with its Entity may enter `Shutting` directly.
+`Enabling` is the initial enable phase. When a Component is re-enabled from `Idle`, `OnEnable` runs while
+the current state is still `Idle`, followed by `Starting` and `Alive`; `Start` does not run again. Ordinary
+disable invokes the paired `OnDisable` in the current active state before entering `Idle`; `Disabling` is
+reserved for individual removal or destruction with the Entity. Individual removal uses `Detaching`,
+while destruction with the Entity may enter `Shutting` directly. The full individual-removal path is
+advanced only while the Entity is between `Awaking` and `Alive`; at other stages the Component is still
+removed from the collection, but Runtime lifecycle callbacks are skipped.
 Components that have not entered `Awaking` are not advanced by Entity destruction and remain `Attached`.
 
 | Object | Activation callbacks | Frame callbacks | Deactivation callbacks |
@@ -308,7 +318,7 @@ Prototypes keep reusable construction definitions in the Service scope:
 - One Entity may contain multiple components with the same name. `GetComponent` returns the first, while `GetComponents` returns all of them.
 - `ComponentDescriptor.SetRemovable` declares the removal policy for a built-in Component; Components added dynamically at runtime default to removable.
 - Components reuse the Entity ID by default. Enable `ComponentUniqueID` to allocate an independent ID for every Component.
-- `SetEnabled(false)` unbinds frame updates and invokes `OnDisable`; enabling again invokes `OnEnable`.
+- `SetEnabled` changes the enable flag immediately; an attached Component that has not reached `Enabling` only records the flag and applies it during later activation. Disabling a Component that has entered the `OnEnable` phase unbinds frame updates and invokes `OnDisable`; enabling it again invokes `OnEnable`, but never repeats `Start`.
 - `AsyncScope()` lazily creates the Component Lifetime Scope on first access; removal closes it, while disabling keeps it alive.
 - `ConcurrentComponent` is the concurrency-safe narrow view of a Component; business state must still be accessed on the Runtime through `Submit`, `Post`, or `ContinueOn`.
 - `ComponentAwakeOnFirstTouch` does not change normal activation orchestration. During activation, business lookup or dependency injection can execute a referenced Component's pending `Awake` before its normal turn, allowing Component references to determine `Awake` order without advancing `OnEnable` or `Start`.

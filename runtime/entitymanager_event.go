@@ -46,6 +46,7 @@ type EventEntityManagerEntityAddComponents interface {
 }
 
 // EventEntityManagerEntityRemoveComponent 在组件进入 Detaching 且仍位于实体组件表中时派发。
+// Core Runtime 仅在 Entity 处于 Awaking 至 Alive 时推进组件的停用与销毁生命周期。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventEntityManagerEntityRemoveComponent interface {
@@ -53,6 +54,7 @@ type EventEntityManagerEntityRemoveComponent interface {
 }
 
 // EventEntityManagerEntityComponentEnableChanged 在组件启用标记改变且完成 Runtime 事件转发后派发。
+// Core Runtime 仅在 Entity 处于 Awaking 至 Alive 时推进组件的启用或禁用生命周期。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventEntityManagerEntityComponentEnableChanged interface {
@@ -61,6 +63,7 @@ type EventEntityManagerEntityComponentEnableChanged interface {
 
 // EventEntityManagerEntityFirstTouchComponent 在受管实体中，处于 Attached 的组件被访问时
 // 同步派发。Runtime 通过此事件使目标组件提前进入并执行 Awake。
+// Core Runtime 仅在 Entity 处于 Awaking 至 Alive 时处理该事件。
 // 事件允许递归派发，使 Awake 内访问的其他组件可以继续建立依赖顺序。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow

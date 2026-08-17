@@ -25,7 +25,7 @@ type LifecycleComponentAwake interface {
 	Awake()
 }
 
-// LifecycleComponentOnEnable 在组件进入 Enabling 状态后调用，可随启用状态切换而多次调用。
+// LifecycleComponentOnEnable 在组件首次启用或从 Idle 重新启用时调用，可随启用状态切换而多次调用。
 type LifecycleComponentOnEnable interface {
 	OnEnable()
 }

@@ -207,13 +207,22 @@ Component 的正常启用链为：
 
 `Born → Attached → Awaking → Enabling → Starting → Alive`
 
+Component 的启停分支与运行期单独移除链分别为：
+
+`Enabling / Starting / Alive → Idle → Starting → Alive`
+
+`Detaching → Shutting → Disabling → Dead → Destroyed`
+
 `Attached` 表示 Component 尚未进入 `Awake` 阶段。正常激活会逐个将 Component 从
 `Attached` 推进至 `Awaking`；首次访问优先规则可以提前推进被引用的 Component。
 `Awaking` 在调用 `Awake` 前开始，并在 Runtime 将 Component 推进至 `Enabling` 时结束。
 
-禁用会从 `Enabling`、`Starting` 或 `Alive` 进入 `Idle`；再次启用会执行 `OnEnable` 并经
-`Starting` 回到 `Alive`，但 `Start` 不会重复执行。单独移除组件时会经过 `Detaching`；
-随 Entity 销毁时可直接进入 `Shutting`，不会经过 `Detaching`。
+`Enabling` 是首次启用阶段；从 `Idle` 重新启用时，`OnEnable` 在当前 `Idle` 状态执行，
+随后经 `Starting` 回到 `Alive`，但 `Start` 不会重复执行。普通禁用在当前活动状态执行
+配对的 `OnDisable` 后进入 `Idle`；`Disabling` 仅用于组件移除或随 Entity 销毁。
+单独移除组件时会经过 `Detaching`；随 Entity 销毁时可直接进入 `Shutting`，不会经过
+`Detaching`。完整的单独移除链仅在 Entity 处于 `Awaking` 至 `Alive` 时由 Runtime 推进；
+其他阶段仍会从组件表移除，但不执行 Runtime 生命周期回调。
 尚未进入 `Awaking` 的 Component 不会随 Entity 销毁推进状态，而是继续保持 `Attached`。
 
 | 对象 | 激活回调 | 帧回调 | 停用回调 |
@@ -226,7 +235,7 @@ Component 的正常启用链为：
 1. 未启用首次访问 `Awake` 顺序时，Entity `Awake` 先于 Component 的 `Awake`。
 2. Component 的 `Awake`、`OnEnable` 和 `Start` 保持按加入顺序分阶段执行。`ComponentAwakeOnFirstTouch` 可以使被引用 Component 待执行的 `Awake` 早于正常轮次，但不会提前 `OnEnable` 或 `Start`；Component 阶段结束后 Entity 执行 `Start`。
 3. 销毁时 Entity 先执行 `Shut`，随后分别按组件加入顺序的逆序执行全部 Component 的 `Shut`、`OnDisable` 和 `Dispose`，最后 Entity 执行 `Dispose`。
-4. `Shut` 只与已经进入的 `Start` 配对，`Dispose` 只与已经进入的 `Awake` 配对；`OnDisable` 与 `OnEnable` 配对，因此未完成相应激活阶段的对象会跳过停用回调。
+4. `Shut` 只与已经进入的 `Start` 配对，`Dispose` 只与已经进入的 `Awake` 配对；`OnDisable` 与 `OnEnable` 配对，因此未进入相应激活阶段的对象会跳过停用回调。
 5. 运行中的 Entity 动态加入 Component 时，Runtime 会同步推进新组件的激活流程。
 6. Entity 进入 `Leaving` 后仍可修改组件集合；新增 Component 保持 `Attached`，Runtime 不再推进其激活生命周期。Entity 进入 `Dead` 后组件管理器事件表关闭，新增操作只修改本地组件表。
 7. 受管 Entity 和可删除 Component 的 `Destroy()` 会在所属 Runtime goroutine 中同步推进移除；回调内销毁可能在当前回调返回前嵌套执行配对的停用回调。
@@ -307,7 +316,7 @@ Prototype 把可复用的对象构造定义放在 Service 作用域中：
 - 同一 Entity 可以存在多个同名 Component；`GetComponent` 返回第一个，`GetComponents` 返回全部。
 - `ComponentDescriptor.SetRemovable` 声明内建 Component 的删除策略；运行时动态添加的 Component 默认可删除。
 - 默认情况下 Component 复用 Entity ID；启用 `ComponentUniqueID` 后每个 Component 才分配独立 ID。
-- `SetEnabled(false)` 会解绑帧更新并调用 `OnDisable`；重新启用会再次调用 `OnEnable`。
+- `SetEnabled` 会立即改变启用标记；已依附但尚未进入 `Enabling` 的组件只记录该标记，并在后续激活时应用。已经进入 `OnEnable` 阶段的组件禁用时会解绑帧更新并调用 `OnDisable`；重新启用会再次调用 `OnEnable`，但不会重复调用 `Start`。
 - `AsyncScope()` 首次访问时懒创建组件级 Lifetime Scope；组件移除时关闭，禁用时保持。
 - `ConcurrentComponent` 是组件的并发安全窄视图；业务状态仍必须通过 `Submit`、`Post` 或 `ContinueOn` 回到 Runtime 后访问。
 - `ComponentAwakeOnFirstTouch` 不改变正常激活编排；激活期间，业务查询或依赖注入可以在正常轮次前执行被引用 Component 待完成的 `Awake`，使组件引用关系自行决定 `Awake` 顺序，同时不会提前 `OnEnable` 或 `Start`。

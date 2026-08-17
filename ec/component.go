@@ -56,7 +56,7 @@ type Component interface {
 	Removable() bool
 	// Enabled 报告组件是否已被标记为启用。
 	Enabled() bool
-	// SetEnabled 请求切换启用状态；重复设置或组件已离开活动阶段时无效。
+	// SetEnabled 请求切换启用状态；重复设置或组件已进入 Detaching 及后续状态时无效。
 	SetEnabled(b bool)
 	// Managed 返回随组件销毁自动解绑的事件句柄集合。
 	Managed() *event.ManagedHandles
@@ -157,6 +157,7 @@ func (comp *ComponentBehavior) Enabled() bool {
 }
 
 // SetEnabled 请求切换启用状态；标记改变后先派发组件事件，再通知实体组件管理器推进生命周期。
+// Runtime 仅在所属 Entity 处于 Awaking 至 Alive 时处理该生命周期请求。
 func (comp *ComponentBehavior) SetEnabled(b bool) {
 	comp.reentrancyGuard.Call(componentReentrancyGuard_SetEnable, func() {
 		if comp.state > ComponentState_Alive {
@@ -181,7 +182,7 @@ func (comp *ComponentBehavior) Managed() *event.ManagedHandles {
 	return &comp.managedHandles
 }
 
-// Destroy 请求从实体删除组件；不可删除或已离开活动阶段时无效。
+// Destroy 请求从实体删除组件；不可删除或已进入 Detaching 及后续状态时无效。
 // 有效请求会先派发组件销毁请求事件，再同步进入实体组件管理器的移除流程。
 func (comp *ComponentBehavior) Destroy() {
 	comp.reentrancyGuard.Call(componentReentrancyGuard_Destroy, func() {
