@@ -220,7 +220,7 @@ func (comp *ComponentBehavior) init(name string, entity Entity, instance Compone
 	comp.name = name
 	comp.entity = entity
 	comp.instance = instance
-	comp.removable = true
+	comp.removable = comp.Builtin().Removable
 	comp.enabled = true
 }
 

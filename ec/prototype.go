@@ -114,7 +114,7 @@ type ComponentPT interface {
 var (
 	noneEntityPT         = &_NoneEntityPT{}
 	noneComponentPT      = &_NoneComponentPT{}
-	noneBuiltinComponent = &BuiltinComponent{PT: noneComponentPT, Offset: -1}
+	noneBuiltinComponent = &BuiltinComponent{PT: noneComponentPT, Removable: true, Offset: -1}
 )
 
 type _NoneEntityPT struct{}

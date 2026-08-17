@@ -41,7 +41,7 @@ func NewComponentDescriptor(instance any) *ComponentDescriptor {
 type ComponentDescriptor struct {
 	Instance  any       // Instance 是组件值、组件类型或已声明组件原型名。
 	Name      string    // Name 是组件加入实体时使用的名称；为空时取组件类型名。
-	Removable bool      // Removable 指示组件是否允许动态删除。
+	Removable bool      // Removable 指示组件是否允许动态删除；默认为 false。
 	Meta      meta.Meta // Meta 是该内建组件的原型元数据。
 }
 

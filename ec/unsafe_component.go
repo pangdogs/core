@@ -61,6 +61,7 @@ func (u _UnsafeComponent) SetReflected(v reflect.Value) {
 }
 
 // SetBuiltin 绑定组件在实体原型中的内建描述。
+// 必须在组件加入实体前调用；加入后修改不会刷新组件已缓存的删除策略。
 func (u _UnsafeComponent) SetBuiltin(builtin *BuiltinComponent) {
 	u.setBuiltin(builtin)
 }

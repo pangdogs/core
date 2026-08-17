@@ -173,7 +173,6 @@ func (pt *_Entity) assemble(entity ec.Entity) ec.Entity {
 		if err := entity.AddComponent(builtin.Name, comp); err != nil {
 			exception.Panicf("%w: %w", ErrPt, err)
 		}
-		ec.UnsafeComponent(comp).SetRemovable(builtin.Removable)
 	}
 
 	return entity
