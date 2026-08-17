@@ -95,7 +95,7 @@ func (mgr *_EntityManager) AddChild(parentId, childId uid.Id) error {
 
 		parentEntity := mgr.entityList.Get(parentSlotIdx).V
 
-		if parentEntity.State() < ec.EntityState_Awakened || parentEntity.State() > ec.EntityState_Alive {
+		if parentEntity.State() < ec.EntityState_Awaking || parentEntity.State() > ec.EntityState_Alive {
 			return fmt.Errorf("%w: parent entity %q is in an unexpected state %q", ErrEntityTree, parentId, parentEntity.State())
 		}
 	}
@@ -110,7 +110,7 @@ func (mgr *_EntityManager) AddChild(parentId, childId uid.Id) error {
 
 	childEntity := mgr.entityList.Get(childSlotIdx).V
 
-	if childEntity.State() < ec.EntityState_Awakened || childEntity.State() > ec.EntityState_Alive {
+	if childEntity.State() < ec.EntityState_Awaking || childEntity.State() > ec.EntityState_Alive {
 		return fmt.Errorf("%w: child entity %q is in an unexpected state %q", ErrEntityTree, childId, childEntity.State())
 	}
 
@@ -172,7 +172,7 @@ func (mgr *_EntityManager) RemoveNode(childId uid.Id) error {
 
 	childEntity := mgr.entityList.Get(childSlotIdx).V
 
-	if childEntity.State() < ec.EntityState_Awakened || childEntity.State() > ec.EntityState_Alive {
+	if childEntity.State() < ec.EntityState_Awaking || childEntity.State() > ec.EntityState_Alive {
 		return fmt.Errorf("%w: child entity %q is in an unexpected state %q", ErrEntityTree, childId, childEntity.State())
 	}
 
@@ -251,7 +251,7 @@ func (mgr *_EntityManager) MoveNode(childId, parentId uid.Id) error {
 
 		toParentEntity := mgr.entityList.Get(toParentSlotIdx).V
 
-		if toParentEntity.State() < ec.EntityState_Awakened || toParentEntity.State() > ec.EntityState_Alive {
+		if toParentEntity.State() < ec.EntityState_Awaking || toParentEntity.State() > ec.EntityState_Alive {
 			return fmt.Errorf("%w: parent entity %q is in an unexpected state %q", ErrEntityTree, parentId, toParentEntity.State())
 		}
 	}
@@ -266,7 +266,7 @@ func (mgr *_EntityManager) MoveNode(childId, parentId uid.Id) error {
 
 	childEntity := mgr.entityList.Get(childSlotIdx).V
 
-	if childEntity.State() < ec.EntityState_Awakened || childEntity.State() > ec.EntityState_Alive {
+	if childEntity.State() < ec.EntityState_Awaking || childEntity.State() > ec.EntityState_Alive {
 		return fmt.Errorf("%w: child entity %q is in an unexpected state %q", ErrEntityTree, childId, childEntity.State())
 	}
 

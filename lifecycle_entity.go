@@ -19,12 +19,12 @@
 
 package core
 
-// LifecycleEntityAwake 在实体进入 Awakened 状态时调用，每个实体最多调用一次。
+// LifecycleEntityAwake 在实体进入 Awaking 状态时调用，每个实体最多调用一次。
 type LifecycleEntityAwake interface {
 	Awake()
 }
 
-// LifecycleEntityStart 在实体进入 Starting 状态时调用，每个实体最多调用一次。
+// LifecycleEntityStart 在实体进入 Starting 状态后调用，每个实体最多调用一次。
 type LifecycleEntityStart interface {
 	Start()
 }
@@ -35,12 +35,12 @@ type LifecycleEntityUpdate = eventUpdate
 // LifecycleEntityLateUpdate 在每帧普通更新结束后接收后置更新。
 type LifecycleEntityLateUpdate = eventLateUpdate
 
-// LifecycleEntityShut 在已开始的实体进入 Shutting 状态时调用，与 LifecycleEntityStart 成对。
+// LifecycleEntityShut 在已进入过 Start 的实体处于 Shutting 状态时调用，与 LifecycleEntityStart 成对。
 type LifecycleEntityShut interface {
 	Shut()
 }
 
-// LifecycleEntityDispose 在已唤醒的实体进入 Dead 状态时调用，与 LifecycleEntityAwake 成对。
+// LifecycleEntityDispose 在已进入过 Awake 的实体处于 Dead 状态时调用，与 LifecycleEntityAwake 成对。
 type LifecycleEntityDispose interface {
 	Dispose()
 }

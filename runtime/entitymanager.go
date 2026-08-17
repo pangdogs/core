@@ -284,7 +284,8 @@ func (mgr *_EntityManager) initEntity(entity ec.Entity) {
 	event.UnsafeEvent(entity.EventTreeNodeDetachParent()).Ctrl().SetPanicHandling(mgr.ctx.AutoRecover(), mgr.ctx.ReportError())
 	event.UnsafeEvent(entity.EventTreeNodeMoveTo()).Ctrl().SetPanicHandling(mgr.ctx.AutoRecover(), mgr.ctx.ReportError())
 
-	entity.EachComponents(func(comp ec.Component) {
+	ec.UnsafeEntity(entity).ComponentList().TraversalEach(func(slot *generic.FreeSlot[ec.Component]) {
+		comp := slot.V
 		mgr.initComponent(entity, comp)
 	})
 }

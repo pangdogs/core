@@ -64,7 +64,7 @@ func (c *EntityPTCreator) SetScope(scope ec.Scope) *EntityPTCreator {
 	return c
 }
 
-// SetComponentAwakeOnFirstTouch 设置组件是否延迟到首次访问时进入 Awakened 状态。
+// SetComponentAwakeOnFirstTouch 设置正常激活期间被访问的组件是否优先执行 Awake。
 func (c *EntityPTCreator) SetComponentAwakeOnFirstTouch(b bool) *EntityPTCreator {
 	if c.descr == nil {
 		exception.Panicf("%w: descr is nil", ErrCore)

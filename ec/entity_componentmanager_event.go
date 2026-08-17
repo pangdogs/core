@@ -21,14 +21,16 @@
 //go:generate go run git.golaxy.org/core/event/eventc eventtab --name=entityComponentManagerEventTab
 package ec
 
-// EventComponentManagerAddComponents 在一批组件加入实体后同步派发。
+// EventComponentManagerAddComponents 在一批组件写入实体组件表并进入 Attached 后同步派发。
+// Runtime 通过此事件初始化组件身份并推进后续生命周期。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventComponentManagerAddComponents interface {
 	OnComponentManagerAddComponents(entity Entity, components []Component)
 }
 
-// EventComponentManagerRemoveComponent 在组件脱离实体时同步派发。
+// EventComponentManagerRemoveComponent 在组件进入 Detaching、但尚未从实体组件表移除时同步派发。
+// Runtime 通过此事件执行组件停用与销毁回调。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventComponentManagerRemoveComponent interface {
@@ -42,7 +44,9 @@ type EventComponentManagerComponentEnableChanged interface {
 	OnComponentManagerComponentEnableChanged(entity Entity, component Component, enable bool)
 }
 
-// EventComponentManagerFirstTouchComponent 在启用首次访问唤醒且 Attached 状态组件被访问时同步派发。
+// EventComponentManagerFirstTouchComponent 在启用 ComponentAwakeOnFirstTouch 后，处于 Attached
+// 的组件被访问时同步派发。Runtime 通过此事件使目标组件提前进入并执行 Awake。
+// 事件允许递归派发，使 Awake 内访问的其他组件可以继续建立依赖顺序。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventComponentManagerFirstTouchComponent interface {

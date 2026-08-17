@@ -26,11 +26,11 @@ type EntityState int8
 const (
 	EntityState_Born      EntityState = iota // EntityState_Born 表示实体已构造、尚未进入 Runtime。
 	EntityState_Entered                      // EntityState_Entered 表示实体已加入 Runtime 的实体管理器。
-	EntityState_Awakened                     // EntityState_Awakened 表示实体已完成唤醒。
-	EntityState_Starting                     // EntityState_Starting 表示实体正在执行启动阶段。
+	EntityState_Awaking                      // EntityState_Awaking 表示实体正在唤醒阶段，Awake 在此状态执行。
+	EntityState_Starting                     // EntityState_Starting 表示实体已进入启动阶段，Start 在此状态执行。
 	EntityState_Alive                        // EntityState_Alive 表示实体已启动并参与运行时更新。
-	EntityState_Leaving                      // EntityState_Leaving 表示实体正在离开 Runtime。
-	EntityState_Shutting                     // EntityState_Shutting 表示实体正在执行关闭阶段。
-	EntityState_Dead                         // EntityState_Dead 表示实体已死亡，其上下文已取消。
-	EntityState_Destroyed                    // EntityState_Destroyed 表示实体已完成销毁并释放托管句柄。
+	EntityState_Leaving                      // EntityState_Leaving 表示实体正在离开 Runtime，组件集合已冻结。
+	EntityState_Shutting                     // EntityState_Shutting 表示实体已进入关闭阶段，Shut 在此状态执行。
+	EntityState_Dead                         // EntityState_Dead 表示实体上下文及事件已关闭，正在完成销毁回调。
+	EntityState_Destroyed                    // EntityState_Destroyed 表示实体已释放托管句柄并完成 Terminated 通知。
 )

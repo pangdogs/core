@@ -52,38 +52,53 @@ type iConcurrentComponent interface {
 	getInstance() Component
 }
 
+// componentAsyncScopeState 发布后不可变；nil 指针表示尚未创建且仍可用。
+type componentAsyncScopeState struct {
+	scope  *async.Scope
+	closed bool
+}
+
+var closedComponentAsyncScopeState = &componentAsyncScopeState{closed: true}
+
 // ConcurrentContextCache 返回所属 Entity 的并发 Runtime 上下文接口缓存。
 func (comp *ComponentBehavior) ConcurrentContextCache() iface.Cache {
 	return comp.entity.ConcurrentContextCache()
 }
 
-// AsyncScope 返回绑定组件 Lifetime 的后台任务作用域。
+// AsyncScope 返回绑定组件 Lifetime 的后台任务作用域，并在首次访问时懒创建。
 // Scope 在组件从 Entity 移除或随 Entity 销毁时关闭；SetEnabled(false) 不会关闭它。
-// 所属 Entity 尚未绑定 Runtime Context 时返回 nil。
+// 所属 Entity 尚未绑定 Runtime Context 时返回 nil；组件已关闭后首次访问会返回已关闭的 Scope。
 func (comp *ComponentBehavior) AsyncScope() *async.Scope {
-	if asyncScope := comp.asyncScope.Load(); asyncScope != nil {
-		return asyncScope
-	}
+	for {
+		state := comp.asyncScope.Load()
+		if state != nil && state.scope != nil {
+			return state.scope
+		}
 
-	if comp.entity == nil {
-		return nil
-	}
-	entityScope := comp.entity.AsyncScope()
-	if entityScope == nil {
-		return nil
-	}
+		if comp.entity == nil {
+			return nil
+		}
+		entityScope := comp.entity.AsyncScope()
+		if entityScope == nil {
+			return nil
+		}
 
-	asyncScope := async.NewScope(entityScope.Context())
-	if !comp.asyncScope.CompareAndSwap(nil, asyncScope) {
+		asyncScope := async.NewScope(entityScope.Context())
+		closed := state != nil && state.closed
+		if closed {
+			asyncScope.Close()
+		}
+
+		newState := &componentAsyncScopeState{
+			scope:  asyncScope,
+			closed: closed,
+		}
+		if comp.asyncScope.CompareAndSwap(state, newState) {
+			return asyncScope
+		}
+
 		asyncScope.Close()
-		return comp.asyncScope.Load()
 	}
-
-	if comp.asyncScopeClosed.Load() {
-		asyncScope.Close()
-	}
-
-	return asyncScope
 }
 
 // String 返回包含组件、实体及原型标识的 JSON 文本；组件尚未完成 Runtime 初始化时返回空字符串。
@@ -109,4 +124,29 @@ func (comp *ComponentBehavior) String() string {
 
 func (comp *ComponentBehavior) getInstance() Component {
 	return comp.instance
+}
+
+func (comp *ComponentBehavior) closeAsyncScope() {
+	for {
+		state := comp.asyncScope.Load()
+		if state == nil {
+			if comp.asyncScope.CompareAndSwap(nil, closedComponentAsyncScopeState) {
+				return
+			}
+			continue
+		}
+		if state.closed {
+			return
+		}
+
+		// 先关闭实际 Scope 再发布关闭状态，避免读取方看到关闭标记时 Scope 仍可接收任务。
+		state.scope.Close()
+		closedState := &componentAsyncScopeState{
+			scope:  state.scope,
+			closed: true,
+		}
+		if comp.asyncScope.CompareAndSwap(state, closedState) {
+			return
+		}
+	}
 }

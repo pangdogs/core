@@ -33,8 +33,12 @@ ec 包负责实体与组件本身的状态机与事件表，不负责原型库�
 位于 ec/pt 包，运行时调度与生命周期推进则由根包 core 和 runtime 包完成。
 
 除 ConcurrentEntity 与 ConcurrentComponent 明确暴露的能力外，实体、组件及实体树
-操作都应在所属 Runtime 的运行 goroutine 中执行。两个并发视图均提供 Lifetime
-AsyncScope；Entity 销毁或 Component 移除时会关闭对应 Scope，取消其中的协作式
-后台任务并禁止新任务。
+操作都应在所属 Runtime 的运行 goroutine 中执行。Entity 成功加入 Runtime、Component
+完成所属 Runtime 的身份初始化后，才能把对应并发视图发布给其他 goroutine。
+
+两个并发视图均提供 Lifetime AsyncScope。Entity Scope 在绑定 Runtime Context 时创建，
+Component Scope 在首次访问时懒创建；Entity 销毁或 Component 移除时会关闭对应 Scope，
+取消其中的协作式后台任务并禁止新任务。Entity 和 Component 的销毁流程不会阻塞等待
+这些任务退出，需要汇合时应在其他 goroutine 等待 Scope.Done。
 */
 package ec

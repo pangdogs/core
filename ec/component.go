@@ -24,7 +24,6 @@ import (
 	"sync/atomic"
 
 	"git.golaxy.org/core/event"
-	"git.golaxy.org/core/utils/async"
 	"git.golaxy.org/core/utils/corectx"
 	"git.golaxy.org/core/utils/generic"
 	"git.golaxy.org/core/utils/iface"
@@ -42,7 +41,8 @@ type Component interface {
 
 	// Id 返回组件 ID；未启用组件唯一 ID 时通常与 Entity ID 相同。
 	Id() uid.Id
-	// Builtin 返回组件在实体原型中的内建描述；动态组件返回空描述。
+	// Builtin 返回组件的原型描述；实体原型内建组件包含其位置与配置。
+	// 由 ComponentPT 独立构造的组件通常返回 Offset=-1 的描述，未绑定原型时返回空描述。
 	Builtin() BuiltinComponent
 	// Name 返回组件在 Entity 中的名称。
 	Name() string
@@ -92,8 +92,7 @@ type ComponentBehavior struct {
 	builtin               *BuiltinComponent
 	name                  string
 	entity                Entity
-	asyncScope            atomic.Pointer[async.Scope]
-	asyncScopeClosed      atomic.Bool
+	asyncScope            atomic.Pointer[componentAsyncScopeState]
 	instance              Component
 	state                 ComponentState
 	reflected             reflect.Value
@@ -115,7 +114,7 @@ func (comp *ComponentBehavior) Id() uid.Id {
 	return comp.id
 }
 
-// Builtin 返回组件在实体原型中的内建描述；动态组件返回空描述。
+// Builtin 返回组件的原型描述；未绑定组件原型时返回空描述。
 func (comp *ComponentBehavior) Builtin() BuiltinComponent {
 	if comp.builtin == nil {
 		return *noneBuiltinComponent
@@ -206,7 +205,8 @@ func (comp *ComponentBehavior) EventComponentEnableChanged() event.IEvent {
 	return comp.componentEventTab.EventComponentEnableChanged()
 }
 
-// EventComponentDestroy 返回组件销毁事件。
+// EventComponentDestroy 返回组件销毁流程末尾的通知事件。
+// 正常移除监听应使用所属 Entity 的 EventComponentManagerRemoveComponent。
 func (comp *ComponentBehavior) EventComponentDestroy() event.IEvent {
 	return comp.componentEventTab.EventComponentDestroy()
 }
@@ -258,11 +258,7 @@ func (comp *ComponentBehavior) setState(state ComponentState) {
 
 	switch comp.state {
 	case ComponentState_Dead:
-		if comp.asyncScopeClosed.CompareAndSwap(false, true) {
-			if asyncScope := comp.asyncScope.Load(); asyncScope != nil {
-				asyncScope.Close()
-			}
-		}
+		comp.closeAsyncScope()
 		comp.componentEventTab.SetEnabled(false)
 	case ComponentState_Destroyed:
 		comp.managedHandles.UnbindAllEventHandles()

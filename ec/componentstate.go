@@ -25,15 +25,15 @@ type ComponentState int8
 
 const (
 	ComponentState_Born      ComponentState = iota // ComponentState_Born 表示组件已构造、尚未依附实体。
-	ComponentState_Attached                        // ComponentState_Attached 表示组件已加入实体。
-	ComponentState_Awakened                        // ComponentState_Awakened 表示组件已完成唤醒。
-	ComponentState_Enabling                        // ComponentState_Enabling 表示组件正在执行启用阶段。
-	ComponentState_Idle                            // ComponentState_Idle 表示组件已唤醒但当前未启用。
-	ComponentState_Starting                        // ComponentState_Starting 表示组件正在执行启动阶段。
+	ComponentState_Attached                        // ComponentState_Attached 表示组件已加入实体、尚未进入唤醒阶段。
+	ComponentState_Awaking                         // ComponentState_Awaking 表示组件正在 Awake 阶段，Awake 在此状态执行。
+	ComponentState_Enabling                        // ComponentState_Enabling 表示组件已进入启用阶段，OnEnable 在此状态执行。
+	ComponentState_Idle                            // ComponentState_Idle 表示组件已完成 Awake 但当前未启用。
+	ComponentState_Starting                        // ComponentState_Starting 表示组件已进入启动阶段，Start 在此状态执行。
 	ComponentState_Alive                           // ComponentState_Alive 表示组件已启动并处于活动状态。
-	ComponentState_Detaching                       // ComponentState_Detaching 表示组件正在脱离实体。
-	ComponentState_Shutting                        // ComponentState_Shutting 表示组件正在执行关闭阶段。
-	ComponentState_Disabling                       // ComponentState_Disabling 表示组件正在执行禁用阶段。
-	ComponentState_Dead                            // ComponentState_Dead 表示组件已死亡，事件表已停用。
+	ComponentState_Detaching                       // ComponentState_Detaching 表示组件正在从实体单独移除。
+	ComponentState_Shutting                        // ComponentState_Shutting 表示组件已进入关闭阶段，Shut 在此状态执行。
+	ComponentState_Disabling                       // ComponentState_Disabling 表示组件已进入禁用阶段，OnDisable 在此状态执行。
+	ComponentState_Dead                            // ComponentState_Dead 表示组件 Scope 与事件已关闭，Dispose 在此状态执行。
 	ComponentState_Destroyed                       // ComponentState_Destroyed 表示组件已完成销毁并释放托管句柄。
 )

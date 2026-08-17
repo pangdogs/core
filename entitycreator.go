@@ -76,7 +76,7 @@ func (c *EntityCreator) SetPersistId(id uid.Id) *EntityCreator {
 	return c
 }
 
-// SetComponentAwakeOnFirstTouch 设置组件是否延迟到首次访问时进入 Awakened 状态。
+// SetComponentAwakeOnFirstTouch 设置正常激活期间被访问的组件是否优先执行 Awake。
 func (c *EntityCreator) SetComponentAwakeOnFirstTouch(b bool) *EntityCreator {
 	c.settings = append(c.settings, ec.With.ComponentAwakeOnFirstTouch(b))
 	return c

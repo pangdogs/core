@@ -39,7 +39,7 @@ type EntityPT interface {
 	InstanceRT() reflect.Type
 	// Scope 返回原型的默认实体作用域。
 	Scope() Scope
-	// ComponentAwakeOnFirstTouch 报告组件是否在首次访问时推进至 Awakened。
+	// ComponentAwakeOnFirstTouch 报告正常激活期间被访问的组件是否优先执行 Awake。
 	ComponentAwakeOnFirstTouch() bool
 	// ComponentUniqueID 报告是否为组件分配唯一 ID。
 	ComponentUniqueID() bool

@@ -61,7 +61,7 @@ func (pt *_Entity) Scope() ec.Scope {
 	return pt.scope
 }
 
-// ComponentAwakeOnFirstTouch 报告组件是否在首次访问时推进至 Awakened。
+// ComponentAwakeOnFirstTouch 报告正常激活期间被访问的组件是否优先执行 Awake。
 func (pt *_Entity) ComponentAwakeOnFirstTouch() bool {
 	return pt.componentAwakeOnFirstTouch
 }
@@ -169,11 +169,11 @@ func (pt *_Entity) assemble(entity ec.Entity) ec.Entity {
 
 		comp := builtin.PT.Construct()
 		ec.UnsafeComponent(comp).SetBuiltin(builtin)
-		ec.UnsafeComponent(comp).SetRemovable(builtin.Removable)
 
 		if err := entity.AddComponent(builtin.Name, comp); err != nil {
 			exception.Panicf("%w: %w", ErrPt, err)
 		}
+		ec.UnsafeComponent(comp).SetRemovable(builtin.Removable)
 	}
 
 	return entity

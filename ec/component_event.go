@@ -28,8 +28,9 @@ type EventComponentEnableChanged interface {
 	OnComponentEnableChanged(comp Component, enable bool)
 }
 
-// EventComponentDestroy 描述组件销毁流程末尾尝试派发的通知。
-// 若组件事件表已随 Dead 状态禁用，则该通知不会到达订阅者。
+// EventComponentDestroy 描述 Component.Destroy 在移除流程末尾尝试派发的通知。
+// 正常移除会先进入 Dead 并禁用组件事件表，因此受管组件的订阅者通常不会收到它；
+// 需要观察移除流程时应订阅所属 Entity 的 EventComponentManagerRemoveComponent。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventComponentDestroy interface {

@@ -116,6 +116,11 @@ flowchart TB
 | `ec.Component` | A unit of business behavior or state attached to an Entity. | Lifecycle and state mutation belong to the Runtime serialization domain. |
 | `ec.ConcurrentComponent` | Exposes the component ID, name, concurrent Runtime Context, and Component Lifetime Scope. | Usable across goroutines; does not expose `State`, `Enabled`, `Entity`, or `Destroy`. |
 
+Concurrent views have an explicit publication boundary: an Entity must have been added successfully to a
+Runtime, and a Component must have completed Runtime initialization with its Entity or have been added
+dynamically to a managed Entity. Cross-goroutine access during initialization is undefined. A `nil`
+`AsyncScope()` or empty `String()` is only a limited safeguard, not an atomic readiness probe.
+
 ## Actor + EC execution model
 
 ### Runtime is the Actor boundary
@@ -196,13 +201,20 @@ A `runtime.Context` can be bound to only one `core.Runtime`, and a Runtime can r
 
 The one-way Entity state chain is:
 
-`Born → Entered → Awakened → Starting → Alive → Leaving → Shutting → Dead → Destroyed`
+`Born → Entered → Awaking → Starting → Alive → Leaving → Shutting → Dead → Destroyed`
 
-The primary Component state chain is:
+The normal enabled Component path is:
 
-`Born → Attached → Awakened → Enabling → Starting → Alive → Detaching → Shutting → Disabling → Dead → Destroyed`
+`Born → Attached → Awaking → Enabling → Starting → Alive`
 
-A disabled Component enters `Idle`. Enabling it again invokes `OnEnable` and returns it to `Alive`, but `Start` is not repeated.
+`Attached` is the pending state before a Component enters its `Awake` stage. During normal activation,
+Components advance from `Attached` to `Awaking` one at a time. First-touch ordering can advance a
+referenced Component early. `Awaking` begins before the `Awake` callback and ends when the Runtime
+advances the Component to `Enabling`.
+
+Disabling from `Enabling`, `Starting`, or `Alive` enters `Idle`. Re-enabling invokes `OnEnable` and passes
+through `Starting` to `Alive`, but does not invoke `Start` again. Removing an individual Component uses
+`Detaching`; destruction with its Entity may enter `Shutting` directly.
 
 | Object | Activation callbacks | Frame callbacks | Deactivation callbacks |
 | --- | --- | --- | --- |
@@ -211,13 +223,15 @@ A disabled Component enters `Idle`. Enabling it again invokes `OnEnable` and ret
 
 Important ordering rules:
 
-1. Entity `Awake` runs before the `Awake` callbacks of its built-in components.
-2. Component `Awake`, `OnEnable`, and `Start` run as separate phases; each phase traverses components in insertion order, followed by Entity `Start`.
-3. During destruction, Entity `Shut` runs first; components run `Shut`, `OnDisable`, and `Dispose` in reverse insertion order; Entity `Dispose` runs last.
-4. `Awake`, `Start`, `Shut`, and `Dispose` run at most once. `OnEnable` and `OnDisable` may repeat as enabled state changes.
+1. Without first-touch `Awake` ordering, Entity `Awake` runs before Component `Awake` callbacks.
+2. Component `Awake`, `OnEnable`, and `Start` remain separate insertion-order phases. `ComponentAwakeOnFirstTouch` may execute a referenced Component's pending `Awake` before its normal turn, but never advances `OnEnable` or `Start`. Entity `Start` follows the Component phases.
+3. During destruction, Entity `Shut` runs first. The Runtime then runs separate reverse-insertion-order phases for all Component `Shut`, `OnDisable`, and `Dispose` callbacks, followed by Entity `Dispose`.
+4. `Shut` is paired only with an entered `Start`, `Dispose` only with an entered `Awake`, and `OnDisable` with `OnEnable`; objects that never entered the matching activation phase skip that deactivation callback.
 5. Adding components dynamically to a running Entity synchronously advances the new component activation flow.
-6. Destroying an Entity closes its Entity Scope, cancels owned background tasks, removes it from the tree and indexes, and automatically unbinds managed Entity and Component event handles.
-7. Removing a Component, or destroying it with its Entity, closes that Component's Lifetime Scope. `SetEnabled(false)` does not close the Scope, so the same lifetime remains available after re-enabling.
+6. Once an Entity enters `Leaving`, its Component collection is frozen and `AddComponent` returns an error.
+7. `Destroy()` on a managed Entity or removable Component advances removal synchronously on the owning Runtime goroutine. Calling it from a lifecycle callback may run paired deactivation callbacks before the original callback returns.
+8. Entering Entity `Dead` closes the Entity Scope before Component disable/dispose phases and Entity `Dispose`. After index removal, `Destroyed` completes `Terminated()`.
+9. Entering Component `Dead` closes its Lifetime Scope. `SetEnabled(false)` does not close the Scope, so the same lifetime remains available after re-enabling.
 
 ## Runtime scheduling and frame loop
 
@@ -273,7 +287,7 @@ Prototypes keep reusable construction definitions in the Service scope:
 | `ComponentLib` | Registers construction prototypes by fully qualified Go component type; repeated declaration of the same named type reuses the existing object. |
 | `EntityLib` | Registers Entity compositions by business prototype name; redeclaring the same name replaces the previous version. |
 | `ComponentDescriptor` | Configures a built-in component name, removability, and metadata. |
-| `EntityDescriptor` | Configures the Entity instance type, default Scope, first-touch behavior, component-ID policy, and metadata. |
+| `EntityDescriptor` | Configures the Entity instance type, default Scope, Component `Awake` ordering, component-ID policy, and metadata. |
 | `BuildEntityPT` | Declares an Entity Prototype through a fluent API. |
 | `BuildEntity` | Constructs an Entity from a declared Prototype and adds it to the current Runtime. |
 
@@ -285,19 +299,18 @@ Prototypes keep reusable construction definitions in the Service scope:
 - Both Entity and Prototype default to `Scope_Global`.
 - `Meta` carries business metadata keyed by strings.
 - Event handles stored in `Managed()` are unbound automatically during destruction.
-- `Terminated()` completes after the Entity reaches `Destroyed`.
-- `Destroy()` is a request; the owning Runtime performs removal and lifecycle advancement.
+- `Terminated()` completes after the Entity reaches `Destroyed`; it does not mean every task in the Entity Scope has exited.
+- The owning Runtime performs removal and lifecycle advancement for `Destroy()`; when called on the Runtime goroutine, that flow is synchronous.
 
 ### Component
 
 - One Entity may contain multiple components with the same name. `GetComponent` returns the first, while `GetComponents` returns all of them.
-- Built-in components are not dynamically removable by default. Enable removal with `ComponentDescriptor.SetRemovable(true)`.
-- Components added dynamically at runtime are removable by default.
+- `ComponentDescriptor.SetRemovable` declares the removal policy for a built-in Component; Components added dynamically at runtime default to removable.
 - Components reuse the Entity ID by default. Enable `ComponentUniqueID` to allocate an independent ID for every Component.
 - `SetEnabled(false)` unbinds frame updates and invokes `OnDisable`; enabling again invokes `OnEnable`.
-- `AsyncScope()` returns the Component Lifetime Scope; removal closes it, while disabling keeps it alive.
+- `AsyncScope()` lazily creates the Component Lifetime Scope on first access; removal closes it, while disabling keeps it alive.
 - `ConcurrentComponent` is the concurrency-safe narrow view of a Component; business state must still be accessed on the Runtime through `Submit`, `Post`, or `ContinueOn`.
-- `ComponentAwakeOnFirstTouch` defers component awakening until first access.
+- `ComponentAwakeOnFirstTouch` does not change normal activation orchestration. During activation, business lookup or dependency injection can execute a referenced Component's pending `Awake` before its normal turn, allowing Component references to determine `Awake` order without advancing `OnEnable` or `Start`.
 - Event handles stored in `Managed()` are unbound automatically during component destruction.
 
 ### EntityTree
@@ -393,7 +406,11 @@ A Scope provides:
 
 `Scope.Close` cannot forcibly kill a goroutine; a task must observe the Context it receives. A Component Scope closes on removal, but not on `SetEnabled(false)`. Entity, Runtime, and Service scopes close with their respective lifecycles.
 
-Service and Runtime scopes are created with their respective Contexts. An Entity creates its Scope once when it binds to its owning Runtime and directly uses the Scope Context as its Entity Context, avoiding an additional cancellation layer. A Component Scope is created when the Component enters the lifetime of its Entity's Runtime. Every Scope closes synchronously with its owner lifecycle.
+Service and Runtime scopes are created with their respective Contexts. An Entity creates its Scope once when it binds to its owning Runtime and directly uses the Scope Context as its Entity Context, avoiding an additional cancellation layer. A Component Scope is created lazily on the first `AsyncScope()` call after its Entity has bound to a Runtime; if the Component has already closed, that first access returns an immediately closed Scope.
+
+Service and Runtime shutdown wait for tasks registered in their own scopes to exit. Entity and Component
+destruction synchronously closes the corresponding Scope but does not block the Runtime goroutine while its
+tasks exit. Wait for `scope.Done()` from another goroutine when a join is required.
 
 ```go
 future := core.Spawn(
@@ -543,7 +560,7 @@ The `define` package declares type-safe add-in definitions and exposes consisten
 - A Service Context derives from `context.Background()` by default.
 - A Runtime Context derives from its owning Service Context by default.
 - An Entity Scope derives directly from its owning Runtime Context, and the Entity Context reuses that Scope Context.
-- Service, Runtime, Entity, and Component expose separate Lifetime `AsyncScope()` values; lower-level scopes are canceled with their parent Context.
+- Service, Runtime, Entity, and Component expose separate Lifetime `AsyncScope()` values. Component scopes are created on demand, and lower-level scopes are canceled with their parent Context.
 - Parent cancellation propagates downward, but `Terminated()` completes only after the corresponding object finishes cleanup.
 
 ### Shutdown barrier
@@ -659,7 +676,7 @@ See [`core_test.go`](./core_test.go) for more scenario-style examples.
 | Service / Runtime persistent ID | Generated | Uses `uid.Id`. |
 | Entity Scope | `Scope_Global` | Enters both the Runtime-local and Service-global indexes. |
 | Entity persistent ID | Generated when entering Runtime | May be overridden during construction. |
-| Component first-touch awakening | `false` | Components normally awaken during Entity activation. |
+| Component first-touch `Awake` | `false` | When enabled, Component access during activation may advance only the target's pending `Awake`; later phases are unchanged. |
 | Independent Component IDs | `false` | Components reuse the Entity ID by default. |
 | Runtime `AutoRun` | `false` | Call `Run` explicitly or enable AutoRun. |
 | Frame loop | Enabled | Target is 30 FPS by default. |

@@ -23,28 +23,28 @@ package runtime
 
 import "git.golaxy.org/core/ec"
 
-// EventEntityManagerAddEntity 在实体加入本地管理器后派发。
+// EventEntityManagerAddEntity 在实体写入本地索引并进入 Entered 后派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventEntityManagerAddEntity interface {
 	OnEntityManagerAddEntity(entityManager EntityManager, entity ec.Entity)
 }
 
-// EventEntityManagerRemoveEntity 在实体离开本地管理器前派发。
+// EventEntityManagerRemoveEntity 在实体进入 Leaving 且树关系已移除、但本地与全局索引尚未删除时派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventEntityManagerRemoveEntity interface {
 	OnEntityManagerRemoveEntity(entityManager EntityManager, entity ec.Entity)
 }
 
-// EventEntityManagerEntityAddComponents 在受管实体添加组件后派发。
+// EventEntityManagerEntityAddComponents 在新增组件完成 Runtime 身份与事件配置后、激活前派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventEntityManagerEntityAddComponents interface {
 	OnEntityManagerEntityAddComponents(entityManager EntityManager, entity ec.Entity, components []ec.Component)
 }
 
-// EventEntityManagerEntityRemoveComponent 在受管实体删除组件前派发。
+// EventEntityManagerEntityRemoveComponent 在组件进入 Detaching 且仍位于实体组件表中时派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventEntityManagerEntityRemoveComponent interface {
@@ -58,7 +58,9 @@ type EventEntityManagerEntityComponentEnableChanged interface {
 	OnEntityManagerEntityComponentEnableChanged(entityManager EntityManager, entity ec.Entity, component ec.Component, enable bool)
 }
 
-// EventEntityManagerEntityFirstTouchComponent 在受管实体首次访问延迟唤醒组件时派发。
+// EventEntityManagerEntityFirstTouchComponent 在受管实体中，处于 Attached 的组件被访问时
+// 同步派发。Runtime 通过此事件使目标组件提前进入并执行 Awake。
+// 事件允许递归派发，使 Awake 内访问的其他组件可以继续建立依赖顺序。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventEntityManagerEntityFirstTouchComponent interface {

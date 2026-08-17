@@ -163,14 +163,7 @@ func (rt *RuntimeBehavior) onEntityManagerAddEntity(entityManager runtime.Entity
 		return
 	}
 
-	ec.UnsafeEntity(entity).SetState(ec.EntityState_Awakened)
-
-	entity.EachComponents(func(comp ec.Component) {
-		if comp.State() != ec.ComponentState_Attached {
-			return
-		}
-		ec.UnsafeComponent(comp).SetState(ec.ComponentState_Awakened)
-	})
+	ec.UnsafeEntity(entity).SetState(ec.EntityState_Awaking)
 
 	{
 		caller := newEntityLifecycleCaller(entity)
@@ -197,7 +190,8 @@ func (rt *RuntimeBehavior) onEntityManagerAddEntity(entityManager runtime.Entity
 		rt.observeEntity(entity)
 
 		if !caller.Call(func() {
-			entity.RangeComponents(func(comp ec.Component) bool {
+			ec.UnsafeEntity(entity).ComponentList().Traversal(func(slot *generic.FreeSlot[ec.Component]) bool {
+				comp := slot.V
 				return caller.Call(func() {
 					rt.panicHandlingActivatingEntity(entity, rt.awakeComponent(comp))
 				})
@@ -208,9 +202,10 @@ func (rt *RuntimeBehavior) onEntityManagerAddEntity(entityManager runtime.Entity
 		}
 
 		if !caller.Call(func() {
-			entity.RangeComponents(func(comp ec.Component) bool {
+			ec.UnsafeEntity(entity).ComponentList().Traversal(func(slot *generic.FreeSlot[ec.Component]) bool {
+				comp := slot.V
 				return caller.Call(func() {
-					rt.panicHandlingActivatingEntity(entity, rt.enableAwakenedComponent(comp))
+					rt.panicHandlingActivatingEntity(entity, rt.enableComponentAfterAwake(comp))
 				})
 			})
 		}) {
@@ -225,7 +220,8 @@ func (rt *RuntimeBehavior) onEntityManagerAddEntity(entityManager runtime.Entity
 		caller := newEntityLifecycleCaller(entity)
 
 		if !caller.Call(func() {
-			entity.RangeComponents(func(comp ec.Component) bool {
+			ec.UnsafeEntity(entity).ComponentList().Traversal(func(slot *generic.FreeSlot[ec.Component]) bool {
+				comp := slot.V
 				return caller.Call(func() {
 					rt.panicHandlingActivatingEntity(entity, rt.startComponent(comp))
 				})
@@ -261,8 +257,9 @@ func (rt *RuntimeBehavior) onEntityManagerRemoveEntity(entityManager runtime.Ent
 
 	ec.UnsafeEntity(entity).SetState(ec.EntityState_Shutting)
 
-	entity.EachComponents(func(comp ec.Component) {
-		if comp.State() < ec.ComponentState_Awakened {
+	ec.UnsafeEntity(entity).ComponentList().TraversalEach(func(slot *generic.FreeSlot[ec.Component]) {
+		comp := slot.V
+		if comp.State() < ec.ComponentState_Awaking {
 			return
 		}
 		ec.UnsafeComponent(comp).SetState(ec.ComponentState_Shutting)
@@ -279,7 +276,8 @@ func (rt *RuntimeBehavior) onEntityManagerRemoveEntity(entityManager runtime.Ent
 			}
 		}
 
-		entity.ReversedEachComponents(func(comp ec.Component) {
+		ec.UnsafeEntity(entity).ComponentList().ReversedTraversalEach(func(slot *generic.FreeSlot[ec.Component]) {
+			comp := slot.V
 			rt.shutComponent(comp)
 		})
 	}
@@ -289,15 +287,17 @@ func (rt *RuntimeBehavior) onEntityManagerRemoveEntity(entityManager runtime.Ent
 	{
 		caller := newEntityLifecycleCaller(entity)
 
-		entity.ReversedEachComponents(func(comp ec.Component) {
+		ec.UnsafeEntity(entity).ComponentList().ReversedTraversalEach(func(slot *generic.FreeSlot[ec.Component]) {
+			comp := slot.V
 			rt.disableDeathComponent(comp)
 		})
 
-		entity.ReversedEachComponents(func(comp ec.Component) {
+		ec.UnsafeEntity(entity).ComponentList().ReversedTraversalEach(func(slot *generic.FreeSlot[ec.Component]) {
+			comp := slot.V
 			rt.disposeComponent(comp, true)
 		})
 
-		if caller.IsProcessed(ec.EntityState_Awakened) && caller.MarkProcessed() {
+		if caller.IsProcessed(ec.EntityState_Awaking) && caller.MarkProcessed() {
 			if cb, ok := entity.(LifecycleEntityDispose); ok {
 				generic.CastAction0(cb.Dispose).Call(rt.ctx.AutoRecover(), rt.ctx.ReportError())
 			}
@@ -309,16 +309,8 @@ func (rt *RuntimeBehavior) onEntityManagerRemoveEntity(entityManager runtime.Ent
 
 // onEntityManagerEntityAddComponents 为运行中实体推进新增组件的激活流程。
 func (rt *RuntimeBehavior) onEntityManagerEntityAddComponents(entityManager runtime.EntityManager, entity ec.Entity, components []ec.Component) {
-	if entity.State() < ec.EntityState_Awakened || entity.State() > ec.EntityState_Alive {
+	if entity.State() < ec.EntityState_Awaking || entity.State() > ec.EntityState_Alive {
 		return
-	}
-
-	for i := range components {
-		comp := components[i]
-		if comp.State() != ec.ComponentState_Attached {
-			continue
-		}
-		ec.UnsafeComponent(comp).SetState(ec.ComponentState_Awakened)
 	}
 
 	{
@@ -347,7 +339,7 @@ func (rt *RuntimeBehavior) onEntityManagerEntityAddComponents(entityManager runt
 		if !caller.Call(func() {
 			for i := range components {
 				if !caller.Call(func() {
-					rt.enableAwakenedComponent(components[i])
+					rt.enableComponentAfterAwake(components[i])
 				}) {
 					return
 				}
@@ -378,7 +370,7 @@ func (rt *RuntimeBehavior) onEntityManagerEntityAddComponents(entityManager runt
 
 // onEntityManagerEntityRemoveComponent 为运行中实体推进组件移除流程。
 func (rt *RuntimeBehavior) onEntityManagerEntityRemoveComponent(entityManager runtime.EntityManager, entity ec.Entity, component ec.Component) {
-	if entity.State() < ec.EntityState_Awakened || entity.State() > ec.EntityState_Alive {
+	if entity.State() < ec.EntityState_Awaking || entity.State() > ec.EntityState_Alive {
 		return
 	}
 
@@ -425,7 +417,7 @@ func (rt *RuntimeBehavior) onEntityManagerEntityRemoveComponent(entityManager ru
 
 // onEntityManagerEntityComponentEnableChanged 推进组件启用状态变化对应的生命周期。
 func (rt *RuntimeBehavior) onEntityManagerEntityComponentEnableChanged(entityManager runtime.EntityManager, entity ec.Entity, component ec.Component, enable bool) {
-	if entity.State() < ec.EntityState_Awakened || entity.State() > ec.EntityState_Alive {
+	if entity.State() < ec.EntityState_Awaking || entity.State() > ec.EntityState_Alive {
 		return
 	}
 
@@ -455,13 +447,11 @@ func (rt *RuntimeBehavior) onEntityManagerEntityComponentEnableChanged(entityMan
 	}
 }
 
-// onEntityManagerEntityFirstTouchComponent 在首次访问时唤醒延迟激活的组件。
+// onEntityManagerEntityFirstTouchComponent 将首次访问的 Attached 组件提前推进至 Awake 阶段。
 func (rt *RuntimeBehavior) onEntityManagerEntityFirstTouchComponent(entityManager runtime.EntityManager, entity ec.Entity, component ec.Component) {
-	if entity.State() < ec.EntityState_Awakened || entity.State() > ec.EntityState_Alive {
+	if entity.State() < ec.EntityState_Awaking || entity.State() > ec.EntityState_Alive {
 		return
 	}
-
-	ec.UnsafeComponent(component).SetState(ec.ComponentState_Awakened)
 
 	{
 		caller := newEntityLifecycleCaller(entity)
@@ -497,9 +487,11 @@ func (rt *RuntimeBehavior) unobserveComponent(comp ec.Component) {
 }
 
 func (rt *RuntimeBehavior) awakeComponent(comp ec.Component) (err error) {
-	if comp.State() != ec.ComponentState_Awakened {
+	if comp.State() != ec.ComponentState_Attached {
 		return
 	}
+
+	ec.UnsafeComponent(comp).SetState(ec.ComponentState_Awaking)
 
 	{
 		caller := newComponentLifecycleCaller(comp)
@@ -521,7 +513,7 @@ func (rt *RuntimeBehavior) awakeComponent(comp ec.Component) (err error) {
 	return
 }
 
-func (rt *RuntimeBehavior) enableAwakenedComponent(comp ec.Component) (err error) {
+func (rt *RuntimeBehavior) enableComponentAfterAwake(comp ec.Component) (err error) {
 	if comp.State() != ec.ComponentState_Enabling {
 		return
 	}
@@ -645,7 +637,7 @@ func (rt *RuntimeBehavior) disposeComponent(comp ec.Component, stateDestroyed bo
 		caller := newComponentLifecycleCaller(comp)
 
 		if !caller.Call(func() {
-			if caller.IsProcessed(ec.ComponentState_Awakened) {
+			if caller.IsProcessed(ec.ComponentState_Awaking) {
 				if !caller.MarkProcessed() {
 					return
 				}

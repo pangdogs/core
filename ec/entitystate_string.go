@@ -10,7 +10,7 @@ func _() {
 	var x [1]struct{}
 	_ = x[EntityState_Born-0]
 	_ = x[EntityState_Entered-1]
-	_ = x[EntityState_Awakened-2]
+	_ = x[EntityState_Awaking-2]
 	_ = x[EntityState_Starting-3]
 	_ = x[EntityState_Alive-4]
 	_ = x[EntityState_Leaving-5]
@@ -19,9 +19,9 @@ func _() {
 	_ = x[EntityState_Destroyed-8]
 }
 
-const _EntityState_name = "EntityState_BornEntityState_EnteredEntityState_AwakenedEntityState_StartingEntityState_AliveEntityState_LeavingEntityState_ShuttingEntityState_DeadEntityState_Destroyed"
+const _EntityState_name = "EntityState_BornEntityState_EnteredEntityState_AwakingEntityState_StartingEntityState_AliveEntityState_LeavingEntityState_ShuttingEntityState_DeadEntityState_Destroyed"
 
-var _EntityState_index = [...]uint8{0, 16, 35, 55, 75, 92, 111, 131, 147, 168}
+var _EntityState_index = [...]uint8{0, 16, 35, 54, 74, 91, 110, 130, 146, 167}
 
 func (i EntityState) String() string {
 	idx := int(i) - 0

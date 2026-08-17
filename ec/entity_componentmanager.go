@@ -26,17 +26,19 @@ import (
 	"git.golaxy.org/core/event"
 	"git.golaxy.org/core/utils/exception"
 	"git.golaxy.org/core/utils/generic"
+	"git.golaxy.org/core/utils/iface"
 	"git.golaxy.org/core/utils/uid"
 )
 
 // iComponentManager 定义实体的组件管理能力。
 //
-// 所有操作都应在实体所属 Runtime 的运行协程中执行。启用首次访问唤醒后，查询和
-// 遍历方法可能推进组件生命周期，因而不是纯只读操作。
+// 所有操作都应在实体所属 Runtime 的运行协程中执行。启用 ComponentAwakeOnFirstTouch
+// 后，正常激活期间的查询和遍历可能优先执行目标组件的 Awake，因而不是纯只读操作。
 type iComponentManager interface {
 	iiComponentManager
 
-	// AddComponent 将 Born 状态的组件加入实体；允许同名组件。
+	// AddComponent 将 Born 状态的组件加入实体；允许同名组件，但同一实例不能重复加入。
+	// Entity 进入 Leaving 后返回错误。
 	AddComponent(name string, components ...Component) error
 	// RemoveComponent 按名称请求删除全部同名组件。
 	RemoveComponent(name string)
@@ -82,9 +84,14 @@ type iiComponentManager interface {
 
 // AddComponent 将 Born 状态的组件加入实体；允许同名组件。
 //
-// components 为空、包含 nil 或组件不处于 Born 状态时返回错误。实体已启动时，
-// Runtime 会通过添加事件同步推进新组件的生命周期。
+// components 为空、包含 nil、包含重复实例或组件不处于 Born 状态时返回错误。
+// 实体已启动时，Runtime 会通过添加事件同步推进新组件的生命周期；实体进入
+// Leaving 后组件集合冻结，此时返回错误。
 func (entity *EntityBehavior) AddComponent(name string, components ...Component) error {
+	if entity.State() >= EntityState_Leaving {
+		return fmt.Errorf("%w: entity %q state %q does not allow adding components", ErrEC, entity.Id(), entity.State())
+	}
+
 	if len(components) <= 0 {
 		return fmt.Errorf("%w: %w: components is empty", ErrEC, exception.ErrArgs)
 	}
@@ -98,6 +105,12 @@ func (entity *EntityBehavior) AddComponent(name string, components ...Component)
 
 		if comp.State() != ComponentState_Born {
 			return fmt.Errorf("%w: invalid component state %q", ErrEC, comp.State())
+		}
+
+		for j := 0; j < i; j++ {
+			if iface.Iface2Cache(comp) == iface.Iface2Cache(components[j]) {
+				return fmt.Errorf("%w: %w: component at index %d duplicates index %d", ErrEC, exception.ErrArgs, i, j)
+			}
 		}
 	}
 
@@ -272,7 +285,7 @@ func (entity *EntityBehavior) ReversedEachComponents(fun generic.Action1[Compone
 	})
 }
 
-// FilterComponents 返回满足条件的组件快照，并对返回项执行首次访问处理。
+// FilterComponents 返回满足条件的组件快照，并对返回项应用首次访问 Awake 优先规则。
 func (entity *EntityBehavior) FilterComponents(fun generic.Func1[Component, bool]) []Component {
 	var components []Component
 
@@ -300,7 +313,7 @@ func (entity *EntityBehavior) FilterComponents(fun generic.Func1[Component, bool
 	return components
 }
 
-// ListComponents 返回全部组件的快照，并对返回项执行首次访问处理。
+// ListComponents 返回全部组件的快照，并对返回项应用首次访问 Awake 优先规则。
 func (entity *EntityBehavior) ListComponents() []Component {
 	components := entity.componentList.ToSlice()
 

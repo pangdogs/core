@@ -10,7 +10,7 @@ func _() {
 	var x [1]struct{}
 	_ = x[ComponentState_Born-0]
 	_ = x[ComponentState_Attached-1]
-	_ = x[ComponentState_Awakened-2]
+	_ = x[ComponentState_Awaking-2]
 	_ = x[ComponentState_Enabling-3]
 	_ = x[ComponentState_Idle-4]
 	_ = x[ComponentState_Starting-5]
@@ -22,9 +22,9 @@ func _() {
 	_ = x[ComponentState_Destroyed-11]
 }
 
-const _ComponentState_name = "ComponentState_BornComponentState_AttachedComponentState_AwakenedComponentState_EnablingComponentState_IdleComponentState_StartingComponentState_AliveComponentState_DetachingComponentState_ShuttingComponentState_DisablingComponentState_DeadComponentState_Destroyed"
+const _ComponentState_name = "ComponentState_BornComponentState_AttachedComponentState_AwakingComponentState_EnablingComponentState_IdleComponentState_StartingComponentState_AliveComponentState_DetachingComponentState_ShuttingComponentState_DisablingComponentState_DeadComponentState_Destroyed"
 
-var _ComponentState_index = [...]uint16{0, 19, 42, 65, 88, 107, 130, 150, 174, 197, 221, 240, 264}
+var _ComponentState_index = [...]uint16{0, 19, 42, 64, 87, 106, 129, 149, 173, 196, 220, 239, 263}
 
 func (i ComponentState) String() string {
 	idx := int(i) - 0

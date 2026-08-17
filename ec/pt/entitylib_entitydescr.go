@@ -45,7 +45,7 @@ type EntityDescriptor struct {
 	Prototype                  string    // Prototype 是实体原型名，不能为空。
 	Instance                   any       // Instance 是自定义实体值或反射类型；nil 表示使用默认实体实现。
 	Scope                      ec.Scope  // Scope 是构造实体时使用的默认作用域。
-	ComponentAwakeOnFirstTouch bool      // ComponentAwakeOnFirstTouch 指示组件首次访问时是否推进至 Awakened。
+	ComponentAwakeOnFirstTouch bool      // ComponentAwakeOnFirstTouch 指示正常激活期间被访问的组件是否优先执行 Awake。
 	ComponentUniqueID          bool      // ComponentUniqueID 指示是否为每个组件分配唯一 ID。
 	Meta                       meta.Meta // Meta 是实体原型元数据。
 }
@@ -62,7 +62,7 @@ func (descr *EntityDescriptor) SetScope(scope ec.Scope) *EntityDescriptor {
 	return descr
 }
 
-// SetComponentAwakeOnFirstTouch 设置组件是否在首次访问时推进至 Awakened。
+// SetComponentAwakeOnFirstTouch 设置正常激活期间被访问的组件是否优先执行 Awake。
 func (descr *EntityDescriptor) SetComponentAwakeOnFirstTouch(b bool) *EntityDescriptor {
 	descr.ComponentAwakeOnFirstTouch = b
 	return descr

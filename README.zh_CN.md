@@ -116,6 +116,11 @@ flowchart TB
 | `ec.Component` | 附着在 Entity 上的业务能力或状态单元。 | 生命周期和状态修改属于 Runtime 串行域。 |
 | `ec.ConcurrentComponent` | 暴露组件 ID、名称、并发 Runtime Context 和组件 Lifetime Scope。 | 可跨 goroutine 使用；不暴露 `State`、`Enabled`、`Entity` 或 `Destroy`。 |
 
+并发视图存在明确的发布边界：Entity 必须已经成功加入 Runtime；Component 必须随
+Entity 完成 Runtime 初始化，或已经动态加入受管 Entity。初始化期间跨 goroutine 访问
+属于未定义行为；`AsyncScope()` 返回 `nil` 和 `String()` 返回空字符串只是有限防御，
+不能作为原子就绪探针。
+
 ## Actor + EC 执行模型
 
 ### Runtime 才是 Actor 边界
@@ -196,13 +201,19 @@ Service 只能运行一次。同一个 `service.Context` 也只能绑定到一�
 
 Entity 的单向状态链为：
 
-`Born → Entered → Awakened → Starting → Alive → Leaving → Shutting → Dead → Destroyed`
+`Born → Entered → Awaking → Starting → Alive → Leaving → Shutting → Dead → Destroyed`
 
-Component 的主状态链为：
+Component 的正常启用链为：
 
-`Born → Attached → Awakened → Enabling → Starting → Alive → Detaching → Shutting → Disabling → Dead → Destroyed`
+`Born → Attached → Awaking → Enabling → Starting → Alive`
 
-Component 被禁用后会进入 `Idle`；再次启用会执行 `OnEnable` 并回到 `Alive`，但 `Start` 不会重复执行。
+`Attached` 表示 Component 尚未进入 `Awake` 阶段。正常激活会逐个将 Component 从
+`Attached` 推进至 `Awaking`；首次访问优先规则可以提前推进被引用的 Component。
+`Awaking` 在调用 `Awake` 前开始，并在 Runtime 将 Component 推进至 `Enabling` 时结束。
+
+禁用会从 `Enabling`、`Starting` 或 `Alive` 进入 `Idle`；再次启用会执行 `OnEnable` 并经
+`Starting` 回到 `Alive`，但 `Start` 不会重复执行。单独移除组件时会经过 `Detaching`；
+随 Entity 销毁时可直接进入 `Shutting`，不会经过 `Detaching`。
 
 | 对象 | 激活回调 | 帧回调 | 停用回调 |
 | --- | --- | --- | --- |
@@ -211,13 +222,15 @@ Component 被禁用后会进入 `Idle`；再次启用会执行 `OnEnable` 并回
 
 重要顺序：
 
-1. Entity `Awake` 先于内建 Component 的 `Awake`。
-2. Component 的 `Awake`、`OnEnable` 和 `Start` 分阶段执行，每个阶段都按组件加入顺序遍历；随后 Entity 执行 `Start`。
-3. 销毁时 Entity 先执行 `Shut`，Component 按加入顺序的逆序执行 `Shut`、`OnDisable` 和 `Dispose`，最后 Entity 执行 `Dispose`。
-4. `Awake`、`Start`、`Shut` 和 `Dispose` 最多执行一次；`OnEnable` 与 `OnDisable` 可随启用状态反复执行。
+1. 未启用首次访问 `Awake` 顺序时，Entity `Awake` 先于 Component 的 `Awake`。
+2. Component 的 `Awake`、`OnEnable` 和 `Start` 保持按加入顺序分阶段执行。`ComponentAwakeOnFirstTouch` 可以使被引用 Component 待执行的 `Awake` 早于正常轮次，但不会提前 `OnEnable` 或 `Start`；Component 阶段结束后 Entity 执行 `Start`。
+3. 销毁时 Entity 先执行 `Shut`，随后分别按组件加入顺序的逆序执行全部 Component 的 `Shut`、`OnDisable` 和 `Dispose`，最后 Entity 执行 `Dispose`。
+4. `Shut` 只与已经进入的 `Start` 配对，`Dispose` 只与已经进入的 `Awake` 配对；`OnDisable` 与 `OnEnable` 配对，因此未完成相应激活阶段的对象会跳过停用回调。
 5. 运行中的 Entity 动态加入 Component 时，Runtime 会同步推进新组件的激活流程。
-6. Entity 销毁时会关闭 Entity Scope，取消所属后台任务，移出实体树与索引，并自动解绑 Entity/Component 托管的事件句柄。
-7. Component 从 Entity 移除或随 Entity 销毁时会关闭自己的 Lifetime Scope；`SetEnabled(false)` 不会关闭它，因此重新启用后仍可继续使用同一生命周期作用域。
+6. Entity 进入 `Leaving` 后组件集合冻结，继续调用 `AddComponent` 会返回错误。
+7. 受管 Entity 和可删除 Component 的 `Destroy()` 会在所属 Runtime goroutine 中同步推进移除；回调内销毁可能在当前回调返回前嵌套执行配对的停用回调。
+8. Entity 进入 `Dead` 时先关闭 Entity Scope，之后执行 Component 的禁用与销毁阶段以及 Entity `Dispose`；索引移除完成后进入 `Destroyed` 并兑现 `Terminated()`。
+9. Component 进入 `Dead` 时关闭自己的 Lifetime Scope；`SetEnabled(false)` 不会关闭它，因此重新启用后仍可继续使用同一生命周期作用域。
 
 ## Runtime 调度与帧循环
 
@@ -273,7 +286,7 @@ Prototype 把可复用的对象构造定义放在 Service 作用域中：
 | `ComponentLib` | 按组件完整 Go 类型名登记构造原型；同一具名类型重复声明会复用已有对象。 |
 | `EntityLib` | 按业务原型名登记 Entity 组合；同名再次声明会替换旧版本。 |
 | `ComponentDescriptor` | 配置内建组件名称、是否可删除及元数据。 |
-| `EntityDescriptor` | 配置 Entity 实例类型、默认 Scope、组件首次访问策略、组件 ID 策略及元数据。 |
+| `EntityDescriptor` | 配置 Entity 实例类型、默认 Scope、Component 的 `Awake` 顺序、组件 ID 策略及元数据。 |
 | `BuildEntityPT` | 以链式 API 声明 Entity Prototype。 |
 | `BuildEntity` | 根据已声明 Prototype 构造 Entity，并加入当前 Runtime。 |
 
@@ -285,19 +298,18 @@ Prototype 把可复用的对象构造定义放在 Service 作用域中：
 - Prototype 和 Entity 的默认作用域均为 `Scope_Global`。
 - `Meta` 用于携带按字符串键组织的业务元数据。
 - `Managed()` 保存的事件句柄会在 Entity 销毁时自动解绑。
-- `Terminated()` 在 Entity 完成 `Destroyed` 阶段后兑现。
-- `Destroy()` 是请求式操作，实际移除和生命周期推进由所属 Runtime 完成。
+- `Terminated()` 在 Entity 完成 `Destroyed` 阶段后兑现；它不表示 Entity Scope 中的任务已经全部退出。
+- `Destroy()` 由所属 Runtime 完成移除和生命周期推进；在 Runtime goroutine 中调用时该流程同步发生。
 
 ### Component
 
 - 同一 Entity 可以存在多个同名 Component；`GetComponent` 返回第一个，`GetComponents` 返回全部。
-- 内建 Component 默认不可动态删除，可通过 `ComponentDescriptor.SetRemovable(true)` 修改。
-- 运行时动态添加的 Component 默认可删除。
+- `ComponentDescriptor.SetRemovable` 声明内建 Component 的删除策略；运行时动态添加的 Component 默认可删除。
 - 默认情况下 Component 复用 Entity ID；启用 `ComponentUniqueID` 后每个 Component 才分配独立 ID。
 - `SetEnabled(false)` 会解绑帧更新并调用 `OnDisable`；重新启用会再次调用 `OnEnable`。
-- `AsyncScope()` 返回组件级 Lifetime Scope；组件移除时关闭，禁用时保持。
+- `AsyncScope()` 首次访问时懒创建组件级 Lifetime Scope；组件移除时关闭，禁用时保持。
 - `ConcurrentComponent` 是组件的并发安全窄视图；业务状态仍必须通过 `Submit`、`Post` 或 `ContinueOn` 回到 Runtime 后访问。
-- `ComponentAwakeOnFirstTouch` 用于把组件唤醒推迟到首次访问。
+- `ComponentAwakeOnFirstTouch` 不改变正常激活编排；激活期间，业务查询或依赖注入可以在正常轮次前执行被引用 Component 待完成的 `Awake`，使组件引用关系自行决定 `Awake` 顺序，同时不会提前 `OnEnable` 或 `Start`。
 - `Managed()` 保存的事件句柄会在 Component 销毁时自动解绑。
 
 ### EntityTree
@@ -393,7 +405,11 @@ Scope 负责：
 
 `Scope.Close` 不能强制杀死 goroutine；任务必须观察传入的 Context。Component 的 Scope 在组件移除时关闭，`SetEnabled(false)` 不关闭；Entity、Runtime 和 Service 的 Scope 随各自生命周期关闭。
 
-Service 与 Runtime Scope 在各自 Context 初始化时创建；Entity 在绑定所属 Runtime 时一次性创建 Scope，并直接将 Scope Context 作为 Entity Context，不再额外派生取消层。Component Scope 在组件进入 Entity 所属 Runtime 生命周期时创建。所有 Scope 都会随宿主生命周期同步关闭。
+Service 与 Runtime Scope 在各自 Context 初始化时创建；Entity 在绑定所属 Runtime 时一次性创建 Scope，并直接将 Scope Context 作为 Entity Context，不再额外派生取消层。Component Scope 在所属 Entity 已绑定 Runtime 后首次调用 `AsyncScope()` 时懒创建；若组件已经关闭，首次访问会得到立即关闭的 Scope。
+
+Service 与 Runtime 关闭时会等待各自 Scope 中已登记的任务退出。Entity 与 Component
+销毁只负责同步关闭 Scope，不会阻塞 Runtime goroutine 等待任务退出；需要汇合时，应从
+其他 goroutine 等待 `scope.Done()`。
 
 ```go
 future := core.Spawn(
@@ -543,7 +559,7 @@ Add-in 状态单向变化为 `Loaded → Running → Unloaded`。生命周期接
 - Service Context 默认派生自 `context.Background()`。
 - Runtime Context 默认派生自所属 Service Context。
 - Entity Scope 直接派生自所属 Runtime Context，Entity Context 复用该 Scope Context。
-- Service、Runtime、Entity 和 Component 分别暴露 Lifetime `AsyncScope()`；下层 Scope 随上层 Context 取消。
+- Service、Runtime、Entity 和 Component 分别暴露 Lifetime `AsyncScope()`；Component Scope 按需创建，下层 Scope 随上层 Context 取消。
 - 上层 Context 取消会向下传播，但 `Terminated()` 只有在对应对象完成清理后才兑现。
 
 ### 关闭屏障
@@ -659,7 +675,7 @@ func main() {
 | Service / Runtime 持久化 ID | 自动生成 | 使用 `uid.Id`。 |
 | Entity Scope | `Scope_Global` | 同时进入 Runtime 本地索引和 Service 全局索引。 |
 | Entity 持久化 ID | 加入 Runtime 时自动生成 | 可在构造时覆盖。 |
-| Component 首次访问唤醒 | `false` | 默认在 Entity 激活流程中唤醒。 |
+| Component 首次访问优先 `Awake` | `false` | 开启后，激活期间的组件访问只会提前处理目标组件待完成的 `Awake`，后续阶段不变。 |
 | Component 独立 ID | `false` | 默认复用 Entity ID。 |
 | Runtime `AutoRun` | `false` | 需要显式 `Run` 或开启 AutoRun。 |
 | 帧循环 | 开启 | 默认目标 30 FPS。 |
