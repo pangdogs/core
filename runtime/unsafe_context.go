@@ -56,9 +56,9 @@ func (u _UnsafeContext) SetFrame(frame Frame) {
 	u.setFrame(frame)
 }
 
-// SetCallee 设置异步调用接收者。
-func (u _UnsafeContext) SetCallee(callee Callee) {
-	u.setCallee(callee)
+// SetCaller 设置 Runtime 邮箱调用接口。
+func (u _UnsafeContext) SetCaller(caller Caller) {
+	u.setCaller(caller)
 }
 
 // ServiceContext 返回所属服务上下文。

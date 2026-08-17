@@ -111,11 +111,9 @@ type EntityBehavior struct {
 	context.Context
 	options               EntityOptions
 	prototype             EntityPT
-	concurrentReady       atomic.Bool
 	asyncScope            *async.Scope
-	waitGuard             async.WaitGuard
 	terminated            async.Completer
-	runtimeCtxCache       iface.Cache
+	runtimeCtx            runtimeContext
 	componentNameIndex    generic.SliceMap[string, int]
 	componentList         generic.FreeList[Component]
 	state                 EntityState
@@ -193,7 +191,7 @@ func (entity *EntityBehavior) EventEntityDestroy() event.IEvent {
 
 // CurrentContextCache 返回实体所属 Runtime 的当前上下文接口缓存。
 func (entity *EntityBehavior) CurrentContextCache() iface.Cache {
-	return entity.runtimeCtxCache
+	return entity.runtimeCtx.CurrentContextCache()
 }
 
 // InstanceFaceCache 返回实际实体实例的接口缓存，供类型重解释使用。
@@ -229,11 +227,6 @@ func (entity *EntityBehavior) setState(state EntityState) {
 	entity.state = state
 
 	switch entity.state {
-	case EntityState_Entered:
-		entity.setConcurrentReady()
-		entity.componentList.TraversalEach(func(slot *generic.FreeSlot[Component]) {
-			slot.V.setConcurrentReady()
-		})
 	case EntityState_Dead:
 		entity.asyncScope.Close()
 		entity.entityEventTab.SetEnabled(false)

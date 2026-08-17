@@ -92,7 +92,6 @@ type ComponentBehavior struct {
 	builtin               *BuiltinComponent
 	name                  string
 	entity                Entity
-	concurrentReady       atomic.Bool
 	asyncScope            atomic.Pointer[async.Scope]
 	asyncScopeClosed      atomic.Bool
 	instance              Component

@@ -60,7 +60,7 @@ func (u _UnsafeEntity) SetPT(prototype EntityPT) {
 	u.setPT(prototype)
 }
 
-// SetContext 绑定实体所属 Runtime，并初始化实体及已有组件的异步生命周期。
+// SetContext 绑定实体所属 Runtime Context，并初始化实体的异步生命周期。
 func (u _UnsafeEntity) SetContext(ctx runtimeContext) {
 	u.setContext(ctx)
 }

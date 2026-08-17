@@ -62,7 +62,7 @@ type Runtime interface {
 	corectx.CurrentContextProvider
 	corectx.ConcurrentContextProvider
 	reinterpret.InstanceProvider
-	runtime.Callee
+	runtime.Caller
 }
 
 type iRuntime interface {
@@ -132,7 +132,7 @@ func (rt *RuntimeBehavior) init(rtCtx runtime.Context, options RuntimeOptions) {
 	}
 
 	rt.taskQueue.init(rt.options.TaskQueue.Unbounded, rt.options.TaskQueue.Capacity)
-	runtime.UnsafeContext(rtCtx).SetCallee(rt.getInstance())
+	runtime.UnsafeContext(rtCtx).SetCaller(rt.getInstance())
 
 	rt.runtimeEventTab.SetPanicHandling(rtCtx.AutoRecover(), rtCtx.ReportError())
 

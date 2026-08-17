@@ -30,8 +30,9 @@ import (
 
 // ConcurrentComponent 暴露可跨 goroutine 使用的组件身份、字符串表示、并发上下文和生命周期 Scope。
 //
-// 组件随 Entity 进入 Runtime，或动态加入运行中 Entity 并完成 Runtime 初始化后，才能
-// 跨 goroutine 使用此接口；提前调用除 AsyncScope 和 String 外的方法属于未定义行为。
+// 组件随 Entity 成功加入 Runtime，或动态加入运行中 Entity 后，才能跨 goroutine 使用
+// 此接口；提前调用依赖 Runtime Context 的方法属于未定义行为。AsyncScope 在所属
+// Entity Context 绑定前返回 nil，String 在 Runtime 完成组件身份初始化前返回空字符串。
 //
 // 该视图不暴露 State、Enabled、Entity、Destroy 等 Runtime 局部能力。需要读取或修改
 // 这些状态时，应通过 Submit、Post 或 ContinueOn 回到组件所属 Runtime。
@@ -49,7 +50,6 @@ type ConcurrentComponent interface {
 
 type iConcurrentComponent interface {
 	getInstance() Component
-	setConcurrentReady()
 }
 
 // ConcurrentContextCache 返回所属 Entity 的并发 Runtime 上下文接口缓存。
@@ -59,17 +59,21 @@ func (comp *ComponentBehavior) ConcurrentContextCache() iface.Cache {
 
 // AsyncScope 返回绑定组件 Lifetime 的后台任务作用域。
 // Scope 在组件从 Entity 移除或随 Entity 销毁时关闭；SetEnabled(false) 不会关闭它。
-// 组件尚未完成 Runtime 初始化时返回 nil。
+// 所属 Entity 尚未绑定 Runtime Context 时返回 nil。
 func (comp *ComponentBehavior) AsyncScope() *async.Scope {
 	if asyncScope := comp.asyncScope.Load(); asyncScope != nil {
 		return asyncScope
 	}
 
-	if !comp.concurrentReady.Load() {
+	if comp.entity == nil {
+		return nil
+	}
+	entityScope := comp.entity.AsyncScope()
+	if entityScope == nil {
 		return nil
 	}
 
-	asyncScope := async.NewScope(comp.entity)
+	asyncScope := async.NewScope(entityScope.Context())
 	if !comp.asyncScope.CompareAndSwap(nil, asyncScope) {
 		asyncScope.Close()
 		return comp.asyncScope.Load()
@@ -88,7 +92,11 @@ func (comp *ComponentBehavior) String() string {
 		return *cached
 	}
 
-	if !comp.concurrentReady.Load() {
+	if comp.entity == nil || comp.id.IsNil() {
+		return ""
+	}
+	entityScope := comp.entity.AsyncScope()
+	if entityScope == nil {
 		return ""
 	}
 
@@ -101,8 +109,4 @@ func (comp *ComponentBehavior) String() string {
 
 func (comp *ComponentBehavior) getInstance() Component {
 	return comp.instance
-}
-
-func (comp *ComponentBehavior) setConcurrentReady() {
-	comp.concurrentReady.Store(true)
 }

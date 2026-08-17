@@ -89,7 +89,7 @@ type iContext interface {
 	getOptions() *ContextOptions
 	emitEventRunningEvent(runningEvent RunningEvent, args ...any)
 	setFrame(frame Frame)
-	setCallee(callee Callee)
+	setCaller(caller Caller)
 	getServiceContext() service.Context
 	getAddInManager() AddInManager
 	getScoped() *atomic.Bool
@@ -105,7 +105,7 @@ type ContextBehavior struct {
 	reflected      reflect.Value
 	frame          Frame
 	entityManager  _EntityManager
-	callee         Callee
+	caller         Caller
 	scoped         atomic.Bool
 	gcList         []GC
 	managed        event.ManagedHandles
@@ -252,8 +252,8 @@ func (ctx *ContextBehavior) setFrame(frame Frame) {
 	ctx.frame = frame
 }
 
-func (ctx *ContextBehavior) setCallee(callee Callee) {
-	ctx.callee = callee
+func (ctx *ContextBehavior) setCaller(caller Caller) {
+	ctx.caller = caller
 }
 
 func (ctx *ContextBehavior) getServiceContext() service.Context {

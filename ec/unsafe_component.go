@@ -70,11 +70,6 @@ func (u _UnsafeComponent) SetRemovable(b bool) {
 	u.setRemovable(b)
 }
 
-// SetConcurrentReady 将组件发布为可跨 goroutine 使用。
-func (u _UnsafeComponent) SetConcurrentReady() {
-	u.setConcurrentReady()
-}
-
 // ProcessedStateBits 返回生命周期阶段的已处理标志位。
 func (u _UnsafeComponent) ProcessedStateBits() *generic.Bits16 {
 	return u.getProcessedStateBits()

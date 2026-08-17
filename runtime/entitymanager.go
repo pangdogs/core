@@ -108,15 +108,18 @@ func (mgr *_EntityManager) AddEntity(entity ec.Entity) error {
 	mgr.initEntity(entity)
 
 	if _, ok := mgr.entityIdIndex[entity.Id()]; ok {
+		entity.AsyncScope().Close()
 		return fmt.Errorf("%w: entity %q already exists in entity-manager", ErrEntityManager, entity.Id())
 	}
 
 	if entity.Scope() == ec.Scope_Global {
 		_, loaded, err := service.Current(mgr).EntityManager().GetOrAddEntity(entity)
 		if err != nil {
+			entity.AsyncScope().Close()
 			return fmt.Errorf("%w: entity %q add to service entity-manager failed, %w", ErrEntityManager, entity.Id(), err)
 		}
 		if loaded {
+			entity.AsyncScope().Close()
 			return fmt.Errorf("%w: entity %q already exists in service entity-manager", ErrEntityManager, entity.Id())
 		}
 	}
@@ -217,7 +220,6 @@ func (mgr *_EntityManager) OnEntityDestroy(entity ec.Entity) {
 func (mgr *_EntityManager) OnComponentManagerAddComponents(entity ec.Entity, components []ec.Component) {
 	for i := range components {
 		mgr.initComponent(entity, components[i])
-		ec.UnsafeComponent(components[i]).SetConcurrentReady()
 	}
 	_EmitEventEntityManagerEntityAddComponents(mgr, mgr, entity, components)
 }

@@ -41,38 +41,28 @@ type Caller interface {
 	PostDelegate(fun generic.DelegateVoidVar1[Context, any], args ...any) error
 }
 
-// Callee 接收 Caller 的任务并写入实际 Runtime 队列。
-type Callee interface {
-	PushSubmit(fun generic.FuncVar1[Context, any, async.Result], args ...any) async.Future
-	PushSubmitDelegate(fun generic.DelegateVar1[Context, any, async.Result], args ...any) async.Future
-	PushSubmitVoid(fun generic.ActionVar1[Context, any], args ...any) async.Future
-	PushSubmitDelegateVoid(fun generic.DelegateVoidVar1[Context, any], args ...any) async.Future
-	PushPost(fun generic.ActionVar1[Context, any], args ...any) error
-	PushPostDelegate(fun generic.DelegateVoidVar1[Context, any], args ...any) error
-}
-
 func (ctx *ContextBehavior) Submit(fun generic.FuncVar1[Context, any, async.Result], args ...any) async.Future {
-	return ctx.callee.PushSubmit(fun, args...)
+	return ctx.caller.Submit(fun, args...)
 }
 
 func (ctx *ContextBehavior) SubmitDelegate(fun generic.DelegateVar1[Context, any, async.Result], args ...any) async.Future {
-	return ctx.callee.PushSubmitDelegate(fun, args...)
+	return ctx.caller.SubmitDelegate(fun, args...)
 }
 
 func (ctx *ContextBehavior) SubmitVoid(fun generic.ActionVar1[Context, any], args ...any) async.Future {
-	return ctx.callee.PushSubmitVoid(fun, args...)
+	return ctx.caller.SubmitVoid(fun, args...)
 }
 
 func (ctx *ContextBehavior) SubmitDelegateVoid(fun generic.DelegateVoidVar1[Context, any], args ...any) async.Future {
-	return ctx.callee.PushSubmitDelegateVoid(fun, args...)
+	return ctx.caller.SubmitDelegateVoid(fun, args...)
 }
 
 func (ctx *ContextBehavior) Post(fun generic.ActionVar1[Context, any], args ...any) error {
-	return ctx.callee.PushPost(fun, args...)
+	return ctx.caller.Post(fun, args...)
 }
 
 func (ctx *ContextBehavior) PostDelegate(fun generic.DelegateVoidVar1[Context, any], args ...any) error {
-	return ctx.callee.PushPostDelegate(fun, args...)
+	return ctx.caller.PostDelegate(fun, args...)
 }
 
 func checkEntity(entity ec.Entity) error {

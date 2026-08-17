@@ -31,8 +31,8 @@ import (
 
 // ConcurrentEntity 暴露可跨协程安全读取的实体信息与上下文。
 //
-// 实体进入 Runtime（EntityState_Entered）后，才能跨 goroutine 使用此接口；提前调用
-// 除 AsyncScope 和 String 外的方法属于未定义行为。
+// 实体成功加入 Runtime 后，才能跨 goroutine 使用此接口；提前调用依赖 Runtime
+// Context 的方法属于未定义行为。AsyncScope 和 String 在 Context 绑定前返回空值。
 //
 // 组件管理、实体树和 Destroy 等操作仍须通过所属 Runtime 的运行协程执行。
 type ConcurrentEntity interface {
@@ -68,19 +68,15 @@ type runtimeContext interface {
 type iConcurrentEntity interface {
 	getInstance() Entity
 	setContext(rtCtx runtimeContext)
-	setConcurrentReady()
 }
 
 // ConcurrentContextCache 返回实体所属 Runtime 的并发上下文接口缓存。
 func (entity *EntityBehavior) ConcurrentContextCache() iface.Cache {
-	return entity.runtimeCtxCache
+	return entity.runtimeCtx.ConcurrentContextCache()
 }
 
-// AsyncScope 返回绑定实体生命周期的后台任务作用域；实体尚未进入 Runtime 时返回 nil。
+// AsyncScope 返回绑定实体生命周期的后台任务作用域；Runtime Context 尚未绑定时返回 nil。
 func (entity *EntityBehavior) AsyncScope() *async.Scope {
-	if !entity.concurrentReady.Load() {
-		return nil
-	}
 	return entity.asyncScope
 }
 
@@ -91,26 +87,21 @@ func (entity *EntityBehavior) Terminated() async.Signal {
 
 // BeforeFutureWait 把 Entity 作为等待 Context 时的检查转交给所属 Runtime。
 func (entity *EntityBehavior) BeforeFutureWait(futureID uint64, completionExecutorID async.ExecutorID) error {
-	if entity.waitGuard == nil {
-		return nil
-	}
-	return entity.waitGuard.BeforeFutureWait(futureID, completionExecutorID)
+	return entity.runtimeCtx.BeforeFutureWait(futureID, completionExecutorID)
 }
 
 // AfterFutureWait 清理所属 Runtime 的等待诊断状态。
 func (entity *EntityBehavior) AfterFutureWait(futureID uint64) {
-	if entity.waitGuard != nil {
-		entity.waitGuard.AfterFutureWait(futureID)
-	}
+	entity.runtimeCtx.AfterFutureWait(futureID)
 }
 
-// String 返回包含实体 ID 与原型名的 JSON 文本；实体尚未进入 Runtime 时返回空字符串。
+// String 返回包含实体 ID 与原型名的 JSON 文本；Runtime Context 尚未绑定时返回空字符串。
 func (entity *EntityBehavior) String() string {
 	if cached := entity.stringerCache.Load(); cached != nil {
 		return *cached
 	}
 
-	if !entity.concurrentReady.Load() {
+	if entity.asyncScope == nil {
 		return ""
 	}
 
@@ -126,16 +117,8 @@ func (entity *EntityBehavior) getInstance() Entity {
 }
 
 func (entity *EntityBehavior) setContext(rtCtx runtimeContext) {
-	if entity.asyncScope != nil {
-		return
-	}
 	entity.asyncScope = async.NewScope(rtCtx)
 	entity.Context = entity.asyncScope.Context()
-	entity.runtimeCtxCache = rtCtx.CurrentContextCache()
-	entity.waitGuard = rtCtx
+	entity.runtimeCtx = rtCtx
 	entity.terminated, _ = async.NewSignal()
-}
-
-func (entity *EntityBehavior) setConcurrentReady() {
-	entity.concurrentReady.Store(true)
 }

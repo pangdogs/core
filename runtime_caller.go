@@ -25,26 +25,26 @@ import (
 	"git.golaxy.org/core/utils/generic"
 )
 
-func (rt *RuntimeBehavior) PushSubmit(fun generic.FuncVar1[runtime.Context, any, async.Result], args ...any) async.Future {
+func (rt *RuntimeBehavior) Submit(fun generic.FuncVar1[runtime.Context, any, async.Result], args ...any) async.Future {
 	return rt.taskQueue.enqueueSubmit(rt.ctx.ExecutorID(), fun, nil, nil, nil, args)
 }
 
-func (rt *RuntimeBehavior) PushSubmitDelegate(fun generic.DelegateVar1[runtime.Context, any, async.Result], args ...any) async.Future {
+func (rt *RuntimeBehavior) SubmitDelegate(fun generic.DelegateVar1[runtime.Context, any, async.Result], args ...any) async.Future {
 	return rt.taskQueue.enqueueSubmit(rt.ctx.ExecutorID(), nil, nil, fun, nil, args)
 }
 
-func (rt *RuntimeBehavior) PushSubmitVoid(fun generic.ActionVar1[runtime.Context, any], args ...any) async.Future {
+func (rt *RuntimeBehavior) SubmitVoid(fun generic.ActionVar1[runtime.Context, any], args ...any) async.Future {
 	return rt.taskQueue.enqueueSubmit(rt.ctx.ExecutorID(), nil, fun, nil, nil, args)
 }
 
-func (rt *RuntimeBehavior) PushSubmitDelegateVoid(fun generic.DelegateVoidVar1[runtime.Context, any], args ...any) async.Future {
+func (rt *RuntimeBehavior) SubmitDelegateVoid(fun generic.DelegateVoidVar1[runtime.Context, any], args ...any) async.Future {
 	return rt.taskQueue.enqueueSubmit(rt.ctx.ExecutorID(), nil, nil, nil, fun, args)
 }
 
-func (rt *RuntimeBehavior) PushPost(fun generic.ActionVar1[runtime.Context, any], args ...any) error {
+func (rt *RuntimeBehavior) Post(fun generic.ActionVar1[runtime.Context, any], args ...any) error {
 	return rt.taskQueue.enqueuePost(fun, nil, args)
 }
 
-func (rt *RuntimeBehavior) PushPostDelegate(fun generic.DelegateVoidVar1[runtime.Context, any], args ...any) error {
+func (rt *RuntimeBehavior) PostDelegate(fun generic.DelegateVoidVar1[runtime.Context, any], args ...any) error {
 	return rt.taskQueue.enqueuePost(nil, fun, args)
 }
