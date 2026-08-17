@@ -156,7 +156,7 @@ func (comp *ComponentBehavior) Enabled() bool {
 	return comp.enabled
 }
 
-// SetEnabled 请求切换启用状态，并同步派发组件及实体组件管理器事件。
+// SetEnabled 请求切换启用状态；标记改变后先派发组件事件，再通知实体组件管理器推进生命周期。
 func (comp *ComponentBehavior) SetEnabled(b bool) {
 	comp.reentrancyGuard.Call(componentReentrancyGuard_SetEnable, func() {
 		if comp.state > ComponentState_Alive {
@@ -182,6 +182,7 @@ func (comp *ComponentBehavior) Managed() *event.ManagedHandles {
 }
 
 // Destroy 请求从实体删除组件；不可删除或已离开活动阶段时无效。
+// 有效请求会先派发组件销毁请求事件，再同步进入实体组件管理器的移除流程。
 func (comp *ComponentBehavior) Destroy() {
 	comp.reentrancyGuard.Call(componentReentrancyGuard_Destroy, func() {
 		if comp.state > ComponentState_Alive {
@@ -200,13 +201,13 @@ func (comp *ComponentBehavior) Destroy() {
 	})
 }
 
-// EventComponentEnableChanged 返回组件启用状态变更事件。
+// EventComponentEnableChanged 返回启用标记变更事件；派发时 Runtime 尚未处理对应生命周期。
 func (comp *ComponentBehavior) EventComponentEnableChanged() event.IEvent {
 	return comp.componentEventTab.EventComponentEnableChanged()
 }
 
-// EventComponentDestroy 返回组件销毁流程末尾的通知事件。
-// 正常移除监听应使用所属 Entity 的 EventComponentManagerRemoveComponent。
+// EventComponentDestroy 返回显式销毁请求事件；派发时组件尚未进入 Detaching。
+// 该事件不表示移除完成，随所属 Entity 销毁也不会触发。
 func (comp *ComponentBehavior) EventComponentDestroy() event.IEvent {
 	return comp.componentEventTab.EventComponentDestroy()
 }

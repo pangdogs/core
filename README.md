@@ -215,6 +215,7 @@ advances the Component to `Enabling`.
 Disabling from `Enabling`, `Starting`, or `Alive` enters `Idle`. Re-enabling invokes `OnEnable` and passes
 through `Starting` to `Alive`, but does not invoke `Start` again. Removing an individual Component uses
 `Detaching`; destruction with its Entity may enter `Shutting` directly.
+Components that have not entered `Awaking` are not advanced by Entity destruction and remain `Attached`.
 
 | Object | Activation callbacks | Frame callbacks | Deactivation callbacks |
 | --- | --- | --- | --- |
@@ -228,7 +229,7 @@ Important ordering rules:
 3. During destruction, Entity `Shut` runs first. The Runtime then runs separate reverse-insertion-order phases for all Component `Shut`, `OnDisable`, and `Dispose` callbacks, followed by Entity `Dispose`.
 4. `Shut` is paired only with an entered `Start`, `Dispose` only with an entered `Awake`, and `OnDisable` with `OnEnable`; objects that never entered the matching activation phase skip that deactivation callback.
 5. Adding components dynamically to a running Entity synchronously advances the new component activation flow.
-6. Once an Entity enters `Leaving`, its Component collection is frozen and `AddComponent` returns an error.
+6. The Component collection remains structurally mutable after an Entity enters `Leaving`. Newly added Components remain `Attached`; the Runtime does not advance their activation lifecycle. After the Entity enters `Dead`, additions update only the local collection because its Component-manager event table is closed.
 7. `Destroy()` on a managed Entity or removable Component advances removal synchronously on the owning Runtime goroutine. Calling it from a lifecycle callback may run paired deactivation callbacks before the original callback returns.
 8. Entering Entity `Dead` closes the Entity Scope before Component disable/dispose phases and Entity `Dispose`. After index removal, `Destroyed` completes `Terminated()`.
 9. Entering Component `Dead` closes its Lifetime Scope. `SetEnabled(false)` does not close the Scope, so the same lifetime remains available after re-enabling.

@@ -85,13 +85,10 @@ type iiComponentManager interface {
 // AddComponent 将 Born 状态的组件加入实体；允许同名组件。
 //
 // components 为空、包含 nil、包含重复实例或组件不处于 Born 状态时返回错误。
-// 实体已启动时，Runtime 会通过添加事件同步推进新组件的生命周期；实体进入
-// Leaving 后组件集合冻结，此时返回错误。
+// Entity 处于 Awaking 至 Alive 时，Runtime 会通过添加事件同步推进新组件的生命周期。
+// Entity 进入 Leaving 后仍可添加组件，但 Runtime 不再推进其生命周期，组件保持 Attached；
+// Entity 进入 Dead 后组件管理器事件表已关闭，添加操作只修改本地组件表。
 func (entity *EntityBehavior) AddComponent(name string, components ...Component) error {
-	if entity.State() >= EntityState_Leaving {
-		return fmt.Errorf("%w: entity %q state %q does not allow adding components", ErrEC, entity.Id(), entity.State())
-	}
-
 	if len(components) <= 0 {
 		return fmt.Errorf("%w: %w: components is empty", ErrEC, exception.ErrArgs)
 	}

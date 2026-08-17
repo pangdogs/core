@@ -214,6 +214,7 @@ Component 的正常启用链为：
 禁用会从 `Enabling`、`Starting` 或 `Alive` 进入 `Idle`；再次启用会执行 `OnEnable` 并经
 `Starting` 回到 `Alive`，但 `Start` 不会重复执行。单独移除组件时会经过 `Detaching`；
 随 Entity 销毁时可直接进入 `Shutting`，不会经过 `Detaching`。
+尚未进入 `Awaking` 的 Component 不会随 Entity 销毁推进状态，而是继续保持 `Attached`。
 
 | 对象 | 激活回调 | 帧回调 | 停用回调 |
 | --- | --- | --- | --- |
@@ -227,7 +228,7 @@ Component 的正常启用链为：
 3. 销毁时 Entity 先执行 `Shut`，随后分别按组件加入顺序的逆序执行全部 Component 的 `Shut`、`OnDisable` 和 `Dispose`，最后 Entity 执行 `Dispose`。
 4. `Shut` 只与已经进入的 `Start` 配对，`Dispose` 只与已经进入的 `Awake` 配对；`OnDisable` 与 `OnEnable` 配对，因此未完成相应激活阶段的对象会跳过停用回调。
 5. 运行中的 Entity 动态加入 Component 时，Runtime 会同步推进新组件的激活流程。
-6. Entity 进入 `Leaving` 后组件集合冻结，继续调用 `AddComponent` 会返回错误。
+6. Entity 进入 `Leaving` 后仍可修改组件集合；新增 Component 保持 `Attached`，Runtime 不再推进其激活生命周期。Entity 进入 `Dead` 后组件管理器事件表关闭，新增操作只修改本地组件表。
 7. 受管 Entity 和可删除 Component 的 `Destroy()` 会在所属 Runtime goroutine 中同步推进移除；回调内销毁可能在当前回调返回前嵌套执行配对的停用回调。
 8. Entity 进入 `Dead` 时先关闭 Entity Scope，之后执行 Component 的禁用与销毁阶段以及 Entity `Dispose`；索引移除完成后进入 `Destroyed` 并兑现 `Terminated()`。
 9. Component 进入 `Dead` 时关闭自己的 Lifetime Scope；`SetEnabled(false)` 不会关闭它，因此重新启用后仍可继续使用同一生命周期作用域。

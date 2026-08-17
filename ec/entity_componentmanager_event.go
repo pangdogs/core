@@ -22,7 +22,7 @@
 package ec
 
 // EventComponentManagerAddComponents 在一批组件写入实体组件表并进入 Attached 后同步派发。
-// Runtime 通过此事件初始化组件身份并推进后续生命周期。
+// Runtime 通过此事件初始化受管组件身份；仅当 Entity 处于 Awaking 至 Alive 时推进后续生命周期。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventComponentManagerAddComponents interface {
@@ -37,7 +37,8 @@ type EventComponentManagerRemoveComponent interface {
 	OnComponentManagerRemoveComponent(entity Entity, component Component)
 }
 
-// EventComponentManagerComponentEnableChanged 在所属组件的启用标记发生变化时同步派发。
+// EventComponentManagerComponentEnableChanged 在组件自身的启用标记事件派发后同步派发，
+// Runtime 通过此事件推进对应的启用或禁用生命周期。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventComponentManagerComponentEnableChanged interface {

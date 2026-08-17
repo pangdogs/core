@@ -32,6 +32,10 @@ Package ec 提供框架核心的数据模型：Entity、Component、实体树节
 ec 包负责实体与组件本身的状态机与事件表，不负责原型库的声明与注册。原型系统
 位于 ec/pt 包，运行时调度与生命周期推进则由根包 core 和 runtime 包完成。
 
+Entity 的组件容器独立于 Runtime 生命周期保持可用。Entity 进入 Leaving 后新增的
+Component 仍会进入 Attached，但 Runtime 不再推进其 Awake、OnEnable 或 Start；Entity
+进入 Dead 后组件管理器事件表关闭，后续组件操作只影响本地组件表。
+
 除 ConcurrentEntity 与 ConcurrentComponent 明确暴露的能力外，实体、组件及实体树
 操作都应在所属 Runtime 的运行 goroutine 中执行。Entity 成功加入 Runtime、Component
 完成所属 Runtime 的身份初始化后，才能把对应并发视图发布给其他 goroutine。

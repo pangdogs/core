@@ -37,7 +37,8 @@ type EventEntityManagerRemoveEntity interface {
 	OnEntityManagerRemoveEntity(entityManager EntityManager, entity ec.Entity)
 }
 
-// EventEntityManagerEntityAddComponents 在新增组件完成 Runtime 身份与事件配置后、激活前派发。
+// EventEntityManagerEntityAddComponents 在新增组件完成 Runtime 身份与事件配置后派发。
+// Core Runtime 仅在 Entity 处于 Awaking 至 Alive 时推进这些组件的生命周期。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventEntityManagerEntityAddComponents interface {
@@ -51,7 +52,7 @@ type EventEntityManagerEntityRemoveComponent interface {
 	OnEntityManagerEntityRemoveComponent(entityManager EntityManager, entity ec.Entity, component ec.Component)
 }
 
-// EventEntityManagerEntityComponentEnableChanged 在受管实体的组件启用状态改变后派发。
+// EventEntityManagerEntityComponentEnableChanged 在组件启用标记改变且完成 Runtime 事件转发后派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventEntityManagerEntityComponentEnableChanged interface {
