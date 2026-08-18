@@ -26,8 +26,8 @@ import (
 	"git.golaxy.org/core/utils/types"
 )
 
-// GenAddInId 使用插件名称的 FNV-1a 哈希生成稳定 ID。
-func GenAddInId(name string) uint64 {
+// GenAddInID 使用插件名称的 FNV-1a 哈希生成稳定 ID。
+func GenAddInID(name string) uint64 {
 	h := fnv.New64a()
 	h.Write(types.String2Bytes(name))
 	return h.Sum64()

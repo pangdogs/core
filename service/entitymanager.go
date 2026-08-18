@@ -34,11 +34,11 @@ import (
 // 注册与注销事件在调用方 goroutine 中同步派发，因此不同 Runtime 可能并发触发回调。
 type EntityManager interface {
 	// GetEntity 按 ID 查询全局实体。
-	GetEntity(id uid.Id) (ec.ConcurrentEntity, bool)
+	GetEntity(id uid.ID) (ec.ConcurrentEntity, bool)
 	// GetOrAddEntity 原子地查询或注册全局实体，并报告该 ID 是否已经存在。
 	GetOrAddEntity(entity ec.ConcurrentEntity) (ec.ConcurrentEntity, bool, error)
 	// RemoveEntity 按 ID 注销全局实体；实体不存在时不执行任何操作。
-	RemoveEntity(id uid.Id)
+	RemoveEntity(id uid.ID)
 }
 
 type _EntityManager struct {
@@ -47,7 +47,7 @@ type _EntityManager struct {
 }
 
 // GetEntity 按 ID 查询全局实体。
-func (mgr *_EntityManager) GetEntity(id uid.Id) (ec.ConcurrentEntity, bool) {
+func (mgr *_EntityManager) GetEntity(id uid.ID) (ec.ConcurrentEntity, bool) {
 	v, ok := mgr.entities.Load(id)
 	if !ok {
 		return nil, false
@@ -62,7 +62,7 @@ func (mgr *_EntityManager) GetOrAddEntity(entity ec.ConcurrentEntity) (ec.Concur
 		return nil, false, fmt.Errorf("%w: %w: entity is nil", ErrEntityManager, exception.ErrArgs)
 	}
 
-	if entity.Id().IsNil() {
+	if entity.ID().IsNil() {
 		return nil, false, fmt.Errorf("%w: entity id is nil", ErrEntityManager)
 	}
 
@@ -76,7 +76,7 @@ func (mgr *_EntityManager) GetOrAddEntity(entity ec.ConcurrentEntity) (ec.Concur
 	default:
 	}
 
-	actual, loaded := mgr.entities.LoadOrStore(entity.Id(), entity)
+	actual, loaded := mgr.entities.LoadOrStore(entity.ID(), entity)
 	if !loaded {
 		mgr.ctx.emitEventRunningEvent(RunningEvent_EntityRegistered, entity)
 	}
@@ -85,7 +85,7 @@ func (mgr *_EntityManager) GetOrAddEntity(entity ec.ConcurrentEntity) (ec.Concur
 }
 
 // RemoveEntity 按 ID 注销全局实体；实体不存在时不执行任何操作。
-func (mgr *_EntityManager) RemoveEntity(id uid.Id) {
+func (mgr *_EntityManager) RemoveEntity(id uid.ID) {
 	entity, loaded := mgr.entities.LoadAndDelete(id)
 	if !loaded {
 		return

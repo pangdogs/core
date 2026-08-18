@@ -32,10 +32,10 @@ type IAddInManagerEventTab interface {
 }
 
 var (
-	_addInManagerEventTabId = event.DeclareEventTabIdT[addInManagerEventTab]()
-	EventInstallAddInId = event.DeclareEventIdT[addInManagerEventTab](0)
-	EventUninstallAddInId = event.DeclareEventIdT[addInManagerEventTab](1)
-	EventAddInStateChangedId = event.DeclareEventIdT[addInManagerEventTab](2)
+	_addInManagerEventTabID  = event.DeclareEventTabIDT[addInManagerEventTab]()
+	EventInstallAddInID      = event.DeclareEventIDT[addInManagerEventTab](0)
+	EventUninstallAddInID    = event.DeclareEventIDT[addInManagerEventTab](1)
+	EventAddInStateChangedID = event.DeclareEventIDT[addInManagerEventTab](2)
 )
 
 type addInManagerEventTab [3]event.Event
@@ -69,8 +69,8 @@ func (eventTab *addInManagerEventTab) Ctrl() event.IEventCtrl {
 }
 
 func (eventTab *addInManagerEventTab) Event(id uint64) event.IEvent {
-	eventTabId, pos := event.SplitEventId(id)
-	if _addInManagerEventTabId != eventTabId || pos >= len(eventTab) {
+	eventTabID, pos := event.SplitEventID(id)
+	if _addInManagerEventTabID != eventTabID || pos >= len(eventTab) {
 		return nil
 	}
 	switch pos {

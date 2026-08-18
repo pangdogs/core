@@ -27,33 +27,33 @@ import "git.golaxy.org/core/utils/uid"
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventTreeNodeAddChild interface {
-	OnTreeNodeAddChild(entity Entity, childId uid.Id)
+	OnTreeNodeAddChild(entity Entity, childID uid.ID)
 }
 
 // EventTreeNodeRemoveChild 在直接子实体离开实体节点时同步派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventTreeNodeRemoveChild interface {
-	OnTreeNodeRemoveChild(entity Entity, childId uid.Id)
+	OnTreeNodeRemoveChild(entity Entity, childID uid.ID)
 }
 
 // EventTreeNodeAttachParent 在实体接入父节点时同步派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventTreeNodeAttachParent interface {
-	OnTreeNodeAttachParent(entity Entity, parentId uid.Id)
+	OnTreeNodeAttachParent(entity Entity, parentID uid.ID)
 }
 
 // EventTreeNodeDetachParent 在实体脱离父节点时同步派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventTreeNodeDetachParent interface {
-	OnTreeNodeDetachParent(entity Entity, parentId uid.Id)
+	OnTreeNodeDetachParent(entity Entity, parentID uid.ID)
 }
 
 // EventTreeNodeMoveTo 在实体从一个父节点移动到另一个父节点时同步派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventTreeNodeMoveTo interface {
-	OnTreeNodeMoveTo(entity Entity, fromParentId, toParentId uid.Id)
+	OnTreeNodeMoveTo(entity Entity, fromParentID, toParentID uid.ID)
 }

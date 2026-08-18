@@ -147,19 +147,19 @@ type EntityTest1 struct {
 }
 
 func (e *EntityTest1) Awake() {
-	log.Printf("EntityTest1 %s Awake", e.Id())
+	log.Printf("EntityTest1 %s Awake", e.ID())
 }
 
 func (e *EntityTest1) Start() {
-	log.Printf("EntityTest1 %s Start", e.Id())
+	log.Printf("EntityTest1 %s Start", e.ID())
 }
 
 func (e *EntityTest1) Shut() {
-	log.Printf("EntityTest1 %s Shut", e.Id())
+	log.Printf("EntityTest1 %s Shut", e.ID())
 }
 
 func (e *EntityTest1) Dispose() {
-	log.Printf("EntityTest1 %s Dispose", e.Id())
+	log.Printf("EntityTest1 %s Dispose", e.ID())
 }
 
 type EntityTest2 struct {
@@ -167,19 +167,19 @@ type EntityTest2 struct {
 }
 
 func (e *EntityTest2) Awake() {
-	log.Printf("EntityTest2 %s Awake", e.Id())
+	log.Printf("EntityTest2 %s Awake", e.ID())
 }
 
 func (e *EntityTest2) Start() {
-	log.Printf("EntityTest2 %s Start", e.Id())
+	log.Printf("EntityTest2 %s Start", e.ID())
 }
 
 func (e *EntityTest2) Shut() {
-	log.Printf("EntityTest2 %s Shut", e.Id())
+	log.Printf("EntityTest2 %s Shut", e.ID())
 }
 
 func (e *EntityTest2) Dispose() {
-	log.Printf("EntityTest2 %s Dispose", e.Id())
+	log.Printf("EntityTest2 %s Dispose", e.ID())
 }
 
 type ComponentTest1 struct {
@@ -187,19 +187,19 @@ type ComponentTest1 struct {
 }
 
 func (c *ComponentTest1) Awake() {
-	log.Printf("Component %s.%s Awake", c.Entity().Id(), c.Name())
+	log.Printf("Component %s.%s Awake", c.Entity().ID(), c.Name())
 }
 
 func (c *ComponentTest1) Start() {
-	log.Printf("Component %s.%s Start", c.Entity().Id(), c.Name())
+	log.Printf("Component %s.%s Start", c.Entity().ID(), c.Name())
 }
 
 func (c *ComponentTest1) Shut() {
-	log.Printf("Component %s.%s Shut", c.Entity().Id(), c.Name())
+	log.Printf("Component %s.%s Shut", c.Entity().ID(), c.Name())
 }
 
 func (c *ComponentTest1) Dispose() {
-	log.Printf("Component %s.%s Dispose", c.Entity().Id(), c.Name())
+	log.Printf("Component %s.%s Dispose", c.Entity().ID(), c.Name())
 }
 
 type ComponentTest2 struct {
@@ -207,19 +207,19 @@ type ComponentTest2 struct {
 }
 
 func (c *ComponentTest2) Awake() {
-	log.Printf("Component %s.%s Awake", c.Entity().Id(), c.Name())
+	log.Printf("Component %s.%s Awake", c.Entity().ID(), c.Name())
 }
 
 func (c *ComponentTest2) Start() {
-	log.Printf("Component %s.%s Start", c.Entity().Id(), c.Name())
+	log.Printf("Component %s.%s Start", c.Entity().ID(), c.Name())
 }
 
 func (c *ComponentTest2) Shut() {
-	log.Printf("Component %s.%s Shut", c.Entity().Id(), c.Name())
+	log.Printf("Component %s.%s Shut", c.Entity().ID(), c.Name())
 }
 
 func (c *ComponentTest2) Dispose() {
-	log.Printf("Component %s.%s Dispose", c.Entity().Id(), c.Name())
+	log.Printf("Component %s.%s Dispose", c.Entity().ID(), c.Name())
 }
 
 type ComponentTest3 struct {
@@ -227,19 +227,19 @@ type ComponentTest3 struct {
 }
 
 func (c *ComponentTest3) Awake() {
-	log.Printf("Component %s.%s Awake", c.Entity().Id(), c.Name())
+	log.Printf("Component %s.%s Awake", c.Entity().ID(), c.Name())
 }
 
 func (c *ComponentTest3) Start() {
-	log.Printf("Component %s.%s Start", c.Entity().Id(), c.Name())
+	log.Printf("Component %s.%s Start", c.Entity().ID(), c.Name())
 }
 
 func (c *ComponentTest3) Shut() {
-	log.Printf("Component %s.%s Shut", c.Entity().Id(), c.Name())
+	log.Printf("Component %s.%s Shut", c.Entity().ID(), c.Name())
 }
 
 func (c *ComponentTest3) Dispose() {
-	log.Printf("Component %s.%s Dispose", c.Entity().Id(), c.Name())
+	log.Printf("Component %s.%s Dispose", c.Entity().ID(), c.Name())
 }
 
 func Test_ServiceRegisterEntityPT(t *testing.T) {
@@ -356,7 +356,7 @@ func Test_CreateEntity(t *testing.T) {
 	scenario.run(t, svcCtx)
 	for _, entity := range entities {
 		if entity.State() != ec.EntityState_Destroyed {
-			t.Errorf("entity %s state after shutdown: got %s, want %s", entity.Id(), entity.State(), ec.EntityState_Destroyed)
+			t.Errorf("entity %s state after shutdown: got %s, want %s", entity.ID(), entity.State(), ec.EntityState_Destroyed)
 		}
 	}
 }
@@ -561,20 +561,20 @@ type ComponentTestDynamic1 struct {
 }
 
 func (c *ComponentTestDynamic1) Awake() {
-	log.Printf("Component %s.%s Awake", c.Entity().Id(), c.Name())
+	log.Printf("Component %s.%s Awake", c.Entity().ID(), c.Name())
 }
 
 func (c *ComponentTestDynamic1) Start() {
-	log.Printf("Component %s.%s Start", c.Entity().Id(), c.Name())
+	log.Printf("Component %s.%s Start", c.Entity().ID(), c.Name())
 	c.injectErr = assertion.Inject(c.Entity(), c)
 }
 
 func (c *ComponentTestDynamic1) Shut() {
-	log.Printf("Component %s.%s Shut", c.Entity().Id(), c.Name())
+	log.Printf("Component %s.%s Shut", c.Entity().ID(), c.Name())
 }
 
 func (c *ComponentTestDynamic1) Dispose() {
-	log.Printf("Component %s.%s Dispose", c.Entity().Id(), c.Name())
+	log.Printf("Component %s.%s Dispose", c.Entity().ID(), c.Name())
 }
 
 type ComponentTestDynamic2 struct {
@@ -586,20 +586,20 @@ type ComponentTestDynamic2 struct {
 }
 
 func (c *ComponentTestDynamic2) Awake() {
-	log.Printf("Component %s.%s Awake", c.Entity().Id(), c.Name())
+	log.Printf("Component %s.%s Awake", c.Entity().ID(), c.Name())
 	c.injectErr = assertion.Inject(c.Entity(), c)
 }
 
 func (c *ComponentTestDynamic2) Start() {
-	log.Printf("Component %s.%s Start", c.Entity().Id(), c.Name())
+	log.Printf("Component %s.%s Start", c.Entity().ID(), c.Name())
 }
 
 func (c *ComponentTestDynamic2) Shut() {
-	log.Printf("Component %s.%s Shut", c.Entity().Id(), c.Name())
+	log.Printf("Component %s.%s Shut", c.Entity().ID(), c.Name())
 }
 
 func (c *ComponentTestDynamic2) Dispose() {
-	log.Printf("Component %s.%s Dispose", c.Entity().Id(), c.Name())
+	log.Printf("Component %s.%s Dispose", c.Entity().ID(), c.Name())
 }
 
 func Test_EntityDynamicComponent(t *testing.T) {
@@ -698,12 +698,12 @@ func (c *ComponentTestParent) Awake() {
 	ec.BindEventTreeNodeRemoveChild(c.Entity(), c)
 }
 
-func (c *ComponentTestParent) OnTreeNodeAddChild(entity ec.Entity, childId uid.Id) {
-	log.Printf("OnTreeNodeAddChild %s <- %s", entity.Id(), childId)
+func (c *ComponentTestParent) OnTreeNodeAddChild(entity ec.Entity, childID uid.ID) {
+	log.Printf("OnTreeNodeAddChild %s <- %s", entity.ID(), childID)
 }
 
-func (c *ComponentTestParent) OnTreeNodeRemoveChild(entity ec.Entity, childId uid.Id) {
-	log.Printf("OnTreeNodeRemoveChild %s x- %s", entity.Id(), childId)
+func (c *ComponentTestParent) OnTreeNodeRemoveChild(entity ec.Entity, childID uid.ID) {
+	log.Printf("OnTreeNodeRemoveChild %s x- %s", entity.ID(), childID)
 }
 
 type ComponentTestChild struct {
@@ -715,36 +715,36 @@ func (c *ComponentTestChild) Awake() {
 	ec.BindEventTreeNodeDetachParent(c.Entity(), c)
 }
 
-func (c *ComponentTestChild) OnTreeNodeAttachParent(entity ec.Entity, parentId uid.Id) {
-	log.Printf("OnTreeNodeAttachParent %s -> %s", entity.Id(), parentId)
+func (c *ComponentTestChild) OnTreeNodeAttachParent(entity ec.Entity, parentID uid.ID) {
+	log.Printf("OnTreeNodeAttachParent %s -> %s", entity.ID(), parentID)
 }
 
-func (c *ComponentTestChild) OnTreeNodeDetachParent(entity ec.Entity, parentId uid.Id) {
-	log.Printf("OnTreeNodeDetachParent %s -x %s", entity.Id(), parentId)
+func (c *ComponentTestChild) OnTreeNodeDetachParent(entity ec.Entity, parentID uid.ID) {
+	log.Printf("OnTreeNodeDetachParent %s -x %s", entity.ID(), parentID)
 }
 
 func PrintEntityTreeForest(entityTree runtime.EntityTree) {
-	entityTree.EachChildren(runtime.ForestNodeId, func(entity ec.Entity) {
+	entityTree.EachChildren(runtime.ForestNodeID, func(entity ec.Entity) {
 		PrintEntityTree(entity)
 	})
 }
 
 func PrintEntityTree(entity ec.Entity, depth ...int) {
 	entityTree := runtime.Current(entity).EntityTree()
-	if b, _ := entityTree.IsFree(entity.Id()); b {
+	if b, _ := entityTree.IsFree(entity.ID()); b {
 		return
 	}
 
 	root := ""
 
-	isRoot, _ := entityTree.IsRoot(entity.Id())
+	isRoot, _ := entityTree.IsRoot(entity.ID())
 	if isRoot {
 		root = "R"
 	}
 
 	leaf := ""
 
-	isLeaf, _ := entityTree.IsLeaf(entity.Id())
+	isLeaf, _ := entityTree.IsLeaf(entity.ID())
 	if isLeaf {
 		leaf = "L"
 	}
@@ -752,12 +752,12 @@ func PrintEntityTree(entity ec.Entity, depth ...int) {
 	_depth := pie.First(depth)
 
 	if isLeaf {
-		log.Printf("%s- [%s] %s%s", strings.Repeat(" ", _depth), entity.Id(), root, leaf)
+		log.Printf("%s- [%s] %s%s", strings.Repeat(" ", _depth), entity.ID(), root, leaf)
 	} else {
-		log.Printf("%s+ [%s] %s%s", strings.Repeat(" ", _depth), entity.Id(), root, leaf)
+		log.Printf("%s+ [%s] %s%s", strings.Repeat(" ", _depth), entity.ID(), root, leaf)
 	}
 
-	entityTree.EachChildren(entity.Id(), func(entity ec.Entity) {
+	entityTree.EachChildren(entity.ID(), func(entity ec.Entity) {
 		PrintEntityTree(entity, _depth+1)
 	})
 }
@@ -768,107 +768,107 @@ type entityTreeEventCounts struct {
 	moved   int
 }
 
-func newTreeEntity(ctx runtime.Context, prototype string, parentId uid.Id) (ec.Entity, error) {
+func newTreeEntity(ctx runtime.Context, prototype string, parentID uid.ID) (ec.Entity, error) {
 	entity, err := core.BuildEntity(ctx, prototype).New()
 	if err != nil {
 		return nil, fmt.Errorf("create %s entity: %w", prototype, err)
 	}
-	if err := ctx.EntityTree().AddChild(parentId, entity.Id()); err != nil {
-		return nil, fmt.Errorf("add %s entity %s under %s: %w", prototype, entity.Id(), parentId, err)
+	if err := ctx.EntityTree().AddChild(parentID, entity.ID()); err != nil {
+		return nil, fmt.Errorf("add %s entity %s under %s: %w", prototype, entity.ID(), parentID, err)
 	}
 	return entity, nil
 }
 
 func checkTreeRoot(tree runtime.EntityTree, entity ec.Entity) error {
-	isRoot, err := tree.IsRoot(entity.Id())
+	isRoot, err := tree.IsRoot(entity.ID())
 	if err != nil {
-		return fmt.Errorf("check root %s: %w", entity.Id(), err)
+		return fmt.Errorf("check root %s: %w", entity.ID(), err)
 	}
 	if !isRoot {
-		return fmt.Errorf("entity %s is not a root", entity.Id())
+		return fmt.Errorf("entity %s is not a root", entity.ID())
 	}
 	return nil
 }
 
 func checkTreeParent(tree runtime.EntityTree, child, parent ec.Entity) error {
-	actual, err := tree.GetParent(child.Id())
+	actual, err := tree.GetParent(child.ID())
 	if err != nil {
-		return fmt.Errorf("get parent of %s: %w", child.Id(), err)
+		return fmt.Errorf("get parent of %s: %w", child.ID(), err)
 	}
-	if actual.Id() != parent.Id() {
-		return fmt.Errorf("parent of %s: got %s, want %s", child.Id(), actual.Id(), parent.Id())
+	if actual.ID() != parent.ID() {
+		return fmt.Errorf("parent of %s: got %s, want %s", child.ID(), actual.ID(), parent.ID())
 	}
 	return nil
 }
 
 func checkTreeFree(tree runtime.EntityTree, entity ec.Entity) error {
-	isFree, err := tree.IsFree(entity.Id())
+	isFree, err := tree.IsFree(entity.ID())
 	if err != nil {
-		return fmt.Errorf("check free entity %s: %w", entity.Id(), err)
+		return fmt.Errorf("check free entity %s: %w", entity.ID(), err)
 	}
 	if !isFree || entity.TreeNodeState() != ec.TreeNodeState_Free {
-		return fmt.Errorf("entity %s tree state: free=%t, state=%s", entity.Id(), isFree, entity.TreeNodeState())
+		return fmt.Errorf("entity %s tree state: free=%t, state=%s", entity.ID(), isFree, entity.TreeNodeState())
 	}
 	return nil
 }
 
-func checkTreeChildCount(tree runtime.EntityTree, parentId uid.Id, want int) error {
-	got, err := tree.CountChildren(parentId)
+func checkTreeChildCount(tree runtime.EntityTree, parentID uid.ID, want int) error {
+	got, err := tree.CountChildren(parentID)
 	if err != nil {
-		return fmt.Errorf("count children of %s: %w", parentId, err)
+		return fmt.Errorf("count children of %s: %w", parentID, err)
 	}
 	if got != want {
-		return fmt.Errorf("children of %s: got %d, want %d", parentId, got, want)
+		return fmt.Errorf("children of %s: got %d, want %d", parentID, got, want)
 	}
 	return nil
 }
 
 func runEntityTreeScenario(ctx runtime.Context, counts *entityTreeEventCounts) error {
 	tree := ctx.EntityTree()
-	root, err := newTreeEntity(ctx, "Test1", runtime.ForestNodeId)
+	root, err := newTreeEntity(ctx, "Test1", runtime.ForestNodeID)
 	if err != nil {
 		return err
 	}
-	child1, err := newTreeEntity(ctx, "Test1", root.Id())
+	child1, err := newTreeEntity(ctx, "Test1", root.ID())
 	if err != nil {
 		return err
 	}
-	child2, err := newTreeEntity(ctx, "Test1", root.Id())
+	child2, err := newTreeEntity(ctx, "Test1", root.ID())
 	if err != nil {
 		return err
 	}
-	child3, err := newTreeEntity(ctx, "Test1", child1.Id())
+	child3, err := newTreeEntity(ctx, "Test1", child1.ID())
 	if err != nil {
 		return err
 	}
-	child4, err := newTreeEntity(ctx, "Test1", child3.Id())
+	child4, err := newTreeEntity(ctx, "Test1", child3.ID())
 	if err != nil {
 		return err
 	}
-	child5, err := newTreeEntity(ctx, "Test1", child3.Id())
+	child5, err := newTreeEntity(ctx, "Test1", child3.ID())
 	if err != nil {
 		return err
 	}
-	child6, err := newTreeEntity(ctx, "Test1", child3.Id())
+	child6, err := newTreeEntity(ctx, "Test1", child3.ID())
 	if err != nil {
 		return err
 	}
-	child7, err := newTreeEntity(ctx, "Test1", runtime.ForestNodeId)
+	child7, err := newTreeEntity(ctx, "Test1", runtime.ForestNodeID)
 	if err != nil {
 		return err
 	}
-	child8, err := newTreeEntity(ctx, "Test1", child2.Id())
+	child8, err := newTreeEntity(ctx, "Test1", child2.ID())
 	if err != nil {
 		return err
 	}
 
-	if err := tree.DetachNode(child2.Id()); err != nil {
+	if err := tree.DetachNode(child2.ID()); err != nil {
 		return fmt.Errorf("detach child2: %w", err)
 	}
-	if err := tree.RemoveNode(child3.Id()); err != nil {
+	if err := tree.RemoveNode(child3.ID()); err != nil {
 		return fmt.Errorf("remove child3 subtree: %w", err)
 	}
-	if err := tree.MoveNode(child7.Id(), child2.Id()); err != nil {
+	if err := tree.MoveNode(child7.ID(), child2.ID()); err != nil {
 		return fmt.Errorf("move child7 under child2: %w", err)
 	}
 
@@ -878,9 +878,9 @@ func runEntityTreeScenario(ctx runtime.Context, counts *entityTreeEventCounts) e
 		func() error { return checkTreeRoot(tree, child2) },
 		func() error { return checkTreeParent(tree, child7, child2) },
 		func() error { return checkTreeParent(tree, child8, child2) },
-		func() error { return checkTreeChildCount(tree, root.Id(), 1) },
-		func() error { return checkTreeChildCount(tree, child1.Id(), 0) },
-		func() error { return checkTreeChildCount(tree, child2.Id(), 2) },
+		func() error { return checkTreeChildCount(tree, root.ID(), 1) },
+		func() error { return checkTreeChildCount(tree, child1.ID(), 0) },
+		func() error { return checkTreeChildCount(tree, child2.ID(), 2) },
 		func() error { return checkTreeFree(tree, child3) },
 		func() error { return checkTreeFree(tree, child4) },
 		func() error { return checkTreeFree(tree, child5) },
@@ -916,13 +916,13 @@ func Test_EntityTree(t *testing.T) {
 						runtime.With.RunningEventCB(func(ctx runtime.Context, runningEvent runtime.RunningEvent, args ...any) {
 							switch runningEvent {
 							case runtime.RunningEvent_Starting:
-								runtime.BindEventEntityTreeAddNode(ctx.EntityTree(), runtime.HandleEventEntityTreeAddNode(func(runtime.EntityTree, uid.Id, uid.Id) {
+								runtime.BindEventEntityTreeAddNode(ctx.EntityTree(), runtime.HandleEventEntityTreeAddNode(func(runtime.EntityTree, uid.ID, uid.ID) {
 									counts.added++
 								}))
-								runtime.BindEventEntityTreeRemoveNode(ctx.EntityTree(), runtime.HandleEventEntityTreeRemoveNode(func(runtime.EntityTree, uid.Id, uid.Id) {
+								runtime.BindEventEntityTreeRemoveNode(ctx.EntityTree(), runtime.HandleEventEntityTreeRemoveNode(func(runtime.EntityTree, uid.ID, uid.ID) {
 									counts.removed++
 								}))
-								runtime.BindEventEntityTreeMoveNode(ctx.EntityTree(), runtime.HandleEventEntityTreeMoveNode(func(runtime.EntityTree, uid.Id, uid.Id, uid.Id) {
+								runtime.BindEventEntityTreeMoveNode(ctx.EntityTree(), runtime.HandleEventEntityTreeMoveNode(func(runtime.EntityTree, uid.ID, uid.ID, uid.ID) {
 									counts.moved++
 								}))
 							case runtime.RunningEvent_Started:
@@ -950,13 +950,13 @@ func (c *ComponentTestChildDetachInAttaching) Awake() {
 	ec.BindEventTreeNodeDetachParent(c.Entity(), c)
 }
 
-func (c *ComponentTestChildDetachInAttaching) OnTreeNodeAttachParent(entity ec.Entity, parentId uid.Id) {
-	log.Printf("OnTreeNodeAttachParent %s -> %s", entity.Id(), parentId)
-	c.detachErr = runtime.Current(entity).EntityTree().DetachNode(entity.Id())
+func (c *ComponentTestChildDetachInAttaching) OnTreeNodeAttachParent(entity ec.Entity, parentID uid.ID) {
+	log.Printf("OnTreeNodeAttachParent %s -> %s", entity.ID(), parentID)
+	c.detachErr = runtime.Current(entity).EntityTree().DetachNode(entity.ID())
 }
 
-func (c *ComponentTestChildDetachInAttaching) OnTreeNodeDetachParent(entity ec.Entity, parentId uid.Id) {
-	log.Printf("OnTreeNodeDetachParent %s -x %s", entity.Id(), parentId)
+func (c *ComponentTestChildDetachInAttaching) OnTreeNodeDetachParent(entity ec.Entity, parentID uid.ID) {
+	log.Printf("OnTreeNodeDetachParent %s -x %s", entity.ID(), parentID)
 }
 
 type ComponentTestChildRemoveInAttaching struct {
@@ -969,13 +969,13 @@ func (c *ComponentTestChildRemoveInAttaching) Awake() {
 	ec.BindEventTreeNodeDetachParent(c.Entity(), c)
 }
 
-func (c *ComponentTestChildRemoveInAttaching) OnTreeNodeAttachParent(entity ec.Entity, parentId uid.Id) {
-	log.Printf("OnTreeNodeAttachParent %s -> %s", entity.Id(), parentId)
-	c.removeErr = runtime.Current(entity).EntityTree().RemoveNode(entity.Id())
+func (c *ComponentTestChildRemoveInAttaching) OnTreeNodeAttachParent(entity ec.Entity, parentID uid.ID) {
+	log.Printf("OnTreeNodeAttachParent %s -> %s", entity.ID(), parentID)
+	c.removeErr = runtime.Current(entity).EntityTree().RemoveNode(entity.ID())
 }
 
-func (c *ComponentTestChildRemoveInAttaching) OnTreeNodeDetachParent(entity ec.Entity, parentId uid.Id) {
-	log.Printf("OnTreeNodeDetachParent %s -x %s", entity.Id(), parentId)
+func (c *ComponentTestChildRemoveInAttaching) OnTreeNodeDetachParent(entity ec.Entity, parentID uid.ID) {
+	log.Printf("OnTreeNodeDetachParent %s -x %s", entity.ID(), parentID)
 }
 
 type ComponentTestChildDestroyInAttaching struct {
@@ -987,13 +987,13 @@ func (c *ComponentTestChildDestroyInAttaching) Awake() {
 	ec.BindEventTreeNodeDetachParent(c.Entity(), c)
 }
 
-func (c *ComponentTestChildDestroyInAttaching) OnTreeNodeAttachParent(entity ec.Entity, parentId uid.Id) {
-	log.Printf("OnTreeNodeAttachParent %s -> %s", entity.Id(), parentId)
+func (c *ComponentTestChildDestroyInAttaching) OnTreeNodeAttachParent(entity ec.Entity, parentID uid.ID) {
+	log.Printf("OnTreeNodeAttachParent %s -> %s", entity.ID(), parentID)
 	entity.Destroy()
 }
 
-func (c *ComponentTestChildDestroyInAttaching) OnTreeNodeDetachParent(entity ec.Entity, parentId uid.Id) {
-	log.Printf("OnTreeNodeDetachParent %s -x %s", entity.Id(), parentId)
+func (c *ComponentTestChildDestroyInAttaching) OnTreeNodeDetachParent(entity ec.Entity, parentID uid.ID) {
+	log.Printf("OnTreeNodeDetachParent %s -x %s", entity.ID(), parentID)
 }
 
 type ComponentTestChildDestroyInDetaching struct {
@@ -1005,12 +1005,12 @@ func (c *ComponentTestChildDestroyInDetaching) Awake() {
 	ec.BindEventTreeNodeDetachParent(c.Entity(), c)
 }
 
-func (c *ComponentTestChildDestroyInDetaching) OnTreeNodeAttachParent(entity ec.Entity, parentId uid.Id) {
-	log.Printf("OnTreeNodeAttachParent %s -> %s", entity.Id(), parentId)
+func (c *ComponentTestChildDestroyInDetaching) OnTreeNodeAttachParent(entity ec.Entity, parentID uid.ID) {
+	log.Printf("OnTreeNodeAttachParent %s -> %s", entity.ID(), parentID)
 }
 
-func (c *ComponentTestChildDestroyInDetaching) OnTreeNodeDetachParent(entity ec.Entity, parentId uid.Id) {
-	log.Printf("OnTreeNodeDetachParent %s -x %s", entity.Id(), parentId)
+func (c *ComponentTestChildDestroyInDetaching) OnTreeNodeDetachParent(entity ec.Entity, parentID uid.ID) {
+	log.Printf("OnTreeNodeDetachParent %s -x %s", entity.ID(), parentID)
 	entity.Destroy()
 }
 
@@ -1023,13 +1023,13 @@ func (c *ComponentTestParentDestroyInAttaching) Awake() {
 	ec.BindEventTreeNodeRemoveChild(c.Entity(), c)
 }
 
-func (c *ComponentTestParentDestroyInAttaching) OnTreeNodeAddChild(entity ec.Entity, childId uid.Id) {
-	log.Printf("OnTreeNodeAddChild %s <- %s", entity.Id(), childId)
+func (c *ComponentTestParentDestroyInAttaching) OnTreeNodeAddChild(entity ec.Entity, childID uid.ID) {
+	log.Printf("OnTreeNodeAddChild %s <- %s", entity.ID(), childID)
 	entity.Destroy()
 }
 
-func (c *ComponentTestParentDestroyInAttaching) OnTreeNodeRemoveChild(entity ec.Entity, childId uid.Id) {
-	log.Printf("OnTreeNodeRemoveChild %s x- %s", entity.Id(), childId)
+func (c *ComponentTestParentDestroyInAttaching) OnTreeNodeRemoveChild(entity ec.Entity, childID uid.ID) {
+	log.Printf("OnTreeNodeRemoveChild %s x- %s", entity.ID(), childID)
 }
 
 type ComponentTestParentDestroyInDetaching struct {
@@ -1041,43 +1041,43 @@ func (c *ComponentTestParentDestroyInDetaching) Awake() {
 	ec.BindEventTreeNodeRemoveChild(c.Entity(), c)
 }
 
-func (c *ComponentTestParentDestroyInDetaching) OnTreeNodeAddChild(entity ec.Entity, childId uid.Id) {
-	log.Printf("OnTreeNodeAddChild %s <- %s", entity.Id(), childId)
+func (c *ComponentTestParentDestroyInDetaching) OnTreeNodeAddChild(entity ec.Entity, childID uid.ID) {
+	log.Printf("OnTreeNodeAddChild %s <- %s", entity.ID(), childID)
 }
 
-func (c *ComponentTestParentDestroyInDetaching) OnTreeNodeRemoveChild(entity ec.Entity, childId uid.Id) {
-	log.Printf("OnTreeNodeRemoveChild %s x- %s", entity.Id(), childId)
+func (c *ComponentTestParentDestroyInDetaching) OnTreeNodeRemoveChild(entity ec.Entity, childID uid.ID) {
+	log.Printf("OnTreeNodeRemoveChild %s x- %s", entity.ID(), childID)
 	entity.Destroy()
 }
 
 func checkDestroyedTreeEntity(ctx runtime.Context, entity ec.Entity) error {
 	if entity.State() != ec.EntityState_Destroyed {
-		return fmt.Errorf("entity %s state: got %s, want %s", entity.Id(), entity.State(), ec.EntityState_Destroyed)
+		return fmt.Errorf("entity %s state: got %s, want %s", entity.ID(), entity.State(), ec.EntityState_Destroyed)
 	}
 	if entity.TreeNodeState() != ec.TreeNodeState_Free {
-		return fmt.Errorf("destroyed entity %s tree state: got %s, want %s", entity.Id(), entity.TreeNodeState(), ec.TreeNodeState_Free)
+		return fmt.Errorf("destroyed entity %s tree state: got %s, want %s", entity.ID(), entity.TreeNodeState(), ec.TreeNodeState_Free)
 	}
-	if _, ok := ctx.EntityManager().GetEntity(entity.Id()); ok {
-		return fmt.Errorf("destroyed entity %s is still managed by the runtime", entity.Id())
+	if _, ok := ctx.EntityManager().GetEntity(entity.ID()); ok {
+		return fmt.Errorf("destroyed entity %s is still managed by the runtime", entity.ID())
 	}
 	return nil
 }
 
 func checkAliveFreeTreeEntity(ctx runtime.Context, entity ec.Entity) error {
 	if entity.State() != ec.EntityState_Alive {
-		return fmt.Errorf("entity %s state: got %s, want %s", entity.Id(), entity.State(), ec.EntityState_Alive)
+		return fmt.Errorf("entity %s state: got %s, want %s", entity.ID(), entity.State(), ec.EntityState_Alive)
 	}
 	return checkTreeFree(ctx.EntityTree(), entity)
 }
 
 func runEntityTreeSequenceScenario(ctx runtime.Context) error {
 	tree := ctx.EntityTree()
-	root, err := newTreeEntity(ctx, "Test1", runtime.ForestNodeId)
+	root, err := newTreeEntity(ctx, "Test1", runtime.ForestNodeID)
 	if err != nil {
 		return err
 	}
 
-	child1, err := newTreeEntity(ctx, "Test2", root.Id())
+	child1, err := newTreeEntity(ctx, "Test2", root.ID())
 	if err != nil {
 		return err
 	}
@@ -1092,7 +1092,7 @@ func runEntityTreeSequenceScenario(ctx runtime.Context) error {
 		return err
 	}
 
-	child2, err := newTreeEntity(ctx, "Test3", root.Id())
+	child2, err := newTreeEntity(ctx, "Test3", root.ID())
 	if err != nil {
 		return err
 	}
@@ -1107,7 +1107,7 @@ func runEntityTreeSequenceScenario(ctx runtime.Context) error {
 		return err
 	}
 
-	child3, err := newTreeEntity(ctx, "Test4", root.Id())
+	child3, err := newTreeEntity(ctx, "Test4", root.ID())
 	if err != nil {
 		return err
 	}
@@ -1115,22 +1115,22 @@ func runEntityTreeSequenceScenario(ctx runtime.Context) error {
 		return fmt.Errorf("destroy child while attaching: %w", err)
 	}
 
-	child4, err := newTreeEntity(ctx, "Test5", root.Id())
+	child4, err := newTreeEntity(ctx, "Test5", root.ID())
 	if err != nil {
 		return err
 	}
-	if err := tree.DetachNode(child4.Id()); err != nil {
+	if err := tree.DetachNode(child4.ID()); err != nil {
 		return fmt.Errorf("detach child that destroys itself: %w", err)
 	}
 	if err := checkDestroyedTreeEntity(ctx, child4); err != nil {
 		return fmt.Errorf("destroy child while detaching: %w", err)
 	}
 
-	child5, err := newTreeEntity(ctx, "Test6", root.Id())
+	child5, err := newTreeEntity(ctx, "Test6", root.ID())
 	if err != nil {
 		return err
 	}
-	child6, err := newTreeEntity(ctx, "Test1", child5.Id())
+	child6, err := newTreeEntity(ctx, "Test1", child5.ID())
 	if err != nil {
 		return err
 	}
@@ -1141,15 +1141,15 @@ func runEntityTreeSequenceScenario(ctx runtime.Context) error {
 		return fmt.Errorf("child of parent destroyed while attaching: %w", err)
 	}
 
-	child7, err := newTreeEntity(ctx, "Test7", root.Id())
+	child7, err := newTreeEntity(ctx, "Test7", root.ID())
 	if err != nil {
 		return err
 	}
-	child8, err := newTreeEntity(ctx, "Test1", child7.Id())
+	child8, err := newTreeEntity(ctx, "Test1", child7.ID())
 	if err != nil {
 		return err
 	}
-	if err := tree.DetachNode(child8.Id()); err != nil {
+	if err := tree.DetachNode(child8.ID()); err != nil {
 		return fmt.Errorf("detach child whose parent destroys itself: %w", err)
 	}
 	if err := checkDestroyedTreeEntity(ctx, child7); err != nil {
@@ -1159,7 +1159,7 @@ func runEntityTreeSequenceScenario(ctx runtime.Context) error {
 		return fmt.Errorf("child of parent destroyed while detaching: %w", err)
 	}
 
-	if err := checkTreeChildCount(tree, root.Id(), 2); err != nil {
+	if err := checkTreeChildCount(tree, root.ID(), 2); err != nil {
 		return err
 	}
 	return nil
@@ -1387,12 +1387,12 @@ func Test_ServiceAddIn(t *testing.T) {
 				serviceAddIn2.Install(ctx, recorder)
 
 				var ok bool
-				status1, ok = ctx.AddInManager().GetStatusById(serviceAddIn1.Id)
+				status1, ok = ctx.AddInManager().GetStatusByID(serviceAddIn1.ID)
 				if !ok {
 					setupErr = fmt.Errorf("ServiceAddIn1 status was not registered")
 					return
 				}
-				status2, ok = ctx.AddInManager().GetStatusById(serviceAddIn2.Id)
+				status2, ok = ctx.AddInManager().GetStatusByID(serviceAddIn2.ID)
 				if !ok {
 					setupErr = fmt.Errorf("ServiceAddIn2 status was not registered")
 					return
@@ -1497,7 +1497,7 @@ func Test_RuntimeAddIn(t *testing.T) {
 					case runtime.RunningEvent_Birth:
 						runtimeAddIn1.Install(ctx, recorder)
 						var ok bool
-						status, ok = ctx.AddInManager().GetStatusById(runtimeAddIn1.Id)
+						status, ok = ctx.AddInManager().GetStatusByID(runtimeAddIn1.ID)
 						if !ok {
 							setupErr = fmt.Errorf("RuntimeAddIn1 status was not registered")
 							return

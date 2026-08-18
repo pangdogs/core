@@ -66,8 +66,8 @@ type Context interface {
 
 	// Name 返回服务名称。
 	Name() string
-	// Id 返回服务的持久化 ID。
-	Id() uid.Id
+	// ID 返回服务的持久化 ID。
+	ID() uid.ID
 	// Reflected 返回实际服务上下文实例的反射值。
 	Reflected() reflect.Value
 	// EntityManager 返回并发安全的全局实体索引。
@@ -99,9 +99,9 @@ func (ctx *ContextBehavior) Name() string {
 	return ctx.options.Name
 }
 
-// Id 返回服务的持久化 ID。
-func (ctx *ContextBehavior) Id() uid.Id {
-	return ctx.options.PersistId
+// ID 返回服务的持久化 ID。
+func (ctx *ContextBehavior) ID() uid.ID {
+	return ctx.options.PersistID
 }
 
 // Reflected 返回实际服务上下文实例的反射值。
@@ -125,7 +125,7 @@ func (ctx *ContextBehavior) String() string {
 		return *cached
 	}
 
-	value := fmt.Sprintf(`{"id":%q,"name":%q}`, ctx.Id(), ctx.Name())
+	value := fmt.Sprintf(`{"id":%q,"name":%q}`, ctx.ID(), ctx.Name())
 	if ctx.stringerCache.CompareAndSwap(nil, &value) {
 		return value
 	}
@@ -143,8 +143,8 @@ func (ctx *ContextBehavior) init(options ContextOptions) {
 		ctx.options.Context = context.Background()
 	}
 
-	if ctx.options.PersistId.IsNil() {
-		ctx.options.PersistId = uid.New()
+	if ctx.options.PersistID.IsNil() {
+		ctx.options.PersistID = uid.New()
 	}
 
 	if ctx.options.EntityLib == nil {

@@ -42,14 +42,14 @@ type iComponentManager interface {
 	AddComponent(name string, components ...Component) error
 	// RemoveComponent 按名称请求删除全部同名组件。
 	RemoveComponent(name string)
-	// RemoveComponentById 按 ID 请求删除组件；仅在启用组件唯一 ID 时有效。
-	RemoveComponentById(id uid.Id)
+	// RemoveComponentByID 按 ID 请求删除组件；仅在启用组件唯一 ID 时有效。
+	RemoveComponentByID(id uid.ID)
 	// RemoveComponentByPT 按原型名请求删除全部匹配组件。
 	RemoveComponentByPT(prototype string)
 	// GetComponent 返回首个同名组件；不存在时返回 nil。
 	GetComponent(name string) Component
-	// GetComponentById 按 ID 查询组件；未启用组件唯一 ID 或不存在时返回 nil。
-	GetComponentById(id uid.Id) Component
+	// GetComponentByID 按 ID 查询组件；未启用组件唯一 ID 或不存在时返回 nil。
+	GetComponentByID(id uid.ID) Component
 	// GetComponentByPT 返回首个使用指定原型的组件；不存在时返回 nil。
 	GetComponentByPT(prototype string) Component
 	// GetComponents 返回全部同名组件的快照。
@@ -140,9 +140,9 @@ func (entity *EntityBehavior) RemoveComponent(name string) {
 	}, at.Index())
 }
 
-// RemoveComponentById 按 ID 请求删除组件；未启用组件唯一 ID 时无效。
-func (entity *EntityBehavior) RemoveComponentById(id uid.Id) {
-	slot, ok := entity.getComponentSlotById(id)
+// RemoveComponentByID 按 ID 请求删除组件；未启用组件唯一 ID 时无效。
+func (entity *EntityBehavior) RemoveComponentByID(id uid.ID) {
+	slot, ok := entity.getComponentSlotByID(id)
 	if !ok {
 		return
 	}
@@ -171,9 +171,9 @@ func (entity *EntityBehavior) GetComponent(name string) Component {
 	return nil
 }
 
-// GetComponentById 按 ID 查询组件；未启用组件唯一 ID 或不存在时返回 nil。
-func (entity *EntityBehavior) GetComponentById(id uid.Id) Component {
-	if slot, ok := entity.getComponentSlotById(id); ok {
+// GetComponentByID 按 ID 查询组件；未启用组件唯一 ID 或不存在时返回 nil。
+func (entity *EntityBehavior) GetComponentByID(id uid.ID) Component {
+	if slot, ok := entity.getComponentSlotByID(id); ok {
 		return entity.touchComponent(slot.V)
 	}
 	return nil
@@ -427,7 +427,7 @@ func (entity *EntityBehavior) getComponentSlot(name string) (*generic.FreeSlot[C
 	return entity.componentList.Get(slotIdx), true
 }
 
-func (entity *EntityBehavior) getComponentSlotById(id uid.Id) (*generic.FreeSlot[Component], bool) {
+func (entity *EntityBehavior) getComponentSlotByID(id uid.ID) (*generic.FreeSlot[Component], bool) {
 	if !entity.options.ComponentUniqueID {
 		return nil, false
 	}
@@ -435,7 +435,7 @@ func (entity *EntityBehavior) getComponentSlotById(id uid.Id) (*generic.FreeSlot
 	var compSlot *generic.FreeSlot[Component]
 
 	entity.componentList.Traversal(func(slot *generic.FreeSlot[Component]) bool {
-		if slot.V.Id() == id {
+		if slot.V.ID() == id {
 			compSlot = slot
 			return false
 		}

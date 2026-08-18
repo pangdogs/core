@@ -68,8 +68,8 @@ type Context interface {
 
 	// Name 返回运行时名称。
 	Name() string
-	// Id 返回运行时的持久化 ID。
-	Id() uid.Id
+	// ID 返回运行时的持久化 ID。
+	ID() uid.ID
 	// Reflected 返回实际运行时上下文实例的反射值。
 	Reflected() reflect.Value
 	// Frame 返回帧统计接口；未启用帧循环时返回 nil。
@@ -122,9 +122,9 @@ func (ctx *ContextBehavior) Name() string {
 	return ctx.options.Name
 }
 
-// Id 返回运行时的持久化 ID。
-func (ctx *ContextBehavior) Id() uid.Id {
-	return ctx.options.PersistId
+// ID 返回运行时的持久化 ID。
+func (ctx *ContextBehavior) ID() uid.ID {
+	return ctx.options.PersistID
 }
 
 // Reflected 返回实际运行时上下文实例的反射值。
@@ -208,8 +208,8 @@ func (ctx *ContextBehavior) init(svcCtx service.Context, options ContextOptions)
 		ctx.options.Context = svcCtx
 	}
 
-	if ctx.options.PersistId.IsNil() {
-		ctx.options.PersistId = uid.New()
+	if ctx.options.PersistID.IsNil() {
+		ctx.options.PersistID = uid.New()
 	}
 
 	if ctx.options.AddInManager == nil {

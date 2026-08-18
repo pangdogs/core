@@ -34,7 +34,7 @@ func AddInInterface[ADDIN_IFACE any](name ...string) AddInInterfaceDefinition[AD
 
 // AddInInterfaceDefinition 封装通用插件接口的标识和访问操作。
 type AddInInterfaceDefinition[ADDIN_IFACE any] struct {
-	Id      uint64                                                        // 由 Name 生成的插件 ID。
+	ID      uint64                                                        // 由 Name 生成的插件 ID。
 	Name    string                                                        // 插件注册名称。
 	Require generic.Func1[extension.AddInProvider, ADDIN_IFACE]           // 获取正在运行的插件，不可用时 panic。
 	Lookup  generic.FuncPair1[extension.AddInProvider, ADDIN_IFACE, bool] // 查询管理器当前持有的插件。
@@ -47,10 +47,10 @@ func defineAddInInterface[ADDIN_IFACE any](name string) AddInInterfaceDefinition
 	if name == "" {
 		exception.Panicf("%w: anonymous add-in not allowed", extension.ErrExtension)
 	}
-	id := extension.GenAddInId(name)
+	id := extension.GenAddInID(name)
 
 	return AddInInterfaceDefinition[ADDIN_IFACE]{
-		Id:   id,
+		ID:   id,
 		Name: name,
 		Require: func(provider extension.AddInProvider) ADDIN_IFACE {
 			return extension.Require[ADDIN_IFACE](provider, id)

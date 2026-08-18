@@ -21,6 +21,6 @@
 /*
 Package uid 基于 xid 生成短字符串 ID，并提供 Nil、New 与 From 等辅助函数。
 
-service、runtime、entity、component 以及实体树节点关系都使用 uid.Id 作为稳定标识。
+service、runtime、entity、component 以及实体树节点关系都使用 uid.ID 作为稳定标识。
 */
 package uid

@@ -42,8 +42,8 @@ type ConcurrentComponent interface {
 	corectx.AsyncScopeProvider
 	fmt.Stringer
 
-	// Id 返回组件 ID；未启用组件唯一 ID 时通常与 Entity ID 相同。
-	Id() uid.Id
+	// ID 返回组件 ID；未启用组件唯一 ID 时通常与 Entity ID 相同。
+	ID() uid.ID
 	// Name 返回组件在 Entity 中的名称。
 	Name() string
 }
@@ -115,7 +115,7 @@ func (comp *ComponentBehavior) String() string {
 		return ""
 	}
 
-	value := fmt.Sprintf(`{"id":%q,"entity_id":%q,"name":%q,"prototype":%q}`, comp.Id(), comp.Entity().Id(), comp.Name(), comp.Builtin().PT.Prototype())
+	value := fmt.Sprintf(`{"id":%q,"entity_id":%q,"name":%q,"prototype":%q}`, comp.ID(), comp.Entity().ID(), comp.Name(), comp.Builtin().PT.Prototype())
 	if comp.stringerCache.CompareAndSwap(nil, &value) {
 		return value
 	}

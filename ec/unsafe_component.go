@@ -45,9 +45,9 @@ func (u _UnsafeComponent) Instance() Component {
 	return u.getInstance()
 }
 
-// SetId 设置组件 ID。
-func (u _UnsafeComponent) SetId(id uid.Id) {
-	u.setId(id)
+// SetID 设置组件 ID。
+func (u _UnsafeComponent) SetID(id uid.ID) {
+	u.setID(id)
 }
 
 // SetState 推进组件生命周期状态。

@@ -29,19 +29,19 @@ import (
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventEntityTreeAddNode interface {
-	OnEntityTreeAddNode(entityTree EntityTree, parentId, childId uid.Id)
+	OnEntityTreeAddNode(entityTree EntityTree, parentID, childID uid.ID)
 }
 
 // EventEntityTreeRemoveNode 在节点的树关系移除前派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventEntityTreeRemoveNode interface {
-	OnEntityTreeRemoveNode(entityTree EntityTree, parentId, childId uid.Id)
+	OnEntityTreeRemoveNode(entityTree EntityTree, parentID, childID uid.ID)
 }
 
 // EventEntityTreeMoveNode 在节点切换父节点后派发。
 // +event-gen:export_emit=0
 // +event-tab-gen:recursion=allow
 type EventEntityTreeMoveNode interface {
-	OnEntityTreeMoveNode(entityTree EntityTree, childId, fromParentId, toParentId uid.Id)
+	OnEntityTreeMoveNode(entityTree EntityTree, childID, fromParentID, toParentID uid.ID)
 }

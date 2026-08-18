@@ -35,11 +35,11 @@ type iTreeNode interface {
 
 type iiTreeNode interface {
 	setTreeNodeState(state TreeNodeState)
-	emitEventTreeNodeAddChild(childId uid.Id)
-	emitEventTreeNodeRemoveChild(childId uid.Id)
-	emitEventTreeNodeAttachParent(parentId uid.Id)
-	emitEventTreeNodeDetachParent(parentId uid.Id)
-	emitEventTreeNodeMoveTo(fromParentId, toParentId uid.Id)
+	emitEventTreeNodeAddChild(childID uid.ID)
+	emitEventTreeNodeRemoveChild(childID uid.ID)
+	emitEventTreeNodeAttachParent(parentID uid.ID)
+	emitEventTreeNodeDetachParent(parentID uid.ID)
+	emitEventTreeNodeMoveTo(fromParentID, toParentID uid.ID)
 }
 
 // TreeNodeState 返回实体在 Runtime 实体树中的状态。
@@ -76,22 +76,22 @@ func (entity *EntityBehavior) setTreeNodeState(state TreeNodeState) {
 	entity.treeNodeState = state
 }
 
-func (entity *EntityBehavior) emitEventTreeNodeAddChild(childId uid.Id) {
-	_EmitEventTreeNodeAddChild(entity, entity.getInstance(), childId)
+func (entity *EntityBehavior) emitEventTreeNodeAddChild(childID uid.ID) {
+	_EmitEventTreeNodeAddChild(entity, entity.getInstance(), childID)
 }
 
-func (entity *EntityBehavior) emitEventTreeNodeRemoveChild(childId uid.Id) {
-	_EmitEventTreeNodeRemoveChild(entity, entity.getInstance(), childId)
+func (entity *EntityBehavior) emitEventTreeNodeRemoveChild(childID uid.ID) {
+	_EmitEventTreeNodeRemoveChild(entity, entity.getInstance(), childID)
 }
 
-func (entity *EntityBehavior) emitEventTreeNodeAttachParent(parentId uid.Id) {
-	_EmitEventTreeNodeAttachParent(entity, entity.getInstance(), parentId)
+func (entity *EntityBehavior) emitEventTreeNodeAttachParent(parentID uid.ID) {
+	_EmitEventTreeNodeAttachParent(entity, entity.getInstance(), parentID)
 }
 
-func (entity *EntityBehavior) emitEventTreeNodeDetachParent(parentId uid.Id) {
-	_EmitEventTreeNodeDetachParent(entity, entity.getInstance(), parentId)
+func (entity *EntityBehavior) emitEventTreeNodeDetachParent(parentID uid.ID) {
+	_EmitEventTreeNodeDetachParent(entity, entity.getInstance(), parentID)
 }
 
-func (entity *EntityBehavior) emitEventTreeNodeMoveTo(fromParentId, toParentId uid.Id) {
-	_EmitEventTreeNodeMoveTo(entity, entity.getInstance(), fromParentId, toParentId)
+func (entity *EntityBehavior) emitEventTreeNodeMoveTo(fromParentID, toParentID uid.ID) {
+	_EmitEventTreeNodeMoveTo(entity, entity.getInstance(), fromParentID, toParentID)
 }

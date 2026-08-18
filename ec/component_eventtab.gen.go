@@ -31,9 +31,9 @@ type IComponentEventTab interface {
 }
 
 var (
-	_componentEventTabId = event.DeclareEventTabIdT[componentEventTab]()
-	EventComponentEnableChangedId = event.DeclareEventIdT[componentEventTab](0)
-	EventComponentDestroyId = event.DeclareEventIdT[componentEventTab](1)
+	_componentEventTabID          = event.DeclareEventTabIDT[componentEventTab]()
+	EventComponentEnableChangedID = event.DeclareEventIDT[componentEventTab](0)
+	EventComponentDestroyID       = event.DeclareEventIDT[componentEventTab](1)
 )
 
 type componentEventTab [2]event.Event
@@ -66,8 +66,8 @@ func (eventTab *componentEventTab) Ctrl() event.IEventCtrl {
 }
 
 func (eventTab *componentEventTab) Event(id uint64) event.IEvent {
-	eventTabId, pos := event.SplitEventId(id)
-	if _componentEventTabId != eventTabId || pos >= len(eventTab) {
+	eventTabID, pos := event.SplitEventID(id)
+	if _componentEventTabID != eventTabID || pos >= len(eventTab) {
 		return nil
 	}
 	switch pos {

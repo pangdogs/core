@@ -35,13 +35,13 @@ type IEntityManagerEventTab interface {
 }
 
 var (
-	_entityManagerEventTabId = event.DeclareEventTabIdT[entityManagerEventTab]()
-	EventEntityManagerAddEntityId = event.DeclareEventIdT[entityManagerEventTab](0)
-	EventEntityManagerRemoveEntityId = event.DeclareEventIdT[entityManagerEventTab](1)
-	EventEntityManagerEntityAddComponentsId = event.DeclareEventIdT[entityManagerEventTab](2)
-	EventEntityManagerEntityRemoveComponentId = event.DeclareEventIdT[entityManagerEventTab](3)
-	EventEntityManagerEntityComponentEnableChangedId = event.DeclareEventIdT[entityManagerEventTab](4)
-	EventEntityManagerEntityFirstTouchComponentId = event.DeclareEventIdT[entityManagerEventTab](5)
+	_entityManagerEventTabID                         = event.DeclareEventTabIDT[entityManagerEventTab]()
+	EventEntityManagerAddEntityID                    = event.DeclareEventIDT[entityManagerEventTab](0)
+	EventEntityManagerRemoveEntityID                 = event.DeclareEventIDT[entityManagerEventTab](1)
+	EventEntityManagerEntityAddComponentsID          = event.DeclareEventIDT[entityManagerEventTab](2)
+	EventEntityManagerEntityRemoveComponentID        = event.DeclareEventIDT[entityManagerEventTab](3)
+	EventEntityManagerEntityComponentEnableChangedID = event.DeclareEventIDT[entityManagerEventTab](4)
+	EventEntityManagerEntityFirstTouchComponentID    = event.DeclareEventIDT[entityManagerEventTab](5)
 )
 
 type entityManagerEventTab [6]event.Event
@@ -78,8 +78,8 @@ func (eventTab *entityManagerEventTab) Ctrl() event.IEventCtrl {
 }
 
 func (eventTab *entityManagerEventTab) Event(id uint64) event.IEvent {
-	eventTabId, pos := event.SplitEventId(id)
-	if _entityManagerEventTabId != eventTabId || pos >= len(eventTab) {
+	eventTabID, pos := event.SplitEventID(id)
+	if _entityManagerEventTabID != eventTabID || pos >= len(eventTab) {
 		return nil
 	}
 	switch pos {

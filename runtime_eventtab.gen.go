@@ -31,9 +31,9 @@ type iRuntimeEventTab interface {
 }
 
 var (
-	_runtimeEventTabId = event.DeclareEventTabIdT[runtimeEventTab]()
-	eventUpdateId = event.DeclareEventIdT[runtimeEventTab](0)
-	eventLateUpdateId = event.DeclareEventIdT[runtimeEventTab](1)
+	_runtimeEventTabID = event.DeclareEventTabIDT[runtimeEventTab]()
+	eventUpdateID      = event.DeclareEventIDT[runtimeEventTab](0)
+	eventLateUpdateID  = event.DeclareEventIDT[runtimeEventTab](1)
 )
 
 type runtimeEventTab [2]event.Event
@@ -66,8 +66,8 @@ func (eventTab *runtimeEventTab) Ctrl() event.IEventCtrl {
 }
 
 func (eventTab *runtimeEventTab) Event(id uint64) event.IEvent {
-	eventTabId, pos := event.SplitEventId(id)
-	if _runtimeEventTabId != eventTabId || pos >= len(eventTab) {
+	eventTabID, pos := event.SplitEventID(id)
+	if _runtimeEventTabID != eventTabID || pos >= len(eventTab) {
 		return nil
 	}
 	switch pos {

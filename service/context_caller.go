@@ -31,12 +31,12 @@ import (
 
 // Caller 通过全局 Entity ID 把任务投递到实体所属 Runtime。
 type Caller interface {
-	Submit(entityID uid.Id, fun generic.FuncVar1[ec.Entity, any, async.Result], args ...any) async.Future
-	SubmitDelegate(entityID uid.Id, fun generic.DelegateVar1[ec.Entity, any, async.Result], args ...any) async.Future
-	SubmitVoid(entityID uid.Id, fun generic.ActionVar1[ec.Entity, any], args ...any) async.Future
-	SubmitDelegateVoid(entityID uid.Id, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) async.Future
-	Post(entityID uid.Id, fun generic.ActionVar1[ec.Entity, any], args ...any) error
-	PostDelegate(entityID uid.Id, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) error
+	Submit(entityID uid.ID, fun generic.FuncVar1[ec.Entity, any, async.Result], args ...any) async.Future
+	SubmitDelegate(entityID uid.ID, fun generic.DelegateVar1[ec.Entity, any, async.Result], args ...any) async.Future
+	SubmitVoid(entityID uid.ID, fun generic.ActionVar1[ec.Entity, any], args ...any) async.Future
+	SubmitDelegateVoid(entityID uid.ID, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) async.Future
+	Post(entityID uid.ID, fun generic.ActionVar1[ec.Entity, any], args ...any) error
+	PostDelegate(entityID uid.ID, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) error
 }
 
 //go:linkname submit git.golaxy.org/core/runtime.submit
@@ -57,7 +57,7 @@ func post(entity ec.ConcurrentEntity, fun generic.ActionVar1[ec.Entity, any], ar
 //go:linkname postDelegate git.golaxy.org/core/runtime.postDelegate
 func postDelegate(entity ec.ConcurrentEntity, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) error
 
-func (ctx *ContextBehavior) Submit(entityID uid.Id, fun generic.FuncVar1[ec.Entity, any, async.Result], args ...any) async.Future {
+func (ctx *ContextBehavior) Submit(entityID uid.ID, fun generic.FuncVar1[ec.Entity, any, async.Result], args ...any) async.Future {
 	entity, err := ctx.getEntity(entityID)
 	if err != nil {
 		return async.Rejected(err)
@@ -65,7 +65,7 @@ func (ctx *ContextBehavior) Submit(entityID uid.Id, fun generic.FuncVar1[ec.Enti
 	return submit(entity, fun, args...)
 }
 
-func (ctx *ContextBehavior) SubmitDelegate(entityID uid.Id, fun generic.DelegateVar1[ec.Entity, any, async.Result], args ...any) async.Future {
+func (ctx *ContextBehavior) SubmitDelegate(entityID uid.ID, fun generic.DelegateVar1[ec.Entity, any, async.Result], args ...any) async.Future {
 	entity, err := ctx.getEntity(entityID)
 	if err != nil {
 		return async.Rejected(err)
@@ -73,7 +73,7 @@ func (ctx *ContextBehavior) SubmitDelegate(entityID uid.Id, fun generic.Delegate
 	return submitDelegate(entity, fun, args...)
 }
 
-func (ctx *ContextBehavior) SubmitVoid(entityID uid.Id, fun generic.ActionVar1[ec.Entity, any], args ...any) async.Future {
+func (ctx *ContextBehavior) SubmitVoid(entityID uid.ID, fun generic.ActionVar1[ec.Entity, any], args ...any) async.Future {
 	entity, err := ctx.getEntity(entityID)
 	if err != nil {
 		return async.Rejected(err)
@@ -81,7 +81,7 @@ func (ctx *ContextBehavior) SubmitVoid(entityID uid.Id, fun generic.ActionVar1[e
 	return submitVoid(entity, fun, args...)
 }
 
-func (ctx *ContextBehavior) SubmitDelegateVoid(entityID uid.Id, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) async.Future {
+func (ctx *ContextBehavior) SubmitDelegateVoid(entityID uid.ID, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) async.Future {
 	entity, err := ctx.getEntity(entityID)
 	if err != nil {
 		return async.Rejected(err)
@@ -90,7 +90,7 @@ func (ctx *ContextBehavior) SubmitDelegateVoid(entityID uid.Id, fun generic.Dele
 }
 
 // Post 只报告实体查询和入队错误；任务执行前实体已经失活时会静默丢弃。
-func (ctx *ContextBehavior) Post(entityID uid.Id, fun generic.ActionVar1[ec.Entity, any], args ...any) error {
+func (ctx *ContextBehavior) Post(entityID uid.ID, fun generic.ActionVar1[ec.Entity, any], args ...any) error {
 	entity, err := ctx.getEntity(entityID)
 	if err != nil {
 		return err
@@ -99,7 +99,7 @@ func (ctx *ContextBehavior) Post(entityID uid.Id, fun generic.ActionVar1[ec.Enti
 }
 
 // PostDelegate 是 Post 的 DelegateVoid 版本。
-func (ctx *ContextBehavior) PostDelegate(entityID uid.Id, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) error {
+func (ctx *ContextBehavior) PostDelegate(entityID uid.ID, fun generic.DelegateVoidVar1[ec.Entity, any], args ...any) error {
 	entity, err := ctx.getEntity(entityID)
 	if err != nil {
 		return err
@@ -107,7 +107,7 @@ func (ctx *ContextBehavior) PostDelegate(entityID uid.Id, fun generic.DelegateVo
 	return postDelegate(entity, fun, args...)
 }
 
-func (ctx *ContextBehavior) getEntity(id uid.Id) (ec.ConcurrentEntity, error) {
+func (ctx *ContextBehavior) getEntity(id uid.ID) (ec.ConcurrentEntity, error) {
 	entity, ok := ctx.entityManager.GetEntity(id)
 	if !ok {
 		return nil, fmt.Errorf("%w: entity not exist", ErrContext)

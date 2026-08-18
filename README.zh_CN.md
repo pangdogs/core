@@ -158,7 +158,7 @@ sequenceDiagram
 
 - `Scope_Local`：只能从所属 Runtime 的本地索引访问。
 - `Scope_Global`：除本地索引外，还会注册到 Service 的并发安全全局索引。
-- `service.Context.Submit(entityId, ...)` 或 `Post(entityId, ...)` 先从全局索引取得 `ConcurrentEntity`，再把任务投递到目标 Runtime。
+- `service.Context.Submit(entityID, ...)` 或 `Post(entityID, ...)` 先从全局索引取得 `ConcurrentEntity`，再把任务投递到目标 Runtime。
 - Core 的“全局”只表示同一 Service 进程内跨 Runtime 可寻址；跨节点寻址由上层 Framework 的分布式实体和 RPC 能力负责。
 
 ## 生命周期
@@ -629,7 +629,7 @@ type PlayerState struct {
 }
 
 func (p *PlayerState) Awake() {
-	log.Printf("player %s awake", p.Entity().Id())
+	log.Printf("player %s awake", p.Entity().ID())
 }
 
 func main() {
@@ -682,7 +682,7 @@ func main() {
 | Service 父 Context | `context.Background()` | 未显式提供时使用。 |
 | Runtime 父 Context | 所属 Service Context | Service 取消会向 Runtime 传播。 |
 | `AutoRecover` | `false` | panic 默认继续传播。 |
-| Service / Runtime 持久化 ID | 自动生成 | 使用 `uid.Id`。 |
+| Service / Runtime 持久化 ID | 自动生成 | 使用 `uid.ID`。 |
 | Entity Scope | `Scope_Global` | 同时进入 Runtime 本地索引和 Service 全局索引。 |
 | Entity 持久化 ID | 加入 Runtime 时自动生成 | 可在构造时覆盖。 |
 | Component 首次访问优先 `Awake` | `false` | 开启后，激活期间的组件访问只会提前处理目标组件待完成的 `Awake`，后续阶段不变。 |

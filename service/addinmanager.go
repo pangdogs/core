@@ -52,7 +52,7 @@ func NewAddInManager() AddInManager {
 	mgr := &_AddInManager{}
 	mgr.snapshot.Store(&_AddInManagerSnapshot{
 		addInNameIndex: map[string]*_AddInStatus{},
-		addInIdIndex:   map[uint64]*_AddInStatus{},
+		addInIDIndex:   map[uint64]*_AddInStatus{},
 	})
 	return mgr
 }
@@ -66,7 +66,7 @@ type _AddInManager struct {
 type _AddInManagerSnapshot struct {
 	frozen         bool
 	addInNameIndex map[string]*_AddInStatus
-	addInIdIndex   map[uint64]*_AddInStatus
+	addInIDIndex   map[uint64]*_AddInStatus
 	addInList      []*_AddInStatus
 }
 
@@ -75,7 +75,7 @@ func (snapshot *_AddInManagerSnapshot) clone() *_AddInManagerSnapshot {
 	return &_AddInManagerSnapshot{
 		frozen:         snapshot.frozen,
 		addInNameIndex: maps.Clone(snapshot.addInNameIndex),
-		addInIdIndex:   maps.Clone(snapshot.addInIdIndex),
+		addInIDIndex:   maps.Clone(snapshot.addInIDIndex),
 		addInList:      slices.Clone(snapshot.addInList),
 	}
 }
@@ -88,7 +88,7 @@ func (snapshot *_AddInManagerSnapshot) remove(status *_AddInStatus) {
 	}
 
 	delete(snapshot.addInNameIndex, status.name)
-	delete(snapshot.addInIdIndex, status.id)
+	delete(snapshot.addInIDIndex, status.id)
 
 	idx := slices.Index(snapshot.addInList, status)
 	if idx >= 0 {
@@ -118,7 +118,7 @@ func (mgr *_AddInManager) Install(addInFace iface.FaceAny, name ...string) exten
 		exception.Panicf("%w: anonymous add-in not allowed", extension.ErrExtension)
 	}
 
-	id := extension.GenAddInId(addInName)
+	id := extension.GenAddInID(addInName)
 	status := &_AddInStatus{
 		mgr:          mgr,
 		id:           id,
@@ -134,13 +134,13 @@ func (mgr *_AddInManager) Install(addInFace iface.FaceAny, name ...string) exten
 		if _, ok := snapshot.addInNameIndex[addInName]; ok {
 			exception.Panicf("%w: add-in %q is already installed", extension.ErrExtension, addInName)
 		}
-		if exists, ok := snapshot.addInIdIndex[id]; ok {
+		if exists, ok := snapshot.addInIDIndex[id]; ok {
 			exception.Panicf("%w: add-in %q id %d conflict with %q, rename required", extension.ErrExtension, addInName, id, exists.name)
 		}
 
 		next := snapshot.clone()
 		next.addInNameIndex[addInName] = status
-		next.addInIdIndex[id] = status
+		next.addInIDIndex[id] = status
 		next.addInList = append(next.addInList, status)
 
 		if mgr.snapshot.CompareAndSwap(snapshot, next) {
@@ -179,9 +179,9 @@ func (mgr *_AddInManager) GetStatusByName(name string) (extension.AddInStatus, b
 	return status, ok
 }
 
-// GetStatusById 按 ID 查询当前已安装插件的状态信息。
-func (mgr *_AddInManager) GetStatusById(id uint64) (extension.AddInStatus, bool) {
-	status, ok := mgr.snapshot.Load().addInIdIndex[id]
+// GetStatusByID 按 ID 查询当前已安装插件的状态信息。
+func (mgr *_AddInManager) GetStatusByID(id uint64) (extension.AddInStatus, bool) {
+	status, ok := mgr.snapshot.Load().addInIDIndex[id]
 	return status, ok
 }
 
@@ -208,7 +208,7 @@ func (mgr *_AddInManager) freeze() []AddInStatus {
 		next := &_AddInManagerSnapshot{
 			frozen:         true,
 			addInNameIndex: snapshot.addInNameIndex,
-			addInIdIndex:   snapshot.addInIdIndex,
+			addInIDIndex:   snapshot.addInIDIndex,
 			addInList:      snapshot.addInList,
 		}
 		if !mgr.snapshot.CompareAndSwap(snapshot, next) {

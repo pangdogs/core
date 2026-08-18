@@ -22,8 +22,8 @@
 package runtime
 
 import (
-	event "git.golaxy.org/core/event"
 	"git.golaxy.org/core/ec"
+	event "git.golaxy.org/core/event"
 )
 
 type iAutoEventEntityManagerAddEntity interface {

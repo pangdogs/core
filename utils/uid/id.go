@@ -23,28 +23,28 @@ import "github.com/rs/xid"
 
 var (
 	// Nil 是空 ID。
-	Nil Id = ""
+	Nil ID = ""
 
 	// New 生成新的 xid 字符串 ID。
-	New = func() Id {
-		return Id(xid.New().String())
+	New = func() ID {
+		return ID(xid.New().String())
 	}
 
 	// From 将字符串直接转换为 ID，不执行格式校验。
-	From = func(str string) Id {
-		return Id(str)
+	From = func(str string) ID {
+		return ID(str)
 	}
 )
 
-// Id 是框架统一使用的字符串标识类型。
-type Id string
+// ID 是框架统一使用的字符串标识类型。
+type ID string
 
 // IsNil 报告 ID 是否为空。
-func (id Id) IsNil() bool {
+func (id ID) IsNil() bool {
 	return id == Nil
 }
 
 // String 返回 ID 的原始字符串。
-func (id Id) String() string {
+func (id ID) String() string {
 	return string(id)
 }

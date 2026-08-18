@@ -34,8 +34,8 @@ type AddInManager interface {
 	Uninstall(name string)
 	// GetStatusByName 按名称查询当前由管理器持有的插件状态。
 	GetStatusByName(name string) (AddInStatus, bool)
-	// GetStatusById 按 ID 查询当前由管理器持有的插件状态。
-	GetStatusById(id uint64) (AddInStatus, bool)
+	// GetStatusByID 按 ID 查询当前由管理器持有的插件状态。
+	GetStatusByID(id uint64) (AddInStatus, bool)
 	// ListStatuses 返回当前由管理器持有的全部插件状态。
 	ListStatuses() []AddInStatus
 }

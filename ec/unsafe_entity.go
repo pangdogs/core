@@ -50,9 +50,9 @@ func (u _UnsafeEntity) Instance() Entity {
 	return u.getInstance()
 }
 
-// SetId 设置实体 ID。
-func (u _UnsafeEntity) SetId(id uid.Id) {
-	u.setId(id)
+// SetID 设置实体 ID。
+func (u _UnsafeEntity) SetID(id uid.ID) {
+	u.setID(id)
 }
 
 // SetPT 绑定实体原型。
@@ -126,26 +126,26 @@ func (u _UnsafeEntity) SetTreeNodeState(state TreeNodeState) {
 }
 
 // EmitEventTreeNodeAddChild 派发直接子实体添加事件。
-func (u _UnsafeEntity) EmitEventTreeNodeAddChild(childId uid.Id) {
-	u.emitEventTreeNodeAddChild(childId)
+func (u _UnsafeEntity) EmitEventTreeNodeAddChild(childID uid.ID) {
+	u.emitEventTreeNodeAddChild(childID)
 }
 
 // EmitEventTreeNodeRemoveChild 派发直接子实体移除事件。
-func (u _UnsafeEntity) EmitEventTreeNodeRemoveChild(childId uid.Id) {
-	u.emitEventTreeNodeRemoveChild(childId)
+func (u _UnsafeEntity) EmitEventTreeNodeRemoveChild(childID uid.ID) {
+	u.emitEventTreeNodeRemoveChild(childID)
 }
 
 // EmitEventTreeNodeAttachParent 派发接入父节点事件。
-func (u _UnsafeEntity) EmitEventTreeNodeAttachParent(parentId uid.Id) {
-	u.emitEventTreeNodeAttachParent(parentId)
+func (u _UnsafeEntity) EmitEventTreeNodeAttachParent(parentID uid.ID) {
+	u.emitEventTreeNodeAttachParent(parentID)
 }
 
 // EmitEventTreeNodeDetachParent 派发脱离父节点事件。
-func (u _UnsafeEntity) EmitEventTreeNodeDetachParent(parentId uid.Id) {
-	u.emitEventTreeNodeDetachParent(parentId)
+func (u _UnsafeEntity) EmitEventTreeNodeDetachParent(parentID uid.ID) {
+	u.emitEventTreeNodeDetachParent(parentID)
 }
 
 // EmitEventTreeNodeMoveTo 派发父节点变更事件。
-func (u _UnsafeEntity) EmitEventTreeNodeMoveTo(fromParentId, toParentId uid.Id) {
-	u.emitEventTreeNodeMoveTo(fromParentId, toParentId)
+func (u _UnsafeEntity) EmitEventTreeNodeMoveTo(fromParentID, toParentID uid.ID) {
+	u.emitEventTreeNodeMoveTo(fromParentID, toParentID)
 }

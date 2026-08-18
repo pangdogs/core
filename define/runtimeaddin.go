@@ -32,7 +32,7 @@ func RuntimeAddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, AD
 	addIn := defineAddIn[ADDIN_IFACE, SETTING](creator, pie.First(name))
 
 	return RuntimeAddInDefinition[ADDIN_IFACE, SETTING]{
-		Id:        addIn.Id,
+		ID:        addIn.ID,
 		Name:      addIn.Name,
 		Install:   addIn.Install,
 		Uninstall: addIn.Uninstall,
@@ -43,7 +43,7 @@ func RuntimeAddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, AD
 
 // RuntimeAddInDefinition 封装运行时插件的标识、构造和访问操作。
 type RuntimeAddInDefinition[ADDIN_IFACE, SETTING any] struct {
-	Id        uint64                                                // 由 Name 生成的插件 ID。
+	ID        uint64                                                // 由 Name 生成的插件 ID。
 	Name      string                                                // 插件注册名称。
 	Install   generic.ActionVar1[extension.AddInProvider, SETTING]  // 构造插件并安装到给定提供者。
 	Uninstall generic.Action1[extension.AddInProvider]              // 从给定提供者卸载插件。

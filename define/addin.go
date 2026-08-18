@@ -35,7 +35,7 @@ func AddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADDIN_IFA
 
 // AddInDefinition 封装通用插件的标识、构造和访问操作。
 type AddInDefinition[ADDIN_IFACE, SETTING any] struct {
-	Id        uint64                                                        // 由 Name 生成的插件 ID。
+	ID        uint64                                                        // 由 Name 生成的插件 ID。
 	Name      string                                                        // 插件注册名称。
 	Install   generic.ActionVar1[extension.AddInProvider, SETTING]          // 构造插件并安装到给定提供者。
 	Uninstall generic.Action1[extension.AddInProvider]                      // 从给定提供者卸载插件。
@@ -53,10 +53,10 @@ func defineAddIn[ADDIN_IFACE, SETTING any](creator generic.FuncVar0[SETTING, ADD
 	if name == "" {
 		exception.Panicf("%w: anonymous add-in not allowed", extension.ErrExtension)
 	}
-	id := extension.GenAddInId(name)
+	id := extension.GenAddInID(name)
 
 	return AddInDefinition[ADDIN_IFACE, SETTING]{
-		Id:   id,
+		ID:   id,
 		Name: name,
 		Install: func(provider extension.AddInProvider, settings ...SETTING) {
 			extension.Install[ADDIN_IFACE](provider, creator(settings...), name)

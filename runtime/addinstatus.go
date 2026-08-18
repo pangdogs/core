@@ -57,8 +57,8 @@ type _AddInStatus struct {
 	stringer              string
 }
 
-// Id 返回由插件名称生成的 ID。
-func (s *_AddInStatus) Id() uint64 {
+// ID 返回由插件名称生成的 ID。
+func (s *_AddInStatus) ID() uint64 {
 	return s.id
 }
 

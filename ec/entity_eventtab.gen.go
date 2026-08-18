@@ -30,8 +30,8 @@ type IEntityEventTab interface {
 }
 
 var (
-	_entityEventTabId = event.DeclareEventTabIdT[entityEventTab]()
-	EventEntityDestroyId = event.DeclareEventIdT[entityEventTab](0)
+	_entityEventTabID    = event.DeclareEventTabIDT[entityEventTab]()
+	EventEntityDestroyID = event.DeclareEventIDT[entityEventTab](0)
 )
 
 type entityEventTab [1]event.Event
@@ -63,8 +63,8 @@ func (eventTab *entityEventTab) Ctrl() event.IEventCtrl {
 }
 
 func (eventTab *entityEventTab) Event(id uint64) event.IEvent {
-	eventTabId, pos := event.SplitEventId(id)
-	if _entityEventTabId != eventTabId || pos >= len(eventTab) {
+	eventTabID, pos := event.SplitEventID(id)
+	if _entityEventTabID != eventTabID || pos >= len(eventTab) {
 		return nil
 	}
 	switch pos {

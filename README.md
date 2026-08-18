@@ -158,7 +158,7 @@ Every Entity exists in the local `EntityManager` of its owning Runtime:
 
 - `Scope_Local`: the Entity is visible only through the local Runtime index.
 - `Scope_Global`: the Entity is also registered in the concurrency-safe Service-level index.
-- `service.Context.Submit(entityId, ...)` or `Post(entityId, ...)` resolves a `ConcurrentEntity` from the global index, then enqueues work onto the target Runtime.
+- `service.Context.Submit(entityID, ...)` or `Post(entityID, ...)` resolves a `ConcurrentEntity` from the global index, then enqueues work onto the target Runtime.
 - “Global” in Core means addressable across runtimes within the same Service process. Cross-node addressing belongs to Framework distributed-entity and RPC capabilities.
 
 ## Lifecycles
@@ -631,7 +631,7 @@ type PlayerState struct {
 }
 
 func (p *PlayerState) Awake() {
-	log.Printf("player %s awake", p.Entity().Id())
+	log.Printf("player %s awake", p.Entity().ID())
 }
 
 func main() {
@@ -684,7 +684,7 @@ See [`core_test.go`](./core_test.go) for more scenario-style examples.
 | Service parent Context | `context.Background()` | Used when no parent is supplied. |
 | Runtime parent Context | Owning Service Context | Service cancellation propagates to Runtime. |
 | `AutoRecover` | `false` | Panics propagate by default. |
-| Service / Runtime persistent ID | Generated | Uses `uid.Id`. |
+| Service / Runtime persistent ID | Generated | Uses `uid.ID`. |
 | Entity Scope | `Scope_Global` | Enters both the Runtime-local and Service-global indexes. |
 | Entity persistent ID | Generated when entering Runtime | May be overridden during construction. |
 | Component first-touch `Awake` | `false` | When enabled, Component access during activation may advance only the target's pending `Awake`; later phases are unchanged. |

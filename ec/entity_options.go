@@ -30,7 +30,7 @@ import (
 type EntityOptions struct {
 	InstanceFace               iface.Face[Entity] // InstanceFace 是用于扩展实体行为的实际实例。
 	Scope                      Scope              // Scope 是实体的可查询范围。
-	PersistId                  uid.Id             // PersistId 是实体的持久化 ID；Nil 表示由框架分配。
+	PersistID                  uid.ID             // PersistID 是实体的持久化 ID；Nil 表示由框架分配。
 	ComponentAwakeOnFirstTouch bool               // ComponentAwakeOnFirstTouch 指示正常激活期间被访问的组件是否优先执行 Awake。
 	ComponentUniqueID          bool               // ComponentUniqueID 指示是否为每个组件分配唯一 ID。
 	Meta                       meta.Meta          // Meta 是随实体携带的元数据。
@@ -46,7 +46,7 @@ func (_EntityOption) Default() option.Setting[EntityOptions] {
 	return func(options *EntityOptions) {
 		With.InstanceFace(iface.Face[Entity]{}).Apply(options)
 		With.Scope(Scope_Global).Apply(options)
-		With.PersistId(uid.Nil).Apply(options)
+		With.PersistID(uid.Nil).Apply(options)
 		With.ComponentAwakeOnFirstTouch(false).Apply(options)
 		With.ComponentUniqueID(false).Apply(options)
 		With.Meta(nil).Apply(options)
@@ -67,10 +67,10 @@ func (_EntityOption) Scope(scope Scope) option.Setting[EntityOptions] {
 	}
 }
 
-// PersistId 设置实体的持久化 ID。
-func (_EntityOption) PersistId(id uid.Id) option.Setting[EntityOptions] {
+// PersistID 设置实体的持久化 ID。
+func (_EntityOption) PersistID(id uid.ID) option.Setting[EntityOptions] {
 	return func(options *EntityOptions) {
-		options.PersistId = id
+		options.PersistID = id
 	}
 }
 

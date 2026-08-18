@@ -34,12 +34,12 @@ type IEntityTreeNodeEventTab interface {
 }
 
 var (
-	_entityTreeNodeEventTabId = event.DeclareEventTabIdT[entityTreeNodeEventTab]()
-	EventTreeNodeAddChildId = event.DeclareEventIdT[entityTreeNodeEventTab](0)
-	EventTreeNodeRemoveChildId = event.DeclareEventIdT[entityTreeNodeEventTab](1)
-	EventTreeNodeAttachParentId = event.DeclareEventIdT[entityTreeNodeEventTab](2)
-	EventTreeNodeDetachParentId = event.DeclareEventIdT[entityTreeNodeEventTab](3)
-	EventTreeNodeMoveToId = event.DeclareEventIdT[entityTreeNodeEventTab](4)
+	_entityTreeNodeEventTabID   = event.DeclareEventTabIDT[entityTreeNodeEventTab]()
+	EventTreeNodeAddChildID     = event.DeclareEventIDT[entityTreeNodeEventTab](0)
+	EventTreeNodeRemoveChildID  = event.DeclareEventIDT[entityTreeNodeEventTab](1)
+	EventTreeNodeAttachParentID = event.DeclareEventIDT[entityTreeNodeEventTab](2)
+	EventTreeNodeDetachParentID = event.DeclareEventIDT[entityTreeNodeEventTab](3)
+	EventTreeNodeMoveToID       = event.DeclareEventIDT[entityTreeNodeEventTab](4)
 )
 
 type entityTreeNodeEventTab [5]event.Event
@@ -75,8 +75,8 @@ func (eventTab *entityTreeNodeEventTab) Ctrl() event.IEventCtrl {
 }
 
 func (eventTab *entityTreeNodeEventTab) Event(id uint64) event.IEvent {
-	eventTabId, pos := event.SplitEventId(id)
-	if _entityTreeNodeEventTabId != eventTabId || pos >= len(eventTab) {
+	eventTabID, pos := event.SplitEventID(id)
+	if _entityTreeNodeEventTabID != eventTabID || pos >= len(eventTab) {
 		return nil
 	}
 	switch pos {

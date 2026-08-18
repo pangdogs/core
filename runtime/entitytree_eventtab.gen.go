@@ -32,10 +32,10 @@ type IEntityTreeEventTab interface {
 }
 
 var (
-	_entityTreeEventTabId = event.DeclareEventTabIdT[entityTreeEventTab]()
-	EventEntityTreeAddNodeId = event.DeclareEventIdT[entityTreeEventTab](0)
-	EventEntityTreeRemoveNodeId = event.DeclareEventIdT[entityTreeEventTab](1)
-	EventEntityTreeMoveNodeId = event.DeclareEventIdT[entityTreeEventTab](2)
+	_entityTreeEventTabID       = event.DeclareEventTabIDT[entityTreeEventTab]()
+	EventEntityTreeAddNodeID    = event.DeclareEventIDT[entityTreeEventTab](0)
+	EventEntityTreeRemoveNodeID = event.DeclareEventIDT[entityTreeEventTab](1)
+	EventEntityTreeMoveNodeID   = event.DeclareEventIDT[entityTreeEventTab](2)
 )
 
 type entityTreeEventTab [3]event.Event
@@ -69,8 +69,8 @@ func (eventTab *entityTreeEventTab) Ctrl() event.IEventCtrl {
 }
 
 func (eventTab *entityTreeEventTab) Event(id uint64) event.IEvent {
-	eventTabId, pos := event.SplitEventId(id)
-	if _entityTreeEventTabId != eventTabId || pos >= len(eventTab) {
+	eventTabID, pos := event.SplitEventID(id)
+	if _entityTreeEventTabID != eventTabID || pos >= len(eventTab) {
 		return nil
 	}
 	switch pos {

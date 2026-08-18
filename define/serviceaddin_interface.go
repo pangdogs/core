@@ -31,7 +31,7 @@ func ServiceAddInInterface[ADDIN_IFACE any](name ...string) ServiceAddInInterfac
 	addIn := defineAddInInterface[ADDIN_IFACE](pie.First(name))
 
 	return ServiceAddInInterfaceDefinition[ADDIN_IFACE]{
-		Id:      addIn.Id,
+		ID:      addIn.ID,
 		Name:    addIn.Name,
 		Require: func(svcCtx service.Context) ADDIN_IFACE { return addIn.Require(svcCtx) },
 		Lookup:  func(svcCtx service.Context) (ADDIN_IFACE, bool) { return addIn.Lookup(svcCtx) },
@@ -40,7 +40,7 @@ func ServiceAddInInterface[ADDIN_IFACE any](name ...string) ServiceAddInInterfac
 
 // ServiceAddInInterfaceDefinition 封装服务插件接口的标识和访问操作。
 type ServiceAddInInterfaceDefinition[ADDIN_IFACE any] struct {
-	Id      uint64                                                // 由 Name 生成的插件 ID。
+	ID      uint64                                                // 由 Name 生成的插件 ID。
 	Name    string                                                // 插件注册名称。
 	Require generic.Func1[service.Context, ADDIN_IFACE]           // 从服务获取正在运行的插件，不可用时 panic。
 	Lookup  generic.FuncPair1[service.Context, ADDIN_IFACE, bool] // 查询服务管理器当前持有的插件。

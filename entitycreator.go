@@ -70,9 +70,9 @@ func (c *EntityCreator) SetScope(scope ec.Scope) *EntityCreator {
 	return c
 }
 
-// SetPersistId 设置实体的持久化 ID。
-func (c *EntityCreator) SetPersistId(id uid.Id) *EntityCreator {
-	c.settings = append(c.settings, ec.With.PersistId(id))
+// SetPersistID 设置实体的持久化 ID。
+func (c *EntityCreator) SetPersistID(id uid.ID) *EntityCreator {
+	c.settings = append(c.settings, ec.With.PersistID(id))
 	return c
 }
 

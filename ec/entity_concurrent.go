@@ -42,8 +42,8 @@ type ConcurrentEntity interface {
 	corectx.AsyncScopeProvider
 	fmt.Stringer
 
-	// Id 返回实体 ID。
-	Id() uid.Id
+	// ID 返回实体 ID。
+	ID() uid.ID
 	// PT 返回实体原型。
 	PT() EntityPT
 }
@@ -105,7 +105,7 @@ func (entity *EntityBehavior) String() string {
 		return ""
 	}
 
-	value := fmt.Sprintf(`{"id":%q,"prototype":%q}`, entity.Id(), entity.PT().Prototype())
+	value := fmt.Sprintf(`{"id":%q,"prototype":%q}`, entity.ID(), entity.PT().Prototype())
 	if entity.stringerCache.CompareAndSwap(nil, &value) {
 		return value
 	}

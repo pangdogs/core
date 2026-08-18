@@ -44,8 +44,8 @@ type ConcurrentContext interface {
 
 	// Name 返回运行时名称。
 	Name() string
-	// Id 返回运行时的持久化 ID。
-	Id() uid.Id
+	// ID 返回运行时的持久化 ID。
+	ID() uid.ID
 	// ExecutorID 返回进程内 Runtime 执行器 ID。
 	ExecutorID() async.ExecutorID
 	// BlockedFutureID 返回当前阻塞等待的 Future ID。
@@ -84,7 +84,7 @@ func (ctx *ContextBehavior) String() string {
 		return *cached
 	}
 
-	value := fmt.Sprintf(`{"id":%q,"name":%q}`, ctx.Id(), ctx.Name())
+	value := fmt.Sprintf(`{"id":%q,"name":%q}`, ctx.ID(), ctx.Name())
 	if ctx.stringerCache.CompareAndSwap(nil, &value) {
 		return value
 	}

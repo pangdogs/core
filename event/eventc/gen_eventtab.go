@@ -152,11 +152,11 @@ type i%[1]s interface {
 		{
 			fmt.Fprintln(code, `
 var (`)
-			fmt.Fprintf(code, `	_%[1]sId = %[2]sDeclareEventTabIdT[%[1]s]()
+			fmt.Fprintf(code, `	_%[1]sID = %[2]sDeclareEventTabIDT[%[1]s]()
 `, tabName, eventPrefix)
 
 			for i, event := range eventDeclTab.Events {
-				fmt.Fprintf(code, `	%[3]sId = %[2]sDeclareEventIdT[%[1]s](%[4]d)
+				fmt.Fprintf(code, `	%[3]sID = %[2]sDeclareEventIDT[%[1]s](%[4]d)
 `, tabName, eventPrefix, event.Name, i)
 			}
 
@@ -192,8 +192,8 @@ func (eventTab *%[1]s) Ctrl() %[4]sIEventCtrl {
 }
 
 func (eventTab *%[1]s) Event(id uint64) %[4]sIEvent {
-	eventTabId, pos := %[4]sSplitEventId(id)
-	if _%[1]sId != eventTabId || pos >= len(eventTab) {
+	eventTabID, pos := %[4]sSplitEventID(id)
+	if _%[1]sID != eventTabID || pos >= len(eventTab) {
 		return nil
 	}%[5]s
 	return &eventTab[pos]

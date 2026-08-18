@@ -31,7 +31,7 @@ func RuntimeAddInInterface[ADDIN_IFACE any](name ...string) RuntimeAddInInterfac
 	addIn := defineAddInInterface[ADDIN_IFACE](pie.First(name))
 
 	return RuntimeAddInInterfaceDefinition[ADDIN_IFACE]{
-		Id:      addIn.Id,
+		ID:      addIn.ID,
 		Name:    addIn.Name,
 		Require: func(rtCtx runtime.Context) ADDIN_IFACE { return addIn.Require(rtCtx) },
 		Lookup:  func(rtCtx runtime.Context) (ADDIN_IFACE, bool) { return addIn.Lookup(rtCtx) },
@@ -40,7 +40,7 @@ func RuntimeAddInInterface[ADDIN_IFACE any](name ...string) RuntimeAddInInterfac
 
 // RuntimeAddInInterfaceDefinition 封装运行时插件接口的标识和访问操作。
 type RuntimeAddInInterfaceDefinition[ADDIN_IFACE any] struct {
-	Id      uint64                                                // 由 Name 生成的插件 ID。
+	ID      uint64                                                // 由 Name 生成的插件 ID。
 	Name    string                                                // 插件注册名称。
 	Require generic.Func1[runtime.Context, ADDIN_IFACE]           // 从运行时获取正在运行的插件，不可用时 panic。
 	Lookup  generic.FuncPair1[runtime.Context, ADDIN_IFACE, bool] // 查询运行时管理器当前持有的插件。

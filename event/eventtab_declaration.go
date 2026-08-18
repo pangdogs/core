@@ -30,10 +30,10 @@ import (
 	"git.golaxy.org/core/utils/types"
 )
 
-// GenEventTabId 根据事件表具名类型的完整名称生成稳定 ID。
+// GenEventTabID 根据事件表具名类型的完整名称生成稳定 ID。
 //
 // eventTab 可以是值、指针或 reflect.Type，且其指针类型必须实现 IEventTab；否则 panic。
-func GenEventTabId(eventTab any) uint64 {
+func GenEventTabID(eventTab any) uint64 {
 	if eventTab == nil {
 		exception.Panicf("%w: %w: eventTab is nil", ErrEvent, exception.ErrArgs)
 	}
@@ -56,22 +56,22 @@ func GenEventTabId(eventTab any) uint64 {
 	return hash.Sum64() << 16
 }
 
-// GenEventTabIdT 根据事件表类型 T 的完整名称生成稳定 ID。
-func GenEventTabIdT[T any]() uint64 {
-	return GenEventTabId(types.Zero[T]())
+// GenEventTabIDT 根据事件表类型 T 的完整名称生成稳定 ID。
+func GenEventTabIDT[T any]() uint64 {
+	return GenEventTabID(types.Zero[T]())
 }
 
-// GenEventId 将事件表 ID 与 16 位位置 pos 组合为事件 ID；pos 越界时 panic。
-func GenEventId(eventTab any, pos int) uint64 {
+// GenEventID 将事件表 ID 与 16 位位置 pos 组合为事件 ID；pos 越界时 panic。
+func GenEventID(eventTab any, pos int) uint64 {
 	if pos < 0 || pos > math.MaxUint16 {
 		exception.Panicf("%w: %w: pos out of bounds [0,%d]", ErrEvent, exception.ErrArgs, math.MaxUint16)
 	}
-	return GenEventTabId(eventTab) + uint64(pos)
+	return GenEventTabID(eventTab) + uint64(pos)
 }
 
-// GenEventIdT 将事件表类型 T 的 ID 与 16 位位置 pos 组合为事件 ID。
-func GenEventIdT[T any](pos int) uint64 {
-	return GenEventId(types.Zero[T](), pos)
+// GenEventIDT 将事件表类型 T 的 ID 与 16 位位置 pos 组合为事件 ID。
+func GenEventIDT[T any](pos int) uint64 {
+	return GenEventID(types.Zero[T](), pos)
 }
 
 var (
@@ -79,10 +79,10 @@ var (
 	declareEvents    = &sync.Map{}
 )
 
-// DeclareEventTabId 生成并登记事件表 ID，用于尽早检测哈希冲突或重复声明。
+// DeclareEventTabID 生成并登记事件表 ID，用于尽早检测哈希冲突或重复声明。
 // 同一进程中每个事件表类型只能声明一次，冲突时 panic。
-func DeclareEventTabId(eventTab any) uint64 {
-	id := GenEventTabId(eventTab)
+func DeclareEventTabID(eventTab any) uint64 {
+	id := GenEventTabID(eventTab)
 
 	eventTabRT, ok := eventTab.(reflect.Type)
 	if !ok {
@@ -102,14 +102,14 @@ func DeclareEventTabId(eventTab any) uint64 {
 	return id
 }
 
-// DeclareEventTabIdT 生成并登记事件表类型 T 的 ID。
-func DeclareEventTabIdT[T any]() uint64 {
-	return DeclareEventTabId(types.Zero[T]())
+// DeclareEventTabIDT 生成并登记事件表类型 T 的 ID。
+func DeclareEventTabIDT[T any]() uint64 {
+	return DeclareEventTabID(types.Zero[T]())
 }
 
-// DeclareEventId 生成并登记事件 ID，用于检测哈希冲突或重复声明。
-func DeclareEventId(eventTab any, pos int) uint64 {
-	id := GenEventId(eventTab, pos)
+// DeclareEventID 生成并登记事件 ID，用于检测哈希冲突或重复声明。
+func DeclareEventID(eventTab any, pos int) uint64 {
+	id := GenEventID(eventTab, pos)
 
 	eventTabRT, ok := eventTab.(reflect.Type)
 	if !ok {
@@ -129,12 +129,12 @@ func DeclareEventId(eventTab any, pos int) uint64 {
 	return id
 }
 
-// DeclareEventIdT 生成并登记事件表类型 T 中指定位置的事件 ID。
-func DeclareEventIdT[T any](pos int) uint64 {
-	return DeclareEventId(types.Zero[T](), pos)
+// DeclareEventIDT 生成并登记事件表类型 T 中指定位置的事件 ID。
+func DeclareEventIDT[T any](pos int) uint64 {
+	return DeclareEventID(types.Zero[T](), pos)
 }
 
-// SplitEventId 将事件 ID 分解为事件表 ID 与表内位置。
-func SplitEventId(eventId uint64) (eventTabId uint64, pos int) {
-	return eventId & 0xFFFFFFFFFFFF0000, int(eventId & 0xFFFF)
+// SplitEventID 将事件 ID 分解为事件表 ID 与表内位置。
+func SplitEventID(eventID uint64) (eventTabID uint64, pos int) {
+	return eventID & 0xFFFFFFFFFFFF0000, int(eventID & 0xFFFF)
 }

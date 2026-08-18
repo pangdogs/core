@@ -40,7 +40,7 @@ type ContextOptions struct {
 	AutoRecover    bool                // 回调发生 panic 时是否自动恢复。
 	ReportError    chan error          // 自动恢复后接收 panic 错误的通道。
 	Name           string              // 服务名称。
-	PersistId      uid.Id              // 服务持久化 ID；为 Nil 时自动生成。
+	PersistID      uid.ID              // 服务持久化 ID；为 Nil 时自动生成。
 	EntityLib      pt.EntityLib        // 实体原型库；nil 时创建独立实体库。
 	AddInManager   AddInManager        // 服务插件管理器；nil 时创建默认管理器。
 	RunningEventCB RunningEventCB      // 服务运行事件回调。
@@ -58,7 +58,7 @@ func (_ContextOption) Default() option.Setting[ContextOptions] {
 		With.Context(nil).Apply(options)
 		With.PanicHandling(false, nil).Apply(options)
 		With.Name("").Apply(options)
-		With.PersistId(uid.Nil).Apply(options)
+		With.PersistID(uid.Nil).Apply(options)
 		With.EntityLib(nil).Apply(options)
 		With.AddInManager(nil).Apply(options)
 		With.RunningEventCB(nil).Apply(options)
@@ -94,10 +94,10 @@ func (_ContextOption) Name(name string) option.Setting[ContextOptions] {
 	}
 }
 
-// PersistId 设置服务持久化 ID。
-func (_ContextOption) PersistId(id uid.Id) option.Setting[ContextOptions] {
+// PersistID 设置服务持久化 ID。
+func (_ContextOption) PersistID(id uid.ID) option.Setting[ContextOptions] {
 	return func(options *ContextOptions) {
-		options.PersistId = id
+		options.PersistID = id
 	}
 }
 

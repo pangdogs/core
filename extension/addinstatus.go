@@ -30,8 +30,8 @@ import (
 type AddInStatus interface {
 	fmt.Stringer
 
-	// Id 返回由插件名称生成的 ID。
-	Id() uint64
+	// ID 返回由插件名称生成的 ID。
+	ID() uint64
 	// Name 返回插件注册名称。
 	Name() string
 	// InstanceFace 返回插件实例及其接口缓存。

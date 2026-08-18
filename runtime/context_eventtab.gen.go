@@ -30,8 +30,8 @@ type IContextRunningEventTab interface {
 }
 
 var (
-	_contextRunningEventTabId = event.DeclareEventTabIdT[contextRunningEventTab]()
-	EventContextRunningEventId = event.DeclareEventIdT[contextRunningEventTab](0)
+	_contextRunningEventTabID  = event.DeclareEventTabIDT[contextRunningEventTab]()
+	EventContextRunningEventID = event.DeclareEventIDT[contextRunningEventTab](0)
 )
 
 type contextRunningEventTab [1]event.Event
@@ -63,8 +63,8 @@ func (eventTab *contextRunningEventTab) Ctrl() event.IEventCtrl {
 }
 
 func (eventTab *contextRunningEventTab) Event(id uint64) event.IEvent {
-	eventTabId, pos := event.SplitEventId(id)
-	if _contextRunningEventTabId != eventTabId || pos >= len(eventTab) {
+	eventTabID, pos := event.SplitEventID(id)
+	if _contextRunningEventTabID != eventTabID || pos >= len(eventTab) {
 		return nil
 	}
 	switch pos {
