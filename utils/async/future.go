@@ -28,6 +28,9 @@ import (
 	"git.golaxy.org/core/utils/generic"
 )
 
+// FutureID 标识进程内的 Future。零值表示没有 Future。
+type FutureID uint64
+
 // ExecutorID 标识进程内的异步结果完成执行器。零值表示结果由外部执行器完成或归属未知。
 //
 // ExecutorID 只用于运行时阻塞检测，不是持久化 ID，也不应跨进程传输。
@@ -41,8 +44,8 @@ func GenExecutorID() ExecutorID {
 // WaitGuard 允许执行上下文在 Future 进入阻塞等待前实施调度约束。
 // Runtime Context 使用该接口阻止 Actor 执行协程等待自身队列产生的结果。
 type WaitGuard interface {
-	BeforeFutureWait(futureID uint64, completionExecutorID ExecutorID) error
-	AfterFutureWait(futureID uint64)
+	BeforeFutureWait(futureID FutureID, completionExecutorID ExecutorID) error
+	AfterFutureWait(futureID FutureID)
 }
 
 // NewPromise 创建一对生产者 Promise 和消费者 Future。
@@ -51,7 +54,7 @@ type WaitGuard interface {
 // Runtime 执行器，外部 I/O、后台 goroutine 或未知来源使用零值。
 func NewPromise(completionExecutorID ...ExecutorID) (Promise, Future) {
 	state := &futureState{
-		id:   futureIDGen.Add(1),
+		id:   FutureID(futureIDGen.Add(1)),
 		done: make(chan struct{}),
 	}
 	if len(completionExecutorID) > 0 {
@@ -135,7 +138,7 @@ func (future Future) IsNil() bool {
 }
 
 // ID 返回 Future 的进程内诊断 ID；零值 Future 返回 0。
-func (future Future) ID() uint64 {
+func (future Future) ID() FutureID {
 	if future.IsNil() {
 		return 0
 	}
@@ -273,7 +276,7 @@ var (
 
 type futureState struct {
 	mu                   sync.Mutex
-	id                   uint64
+	id                   FutureID
 	completionExecutorID ExecutorID
 	completed            bool
 	result               Result

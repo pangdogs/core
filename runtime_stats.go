@@ -42,9 +42,9 @@ type RuntimeTaskStats struct {
 
 // RuntimeHealthStats 描述 Runtime 当前执行健康状态。
 type RuntimeHealthStats struct {
-	LastProgressTime int64  // 最近一次开始或完成任务的 UnixNano。
-	BlockedFutureID  uint64 // 最近由 Runtime Context 尝试阻塞等待的 Future ID。
-	LastWaitRejectID uint64 // 最近一次被自等待规则拒绝的 Future ID。
+	LastProgressTime int64          // 最近一次开始或完成任务的 UnixNano。
+	BlockedFutureID  async.FutureID // 最近由 Runtime Context 尝试阻塞等待的 Future ID。
+	LastWaitRejectID async.FutureID // 最近一次被自等待规则拒绝的 Future ID。
 }
 
 // RuntimeStats 描述 Runtime 的生命周期、邮箱、异步作用域和健康状态快照。

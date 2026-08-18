@@ -164,9 +164,9 @@ func (ctx *ContextBehavior) CurrentContextCache() iface.Cache {
 
 // BeforeFutureWait 实现 async.WaitGuard。Runtime Context 只允许读取已经完成的
 // Future；对 pending Future 的等待会破坏 Actor 串行执行语义。
-func (ctx *ContextBehavior) BeforeFutureWait(futureID uint64, completionExecutorID async.ExecutorID) error {
-	ctx.blockedFuture.Store(futureID)
-	ctx.lastWaitReject.Store(futureID)
+func (ctx *ContextBehavior) BeforeFutureWait(futureID async.FutureID, completionExecutorID async.ExecutorID) error {
+	ctx.blockedFuture.Store(uint64(futureID))
+	ctx.lastWaitReject.Store(uint64(futureID))
 	if completionExecutorID != 0 && completionExecutorID == ctx.executorID {
 		return ErrRuntimeSelfWait
 	}
@@ -174,8 +174,8 @@ func (ctx *ContextBehavior) BeforeFutureWait(futureID uint64, completionExecutor
 }
 
 // AfterFutureWait 清除诊断中的等待 Future ID。
-func (ctx *ContextBehavior) AfterFutureWait(futureID uint64) {
-	ctx.blockedFuture.CompareAndSwap(futureID, 0)
+func (ctx *ContextBehavior) AfterFutureWait(futureID async.FutureID) {
+	ctx.blockedFuture.CompareAndSwap(uint64(futureID), 0)
 }
 
 // InstanceFaceCache 返回上下文实例的接口缓存，用于 reinterpret.Cast。

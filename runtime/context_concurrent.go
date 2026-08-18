@@ -49,9 +49,9 @@ type ConcurrentContext interface {
 	// ExecutorID 返回进程内 Runtime 执行器 ID。
 	ExecutorID() async.ExecutorID
 	// BlockedFutureID 返回当前阻塞等待的 Future ID。
-	BlockedFutureID() uint64
+	BlockedFutureID() async.FutureID
 	// LastWaitRejectID 返回最近一次被 Runtime 等待规则拒绝的 Future ID。
-	LastWaitRejectID() uint64
+	LastWaitRejectID() async.FutureID
 }
 
 type iConcurrentContext interface {
@@ -69,13 +69,13 @@ func (ctx *ContextBehavior) ExecutorID() async.ExecutorID {
 }
 
 // BlockedFutureID 返回当前阻塞等待的 Future ID。
-func (ctx *ContextBehavior) BlockedFutureID() uint64 {
-	return ctx.blockedFuture.Load()
+func (ctx *ContextBehavior) BlockedFutureID() async.FutureID {
+	return async.FutureID(ctx.blockedFuture.Load())
 }
 
 // LastWaitRejectID 返回最近一次被 Runtime 等待规则拒绝的 Future ID。
-func (ctx *ContextBehavior) LastWaitRejectID() uint64 {
-	return ctx.lastWaitReject.Load()
+func (ctx *ContextBehavior) LastWaitRejectID() async.FutureID {
+	return async.FutureID(ctx.lastWaitReject.Load())
 }
 
 // String 实现 fmt.Stringer，返回包含运行时 ID 和名称的 JSON 文本。

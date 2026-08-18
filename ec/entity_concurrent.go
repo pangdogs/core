@@ -86,12 +86,12 @@ func (entity *EntityBehavior) Terminated() async.Signal {
 }
 
 // BeforeFutureWait 把 Entity 作为等待 Context 时的检查转交给所属 Runtime。
-func (entity *EntityBehavior) BeforeFutureWait(futureID uint64, completionExecutorID async.ExecutorID) error {
+func (entity *EntityBehavior) BeforeFutureWait(futureID async.FutureID, completionExecutorID async.ExecutorID) error {
 	return entity.runtimeCtx.BeforeFutureWait(futureID, completionExecutorID)
 }
 
 // AfterFutureWait 清理所属 Runtime 的等待诊断状态。
-func (entity *EntityBehavior) AfterFutureWait(futureID uint64) {
+func (entity *EntityBehavior) AfterFutureWait(futureID async.FutureID) {
 	entity.runtimeCtx.AfterFutureWait(futureID)
 }
 
