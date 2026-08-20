@@ -10,6 +10,8 @@ Golaxy Core is the execution kernel and programming-model foundation of the [Gol
 
 - [Positioning](#positioning)
 - [Key capabilities](#key-capabilities)
+- [Requirements and installation](#requirements-and-installation)
+- [Quick start](#quick-start)
 - [Architecture](#architecture)
 - [Actor + EC execution model](#actor--ec-execution-model)
 - [Lifecycles](#lifecycles)
@@ -19,8 +21,6 @@ Golaxy Core is the execution kernel and programming-model foundation of the [Gol
 - [Events and code generation](#events-and-code-generation)
 - [Add-in system](#add-in-system)
 - [Context, errors, and shutdown](#context-errors-and-shutdown)
-- [Requirements and installation](#requirements-and-installation)
-- [Quick start](#quick-start)
 - [Default behavior reference](#default-behavior-reference)
 - [Project layout](#project-layout)
 - [Development and verification](#development-and-verification)
@@ -66,6 +66,87 @@ Friend and mail systems are common HTTP application services, not built-in Scaff
 - **Synchronous events**: offers an in-process signal/slot system with priorities, recursion policies, managed unbinding, and code generation.
 - **Add-in extension**: distinguishes fixed-startup Service add-ins from hot-pluggable Runtime add-ins.
 - **Lifecycle, health, and statistics**: drives Service, Runtime, Entity, Component, and Add-in lifecycles and exposes Scope, Submit/Post/Frame queue, rejected-wait, and frame statistics.
+
+## Requirements and installation
+
+- Go version: follow [`go.mod`](./go.mod); the current module targets Go 1.25.
+- Module path: `git.golaxy.org/core`
+- License: GNU Lesser General Public License v2.1
+
+Install:
+
+```bash
+go get git.golaxy.org/core@latest
+```
+
+## Quick start
+
+This minimal example creates a Service, declares an Entity Prototype, starts a Runtime without a frame loop, creates an Entity, and cancels the parent Context for an ordered shutdown.
+
+```go
+package main
+
+import (
+	"context"
+	"log"
+	"time"
+
+	"git.golaxy.org/core"
+	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/runtime"
+	"git.golaxy.org/core/service"
+)
+
+type PlayerState struct {
+	ec.ComponentBehavior
+}
+
+func (p *PlayerState) Awake() {
+	log.Printf("player %s awake", p.Entity().ID())
+}
+
+func main() {
+	parent, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	svcCtx := service.NewContext(
+		service.With.Context(parent),
+		service.With.Name("game"),
+		service.With.RunningEventCB(func(ctx service.Context, event service.RunningEvent, _ ...any) {
+			switch event {
+			case service.RunningEvent_Birth:
+				core.BuildEntityPT(ctx, "player").
+					AddComponent(PlayerState{}).
+					Declare()
+
+			case service.RunningEvent_Started:
+				core.NewRuntime(
+					runtime.NewContext(
+						ctx,
+						runtime.With.Name("player-runtime"),
+						runtime.With.RunningEventCB(func(ctx runtime.Context, event runtime.RunningEvent, _ ...any) {
+							if event != runtime.RunningEvent_Started {
+								return
+							}
+
+							if _, err := core.BuildEntity(ctx, "player").New(); err != nil {
+								log.Printf("create player: %v", err)
+							}
+							cancel()
+						}),
+					),
+					core.With.Runtime.AutoRun(true),
+					core.With.Runtime.Frame(core.With.Frame.Enabled(false)),
+				)
+			}
+		}),
+	)
+
+	<-core.NewService(svcCtx).Run().Done()
+}
+```
+
+See [`core_test.go`](./core_test.go) for more scenario-style examples.
 
 ## Architecture
 
@@ -469,7 +550,7 @@ next := core.ContinueOn(
 )
 ```
 
-`ContinueOn` checks the owning Scope when subscribing, enqueuing, and immediately before execution. Queue closure, insufficient capacity, an inactive owner, Scope closure, and continuation panics are reported through the returned Future. Future completion triggers a lightweight subscription directly, so a fast RPC response needs no extra waiter goroutine and incurs no polling delay.
+`ContinueOn` checks the selected Scope when subscribing, enqueuing, and immediately before execution. Scope closure, task submission failures, and continuation panics are reported through the returned Future. Future completion triggers a lightweight subscription directly, so a fast RPC response needs no extra waiter goroutine and incurs no polling delay.
 
 ### Future combinators
 
@@ -595,87 +676,6 @@ Recovery prevents the worker loop from failing immediately; it does not make a p
 ### Unsafe APIs
 
 `UnsafeContext`, `UnsafeEntity`, `UnsafeRuntime`, and similar entry points exist for internal assembly, generated code, and advanced integrations. They may bypass lifecycle or threading boundaries and are not the preferred APIs for ordinary business code.
-
-## Requirements and installation
-
-- Go version: follow [`go.mod`](./go.mod); the current module targets Go 1.25.
-- Module path: `git.golaxy.org/core`
-- License: GNU Lesser General Public License v2.1
-
-Install:
-
-```bash
-go get git.golaxy.org/core@latest
-```
-
-## Quick start
-
-This minimal example creates a Service, declares an Entity Prototype, starts a Runtime without a frame loop, creates an Entity, and cancels the parent Context for an ordered shutdown.
-
-```go
-package main
-
-import (
-	"context"
-	"log"
-	"time"
-
-	"git.golaxy.org/core"
-	"git.golaxy.org/core/ec"
-	"git.golaxy.org/core/runtime"
-	"git.golaxy.org/core/service"
-)
-
-type PlayerState struct {
-	ec.ComponentBehavior
-}
-
-func (p *PlayerState) Awake() {
-	log.Printf("player %s awake", p.Entity().ID())
-}
-
-func main() {
-	parent, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
-	svcCtx := service.NewContext(
-		service.With.Context(parent),
-		service.With.Name("game"),
-		service.With.RunningEventCB(func(ctx service.Context, event service.RunningEvent, _ ...any) {
-			switch event {
-			case service.RunningEvent_Birth:
-				core.BuildEntityPT(ctx, "player").
-					AddComponent(PlayerState{}).
-					Declare()
-
-			case service.RunningEvent_Started:
-				core.NewRuntime(
-					runtime.NewContext(
-						ctx,
-						runtime.With.Name("player-runtime"),
-						runtime.With.RunningEventCB(func(ctx runtime.Context, event runtime.RunningEvent, _ ...any) {
-							if event != runtime.RunningEvent_Started {
-								return
-							}
-
-							if _, err := core.BuildEntity(ctx, "player").New(); err != nil {
-								log.Printf("create player: %v", err)
-							}
-							cancel()
-						}),
-					),
-					core.With.Runtime.AutoRun(true),
-					core.With.Runtime.Frame(core.With.Frame.Enabled(false)),
-				)
-			}
-		}),
-	)
-
-	<-core.NewService(svcCtx).Run().Done()
-}
-```
-
-See [`core_test.go`](./core_test.go) for more scenario-style examples.
 
 ## Default behavior reference
 

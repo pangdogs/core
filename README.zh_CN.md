@@ -10,6 +10,8 @@ Golaxy Core 是 [Golaxy 分布式服务开发框架](https://github.com/pangdogs
 
 - [项目定位](#项目定位)
 - [核心能力](#核心能力)
+- [环境要求与安装](#环境要求与安装)
+- [快速开始](#快速开始)
 - [架构](#架构)
 - [Actor + EC 执行模型](#actor--ec-执行模型)
 - [生命周期](#生命周期)
@@ -19,8 +21,6 @@ Golaxy Core 是 [Golaxy 分布式服务开发框架](https://github.com/pangdogs
 - [事件系统与代码生成](#事件系统与代码生成)
 - [Add-in 扩展体系](#add-in-扩展体系)
 - [Context、错误处理与关闭](#context错误处理与关闭)
-- [环境要求与安装](#环境要求与安装)
-- [快速开始](#快速开始)
 - [默认行为速查](#默认行为速查)
 - [项目结构](#项目结构)
 - [开发与验证](#开发与验证)
@@ -66,6 +66,87 @@ Core 本身不提供网络监听、RPC 传输、服务发现、消息代理、�
 - **同步事件**：提供带优先级、递归策略、托管解绑和代码生成的进程内 signal/slot 事件系统。
 - **Add-in 扩展**：区分固定启动集合的 Service add-in 与可热插拔的 Runtime add-in。
 - **生命周期、健康与统计**：统一驱动 Service、Runtime、Entity、Component 和 Add-in，并暴露 Scope、Submit/Post/Frame 队列、等待拒绝与帧统计。
+
+## 环境要求与安装
+
+- Go 版本：以 [`go.mod`](./go.mod) 为准，当前为 Go 1.25。
+- 模块路径：`git.golaxy.org/core`
+- 许可证：GNU Lesser General Public License v2.1
+
+安装：
+
+```bash
+go get git.golaxy.org/core@latest
+```
+
+## 快速开始
+
+下面示例展示最小完整流程：创建 Service、声明 Entity Prototype、启动无帧 Runtime、创建 Entity，并通过取消父 Context 完成有序关闭。
+
+```go
+package main
+
+import (
+	"context"
+	"log"
+	"time"
+
+	"git.golaxy.org/core"
+	"git.golaxy.org/core/ec"
+	"git.golaxy.org/core/runtime"
+	"git.golaxy.org/core/service"
+)
+
+type PlayerState struct {
+	ec.ComponentBehavior
+}
+
+func (p *PlayerState) Awake() {
+	log.Printf("player %s awake", p.Entity().ID())
+}
+
+func main() {
+	parent, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	svcCtx := service.NewContext(
+		service.With.Context(parent),
+		service.With.Name("game"),
+		service.With.RunningEventCB(func(ctx service.Context, event service.RunningEvent, _ ...any) {
+			switch event {
+			case service.RunningEvent_Birth:
+				core.BuildEntityPT(ctx, "player").
+					AddComponent(PlayerState{}).
+					Declare()
+
+			case service.RunningEvent_Started:
+				core.NewRuntime(
+					runtime.NewContext(
+						ctx,
+						runtime.With.Name("player-runtime"),
+						runtime.With.RunningEventCB(func(ctx runtime.Context, event runtime.RunningEvent, _ ...any) {
+							if event != runtime.RunningEvent_Started {
+								return
+							}
+
+							if _, err := core.BuildEntity(ctx, "player").New(); err != nil {
+								log.Printf("create player: %v", err)
+							}
+							cancel()
+						}),
+					),
+					core.With.Runtime.AutoRun(true),
+					core.With.Runtime.Frame(core.With.Frame.Enabled(false)),
+				)
+			}
+		}),
+	)
+
+	<-core.NewService(svcCtx).Run().Done()
+}
+```
+
+更多场景化示例可直接阅读 [`core_test.go`](./core_test.go)。
 
 ## 架构
 
@@ -467,7 +548,7 @@ next := core.ContinueOn(
 )
 ```
 
-`ContinueOn` 会在订阅、入队和真正执行前检查所属 Scope；队列关闭、容量不足、对象失活、Scope 关闭和续体 panic 都会通过返回 Future 报告。Future 完成时直接触发轻量订阅，因此快速 RPC 返回不需要额外等待 goroutine，也没有轮询延迟。
+`ContinueOn` 会在订阅、入队和真正执行前检查选定的 Scope；Scope 关闭、任务提交失败和续体 panic 都会通过返回 Future 报告。Future 完成时直接触发轻量订阅，因此快速 RPC 返回不需要额外等待 goroutine，也没有轮询延迟。
 
 ### Future 组合器
 
@@ -593,87 +674,6 @@ Service 和 Runtime Context 默认 `AutoRecover=false`。通过 `PanicHandling(t
 ### Unsafe API
 
 `UnsafeContext`、`UnsafeEntity`、`UnsafeRuntime` 等入口用于框架内部装配、代码生成和高级集成。它们可能绕过状态机或线程边界，不属于普通业务代码的首选 API。
-
-## 环境要求与安装
-
-- Go 版本：以 [`go.mod`](./go.mod) 为准，当前为 Go 1.25。
-- 模块路径：`git.golaxy.org/core`
-- 许可证：GNU Lesser General Public License v2.1
-
-安装：
-
-```bash
-go get git.golaxy.org/core@latest
-```
-
-## 快速开始
-
-下面示例展示最小完整流程：创建 Service、声明 Entity Prototype、启动无帧 Runtime、创建 Entity，并通过取消父 Context 完成有序关闭。
-
-```go
-package main
-
-import (
-	"context"
-	"log"
-	"time"
-
-	"git.golaxy.org/core"
-	"git.golaxy.org/core/ec"
-	"git.golaxy.org/core/runtime"
-	"git.golaxy.org/core/service"
-)
-
-type PlayerState struct {
-	ec.ComponentBehavior
-}
-
-func (p *PlayerState) Awake() {
-	log.Printf("player %s awake", p.Entity().ID())
-}
-
-func main() {
-	parent, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
-	svcCtx := service.NewContext(
-		service.With.Context(parent),
-		service.With.Name("game"),
-		service.With.RunningEventCB(func(ctx service.Context, event service.RunningEvent, _ ...any) {
-			switch event {
-			case service.RunningEvent_Birth:
-				core.BuildEntityPT(ctx, "player").
-					AddComponent(PlayerState{}).
-					Declare()
-
-			case service.RunningEvent_Started:
-				core.NewRuntime(
-					runtime.NewContext(
-						ctx,
-						runtime.With.Name("player-runtime"),
-						runtime.With.RunningEventCB(func(ctx runtime.Context, event runtime.RunningEvent, _ ...any) {
-							if event != runtime.RunningEvent_Started {
-								return
-							}
-
-							if _, err := core.BuildEntity(ctx, "player").New(); err != nil {
-								log.Printf("create player: %v", err)
-							}
-							cancel()
-						}),
-					),
-					core.With.Runtime.AutoRun(true),
-					core.With.Runtime.Frame(core.With.Frame.Enabled(false)),
-				)
-			}
-		}),
-	)
-
-	<-core.NewService(svcCtx).Run().Done()
-}
-```
-
-更多场景化示例可直接阅读 [`core_test.go`](./core_test.go)。
 
 ## 默认行为速查
 
