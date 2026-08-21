@@ -34,9 +34,11 @@ service add-in 只能在启动前安装或卸载；启动前卸载只移除尚�
 Shut。管理器会在 RunningEvent_Starting 回调前永久冻结，随后按安装顺序初始化插件。
 
 停服时，Service 会先关闭并等待 AsyncScope 和 WaitGroup（包括已加入的 Runtime），
-再按安装顺序的逆序调用插件 Shut。Shut 执行期间插件仍处于 Running 状态并保留在
-管理器中；回调返回后才从管理器移除并转为 Unloaded。未绑定 Service Scope 或
-WaitGroup 的私有任务与资源，应由所属插件在 Shut 中自行停止和汇合。
+再按安装顺序的逆序调用普通插件 Shut。Shut 执行期间插件仍处于 Running 状态并
+保留在管理器中；回调返回后才从管理器移除并转为 Unloaded。实现 RetainedAddIn 的
+插件跳过 Shut 和移除，在 Service 终止后仍保持 Running；这类插件必须能在 Service
+Context 已取消后使用，且不能持有需要主动关闭的任务或外部资源。未绑定 Service
+Scope 或 WaitGroup 的私有任务与资源，应由普通插件在 Shut 中自行停止和汇合。
 
 原型声明、插件安装等准备逻辑可在创建上下文后完成，也可放在
 service.RunningEvent_Birth 中。

@@ -29,7 +29,7 @@ const (
 	RunningEvent_Started                                 // 服务启动完成。
 	RunningEvent_Heartbeat                               // 服务运行期间的每秒心跳。
 	RunningEvent_Terminating                             // 服务开始停止；Scope 已关闭，等待组尚未汇合，插件仍在运行。
-	RunningEvent_Terminated                              // Scope 与等待组已汇合，插件已停用并卸载，主体生命周期结束。
+	RunningEvent_Terminated                              // Scope 与等待组已汇合，普通插件已卸载，保留插件仍在运行。
 	RunningEvent_EntityPTDeclared                        // 实体原型已声明。
 	RunningEvent_ComponentPTDeclared                     // 组件原型已声明。
 	RunningEvent_EntityRegistered                        // 全局实体已注册。

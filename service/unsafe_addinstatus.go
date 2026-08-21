@@ -33,7 +33,7 @@ func (u _UnsafeAddInStatus) Started() {
 	u.started()
 }
 
-// Stopped 在插件 Shut 返回后将其从管理器移除并标记为已卸载。
+// Stopped 在普通插件 Shut 返回后将其从管理器移除并标记为已卸载。
 func (u _UnsafeAddInStatus) Stopped() {
 	u.stopped()
 }

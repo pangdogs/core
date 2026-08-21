@@ -164,9 +164,14 @@ func (svc *ServiceBehavior) activateAddIn(status service.AddInStatus) {
 }
 
 func (svc *ServiceBehavior) deactivateAddIn(status service.AddInStatus) {
-	if cb, ok := status.InstanceFace().Iface.(LifecycleAddInShut); ok {
+	addIn := status.InstanceFace().Iface
+	if _, retained := addIn.(service.RetainedAddIn); retained {
+		return
+	}
+
+	if cb, ok := addIn.(LifecycleAddInShut); ok {
 		generic.CastAction2(cb.Shut).Call(svc.ctx.AutoRecover(), svc.ctx.ReportError(), svc.ctx, nil)
-	} else if cb, ok := status.InstanceFace().Iface.(LifecycleServiceAddInShut); ok {
+	} else if cb, ok := addIn.(LifecycleServiceAddInShut); ok {
 		generic.CastAction1(cb.Shut).Call(svc.ctx.AutoRecover(), svc.ctx.ReportError(), svc.ctx)
 	}
 

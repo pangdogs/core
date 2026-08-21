@@ -34,8 +34,8 @@ import (
 // AddInManager 管理与服务生命周期绑定的插件。
 //
 // 插件只能在服务启动前安装或卸载。服务启动时管理器会永久冻结，此后 Install 和
-// Uninstall 均会 panic。插件按安装顺序激活，并在服务停止时按相反顺序关闭；因此
-// 被依赖的插件应先于依赖方安装。
+// Uninstall 均会 panic。插件按安装顺序激活；服务停止时，普通插件按相反顺序关闭，
+// RetainedAddIn 则继续保留。因此，被普通插件依赖的插件应先于依赖方安装。
 //
 // 管理器通过不可变快照支持多个 goroutine 并发安装、卸载和查询插件。
 type AddInManager interface {
@@ -241,7 +241,7 @@ func (mgr *_AddInManager) checkMutable(snapshot *_AddInManagerSnapshot) {
 	}
 }
 
-// stop 在插件 Shut 返回后，将其从管理器中移除并标记为已卸载。
+// stop 在普通插件 Shut 返回后，将其从管理器中移除并标记为已卸载。
 // Shut 执行期间插件仍处于 Running 状态；此内部清理允许在管理器冻结后执行。
 func (mgr *_AddInManager) stop(status *_AddInStatus) {
 	for {

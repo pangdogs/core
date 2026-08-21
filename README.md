@@ -257,7 +257,7 @@ Every Entity exists in the local `EntityManager` of its owning Runtime:
 | `Started` | The Service is running; runtimes are commonly created here. |
 | `Heartbeat` | Emits once per second. |
 | `Terminating` | The Service Context and scope are closed; scope tasks are joined and then the wait-group barrier is closed and joined after this callback, while add-ins are still running. |
-| `Terminated` | Scopes and barriers have joined, and Service add-ins have shut down in reverse order and been unloaded; the termination `Signal` completes after this callback. |
+| `Terminated` | Scopes and barriers have joined; ordinary Service add-ins have shut down in reverse order and been unloaded, while retained add-ins remain running. The termination `Signal` completes after this callback. |
 
 A Service can run only once, and a `service.Context` can be bound to only one `core.Service`.
 
@@ -629,10 +629,11 @@ Add-ins attach cross-cutting capabilities to a Service or Runtime without hard-c
 | Manager concurrency | Immutable snapshots support concurrent install, uninstall, and lookup before startup | No concurrency protection; callers must serialize operations, using the Runtime goroutine while running |
 | Activation | Initialized in installation order during Service `Starting` | Preinstalled items activate during Runtime `Starting`; runtime installation activates synchronously |
 | Uninstall | Available only before startup and does not call `Shut`; unavailable after the manager freezes | Can be hot-uninstalled while running |
-| Shutdown | Closed in reverse order when Service stops | Deactivated on uninstall or Runtime shutdown |
+| Shutdown | Ordinary add-ins close in reverse order; retained add-ins remain registered | Deactivated on uninstall or Runtime shutdown |
 | Typical use | Shared configuration, logging, database pools, discovery clients | Runtime-local caches, entity helper indexes, frame-related extensions |
 
-An Add-in moves one way through `Loaded → Running → Unloaded`. Lifecycle contracts include:
+An ordinary Add-in moves one way through `Loaded → Running → Unloaded`. A Service add-in that
+implements `service.RetainedAddIn` remains `Running` after Service termination. Lifecycle contracts include:
 
 - General: `LifecycleAddInInit`, `LifecycleAddInShut`
 - Service: `LifecycleServiceAddInInit`, `LifecycleServiceAddInShut`
@@ -641,10 +642,15 @@ An Add-in moves one way through `Loaded → Running → Unloaded`. Lifecycle con
 
 Service add-ins finish `Init` in installation order before the `Starting` callback, after which the
 manager remains frozen. Service shutdown first joins the Service scope and wait group, then calls
-`Shut` in reverse installation order. During `Shut`, an add-in remains `Running` and registered with
-the manager; it is removed and becomes `Unloaded` only after the callback returns. Install a dependency
-before its dependents so it shuts down last. An add-in must stop and join any private work or resources
-that are not attached to the Service scope or wait group.
+`Shut` on ordinary add-ins in reverse installation order. During `Shut`, an add-in remains `Running`
+and registered with the manager; it is removed and becomes `Unloaded` only after the callback returns.
+Install a dependency before its ordinary dependents so it shuts down last.
+
+`service.RetainedAddIn` is a Service-only marker. An implementing add-in skips `Shut` and removal,
+remains available through `Require` after `Terminated`, and is eventually collected with the Service
+Context. It must tolerate a canceled Service Context and must not own background work or external
+resources that require explicit shutdown. Ordinary add-ins must stop and join private work or resources
+that are not attached to the Service scope or wait group. Runtime add-ins do not support retention.
 
 The `define` package declares type-safe add-in definitions and exposes consistent `Install`, `Uninstall`, `Require`, and `Lookup` operations:
 
@@ -672,7 +678,7 @@ Service and Runtime contexts both carry a `WaitGroup` barrier:
 - `Terminate()` requests cancellation; `Terminated()` means cleanup has actually finished.
 - Starting a Runtime automatically joins its parent Service barrier, so Service waits for all runtimes to exit.
 
-Use the `WaitGroup` for host-level external resources. Prefer `AsyncScope` for new background business tasks. Service and Runtime shutdown close and join their scopes before closing and waiting on the legacy barrier. Service add-ins shut down only after both have joined, so tasks attached to the Service scope and runtimes joined to the Service barrier cannot outlive the add-in shutdown phase.
+Use the `WaitGroup` for host-level external resources. Prefer `AsyncScope` for new background business tasks. Service and Runtime shutdown close and join their scopes before closing and waiting on the legacy barrier. Ordinary Service add-ins shut down only after both have joined, so tasks attached to the Service scope and runtimes joined to the Service barrier cannot outlive the add-in shutdown phase. Retained add-ins do not receive `Shut`.
 
 ### Panic handling
 
