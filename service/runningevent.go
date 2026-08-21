@@ -28,8 +28,8 @@ const (
 	RunningEvent_Starting                                // 服务开始启动，插件管理器在回调前冻结并激活插件。
 	RunningEvent_Started                                 // 服务启动完成。
 	RunningEvent_Heartbeat                               // 服务运行期间的每秒心跳。
-	RunningEvent_Terminating                             // 服务开始停止。
-	RunningEvent_Terminated                              // 服务等待组清空、插件停用完成，主体生命周期结束。
+	RunningEvent_Terminating                             // 服务开始停止；Scope 已关闭，等待组尚未汇合，插件仍在运行。
+	RunningEvent_Terminated                              // Scope 与等待组已汇合，插件已停用并卸载，主体生命周期结束。
 	RunningEvent_EntityPTDeclared                        // 实体原型已声明。
 	RunningEvent_ComponentPTDeclared                     // 组件原型已声明。
 	RunningEvent_EntityRegistered                        // 全局实体已注册。

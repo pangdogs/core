@@ -31,7 +31,8 @@ type LifecycleAddInInit interface {
 }
 
 // LifecycleAddInShut 在插件停用时调用。
-// 服务插件的 rtCtx 为 nil；运行时插件会同时收到所属服务和运行时上下文。
+// 服务插件仅在 Service 终止时调用，rtCtx 为 nil；运行时插件在卸载或 Runtime 终止时
+// 调用，并同时收到所属服务和运行时上下文。
 type LifecycleAddInShut interface {
 	Shut(svcCtx service.Context, rtCtx runtime.Context)
 }
@@ -54,7 +55,9 @@ type LifecycleServiceAddInInit interface {
 	Init(svcCtx service.Context)
 }
 
-// LifecycleServiceAddInShut 在服务插件停用时调用。
+// LifecycleServiceAddInShut 在 Service 终止、Scope 与 WaitGroup 汇合后调用。
+// 启动前 Uninstall 不会调用此方法。回调执行期间插件仍处于 Running 状态并保留在
+// 管理器中；返回后插件才从管理器移除并转为 Unloaded。
 type LifecycleServiceAddInShut interface {
 	Shut(svcCtx service.Context)
 }

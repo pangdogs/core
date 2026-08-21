@@ -256,8 +256,8 @@ sequenceDiagram
 | `Starting` | 启动原型监听；冻结 Service add-in 管理器，并按安装顺序初始化 add-in。 |
 | `Started` | 服务已进入运行状态，通常在这里创建 Runtime。 |
 | `Heartbeat` | 每秒触发一次服务心跳事件。 |
-| `Terminating` | 父 Context 已取消；关闭等待组入口并等待 Runtime 等子任务退出。 |
-| `Terminated` | Service add-in 已按逆序关闭，终止 `Signal` 完成。 |
+| `Terminating` | Service Context 与 Scope 已关闭；回调结束后等待 Scope 任务，再关闭并汇合等待组，此时 add-in 仍在运行。 |
+| `Terminated` | Scope 与等待组已汇合，Service add-in 已按逆序关闭并卸载；回调结束后终止 `Signal` 完成。 |
 
 Service 只能运行一次。同一个 `service.Context` 也只能绑定到一个 `core.Service`。
 
@@ -626,7 +626,7 @@ Add-in 用于把横切能力安装到 Service 或 Runtime，而不把实现硬�
 | 安装时机 | Service 进入 `Starting` 前 | 启动前或运行中 |
 | 管理器并发性 | 启动前通过不可变快照支持并发安装、卸载和查询 | 不提供并发保护；调用方必须串行，运行中应在 Runtime goroutine 操作 |
 | 启动 | Service `Starting` 时按安装顺序初始化 | 预装项在 Runtime `Starting` 激活；运行中安装会同步激活 |
-| 卸载 | 管理器冻结后业务代码不能卸载 | 运行中可热卸载 |
+| 卸载 | 仅启动前可卸载，且不会调用 `Shut`；管理器冻结后不能卸载 | 运行中可热卸载 |
 | 停止 | Service 结束时按逆序关闭 | 卸载或 Runtime 结束时停用 |
 | 典型用途 | 共享配置、日志、数据库池、服务发现客户端 | Runtime 局部缓存、实体辅助索引、帧相关扩展 |
 
@@ -636,6 +636,12 @@ Add-in 状态单向变化为 `Loaded → Running → Unloaded`。生命周期接
 - Service：`LifecycleServiceAddInInit`、`LifecycleServiceAddInShut`
 - Runtime：`LifecycleRuntimeAddInInit`、`LifecycleRuntimeAddInShut`
 - Runtime 事件订阅：`LifecycleAddInOnRuntimeRunningEvent`
+
+Service add-in 在 `Starting` 回调前按安装顺序完成 `Init`，管理器随后始终保持冻结。
+Service 停止时会先汇合 Service Scope 和等待组，再按安装顺序的逆序调用 `Shut`。
+`Shut` 执行期间插件仍处于 `Running` 状态并保留在管理器中；回调返回后才从管理器
+移除并转为 `Unloaded`。因此，被其他插件依赖的基础插件应先安装，以便最后关闭。
+未绑定 Service Scope 或等待组的私有任务与资源，应由插件在 `Shut` 中自行停止和汇合。
 
 `define` 包可声明类型安全的 add-in 定义，并统一生成 `Install`、`Uninstall`、`Require` 和 `Lookup`：
 
@@ -663,7 +669,7 @@ Service 和 Runtime Context 都带有 `WaitGroup` 屏障：
 - `Terminate()` 发出取消请求；`Terminated()` 表示清理真正完成。
 - Runtime 启动时会自动加入父 Service 的等待组，因此 Service 会等待全部 Runtime 退出。
 
-`WaitGroup` 用于登记宿主级外部资源；新后台业务任务优先使用 `AsyncScope`。Service 与 Runtime 关闭时会先关闭 Scope、等待其中任务退出，再关闭传统 WaitGroup 屏障。
+`WaitGroup` 用于登记宿主级外部资源；新后台业务任务优先使用 `AsyncScope`。Service 与 Runtime 关闭时会先关闭 Scope、等待其中任务退出，再关闭传统 WaitGroup 屏障。Service 还会在这两者汇合后才关闭 add-in，因此绑定 Service Scope 的任务和已加入 Service 等待组的 Runtime 不会越过 add-in 的 `Shut` 阶段。
 
 ### Panic 处理
 

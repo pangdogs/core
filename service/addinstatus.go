@@ -29,6 +29,7 @@ import (
 )
 
 // AddInStatus 描述与服务生命周期绑定的插件状态。
+// 状态随服务单向经历 Loaded、Running 和 Unloaded；Shut 返回后才进入 Unloaded。
 type AddInStatus interface {
 	iAddInStatus
 	extension.AddInStatus

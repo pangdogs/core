@@ -28,12 +28,12 @@ type _UnsafeAddInStatus struct {
 	AddInStatus
 }
 
-// Started 将已加载插件标记为正在运行。
+// Started 在插件 Init 返回后将其从已加载标记为正在运行。
 func (u _UnsafeAddInStatus) Started() {
 	u.started()
 }
 
-// Stopped 将插件从管理器移除并标记为已卸载。
+// Stopped 在插件 Shut 返回后将其从管理器移除并标记为已卸载。
 func (u _UnsafeAddInStatus) Stopped() {
 	u.stopped()
 }

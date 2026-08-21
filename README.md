@@ -256,8 +256,8 @@ Every Entity exists in the local `EntityManager` of its owning Runtime:
 | `Starting` | Starts prototype watchers, freezes the Service add-in manager, and initializes add-ins in installation order. |
 | `Started` | The Service is running; runtimes are commonly created here. |
 | `Heartbeat` | Emits once per second. |
-| `Terminating` | The Context is canceled; closes the wait-group entry point and waits for runtimes and other children. |
-| `Terminated` | Service add-ins have shut down in reverse order and the termination `Signal` completes. |
+| `Terminating` | The Service Context and scope are closed; scope tasks are joined and then the wait-group barrier is closed and joined after this callback, while add-ins are still running. |
+| `Terminated` | Scopes and barriers have joined, and Service add-ins have shut down in reverse order and been unloaded; the termination `Signal` completes after this callback. |
 
 A Service can run only once, and a `service.Context` can be bound to only one `core.Service`.
 
@@ -628,7 +628,7 @@ Add-ins attach cross-cutting capabilities to a Service or Runtime without hard-c
 | Installation window | Before Service enters `Starting` | Before startup or while running |
 | Manager concurrency | Immutable snapshots support concurrent install, uninstall, and lookup before startup | No concurrency protection; callers must serialize operations, using the Runtime goroutine while running |
 | Activation | Initialized in installation order during Service `Starting` | Preinstalled items activate during Runtime `Starting`; runtime installation activates synchronously |
-| Uninstall | Application code cannot uninstall after the manager freezes | Can be hot-uninstalled while running |
+| Uninstall | Available only before startup and does not call `Shut`; unavailable after the manager freezes | Can be hot-uninstalled while running |
 | Shutdown | Closed in reverse order when Service stops | Deactivated on uninstall or Runtime shutdown |
 | Typical use | Shared configuration, logging, database pools, discovery clients | Runtime-local caches, entity helper indexes, frame-related extensions |
 
@@ -638,6 +638,13 @@ An Add-in moves one way through `Loaded → Running → Unloaded`. Lifecycle con
 - Service: `LifecycleServiceAddInInit`, `LifecycleServiceAddInShut`
 - Runtime: `LifecycleRuntimeAddInInit`, `LifecycleRuntimeAddInShut`
 - Runtime event subscription: `LifecycleAddInOnRuntimeRunningEvent`
+
+Service add-ins finish `Init` in installation order before the `Starting` callback, after which the
+manager remains frozen. Service shutdown first joins the Service scope and wait group, then calls
+`Shut` in reverse installation order. During `Shut`, an add-in remains `Running` and registered with
+the manager; it is removed and becomes `Unloaded` only after the callback returns. Install a dependency
+before its dependents so it shuts down last. An add-in must stop and join any private work or resources
+that are not attached to the Service scope or wait group.
 
 The `define` package declares type-safe add-in definitions and exposes consistent `Install`, `Uninstall`, `Require`, and `Lookup` operations:
 
@@ -665,7 +672,7 @@ Service and Runtime contexts both carry a `WaitGroup` barrier:
 - `Terminate()` requests cancellation; `Terminated()` means cleanup has actually finished.
 - Starting a Runtime automatically joins its parent Service barrier, so Service waits for all runtimes to exit.
 
-Use the `WaitGroup` for host-level external resources. Prefer `AsyncScope` for new background business tasks. Service and Runtime shutdown close and join their scopes before closing and waiting on the legacy barrier.
+Use the `WaitGroup` for host-level external resources. Prefer `AsyncScope` for new background business tasks. Service and Runtime shutdown close and join their scopes before closing and waiting on the legacy barrier. Service add-ins shut down only after both have joined, so tasks attached to the Service scope and runtimes joined to the Service barrier cannot outlive the add-in shutdown phase.
 
 ### Panic handling
 

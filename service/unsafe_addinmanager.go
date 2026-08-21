@@ -28,7 +28,7 @@ type _UnsafeAddInManager struct {
 	AddInManager
 }
 
-// Freeze 冻结安装与卸载入口，并按安装顺序返回插件状态。
+// Freeze 永久冻结安装与卸载入口，并按安装顺序返回插件状态。
 func (mgr _UnsafeAddInManager) Freeze() []AddInStatus {
 	return mgr.freeze()
 }
