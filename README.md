@@ -502,7 +502,7 @@ Service and Runtime scopes are created with their respective Contexts. An Entity
 
 Service and Runtime shutdown wait for tasks registered in their own scopes to exit. Entity and Component
 destruction synchronously closes the corresponding Scope but does not block the Runtime goroutine while its
-tasks exit. Wait for `scope.Done()` from another goroutine when a join is required.
+tasks exit. Wait on the Signal returned by `scope.Completion()` from another goroutine when a join is required.
 
 ```go
 future := core.Spawn(

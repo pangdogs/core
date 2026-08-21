@@ -20,7 +20,6 @@
 package core
 
 import (
-	"context"
 	"time"
 
 	"git.golaxy.org/core/event"
@@ -88,7 +87,7 @@ func (rt *RuntimeBehavior) running() {
 	rt.loopStop(handles)
 
 	ctx.AsyncScope().Close()
-	_ = ctx.AsyncScope().Done().Wait(context.Background())
+	<-ctx.AsyncScope().Completion().Done()
 
 	corectx.UnsafeContext(ctx).CloseWaitGroup()
 	ctx.WaitGroup().Wait()

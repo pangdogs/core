@@ -500,7 +500,7 @@ Service 与 Runtime Scope 在各自 Context 初始化时创建；Entity 在绑�
 
 Service 与 Runtime 关闭时会等待各自 Scope 中已登记的任务退出。Entity 与 Component
 销毁只负责同步关闭 Scope，不会阻塞 Runtime goroutine 等待任务退出；需要汇合时，应从
-其他 goroutine 等待 `scope.Done()`。
+其他 goroutine 通过 `scope.Completion()` 返回的 Signal 等待任务汇合。
 
 ```go
 future := core.Spawn(

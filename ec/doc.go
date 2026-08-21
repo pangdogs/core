@@ -43,6 +43,6 @@ Component 仍会进入 Attached，但 Runtime 不再推进其 Awake、OnEnable �
 两个并发视图均提供 Lifetime AsyncScope。Entity Scope 在绑定 Runtime Context 时创建，
 Component Scope 在首次访问时懒创建；Entity 销毁或 Component 移除时会关闭对应 Scope，
 取消其中的协作式后台任务并禁止新任务。Entity 和 Component 的销毁流程不会阻塞等待
-这些任务退出，需要汇合时应在其他 goroutine 等待 Scope.Done。
+这些任务退出，需要汇合时应在其他 goroutine 等待 Scope.Completion 返回的 Signal。
 */
 package ec

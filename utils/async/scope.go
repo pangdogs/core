@@ -105,8 +105,8 @@ func (scope *Scope) Err() error {
 	return scope.ctx.Err()
 }
 
-// Done 返回 Scope 关闭且所有已注册任务退出后完成的 Signal。
-func (scope *Scope) Done() Signal {
+// Completion 返回 Scope 关闭且所有已注册任务退出后完成的 Signal。
+func (scope *Scope) Completion() Signal {
 	if scope == nil {
 		return CompletedSignal()
 	}

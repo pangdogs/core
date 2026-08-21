@@ -91,7 +91,7 @@ loop:
 	svc.emitEventRunningEvent(service.RunningEvent_Terminating)
 
 	ctx.AsyncScope().Close()
-	_ = ctx.AsyncScope().Done().Wait(context.Background())
+	<-ctx.AsyncScope().Completion().Done()
 
 	corectx.UnsafeContext(ctx).CloseWaitGroup()
 	ctx.WaitGroup().Wait()
