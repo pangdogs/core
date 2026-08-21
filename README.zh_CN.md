@@ -494,7 +494,7 @@ Scope 负责：
 3. 统计 `Spawned`、`Active`、`Completed`、`Canceled` 和 `Rejected`。
 4. 用 `Completion()` 等待已登记任务退出。
 
-`Scope.Close()` 与 `Scope.Close(nil)` 默认使用 `async.ErrScopeClosed`；该错误包装了 `context.Canceled`，因此通用取消判断仍然有效。`Scope.Close(err)` 可记录指定的取消原因，并可通过 `scope.Err()` 或 `context.Cause(scope.Context())` 获取。Close 不能强制终止 goroutine，也不会自行等待任务退出；任务必须观察传入的 Context，调用方通过 `Completion()` 汇合任务。Component 的 Scope 在组件移除时关闭，`SetEnabled(false)` 不关闭；Entity、Runtime 和 Service 的 Scope 随各自生命周期关闭。
+`Scope.Close()` 与 `Scope.Close(nil)` 默认使用 `context.Canceled`；`Scope.Close(err)` 可记录指定的取消原因，并可通过 `scope.Err()` 或 `context.Cause(scope.Context())` 获取。`async.ErrScopeClosed` 仅表示 Scope 不可用或拒绝新任务，不包装 `context.Canceled`。nil Scope 同样视为已关闭：`Err()` 与 Context Cause 均为 `async.ErrScopeClosed`，Context 已取消，`Completion()` 已完成。Close 不能强制终止 goroutine，也不会自行等待任务退出；任务必须观察传入的 Context，调用方通过 `Completion()` 汇合任务。Component 的 Scope 在组件移除时关闭，`SetEnabled(false)` 不关闭；Entity、Runtime 和 Service 的 Scope 随各自生命周期关闭。
 
 Service 与 Runtime Scope 在各自 Context 初始化时创建；Entity 在绑定所属 Runtime 时一次性创建 Scope，并直接将 Scope Context 作为 Entity Context，不再额外派生取消层。Component Scope 在所属 Entity 已绑定 Runtime 后首次调用 `AsyncScope()` 时懒创建；若组件已经关闭，首次访问会得到立即关闭的 Scope。
 

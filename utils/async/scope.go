@@ -53,6 +53,12 @@ type Scope struct {
 	stopWatch func() bool
 }
 
+var nilScopeContext = func() context.Context {
+	ctx, cancel := context.WithCancelCause(context.Background())
+	cancel(ErrScopeClosed)
+	return ctx
+}()
+
 // NewScope 创建由 parent 控制生命周期的异步作用域。nil parent 使用 Background。
 func NewScope(parent context.Context) *Scope {
 	if parent == nil {
@@ -91,14 +97,15 @@ func (scope *Scope) AsyncScope() *Scope {
 }
 
 // Context 返回传递给所属异步任务的取消上下文；使用 context.Cause 获取关闭原因。
+// nil Scope 返回以 ErrScopeClosed 为原因的已取消 Context。
 func (scope *Scope) Context() context.Context {
 	if scope == nil {
-		return context.Background()
+		return nilScopeContext
 	}
 	return scope.ctx
 }
 
-// Err 返回 Scope 的取消原因；尚未关闭时返回 nil。
+// Err 返回 Scope 的取消原因；尚未关闭时返回 nil，nil Scope 返回 ErrScopeClosed。
 func (scope *Scope) Err() error {
 	if scope == nil {
 		return ErrScopeClosed
@@ -115,15 +122,11 @@ func (scope *Scope) Completion() Signal {
 }
 
 // Close 幂等关闭 Scope、取消 Context 并禁止注册新任务。
-// cause 可选且仅使用第一个值；省略或传入 nil 时使用 ErrScopeClosed。
+// cause 可选且仅使用第一个值；省略或传入 nil 时使用 context.Canceled。
 // 返回值表示本次调用是否首次关闭 Scope。
 func (scope *Scope) Close(cause ...error) bool {
 	if scope == nil {
 		return false
-	}
-	closeCause := pie.First(cause)
-	if closeCause == nil {
-		closeCause = ErrScopeClosed
 	}
 
 	scope.mu.Lock()
@@ -141,7 +144,7 @@ func (scope *Scope) Close(cause ...error) bool {
 	if stopWatch != nil {
 		stopWatch()
 	}
-	scope.cancel(closeCause)
+	scope.cancel(pie.First(cause))
 	if complete {
 		scope.completer.Complete()
 	}
