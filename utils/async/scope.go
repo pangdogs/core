@@ -24,6 +24,7 @@ import (
 	"sync"
 
 	"git.golaxy.org/core/utils/exception"
+	"github.com/elliotchance/pie/v2"
 )
 
 // ScopeStats 是异步作用域的瞬时统计快照。
@@ -42,7 +43,7 @@ type ScopeStats struct {
 // 强制终止 goroutine；任务必须观察传入的 Context 才能及时退出。
 type Scope struct {
 	ctx       context.Context
-	cancel    context.CancelFunc
+	cancel    context.CancelCauseFunc
 	mu        sync.Mutex
 	closed    bool
 	active    int64
@@ -57,7 +58,7 @@ func NewScope(parent context.Context) *Scope {
 	if parent == nil {
 		parent = context.Background()
 	}
-	ctx, cancel := context.WithCancel(parent)
+	ctx, cancel := context.WithCancelCause(parent)
 	completer, done := NewSignal()
 	scope := &Scope{
 		ctx:       ctx,
@@ -89,7 +90,7 @@ func (scope *Scope) AsyncScope() *Scope {
 	return scope
 }
 
-// Context 返回传递给所属异步任务的取消上下文。
+// Context 返回传递给所属异步任务的取消上下文；使用 context.Cause 获取关闭原因。
 func (scope *Scope) Context() context.Context {
 	if scope == nil {
 		return context.Background()
@@ -102,7 +103,7 @@ func (scope *Scope) Err() error {
 	if scope == nil {
 		return ErrScopeClosed
 	}
-	return scope.ctx.Err()
+	return context.Cause(scope.ctx)
 }
 
 // Completion 返回 Scope 关闭且所有已注册任务退出后完成的 Signal。
@@ -114,10 +115,15 @@ func (scope *Scope) Completion() Signal {
 }
 
 // Close 幂等关闭 Scope、取消 Context 并禁止注册新任务。
+// cause 可选且仅使用第一个值；省略或传入 nil 时使用 ErrScopeClosed。
 // 返回值表示本次调用是否首次关闭 Scope。
-func (scope *Scope) Close() bool {
+func (scope *Scope) Close(cause ...error) bool {
 	if scope == nil {
 		return false
+	}
+	closeCause := pie.First(cause)
+	if closeCause == nil {
+		closeCause = ErrScopeClosed
 	}
 
 	scope.mu.Lock()
@@ -135,7 +141,7 @@ func (scope *Scope) Close() bool {
 	if stopWatch != nil {
 		stopWatch()
 	}
-	scope.cancel()
+	scope.cancel(closeCause)
 	if complete {
 		scope.completer.Complete()
 	}

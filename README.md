@@ -494,9 +494,9 @@ A Scope provides:
 1. A cancelable Context for owned tasks.
 2. Rejection of new tasks after the owner closes.
 3. `Spawned`, `Active`, `Completed`, `Canceled`, and `Rejected` statistics.
-4. `Done()` for joining all registered tasks.
+4. `Completion()` for joining all registered tasks.
 
-`Scope.Close` cannot forcibly kill a goroutine; a task must observe the Context it receives. A Component Scope closes on removal, but not on `SetEnabled(false)`. Entity, Runtime, and Service scopes close with their respective lifecycles.
+`Scope.Close()` and `Scope.Close(nil)` use `async.ErrScopeClosed` by default; this error wraps `context.Canceled`, so generic cancellation checks continue to work. `Scope.Close(err)` records a specific cancellation cause, available through `scope.Err()` or `context.Cause(scope.Context())`. Close cannot forcibly kill a goroutine or wait for one to exit; a task must observe the Context it receives, and callers join tasks through `Completion()`. A Component Scope closes on removal, but not on `SetEnabled(false)`. Entity, Runtime, and Service scopes close with their respective lifecycles.
 
 Service and Runtime scopes are created with their respective Contexts. An Entity creates its Scope once when it binds to its owning Runtime and directly uses the Scope Context as its Entity Context, avoiding an additional cancellation layer. A Component Scope is created lazily on the first `AsyncScope()` call after its Entity has bound to a Runtime; if the Component has already closed, that first access returns an immediately closed Scope.
 

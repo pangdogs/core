@@ -20,15 +20,16 @@
 package async
 
 import (
+	"context"
 	"fmt"
 
 	"git.golaxy.org/core/utils/exception"
 )
 
 var (
-	ErrAsync             = fmt.Errorf("%w: async", exception.ErrCore)       // ErrAsync 是异步模块错误的共同根错误。
-	ErrScopeClosed       = fmt.Errorf("%w: scope closed", ErrAsync)         // ErrScopeClosed 表示异步作用域已经关闭。
-	ErrNoCandidates      = fmt.Errorf("%w: no future candidates", ErrAsync) // ErrNoCandidates 表示组合器没有可用的候选 Future。
-	ErrNoFutureSucceeded = fmt.Errorf("%w: no future succeeded", ErrAsync)  // ErrNoFutureSucceeded 表示所有候选 Future 均失败。
-	ErrFutureTimeout     = fmt.Errorf("%w: future timeout", ErrAsync)       // ErrFutureTimeout 表示 Future 等待超时。
+	ErrAsync             = fmt.Errorf("%w: async", exception.ErrCore)                     // ErrAsync 是异步模块错误的共同根错误。
+	ErrScopeClosed       = fmt.Errorf("%w: scope closed: %w", ErrAsync, context.Canceled) // ErrScopeClosed 表示异步作用域已因取消而关闭。
+	ErrNoCandidates      = fmt.Errorf("%w: no future candidates", ErrAsync)               // ErrNoCandidates 表示组合器没有可用的候选 Future。
+	ErrNoFutureSucceeded = fmt.Errorf("%w: no future succeeded", ErrAsync)                // ErrNoFutureSucceeded 表示所有候选 Future 均失败。
+	ErrFutureTimeout     = fmt.Errorf("%w: future timeout", ErrAsync)                     // ErrFutureTimeout 表示 Future 等待超时。
 )

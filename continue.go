@@ -21,7 +21,6 @@ package core
 
 import (
 	"context"
-	"fmt"
 	"sync/atomic"
 
 	"git.golaxy.org/core/runtime"
@@ -56,20 +55,20 @@ func ContinueOn(
 	promise, next := async.NewPromise(rt.ExecutorID())
 	var executing atomic.Bool
 	if scope == nil || scope.Err() != nil {
-		promise.Resolve(scopeClosedResult(scope))
+		promise.Resolve(async.NewResult(nil, scope.Err()))
 		return next
 	}
 
 	subscription := future.OnComplete(func(ret async.Result) {
 		if scope.Err() != nil {
-			promise.Resolve(scopeClosedResult(scope))
+			promise.Resolve(async.NewResult(nil, scope.Err()))
 			return
 		}
 
 		submitted := rt.Submit(func(ctx runtime.Context, _ ...any) async.Result {
 			executing.Store(true)
 			if scope.Err() != nil {
-				return scopeClosedResult(scope)
+				return async.NewResult(nil, scope.Err())
 			}
 			return fun.UnsafeCall(ctx, ret, args...)
 		})
@@ -79,7 +78,7 @@ func ContinueOn(
 	stopScope := context.AfterFunc(scope.Context(), func() {
 		subscription.Cancel()
 		if !executing.Load() {
-			promise.Resolve(scopeClosedResult(scope))
+			promise.Resolve(async.NewResult(nil, scope.Err()))
 		}
 	})
 	next.OnComplete(func(async.Result) { stopScope() })
@@ -131,11 +130,4 @@ func continuationScope(provider corectx.ConcurrentContextProvider, rt runtime.Co
 		}
 	}
 	return rt.AsyncScope()
-}
-
-func scopeClosedResult(scope *async.Scope) async.Result {
-	if scope == nil || scope.Err() == nil {
-		return async.NewResult(nil, async.ErrScopeClosed)
-	}
-	return async.NewResult(nil, fmt.Errorf("%w: %w", async.ErrScopeClosed, scope.Err()))
 }
